@@ -1,0 +1,8 @@
+*.ts
+*.tsx
+*.js
+*.json
+*.css
+*.html
+pnpm-lock.yaml
+*.jsonc
