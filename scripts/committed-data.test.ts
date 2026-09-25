@@ -6,6 +6,7 @@ import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
+import { findPersonLinks } from '../src/lib/person-links.ts'
 import {
   identityProblems,
   totalExpenditureCents,
@@ -23,17 +24,19 @@ function readJson(file: string): unknown {
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every committed Fall year matches its schema and its manifest entry',
+  'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    for (const entry of manifest.fall) {
+    const years = manifest.fall.map((entry) => {
       const year = fallYearSchema.parse(
         readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
       )
       const expected = entry.files.reduce((sum, file) => sum + file.records, 0)
       expect(year.censusDate).toBe(entry.censusDate)
       expect(year.records.length).toBe(expected)
-    }
+      return year
+    })
+    expect(findPersonLinks(years)).toHaveLength(52_880)
   },
 )
 
