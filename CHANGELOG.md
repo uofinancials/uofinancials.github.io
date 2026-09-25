@@ -17,6 +17,18 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   extract date, retrieval date, and record count.
 - Records whose job title suggests a student or graduate employee are marked
   `possibleStudent`.
-- `pnpm scrape`, which rebuilds the data from Fall Census PDFs downloaded into
-  `.cache/sources/fall/`, and refuses to write a year with any unreadable record
-  or a missing or duplicate report.
+- `pnpm scrape [fall|budget]`, which rebuilds the data. The Fall step reads Fall
+  Census PDFs downloaded into `.cache/sources/fall/`, and refuses to write a
+  year with any unreadable record or a missing or duplicate report.
+- University of Oregon operational expenditure budgets for FY21-FY27 - 67,935
+  budget rows by department, fund, account type, and posting period, from the
+  Budget and Resource Planning office's Budget Reports page, retrieved
+  2026-09-24 - as one JSON file per fiscal year under `public/data/budget/`,
+  with per-year names for departments, funds, fund types, and account types.
+  FY26 reflects posting period 12 and FY27 period 2; the rest are year-end.
+- The budget step downloads the workbooks itself: it obeys each host's
+  `robots.txt`, identifies itself, waits between requests, and re-downloads a
+  workbook only when it has changed. A fiscal year is not written if any row
+  fails to read or its published totals do not add up.
+- Manifest entries for each budget workbook: URL, posting period, SHA-256,
+  last-modified date, retrieval date, row count, and total.
