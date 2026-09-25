@@ -25,8 +25,7 @@ export function SiteLayout() {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-muted-foreground hover:text-foreground"
-                    activeProps={{ className: 'text-foreground' }}
+                    className="text-muted-foreground underline-offset-4 hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-foreground aria-[current=page]:underline"
                   >
                     {label}
                   </Link>

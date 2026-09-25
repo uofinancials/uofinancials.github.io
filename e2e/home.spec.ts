@@ -27,6 +27,28 @@ for (const path of [
   })
 }
 
+test('the nav marks the current section apart from the others', async ({
+  page,
+}) => {
+  await page.goto('/departments/223100')
+  const nav = page.getByRole('navigation', { name: 'Main' })
+  const current = nav.getByRole('link', { name: 'Departments' })
+  const other = nav.getByRole('link', { name: 'Trends' })
+  await expect(current).toHaveAttribute('aria-current', 'page')
+  await expect(other).not.toHaveAttribute('aria-current')
+  const styleOf = (link: typeof current) =>
+    link.evaluate((element) => {
+      const { color, fontWeight } = getComputedStyle(element)
+      return { color, fontWeight }
+    })
+  const [currentStyle, otherStyle] = await Promise.all([
+    styleOf(current),
+    styleOf(other),
+  ])
+  expect(currentStyle.color).not.toBe(otherStyle.color)
+  expect(currentStyle.fontWeight).not.toBe(otherStyle.fontWeight)
+})
+
 test('an unknown path shows the not-found page', async ({ page }) => {
   await page.goto('/no-such-page')
   await expect(
