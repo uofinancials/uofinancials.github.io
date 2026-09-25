@@ -116,3 +116,11 @@ export function createAreaAssigner(
     return { area: null, basis: 'unassigned' }
   }
 }
+
+/** A budget year's college or VP areas, by name. */
+export function listAreas(orgs: Orgs): { code: string; name: string }[] {
+  return Object.entries(orgs)
+    .filter(([, org]) => org.level === ORG_LEVEL_AREA)
+    .map(([code, org]) => ({ code, name: org.name }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+}

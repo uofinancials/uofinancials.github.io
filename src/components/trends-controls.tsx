@@ -3,17 +3,13 @@ import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/trend-groups'
 import {
+  ALL_GROUPS,
+  GROUP_OPTIONS,
   METRIC_OPTIONS,
   STAFF_KIND_OPTIONS,
   type TrendsSearch,
   type TrendView,
 } from '@/lib/trends-search'
-
-const ALL_GROUPS = 'all'
-const GROUP_OPTIONS: [string, string][] = [
-  [ALL_GROUPS, 'All groups'],
-  ...TREND_GROUPS.map((group): [string, string] => [group, group]),
-]
 
 function LineToggles({
   lines,

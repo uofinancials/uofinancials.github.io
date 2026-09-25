@@ -25,13 +25,22 @@ export type TrendFilter = {
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
 
+const PERCENT = 100
+
+/** The `p`th percentile of ascending cents, interpolated between ranks and rounded to the cent. */
+export function percentileCents(sorted: number[], p: number): number | null {
+  const rank = ((sorted.length - 1) * p) / PERCENT
+  const lower = sorted[Math.floor(rank)]
+  const upper = sorted[Math.ceil(rank)]
+  if (lower === undefined || upper === undefined) return null
+  return Math.round(lower + (upper - lower) * (rank - Math.floor(rank)))
+}
+
 export function medianRateCents(rates: number[]): number | null {
-  const sorted = [...rates].sort((a, b) => a - b)
-  const upper = sorted[Math.floor(sorted.length / 2)]
-  if (upper === undefined) return null
-  if (sorted.length % 2 === 1) return upper
-  const lower = sorted[sorted.length / 2 - 1] ?? upper
-  return Math.round((lower + upper) / 2)
+  return percentileCents(
+    [...rates].sort((a, b) => a - b),
+    50,
+  )
 }
 
 /** Jobs, spend and FTE, and the median rate of a set of jobs; each figure `null` when no job it applies to is in the set. */

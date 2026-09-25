@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
-const orgCode = z.string().regex(/^[0-9A-Z]{6}$/)
+export const orgCode = z.string().regex(/^[0-9A-Z]{6}$/)
+
+/** An org code in a URL search param, where the router has already read an all-digit code as a number. */
+export const orgCodeParam = z.preprocess(
+  (value) => (typeof value === 'number' ? String(value) : value),
+  orgCode,
+)
 export const twoDigitCode = z.string().regex(/^\d{2}$/)
 const nonBlank = z.string().min(1)
 const cents = z.number().int()

@@ -18,6 +18,7 @@ import {
   summarize,
 } from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
+import { buildDistribution } from '../src/lib/salary-distribution.ts'
 import { buildTrends } from '../src/lib/trends.ts'
 import {
   identityProblems,
@@ -315,5 +316,60 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       (record) => !isClassifiedTemp(record),
     )
     expect(summarize(artsPaid)).toEqual(overviewArts?.totals)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'the Fall 2025 salary distribution matches an independent computation',
+  () => {
+    const { records } = fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+    )
+    const { bins, counts, maxRateCents, percentiles } = buildDistribution(
+      records,
+      2025,
+    )
+    const none = {
+      Faculty: 0,
+      'Admins and professionals': 0,
+      'Unclassified staff': 0,
+      'Classified staff': 0,
+      Overloads: 0,
+      'Category not published': 0,
+      'Classified temporaries': 0,
+    }
+    expect(counts).toEqual({
+      ...none,
+      Faculty: 2_247,
+      'Admins and professionals': 1_595,
+      'Unclassified staff': 181,
+      'Classified staff': 1_826,
+      Overloads: 442,
+      'Classified temporaries': 549,
+    })
+    expect(percentiles).toEqual({
+      10: 4_749_600,
+      25: 5_923_100,
+      50: 7_578_700,
+      75: 10_560_350,
+      90: 14_855_160,
+    })
+    expect(bins.find((bin) => bin.floorCents === 5_000_000)?.counts).toEqual({
+      ...none,
+      Faculty: 164,
+      'Admins and professionals': 175,
+      'Unclassified staff': 24,
+      'Classified staff': 399,
+      Overloads: 2,
+      'Classified temporaries': 79,
+    })
+    expect(bins.at(-1)?.counts).toEqual({
+      ...none,
+      Faculty: 51,
+      'Admins and professionals': 75,
+      Overloads: 1,
+      'Classified temporaries': 2,
+    })
+    expect(maxRateCents).toBe(940_000_000)
   },
 )

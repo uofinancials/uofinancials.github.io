@@ -9,6 +9,7 @@ import {
 import { PageError } from '@/components/page-error'
 import { PageLoading } from '@/components/page-loading'
 import { SiteLayout } from '@/components/site-layout'
+import { orgCode } from '@/data/budget'
 import {
   budgetYearQuery,
   fallYearQuery,
@@ -19,16 +20,16 @@ import {
   departmentSearchSchema,
   departmentsSearchSchema,
 } from '@/lib/department-search'
-import { selectOverviewSources } from '@/lib/overview'
+import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
+import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
+import { SalariesPage } from '@/pages/salaries-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
-
-const ORG_CODE = /^[0-9A-Z]{6}$/
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: SiteLayout,
@@ -88,7 +89,7 @@ const departmentRoute = createRoute({
   path: '/departments/$code',
   validateSearch: departmentSearchSchema,
   loader: async ({ context: { queryClient }, params: { code } }) => {
-    if (!ORG_CODE.test(code)) throw notFound()
+    if (!orgCode.safeParse(code).success) throw notFound()
     const manifest = await queryClient.ensureQueryData(manifestQuery)
     const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     const fallYears = manifest.fall.map(({ year }) => year)
@@ -103,6 +104,27 @@ const departmentRoute = createRoute({
     return { fiscalYears, fallYears }
   },
   component: DepartmentPage,
+})
+
+const salariesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/salaries',
+  validateSearch: salariesSearchSchema,
+  loaderDeps: ({ search }) => ({ year: search.year }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const manifest = await queryClient.ensureQueryData(manifestQuery)
+    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+    const year = resolveCensusYear(deps.year, years)
+    const census = manifest.fall.find((entry) => entry.year === year)
+    if (!census) throw notFound()
+    const fiscalYear = fiscalYearForCensus(manifest, census.censusDate)
+    await Promise.all([
+      queryClient.ensureQueryData(fallYearQuery(year)),
+      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+    ])
+    return { years, year, fiscalYear }
+  },
+  component: SalariesPage,
 })
 
 const sourcesRoute = createRoute({
@@ -121,6 +143,7 @@ const routeTree = rootRoute.addChildren([
   trendsRoute,
   departmentsRoute,
   departmentRoute,
+  salariesRoute,
   sourcesRoute,
 ])
 

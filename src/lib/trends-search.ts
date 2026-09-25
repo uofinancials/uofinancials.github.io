@@ -4,6 +4,13 @@ import { formatCompactDollars, formatDollars, formatFte } from './format.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 import type { TrendFilter, TrendPoint, TrendSeries } from './trends.ts'
 
+export const ALL_GROUPS = 'all'
+
+export const GROUP_OPTIONS: [string, string][] = [
+  [ALL_GROUPS, 'All groups'],
+  ...TREND_GROUPS.map((group): [string, string] => [group, group]),
+]
+
 export const STAFF_KIND_OPTIONS: [string, string][] = [
   ['all', 'Classified and unclassified'],
   ['classified', 'Classified'],

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { RadioField } from '@/components/radio-field'
 import { SelectField } from '@/components/select-field'
 import { SourceCitation } from '@/components/source-citation'
@@ -141,6 +142,7 @@ function PlacementTable({ placements }: { placements: AreaPlacement[] }) {
 
 /** A department's jobs over the censuses, its classes in one census, and, for an area, how its jobs were placed. */
 export function DepartmentJobsSection({
+  code,
   trends,
   classRows,
   placements,
@@ -148,6 +150,7 @@ export function DepartmentJobsSection({
   yearsWithJobs,
   onChange,
 }: {
+  code: string
   trends: Trends
   classRows: Record<StaffKind, ClassRow[]>
   placements: AreaPlacement[] | null
@@ -188,6 +191,15 @@ export function DepartmentJobsSection({
             options={yearsWithJobs.map((year) => [String(year), String(year)])}
             onSelect={(value) => onChange({ year: Number(value) })}
           />
+          <p className="text-sm">
+            <Link
+              className="underline"
+              to="/salaries"
+              search={{ dept: code, year: view.year }}
+            >
+              Salary distribution, Fall {view.year}
+            </Link>
+          </p>
           {STAFF_KINDS.map((kind) => {
             const rows = classRows[kind]
             return rows.length === 0 ? null : (
