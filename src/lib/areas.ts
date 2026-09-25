@@ -61,7 +61,8 @@ export const HAND_AREAS: Readonly<
   },
 }
 
-function publishedArea(code: string | null, orgs: Orgs): string | null {
+/** The area a published org code sits in: itself at level 3, or its parent. */
+export function publishedArea(code: string | null, orgs: Orgs): string | null {
   const org = code === null ? undefined : orgs[code]
   if (!org) return null
   return org.level === ORG_LEVEL_AREA ? code : org.parent
