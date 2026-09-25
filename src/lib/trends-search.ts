@@ -4,7 +4,6 @@ import { formatCompactDollars, formatDollars, formatFte } from './format.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 import type { TrendFilter, TrendPoint, TrendSeries } from './trends.ts'
 
-/** The select value meaning no group filter. */
 export const ALL_GROUPS = 'all'
 
 export const GROUP_OPTIONS: [string, string][] = [
