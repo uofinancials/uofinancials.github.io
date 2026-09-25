@@ -1,6 +1,11 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { isClassifiedTemp, NO_CATEGORY, summarize } from './overview.ts'
-import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
+import {
+  TREND_GROUPS,
+  type TrendGroup,
+  trendGroupOf,
+  UNCLASSIFIED_CATEGORY_GROUPS,
+} from './trend-groups.ts'
 
 /** Each figure is `null` when the line has no job it applies to that year. */
 export type TrendPoint = {
@@ -85,6 +90,17 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
 
 const GROUP_ORDER: readonly string[] = TREND_GROUPS
 
+/** The opened Executives line for EXEC-grade jobs that UO files under another category, or none. */
+export const EXEC_OTHER_CATEGORY = 'EXEC grade, other category'
+
+function categoryLineOf(record: FallRecord, group: TrendGroup): string {
+  const category = record.eeoCategory ?? NO_CATEGORY
+  const isByGradeOnly =
+    group === 'Executives' &&
+    UNCLASSIFIED_CATEGORY_GROUPS[category] !== 'Executives'
+  return isByGradeOnly ? EXEC_OTHER_CATEGORY : category
+}
+
 /** One series per group (or per published category of an opened group), and their total, per census in range. */
 export function buildTrends(
   years: { year: number; records: FallRecord[] }[],
@@ -102,7 +118,7 @@ export function buildTrends(
       if (filter.kind !== 'all' && record.kind !== filter.kind) continue
       if (filter.group !== null && group !== filter.group) continue
       shown.push(record)
-      const key = filter.group ? (record.eeoCategory ?? NO_CATEGORY) : group
+      const key = filter.group ? categoryLineOf(record, filter.group) : group
       const byYear = lines.get(key) ?? new Map<number, FallRecord[]>()
       const members = byYear.get(year) ?? []
       members.push(record)

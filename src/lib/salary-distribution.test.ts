@@ -58,7 +58,7 @@ test('stacks list only the groups with a job, keeping each group’s place', () 
   const stacks = stackedCounts(buildDistribution([at(100), temp], 2025))
   expect(stacks.map(({ key, position }) => [key, position])).toEqual([
     ['Faculty', 0],
-    ['Classified temporaries', 6],
+    ['Classified temporaries', 7],
   ])
   expect(stacks[0]?.values[0]).toBe(1)
 })

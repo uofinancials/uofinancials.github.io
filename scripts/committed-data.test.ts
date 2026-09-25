@@ -99,7 +99,8 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       )
     expect(figures(2014)).toEqual({
       Faculty: [12_574_491_957, 178_988],
-      'Admins and professionals': [9_588_563_897, 119_189],
+      Executives: [637_281_100, 2_855],
+      'Admins and professionals': [8_951_282_797, 116_334],
       'Unclassified staff': [902_120_531, 15_544],
       'Classified staff': [5_792_903_943, 151_351],
       Overloads: [709_844_782, 39_649],
@@ -107,9 +108,15 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Classified temporaries': [null, 20_541],
     })
     expect(figures(2015)['Classified temporaries']).toEqual([null, 34_406])
+    expect(
+      series
+        .find(({ key }) => key === 'Executives')
+        ?.points.map(({ jobs }) => jobs),
+    ).toEqual([29, 29, 33, 33, 33, 32, 34, 33, 35, 37, 33, 35])
     expect(figures(2025)).toMatchObject({
       Faculty: [18_829_315_972, 187_093],
-      'Admins and professionals': [18_748_350_891, 155_233],
+      Executives: [1_401_753_800, 3_500],
+      'Admins and professionals': [17_346_597_091, 151_733],
       'Unclassified staff': [1_538_953_523, 17_764],
       'Classified staff': [10_912_994_388, 177_208],
       Overloads: [451_592_066, 42_175],
@@ -379,6 +386,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     )
     const none = {
       Faculty: 0,
+      Executives: 0,
       'Admins and professionals': 0,
       'Unclassified staff': 0,
       'Classified staff': 0,
@@ -389,7 +397,8 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect(counts).toEqual({
       ...none,
       Faculty: 2_247,
-      'Admins and professionals': 1_595,
+      Executives: 35,
+      'Admins and professionals': 1_560,
       'Unclassified staff': 181,
       'Classified staff': 1_826,
       Overloads: 442,
@@ -414,7 +423,8 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect(bins.at(-1)?.counts).toEqual({
       ...none,
       Faculty: 51,
-      'Admins and professionals': 75,
+      Executives: 31,
+      'Admins and professionals': 44,
       Overloads: 1,
       'Classified temporaries': 2,
     })

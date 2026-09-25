@@ -20,7 +20,7 @@ import {
   TREND_GROUPS,
   type TrendGroup,
 } from '@/lib/trend-groups'
-import { buildTrends, MIN_JOBS_SHOWN } from '@/lib/trends'
+import { buildTrends, EXEC_OTHER_CATEGORY, MIN_JOBS_SHOWN } from '@/lib/trends'
 import {
   METRIC_INFO,
   resolveTrendView,
@@ -31,12 +31,14 @@ import {
 const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend and median are left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
 
 const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
+  Executives: `Unclassified jobs in the categories ${publishedCategoriesOf('Executives').join(', ')}, or with the OA salary grade EXEC whatever their category, a grade UO publishes from Fall 2016. Opened, the jobs placed by the grade alone are one line, “${EXEC_OTHER_CATEGORY}”.`,
   'Classified temporaries':
     'Classified jobs with a TS position class, or none (Fall 2015). Their published rates are annualised hourly rates, so they count in FTE only.',
   Overloads:
     'Jobs of type Overload, in every year. UO publishes an Overload category from 2019; before, overloads carried the holder’s category.',
   'Classified staff': 'Every other classified job, whatever its category.',
-  'Category not published': 'Unclassified jobs with no category (Fall 2017).',
+  'Category not published':
+    'Unclassified jobs with no category and no EXEC grade (Fall 2017).',
 }
 
 function GroupMapping() {

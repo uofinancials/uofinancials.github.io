@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { trendGroupOf } from './trend-groups'
 
-test('temps, then overloads, then staff kind, then the published category decide the group', () => {
+test('temps, then overloads, then staff kind, then the EXEC grade, then the published category decide the group', () => {
   const groupOf = (record: Parameters<typeof trendGroupOf>[0]) =>
     trendGroupOf(record, 2025)
   expect(
@@ -19,8 +19,25 @@ test('temps, then overloads, then staff kind, then the published category decide
     'Faculty',
   )
   expect(groupOf(unclassifiedJob({ eeoCategory: 'Exec/Admin/Mgr' }))).toBe(
-    'Admins and professionals',
+    'Executives',
   )
+  expect(
+    groupOf(
+      unclassifiedJob({
+        eeoCategory: 'Senior Administrators',
+        oaSalaryGrade: 'EXEC',
+      }),
+    ),
+  ).toBe('Executives')
+  expect(
+    groupOf(unclassifiedJob({ eeoCategory: null, oaSalaryGrade: 'EXEC' })),
+  ).toBe('Executives')
+  expect(
+    groupOf(unclassifiedJob({ jobType: 'Overload', oaSalaryGrade: 'EXEC' })),
+  ).toBe('Overloads')
+  expect(
+    groupOf(unclassifiedJob({ eeoCategory: 'Senior Administrators' })),
+  ).toBe('Admins and professionals')
   expect(groupOf(unclassifiedJob({ eeoCategory: 'Protective Service' }))).toBe(
     'Unclassified staff',
   )

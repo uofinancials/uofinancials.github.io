@@ -1,6 +1,11 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { buildTrends, medianRateCents, type TrendFilter } from './trends'
+import {
+  buildTrends,
+  EXEC_OTHER_CATEGORY,
+  medianRateCents,
+  type TrendFilter,
+} from './trends'
 
 const ALL: TrendFilter = { kind: 'all', group: null, from: 2014, to: 2025 }
 const temp = classifiedJob({
@@ -110,4 +115,34 @@ test('an opened group lines up its published categories; kind and range filter f
   expect(opened.total.map((point) => point.fteHundredths)).toEqual([100, 200])
   expect(buildTrends(years, { ...ALL, from: 2018 }).total).toHaveLength(1)
   expect(buildTrends(years, { ...ALL, kind: 'classified' }).series).toEqual([])
+})
+
+test('opened Executives puts jobs there by the EXEC grade alone on one line', () => {
+  const opened = buildTrends(
+    [
+      {
+        year: 2018,
+        records: [
+          unclassifiedJob({ eeoCategory: 'Executive Admins' }),
+          unclassifiedJob({
+            eeoCategory: 'Executive Admins',
+            oaSalaryGrade: 'EXEC',
+          }),
+          unclassifiedJob({
+            eeoCategory: 'Senior Administrators',
+            oaSalaryGrade: 'EXEC',
+          }),
+          unclassifiedJob({ eeoCategory: null, oaSalaryGrade: 'EXEC' }),
+          unclassifiedJob({ eeoCategory: 'Senior Administrators' }),
+        ],
+      },
+    ],
+    { ...ALL, group: 'Executives' },
+  )
+  expect(
+    opened.series.map(({ key, points }) => [key, points[0]?.jobs]),
+  ).toEqual([
+    [EXEC_OTHER_CATEGORY, 2],
+    ['Executive Admins', 2],
+  ])
 })
