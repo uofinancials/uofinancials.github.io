@@ -96,7 +96,6 @@ export const RATES: OpeRates = {
   persRepayment: [],
 }
 
-/** A scope that reaches every job. */
 export const ANY_SCOPE: ScenarioScope = {
   group: null,
   kind: 'all',

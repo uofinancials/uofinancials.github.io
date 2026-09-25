@@ -20,7 +20,6 @@ export type Savings = {
   egCents: number
 }
 
-/** Basis points in a whole. */
 export const BASIS = 10_000
 export const BASIS_BIG = 10_000n
 

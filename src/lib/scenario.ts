@@ -43,7 +43,6 @@ export type RuleResult = { kind: 'census'; savings: Savings } | FreezeResult
 export type ScenarioResult = {
   /** The census's jobs a scenario can change, and what they cost. */
   base: Savings
-  /** One per rule, in order. */
   rules: RuleResult[]
   /** The census rules' savings summed: the base less what remains before any freeze. */
   total: Savings
@@ -112,11 +111,7 @@ function sumSavings(parts: Savings[], rates: Rates): Savings {
   return total
 }
 
-/**
- * Runs the rules in order over one census. `opeFiscalYear` picks the OPE
- * rates, usually the fiscal year the census falls in; freezes take their rates
- * from `history` and lay their savings over `projectedYears`.
- */
+/** Runs the rules in order over one census; freezes take their rates from `history` and lay their savings over `projectedYears`. */
 export function runScenario(options: {
   census: DepartmentCensus
   rules: Rule[]
