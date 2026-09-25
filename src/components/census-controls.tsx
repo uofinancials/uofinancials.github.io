@@ -16,6 +16,31 @@ const TERM_OPTIONS: [string, string][] = [
   ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
 ]
 
+function PlaceFilter({
+  place,
+  year,
+  onChange,
+}: {
+  place: Place
+  year: number
+  onChange: (search: CensusSearch) => void
+}) {
+  if (place.scope === 'unknown') {
+    return (
+      <p>
+        No jobs for code {place.code} in Fall {year}.
+      </p>
+    )
+  }
+  if (place.scope !== 'department') return null
+  return (
+    <RemovableFilter
+      text={`Department: ${place.name} (${place.code})`}
+      onRemove={() => onChange({ dept: undefined })}
+    />
+  )
+}
+
 /** The census job filters' controls; each change is a new URL search. */
 export function CensusControls({
   view,
@@ -82,12 +107,7 @@ export function CensusControls({
           }
         />
       </div>
-      {place.scope === 'department' && (
-        <RemovableFilter
-          text={`Department: ${place.name} (${place.code})`}
-          onRemove={() => onChange({ dept: undefined })}
-        />
-      )}
+      <PlaceFilter place={place} year={view.year} onChange={onChange} />
       {positionName !== null && (
         <RemovableFilter
           text={`Class or rank: ${positionName}`}

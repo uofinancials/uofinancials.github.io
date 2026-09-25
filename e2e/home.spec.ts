@@ -12,7 +12,6 @@ for (const path of [
   '/trends',
   '/departments',
   '/departments/223100',
-  '/salaries',
   '/people',
   '/people/No such name',
   '/pay-changes',

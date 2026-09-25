@@ -78,7 +78,6 @@ function SummaryChart({
           distribution={matching.distribution}
           label={`Matching jobs by salary rate, Fall ${view.year}`}
           onSelectBin={onSelectBin}
-          isCollapsed
         />
       ) : (
         <GroupJobsFigure
@@ -204,11 +203,6 @@ export function PeoplePage() {
         positionName={census.positionName}
         onChange={(patch) => change(patch)}
       />
-      {census.place.scope === 'unknown' && (
-        <p>
-          No jobs for code {census.place.code} in Fall {view.year}.
-        </p>
-      )}
       <p className="font-medium">
         {formatCount(matching.jobs.length)} jobs,{' '}
         {formatCount(matching.nameCount)} names match
