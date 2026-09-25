@@ -5,6 +5,7 @@ import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 /** Each figure is `null` when the line has no job it applies to that year. */
 export type TrendPoint = {
   year: number
+  jobs: number
   /** Excludes classified temporaries. */
   spendCents: number | null
   fteHundredths: number | null
@@ -37,6 +38,7 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
   const paid = records.filter((record) => !isClassifiedTemp(record))
   return {
     year,
+    jobs: records.length,
     spendCents: paid.length === 0 ? null : summarize(paid).spendCents,
     fteHundredths:
       records.length === 0 ? null : summarize(records).fteHundredths,

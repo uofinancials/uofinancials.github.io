@@ -44,6 +44,7 @@ test('a metric keeps only the series with a value for it', () => {
   const point = {
     year: 2025,
     spendCents: null,
+    jobs: 1,
     fteHundredths: 10,
     medianRateCents: null,
   }

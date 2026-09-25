@@ -8,8 +8,10 @@ import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
 import { createAreaAssigner, HAND_AREAS } from '../src/lib/areas.ts'
 import { departmentBudget } from '../src/lib/department-budget.ts'
+import { departmentYears } from '../src/lib/department-jobs.ts'
 import {
   buildCensusOverview,
+  fiscalYearForCensus,
   isClassifiedTemp,
   summarize,
 } from '../src/lib/overview.ts'
@@ -252,5 +254,74 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       )
       expect(areaSum).toBe(totalExpenditureCents(budget.rows))
     }
+  },
+)
+
+function readDepartmentCensuses() {
+  const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+  const budgets = new Map(
+    manifest.budget.map(({ fiscalYear }) => [
+      fiscalYear,
+      budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+    ]),
+  )
+  return manifest.fall.map(({ year, censusDate }) => {
+    const fiscalYear = fiscalYearForCensus(manifest, censusDate)
+    return {
+      year,
+      records: fallYearSchema.parse(
+        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
+      ).records,
+      fiscalYear,
+      orgs: budgets.get(fiscalYear)?.orgs ?? {},
+    }
+  })
+}
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'Fall 2025 department jobs match an independent computation, and each census places every job in one area or none',
+  () => {
+    const censuses = readDepartmentCensuses()
+    const latest = (code: string) => {
+      const records =
+        departmentYears(code, censuses).years.at(-1)?.records ?? []
+      const paid = records.filter((record) => !isClassifiedTemp(record))
+      return [
+        records.length,
+        summarize(records).fteHundredths,
+        summarize(paid).spendCents,
+      ]
+    }
+    expect(latest('229100')).toEqual([122, 10_872, 782_676_880])
+    expect(latest('223100')).toEqual([63, 5_859, 538_535_028])
+    for (const census of censuses) {
+      const areas = Object.entries(census.orgs)
+        .filter(([, org]) => org.level === 3)
+        .map(([code]) => departmentYears(code, [census]))
+      const placed = areas.reduce(
+        (sum, { years }) => sum + (years[0]?.records.length ?? 0),
+        0,
+      )
+      const unassigned = areas[0]?.placements?.[0]?.unassignedSiteWide ?? 0
+      expect(placed + unassigned, `Fall ${census.year}`).toBe(
+        census.records.length,
+      )
+    }
+    const arts = departmentYears('222000', censuses)
+    expect(arts.placements?.at(-1)).toMatchObject({
+      year: 2025,
+      fiscalYear: 2026,
+    })
+    expect(arts.placements?.[0]).toMatchObject({ year: 2014, fiscalYear: 2021 })
+    const fall2025 = censuses.find(({ year }) => year === 2025)
+    if (!fall2025) throw new Error('No Fall 2025 census')
+    const overviewArts = buildCensusOverview(
+      fall2025,
+      fall2025.orgs,
+    ).byArea.find(({ key }) => key === 'Arts & Sciences, College of')
+    const artsPaid = (arts.years.at(-1)?.records ?? []).filter(
+      (record) => !isClassifiedTemp(record),
+    )
+    expect(summarize(artsPaid)).toEqual(overviewArts?.totals)
   },
 )
