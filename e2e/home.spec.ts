@@ -497,6 +497,15 @@ test('the people list filters, sorts, and pages one census, and its chart sets t
   await page.getByRole('button', { name: '$50,000 to $59,999' }).click()
   await expect(page).toHaveURL(/min=50000&max=59999/)
   await expect(main).toContainText('Rate to $59,999')
+  await expect(
+    page.getByRole('columnheader', { name: 'EEO category' }),
+  ).toHaveCount(0)
+  await page.getByText('Columns', { exact: true }).click()
+  await page.getByRole('checkbox', { name: 'EEO category' }).check()
+  await expect(page).toHaveURL(/cols=/)
+  await expect(
+    page.getByRole('columnheader', { name: 'EEO category' }),
+  ).toBeVisible()
   await page.getByRole('link', { name: 'By group' }).click()
   await expect(page).toHaveURL(/chart=groups/)
   await expect(

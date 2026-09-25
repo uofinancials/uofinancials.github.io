@@ -57,7 +57,7 @@ function SortHeader({
   )
 }
 
-/** One page of jobs, a row each, named and linked to the person; each sortable header sorts by its column. */
+/** One page of jobs, a row each, named and linked to the person, in the view's columns; each sortable header sorts by its column. */
 export function PeopleTable({
   rows,
   view,
@@ -67,12 +67,15 @@ export function PeopleTable({
   view: PeopleView
   onSort: (sort: PeopleSort, dir: SortDirection) => void
 }) {
+  const fields = LIST_FIELDS.filter(({ column }) =>
+    view.columns.includes(column),
+  )
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <SortHeader label="Name" sort="name" view={view} onSort={onSort} />
-          {LIST_FIELDS.map(({ label, sort, isNumber }) => (
+          {fields.map(({ label, sort, isNumber }) => (
             <SortHeader
               key={label}
               label={label}
@@ -100,7 +103,7 @@ export function PeopleTable({
                 {record.name}
               </Link>
             </TableHead>
-            {LIST_FIELDS.map(({ label, value, isNumber }) => (
+            {fields.map(({ label, value, isNumber }) => (
               <TableCell
                 key={label}
                 className={

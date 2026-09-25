@@ -64,10 +64,10 @@ flowchart LR
   the stacked bar chart, the trends table and controls, the department budget
   and jobs sections, the salaries controls, the salary distribution figure, the
   removable filter, the pay changes controls, lines, counts table, and
-  distribution, the people list's controls, table, sort controls, and group
-  figure, the person view with its computed figures, rate chart, records table,
-  and job history, and the hooks and query that load one census's placed jobs,
-  the people list's matching jobs, and the name index.
+  distribution, the people list's controls, table, sort controls, column picker,
+  and group figure, the person view with its computed figures, rate chart,
+  records table, and job history, and the hooks and query that load one census's
+  placed jobs, the people list's matching jobs, and the name index.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.

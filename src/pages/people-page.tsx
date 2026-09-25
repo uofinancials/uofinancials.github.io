@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { ColumnPicker } from '@/components/column-picker'
 import { GroupJobsFigure } from '@/components/group-jobs-figure'
 import { PeopleControls } from '@/components/people-controls'
 import { peopleIndexQuery } from '@/components/people-index-query'
@@ -10,9 +11,11 @@ import { SortControls } from '@/components/sort-controls'
 import { SourceCitation } from '@/components/source-citation'
 import { tabLinkClass } from '@/components/tab-link-class'
 import { type Matching, usePeople } from '@/components/use-people'
+import type { FallRecord } from '@/data/fall'
 import { formatCount } from '@/lib/format'
 import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people-list'
 import {
+  type ListColumn,
   PEOPLE_CHARTS,
   type PeopleChart,
   type PeopleSearch,
@@ -143,10 +146,61 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
   )
 }
 
+function JobsSection({
+  sorted,
+  view,
+  onSort,
+}: {
+  sorted: FallRecord[]
+  view: PeopleView
+  onSort: (sort: PeopleSort, dir: SortDirection) => void
+}) {
+  const navigate = useNavigate({ from: '/people' })
+  const shown = pageOf(sorted, view.page)
+  const handleColumns = (cols: ListColumn[]) =>
+    navigate({ search: (previous) => ({ ...previous, cols }), replace: true })
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
+        <SortControls view={view} onSort={onSort} />
+        <ColumnPicker columns={view.columns} onChange={handleColumns} />
+      </div>
+      <PeopleTable rows={shown.rows} view={view} onSort={onSort} />
+      <Pager page={shown.page} pageCount={shown.pageCount} />
+    </section>
+  )
+}
+
+function SalariesLink({
+  search,
+  year,
+}: {
+  search: PeopleSearch
+  year: number
+}) {
+  return (
+    <p className="text-sm">
+      <Link
+        className="underline"
+        to="/salaries"
+        search={{
+          year: search.year,
+          group: search.group,
+          kind: search.kind,
+          term: search.term,
+          dept: search.dept,
+          position: search.position,
+        }}
+      >
+        Salary distribution without names, Fall {year}
+      </Link>
+    </p>
+  )
+}
+
 export function PeoplePage() {
   const navigate = useNavigate({ from: '/people' })
   const { search, years, view, census, matching } = usePeople()
-  const shown = pageOf(matching.sorted, view.page)
   const change = (patch: PeopleSearch, replace = false) =>
     navigate({
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
@@ -190,28 +244,9 @@ export function PeoplePage() {
         <OtherCensusNames q={view.q} year={view.year} />
       )}
       {matching.jobs.length > 0 && (
-        <section className="space-y-3">
-          <SortControls view={view} onSort={handleSort} />
-          <PeopleTable rows={shown.rows} view={view} onSort={handleSort} />
-          <Pager page={shown.page} pageCount={shown.pageCount} />
-        </section>
+        <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
       )}
-      <p className="text-sm">
-        <Link
-          className="underline"
-          to="/salaries"
-          search={{
-            year: search.year,
-            group: search.group,
-            kind: search.kind,
-            term: search.term,
-            dept: search.dept,
-            position: search.position,
-          }}
-        >
-          Salary distribution without names, Fall {view.year}
-        </Link>
-      </p>
+      <SalariesLink search={search} year={view.year} />
       <SourceCitation
         source={{ kind: 'fall', year: view.year }}
         computed={COMPUTED}

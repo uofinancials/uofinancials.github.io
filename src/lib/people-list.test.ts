@@ -47,7 +47,9 @@ test('the view defaults to the latest census, name order, page 1, and the rates 
     dir: 'asc',
     page: 1,
     chart: 'rates',
+    columns: ['title', 'dept', 'rate', 'appt'],
   })
+  expect(view({ cols: ['category'] }).columns).toEqual(['category'])
 })
 
 test('the rate range is in whole dollars, both ends inclusive', () => {

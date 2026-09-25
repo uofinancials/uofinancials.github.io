@@ -24,6 +24,26 @@ export const SORT_LABELS: Record<PeopleSort, string> = {
   category: 'EEO category',
 }
 
+/** The people list's optional columns, in table order; the name is always shown. */
+export const LIST_COLUMNS = [
+  'title',
+  'position',
+  'dept',
+  'rate',
+  'appt',
+  'term',
+  'type',
+  'category',
+] as const
+export type ListColumn = (typeof LIST_COLUMNS)[number]
+
+export const DEFAULT_COLUMNS: readonly ListColumn[] = [
+  'title',
+  'dept',
+  'rate',
+  'appt',
+]
+
 export const SORT_DIRECTIONS = ['asc', 'desc'] as const
 export type SortDirection = (typeof SORT_DIRECTIONS)[number]
 
@@ -33,7 +53,7 @@ export type PeopleChart = (typeof PEOPLE_CHARTS)[number]
 const text = z.string().min(1).optional().catch(undefined)
 const wholeDollars = z.number().int().nonnegative().optional().catch(undefined)
 
-/** The people list's URL search params: the salaries filters, plus name, title, category, rate range, sort, page, and chart; `name` is only read to redirect an old person link. */
+/** The people list's URL search params: the salaries filters, plus name, title, category, rate range, sort, page, chart, and shown columns; `name` is only read to redirect an old person link. */
 export const peopleSearchSchema = salariesSearchSchema.extend({
   q: text,
   title: text,
@@ -44,6 +64,7 @@ export const peopleSearchSchema = salariesSearchSchema.extend({
   dir: z.enum(SORT_DIRECTIONS).optional().catch(undefined),
   page: z.number().int().positive().optional().catch(undefined),
   chart: z.enum(PEOPLE_CHARTS).optional().catch(undefined),
+  cols: z.array(z.enum(LIST_COLUMNS)).optional().catch(undefined),
   name: text,
 })
 

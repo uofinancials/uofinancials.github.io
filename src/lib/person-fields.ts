@@ -1,6 +1,6 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { formatDollars, NO_VALUE } from './format.ts'
-import type { PeopleSort } from './people-search.ts'
+import type { ListColumn, PeopleSort } from './people-search.ts'
 
 type Field = {
   label: string
@@ -128,15 +128,16 @@ export function historyValues(record: FallRecord): string[] {
 
 /** The people list's columns after the name: each field, the sort it offers if any, and whether it is a number. */
 export const LIST_FIELDS: (Field & {
+  column: ListColumn
   sort: PeopleSort | null
   isNumber: boolean
 })[] = [
-  { ...TITLE, sort: 'title', isNumber: false },
-  { ...CLASS_OR_RANK, sort: 'position', isNumber: false },
-  { ...PAY_DEPARTMENT, sort: 'dept', isNumber: false },
-  { ...RATE, sort: 'rate', isNumber: true },
-  { ...APPOINTMENT, sort: 'appt', isNumber: true },
-  { ...TERM, sort: null, isNumber: false },
-  { ...JOB_TYPE, sort: null, isNumber: false },
-  { ...EEO_CATEGORY, sort: 'category', isNumber: false },
+  { ...TITLE, column: 'title', sort: 'title', isNumber: false },
+  { ...CLASS_OR_RANK, column: 'position', sort: 'position', isNumber: false },
+  { ...PAY_DEPARTMENT, column: 'dept', sort: 'dept', isNumber: false },
+  { ...RATE, column: 'rate', sort: 'rate', isNumber: true },
+  { ...APPOINTMENT, column: 'appt', sort: 'appt', isNumber: true },
+  { ...TERM, column: 'term', sort: null, isNumber: false },
+  { ...JOB_TYPE, column: 'type', sort: null, isNumber: false },
+  { ...EEO_CATEGORY, column: 'category', sort: 'category', isNumber: false },
 ]

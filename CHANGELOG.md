@@ -48,10 +48,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   same name in the next year when each year lists exactly one primary job for it
   and both are in the same pay department. The links are computed, not published
   by UO; the committed 2014-2025 data (retrieved 2026-09-24) yields 52,880.
-- Pages share one layout: a header with the site name and navigation, and the
-  footer with the independence notice and the error report link. Paths the site
-  does not have show a not-found page inside that layout, and every path loads
-  directly on GitHub Pages.
+- Pages share one layout, up to 1,200 pixels wide: a header with the site name
+  and navigation, and the footer with the independence notice and the error
+  report link. Paths the site does not have show a not-found page inside that
+  layout, and every path loads directly on GitHub Pages.
 - A Sources page (`/sources`) listing each Fall Census report, budget workbook,
   and OPE rate page the site uses - with its retrieval date, SHA-256, and
   counts - and every document the raise terms cite.
@@ -138,6 +138,8 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     group;
   - sorting by name, title, class or rank, pay department, rate, appointment,
     EEO category, or group, either way, ties by name;
+  - a column selector, with class or rank, term, job type, and EEO category
+    hidden by default;
   - a name with no job in the census listed with the censuses it appears in.
 - The list is kept in its link, and the page asks search engines not to index
   it. Records marked `possibleStudent` are shown as published. The Salaries and

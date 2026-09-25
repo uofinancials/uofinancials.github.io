@@ -1,10 +1,12 @@
 import type { FallRecord } from '../data/fall.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from './format.ts'
-import type {
-  PeopleChart,
-  PeopleSearch,
-  PeopleSort,
-  SortDirection,
+import {
+  DEFAULT_COLUMNS,
+  type ListColumn,
+  type PeopleChart,
+  type PeopleSearch,
+  type PeopleSort,
+  type SortDirection,
 } from './people-search.ts'
 import { titleOf } from './person-fields.ts'
 import { hasEveryWord, queryWords } from './person-lookup.ts'
@@ -32,6 +34,7 @@ export type PeopleView = SalariesView & {
   dir: SortDirection
   page: number
   chart: PeopleChart
+  columns: readonly ListColumn[]
 }
 
 /** The view a search asks for; a census not listed falls back to the latest. */
@@ -51,6 +54,7 @@ export function resolvePeopleView(
     dir: search.dir ?? 'asc',
     page: search.page ?? 1,
     chart: search.chart ?? 'rates',
+    columns: search.cols ?? DEFAULT_COLUMNS,
   }
 }
 
