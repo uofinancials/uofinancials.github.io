@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # Tooling
+.cache
 .claude
 test-results
 playwright-report

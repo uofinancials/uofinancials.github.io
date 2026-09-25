@@ -1,0 +1,328 @@
+{
+  "fall": [
+    {
+      "year": 2014,
+      "censusDate": "2014-10-31",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified103114.pdf",
+          "sha256": "88671a5aecc82ab3dfde084f4f6874681e48529f895aebf5b67f7dd011ea7c73",
+          "pages": 342,
+          "extractDate": "2014-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 2043,
+          "possibleStudents": 16
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified103114.pdf",
+          "sha256": "66defdf8d6509bc014ba8a580ae655ce048b5a54806cddefac2c06c2b3d892c9",
+          "pages": 815,
+          "extractDate": "2014-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 4068,
+          "possibleStudents": 5
+        }
+      ]
+    },
+    {
+      "year": 2015,
+      "censusDate": "2015-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified110115.pdf",
+          "sha256": "bd83183e3ff91ff57e62750731bc33e383829a6e043b98147b216a2e98293d1e",
+          "pages": 394,
+          "extractDate": "2015-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 2358,
+          "possibleStudents": 20
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified110115.pdf",
+          "sha256": "1e313faf71fade87b4c35cfa3169d3afe67acb8a92d88e85113b195fa496dc06",
+          "pages": 862,
+          "extractDate": "2015-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 4305,
+          "possibleStudents": 8
+        }
+      ]
+    },
+    {
+      "year": 2016,
+      "censusDate": "2016-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified110116.pdf",
+          "sha256": "f246b552b4fb74c0f8d29e0c7b41a02b2b637c6f4937d03d68eb3b5bfb99768e",
+          "pages": 390,
+          "extractDate": "2016-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 2333,
+          "possibleStudents": 22
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified110116.pdf",
+          "sha256": "54d8b2116ca3903eff06420d6578b32be2260ddfc11a225864b5a9d712566e32",
+          "pages": 843,
+          "extractDate": "2016-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 4209,
+          "possibleStudents": 8
+        }
+      ]
+    },
+    {
+      "year": 2017,
+      "censusDate": "2017-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified_110117.pdf",
+          "sha256": "ec3e4331cba2bcc023489c3c9cca5df2a0d2006a61bb5cb32bdbccb96c61da4b",
+          "pages": 411,
+          "extractDate": "2017-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 2456,
+          "possibleStudents": 14
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified_110117.pdf",
+          "sha256": "a5cd45dab52df1be54f3dbf32e61cf3e6060cae4be6acd48fc0fa285c323b48d",
+          "pages": 831,
+          "extractDate": "2017-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 4147,
+          "possibleStudents": 3
+        }
+      ]
+    },
+    {
+      "year": 2018,
+      "censusDate": "2018-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified 110118.pdf",
+          "sha256": "16659518936b795e889b3b759222f469b1399a1105e594787763b93b6c24cf9e",
+          "pages": 443,
+          "extractDate": "2018-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 2647,
+          "possibleStudents": 14
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified 110118.pdf",
+          "sha256": "c9c63cd2ba990c6daf8fd8e9a342b04e201c0229f3dea968e49e49fd003430e0",
+          "pages": 851,
+          "extractDate": "2018-11-01",
+          "retrievedOn": "2026-09-24",
+          "records": 4245,
+          "possibleStudents": 2
+        }
+      ]
+    },
+    {
+      "year": 2019,
+      "censusDate": "2019-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified 110119.pdf",
+          "sha256": "8f4754df04ee0f6854c65dbfac799948757d7b6a120baeb1d23e61a5dfceb35a",
+          "pages": 439,
+          "extractDate": "2019-11-04",
+          "retrievedOn": "2026-09-24",
+          "records": 2627,
+          "possibleStudents": 13
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified 110119.pdf",
+          "sha256": "92373a46dfff9254960a1654124bd8b25c540f9a9f8c1cbc0effa7f554289487",
+          "pages": 844,
+          "extractDate": "2019-11-04",
+          "retrievedOn": "2026-09-24",
+          "records": 4211,
+          "possibleStudents": 2
+        }
+      ]
+    },
+    {
+      "year": 2020,
+      "censusDate": "2020-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified_110120.pdf",
+          "sha256": "88741be4b89fa62b55f73eb48697aad21f2bd8c20389bfa1e6d79332952f9eb8",
+          "pages": 426,
+          "extractDate": "2020-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 2545,
+          "possibleStudents": 12
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified_110120.pdf",
+          "sha256": "5e36050733a21c32349edeaf92ec36c9877156fd981274be05babba206b4f985",
+          "pages": 829,
+          "extractDate": "2020-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 4136,
+          "possibleStudents": 1
+        }
+      ]
+    },
+    {
+      "year": 2021,
+      "censusDate": "2021-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified_110121.pdf",
+          "sha256": "027c903340c3690484ee2cee8951cd3b2e560293ce78e7bc195905e2221a41e5",
+          "pages": 328,
+          "extractDate": "2021-11-02",
+          "retrievedOn": "2026-09-24",
+          "records": 1962,
+          "possibleStudents": 7
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified_110121.pdf",
+          "sha256": "0a7d028fc125964dd3917988dee3a8f1198e7ab6e691494d9693816345bcddf9",
+          "pages": 838,
+          "extractDate": "2021-11-02",
+          "retrievedOn": "2026-09-24",
+          "records": 4183,
+          "possibleStudents": 8
+        }
+      ]
+    },
+    {
+      "year": 2022,
+      "censusDate": "2022-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified 110122.pdf",
+          "sha256": "44ee48f67a7c96577e0edfef186843800de24990f42ce2da687d9397b84bf1bb",
+          "pages": 362,
+          "extractDate": "2022-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 2165,
+          "possibleStudents": 0
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified 110122.pdf",
+          "sha256": "0882dd48a662e9d5b94a4f66f1227226c86683fd0b8be4076e53a9a8b486f854",
+          "pages": 862,
+          "extractDate": "2022-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 4285,
+          "possibleStudents": 2
+        }
+      ]
+    },
+    {
+      "year": 2023,
+      "censusDate": "2023-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified 110123.pdf",
+          "sha256": "8ed9584333e7f032d3257af76a149d9c763952e5f85feb68fc0f5d908de6f798",
+          "pages": 408,
+          "extractDate": "2023-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 2441,
+          "possibleStudents": 1
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified 110123.pdf",
+          "sha256": "89cb72343c2aa0da27bcf88a820f586542a0499069f495a917eb8425f114fa01",
+          "pages": 907,
+          "extractDate": "2023-11-03",
+          "retrievedOn": "2026-09-24",
+          "records": 4502,
+          "possibleStudents": 2
+        }
+      ]
+    },
+    {
+      "year": 2024,
+      "censusDate": "2024-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified 110124.pdf",
+          "sha256": "0c367dab3062558030018bcf09c13f139264ef07dea7daa204872ec6ee8fb583",
+          "pages": 393,
+          "extractDate": "2024-11-06",
+          "retrievedOn": "2026-09-24",
+          "records": 2352,
+          "possibleStudents": 0
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified 110124.pdf",
+          "sha256": "54a39d063cde3061613f69719b2c6c2e8569adb32c98266aa007a2870685e2d9",
+          "pages": 940,
+          "extractDate": "2024-11-06",
+          "retrievedOn": "2026-09-24",
+          "records": 4632,
+          "possibleStudents": 2
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "censusDate": "2025-11-01",
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "Classified 110125.pdf",
+          "sha256": "3b932b54944fbe773cdddef7670200c8841f9b476acff44cebd771d24fac56ec",
+          "pages": 397,
+          "extractDate": "2025-11-05",
+          "retrievedOn": "2026-09-24",
+          "records": 2375,
+          "possibleStudents": 0
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "Unclassified 110125.pdf",
+          "sha256": "132628b635319192158153b419b6cf923dba7e06ee2726e93c4947fb732c1e83",
+          "pages": 917,
+          "extractDate": "2025-11-05",
+          "retrievedOn": "2026-09-24",
+          "records": 4465,
+          "possibleStudents": 2
+        }
+      ]
+    }
+  ]
+}
