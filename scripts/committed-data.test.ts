@@ -8,10 +8,12 @@ import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
 import { createAreaAssigner, HAND_AREAS } from '../src/lib/areas.ts'
 import { departmentBudget } from '../src/lib/department-budget.ts'
-import { departmentYears } from '../src/lib/department-jobs.ts'
+import {
+  departmentYears,
+  toDepartmentCensuses,
+} from '../src/lib/department-jobs.ts'
 import {
   buildCensusOverview,
-  fiscalYearForCensus,
   isClassifiedTemp,
   summarize,
 } from '../src/lib/overview.ts'
@@ -259,23 +261,13 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 
 function readDepartmentCensuses() {
   const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-  const budgets = new Map(
-    manifest.budget.map(({ fiscalYear }) => [
-      fiscalYear,
-      budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
-    ]),
+  const budgets = manifest.budget.map(({ fiscalYear }) =>
+    budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
   )
-  return manifest.fall.map(({ year, censusDate }) => {
-    const fiscalYear = fiscalYearForCensus(manifest, censusDate)
-    return {
-      year,
-      records: fallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-      ).records,
-      fiscalYear,
-      orgs: budgets.get(fiscalYear)?.orgs ?? {},
-    }
-  })
+  const falls = manifest.fall.map(({ year }) =>
+    fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
+  )
+  return toDepartmentCensuses(manifest, falls, budgets)
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(

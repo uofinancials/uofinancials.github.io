@@ -10,7 +10,7 @@ const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
 
-export type ChartSeries = { key: string; values: (number | null)[] }
+type ChartSeries = { key: string; values: (number | null)[] }
 
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
 function lineStyle(index: number) {

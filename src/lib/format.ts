@@ -49,3 +49,14 @@ export function formatFte(hundredths: number): string {
 export function formatShare(part: number, whole: number): string {
   return SHARE.format(whole === 0 ? 0 : part / whole)
 }
+
+/** Shown where a table has no figure. */
+export const NO_VALUE = '–'
+
+/** Formats a figure that may be missing, showing `NO_VALUE` for it. */
+export function formatOrBlank(
+  value: number | null | undefined,
+  format: (value: number) => string,
+): string {
+  return value === null || value === undefined ? NO_VALUE : format(value)
+}

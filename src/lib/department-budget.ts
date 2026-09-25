@@ -4,8 +4,7 @@ import {
   type AccountGroup,
   accountGroupOf,
 } from './account-groups.ts'
-
-const ORG_LEVEL_AREA = 3
+import { ORG_LEVEL_AREA } from './areas.ts'
 
 export const BUDGET_BREAKDOWNS = ['account', 'fund'] as const
 export type BudgetBreakdown = (typeof BUDGET_BREAKDOWNS)[number]
@@ -38,7 +37,8 @@ function unitsOf(code: string, orgs: BudgetYear['orgs']): Set<string> | null {
   )
 }
 
-function sumBy(
+/** Total Expenditure Budget cents per key. */
+export function sumBy(
   rows: BudgetRow[],
   keyOf: (row: BudgetRow) => string,
 ): Map<string, number> {

@@ -11,11 +11,16 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
-import { staffKindSchema } from '@/data/fall'
+import { type StaffKind, staffKindSchema } from '@/data/fall'
 import type { AreaPlacement, ClassRow } from '@/lib/department-jobs'
 import { MIN_JOBS_SHOWN } from '@/lib/department-jobs'
 import type { DepartmentSearch, DepartmentView } from '@/lib/department-search'
-import { formatCount, formatDollars, formatFte } from '@/lib/format'
+import {
+  formatCount,
+  formatDollars,
+  formatFte,
+  formatOrBlank,
+} from '@/lib/format'
 import { SPEND_METHOD } from '@/lib/overview'
 import type { Trends } from '@/lib/trends'
 import {
@@ -25,7 +30,7 @@ import {
 } from '@/lib/trends-search'
 
 const NUMBER_CELL = 'text-right tabular-nums'
-const NO_VALUE = '–'
+const STAFF_KINDS = ['unclassified', 'classified'] as const
 const KIND_TITLES = {
   unclassified: 'Unclassified jobs by rank',
   classified: 'Classified jobs by position class',
@@ -34,17 +39,7 @@ const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, t
 const AREA_NOTE =
   'An area’s jobs are those whose pay department the site places in it: by UO’s budget hierarchy for the census’s fiscal year, by a department-name prefix every placed department shares, or by hand. The table shows how many were placed each way.'
 
-function money(value: number | null) {
-  return value === null ? NO_VALUE : formatDollars(value)
-}
-
-function ClassTable({
-  kind,
-  rows,
-}: {
-  kind: ClassRow['kind']
-  rows: ClassRow[]
-}) {
+function ClassTable({ kind, rows }: { kind: StaffKind; rows: ClassRow[] }) {
   return (
     <Table>
       <caption className="mb-2 caption-top text-left font-medium">
@@ -79,13 +74,13 @@ function ClassTable({
               {formatCount(row.jobs)}
             </TableCell>
             <TableCell className={NUMBER_CELL}>
-              {formatFte(row.fteHundredths)}
+              {formatOrBlank(row.fteHundredths, formatFte)}
             </TableCell>
             <TableCell className={NUMBER_CELL}>
-              {money(row.spendCents)}
+              {formatOrBlank(row.spendCents, formatDollars)}
             </TableCell>
             <TableCell className={NUMBER_CELL}>
-              {money(row.medianRateCents)}
+              {formatOrBlank(row.medianRateCents, formatDollars)}
             </TableCell>
           </TableRow>
         ))}
@@ -154,7 +149,7 @@ export function DepartmentJobsSection({
   onChange,
 }: {
   trends: Trends
-  classRows: ClassRow[]
+  classRows: Record<StaffKind, ClassRow[]>
   placements: AreaPlacement[] | null
   view: DepartmentView
   yearsWithJobs: number[]
@@ -193,8 +188,8 @@ export function DepartmentJobsSection({
             options={yearsWithJobs.map((year) => [String(year), String(year)])}
             onSelect={(value) => onChange({ year: Number(value) })}
           />
-          {(['unclassified', 'classified'] as const).map((kind) => {
-            const rows = classRows.filter((row) => row.kind === kind)
+          {STAFF_KINDS.map((kind) => {
+            const rows = classRows[kind]
             return rows.length === 0 ? null : (
               <ClassTable key={kind} kind={kind} rows={rows} />
             )

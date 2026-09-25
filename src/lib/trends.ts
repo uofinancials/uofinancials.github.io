@@ -34,10 +34,10 @@ export function medianRateCents(rates: number[]): number | null {
   return Math.round((lower + upper) / 2)
 }
 
-function measure(year: number, records: FallRecord[]): TrendPoint {
+/** Jobs, spend and FTE, and the median rate of a set of jobs; each figure `null` when no job it applies to is in the set. */
+export function measureJobs(records: FallRecord[]): Omit<TrendPoint, 'year'> {
   const paid = records.filter((record) => !isClassifiedTemp(record))
   return {
-    year,
     jobs: records.length,
     spendCents: paid.length === 0 ? null : summarize(paid).spendCents,
     fteHundredths:
@@ -48,6 +48,10 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
         .map((record) => record.annualSalaryRateCents),
     ),
   }
+}
+
+function measure(year: number, records: FallRecord[]): TrendPoint {
+  return { year, ...measureJobs(records) }
 }
 
 const GROUP_ORDER: readonly string[] = TREND_GROUPS

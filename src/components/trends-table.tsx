@@ -6,11 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { formatOrBlank } from '@/lib/format'
 import type { TrendPoint, TrendSeries } from '@/lib/trends'
 import { METRIC_INFO, type TrendMetric } from '@/lib/trends-search'
 
 const NUMBER_CELL = 'text-right tabular-nums'
-const NO_VALUE = '–'
 
 /** The selected metric by census year, a column per series and one for their total. */
 export function TrendsTable({
@@ -23,10 +23,8 @@ export function TrendsTable({
   metric: TrendMetric
 }) {
   const { pick, format } = METRIC_INFO[metric]
-  const cell = (point: TrendPoint | undefined) => {
-    const value = point ? pick(point) : null
-    return value === null ? NO_VALUE : format(value)
-  }
+  const cell = (point: TrendPoint | undefined) =>
+    formatOrBlank(point ? pick(point) : null, format)
   return (
     <Table>
       <TableHeader>

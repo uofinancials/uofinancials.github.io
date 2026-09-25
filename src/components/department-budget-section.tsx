@@ -11,11 +11,14 @@ import {
 } from '@/components/ui/table'
 import type { BudgetBreakdown, DepartmentBudget } from '@/lib/department-budget'
 import { budgetYearLabel } from '@/lib/department-search'
-import { formatCompactDollars, formatDollars } from '@/lib/format'
+import {
+  formatCompactDollars,
+  formatDollars,
+  formatOrBlank,
+} from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const NUMBER_CELL = 'text-right tabular-nums'
-const NO_VALUE = '–'
 const BREAKDOWN_OPTIONS = [
   ['account', 'Account group'],
   ['fund', 'Fund type'],
@@ -24,10 +27,6 @@ const BUDGET_NOTE =
   'Figures are UO’s Total Expenditure Budget as published: a plan, not spending. They include budget reserves, internal sales reimbursements, and transfers, and exclude sponsored research, plant, loan, and agency funds.'
 const COMPUTED =
   'each figure sums the published rows for the unit, or for every unit the area lists that year, over funds and posting periods. Account groups are this site’s grouping of UO’s account types; the table lists the types in each.'
-
-function cell(value: number | null | undefined) {
-  return value === null || value === undefined ? NO_VALUE : formatDollars(value)
-}
 
 type BudgetTableRow = {
   key: string
@@ -41,21 +40,25 @@ function tableRows(
   budget: DepartmentBudget,
   breakdown: BudgetBreakdown,
 ): BudgetTableRow[] {
-  return budget.series.flatMap(({ key, values }) => {
-    const row = { key, label: key, values, isGroup: breakdown === 'account' }
-    if (breakdown === 'fund') return [row]
-    return [
-      row,
-      ...budget.accountTypes
-        .filter(({ group }) => group === key)
-        .map(({ accountType, name, values: typeValues }) => ({
-          key: accountType,
-          label: `${accountType} ${name}`,
-          values: typeValues,
-          isGroup: false,
-        })),
-    ]
-  })
+  if (breakdown === 'fund') {
+    return budget.series.map(({ key, values }) => ({
+      key,
+      label: key,
+      values,
+      isGroup: false,
+    }))
+  }
+  return budget.series.flatMap(({ key, values }) => [
+    { key, label: key, values, isGroup: true },
+    ...budget.accountTypes
+      .filter(({ group }) => group === key)
+      .map(({ accountType, name, values: typeValues }) => ({
+        key: accountType,
+        label: `${accountType} ${name}`,
+        values: typeValues,
+        isGroup: false,
+      })),
+  ])
 }
 
 function BudgetTable({
@@ -98,7 +101,7 @@ function BudgetTable({
                 key={yearLabel}
                 className={cn(NUMBER_CELL, isGroup && 'font-medium')}
               >
-                {cell(values[index])}
+                {formatOrBlank(values[index], formatDollars)}
               </TableCell>
             ))}
           </TableRow>

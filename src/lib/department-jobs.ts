@@ -1,25 +1,66 @@
 import type { BudgetYear } from '../data/budget.ts'
-import type { FallRecord, StaffKind } from '../data/fall.ts'
-import { type AreaAssignment, createAreaAssigner } from './areas.ts'
-import { isClassifiedTemp, summarize } from './overview.ts'
+import {
+  censusYearOf,
+  type FallRecord,
+  type FallYear,
+  type StaffKind,
+} from '../data/fall.ts'
+import type { Manifest } from '../data/manifest.ts'
+import {
+  type AreaAssignment,
+  createAreaAssigner,
+  ORG_LEVEL_AREA,
+} from './areas.ts'
+import { fiscalYearForCensus } from './overview.ts'
 import {
   buildTrends,
-  medianRateCents,
+  measureJobs,
   type TrendPoint,
   type Trends,
 } from './trends.ts'
 
-const ORG_LEVEL_AREA = 3
-
 /** Rows and points with fewer jobs show no spend or median, so none gives one job's pay. */
 export const MIN_JOBS_SHOWN = 3
 
-/** One census with the budget hierarchy that names its areas. */
+/** One census with the budget hierarchy that names its areas, and the area assigner built from them. */
 export type DepartmentCensus = {
   year: number
   records: FallRecord[]
   fiscalYear: number
   orgs: BudgetYear['orgs']
+  assign: (record: FallRecord) => AreaAssignment
+}
+
+export function toDepartmentCensus(
+  { year, records }: { year: number; records: FallRecord[] },
+  budget: BudgetYear,
+): DepartmentCensus {
+  return {
+    year,
+    records,
+    fiscalYear: budget.fiscalYear,
+    orgs: budget.orgs,
+    assign: createAreaAssigner(records, budget.orgs, year),
+  }
+}
+
+/** Each census joined to the budget year that names its areas. */
+export function toDepartmentCensuses(
+  manifest: Manifest,
+  falls: FallYear[],
+  budgets: BudgetYear[],
+): DepartmentCensus[] {
+  return falls.map(({ censusDate, records }) => {
+    const fiscalYear = fiscalYearForCensus(manifest, censusDate)
+    const budget = budgets.find((listed) => listed.fiscalYear === fiscalYear)
+    if (!budget) {
+      throw new Error(`The budget for fiscal year ${fiscalYear} is not loaded`)
+    }
+    return toDepartmentCensus(
+      { year: censusYearOf(censusDate), records },
+      budget,
+    )
+  })
 }
 
 /** For an area: how its jobs were placed in one census, and the jobs left unplaced site-wide. */
@@ -38,12 +79,14 @@ export type DepartmentYears = {
   placements: AreaPlacement[] | null
 }
 
-export function isAreaCode(code: string, censuses: DepartmentCensus[]) {
-  return censuses.some(({ orgs }) => orgs[code]?.level === ORG_LEVEL_AREA)
+export function isAreaCode(
+  code: string,
+  hierarchies: { orgs: BudgetYear['orgs'] }[],
+): boolean {
+  return hierarchies.some(({ orgs }) => orgs[code]?.level === ORG_LEVEL_AREA)
 }
 
 function placeInArea(code: string, census: DepartmentCensus) {
-  const assign = createAreaAssigner(census.records, census.orgs, census.year)
   const placement: AreaPlacement = {
     year: census.year,
     fiscalYear: census.fiscalYear,
@@ -51,7 +94,7 @@ function placeInArea(code: string, census: DepartmentCensus) {
     unassignedSiteWide: 0,
   }
   const records = census.records.filter((record) => {
-    const assignment = assign(record)
+    const assignment = census.assign(record)
     if (assignment.basis === 'unassigned') {
       placement.unassignedSiteWide += 1
       return false
@@ -60,7 +103,7 @@ function placeInArea(code: string, census: DepartmentCensus) {
     placement.bases[assignment.basis] += 1
     return true
   })
-  return { records, placement }
+  return { year: census.year, records, placement }
 }
 
 /** Each census's jobs for a code: the area's placed jobs, or those whose pay department is the code. */
@@ -74,73 +117,51 @@ export function departmentYears(
     isArea
       ? placeInArea(code, census)
       : {
+          year: census.year,
           records: census.records.filter(
             (record) => record.payDepartment.code === code,
           ),
           placement: null,
         },
   )
-  const years = sorted.map(({ year }, index) => ({
-    year,
-    records: placed[index]?.records ?? [],
-  }))
-  const placements = placed.flatMap(({ placement }) =>
-    placement ? [placement] : [],
-  )
   return {
-    years,
-    yearsWithJobs: years
+    years: placed.map(({ year, records }) => ({ year, records })),
+    yearsWithJobs: placed
       .filter(({ records }) => records.length > 0)
       .map(({ year }) => year),
-    placements: isArea ? placements : null,
+    placements: isArea
+      ? placed.flatMap(({ placement }) => (placement ? [placement] : []))
+      : null,
   }
 }
 
-/** The department's jobs over its censuses with jobs, small points withheld, and its classes in one census. */
-export function departmentJobFigures(
+function withhold<T extends Omit<TrendPoint, 'year'>>(figures: T): T {
+  if (figures.jobs >= MIN_JOBS_SHOWN) return figures
+  return { ...figures, spendCents: null, medianRateCents: null }
+}
+
+/** The department's jobs over its censuses with jobs, spend and median withheld under `MIN_JOBS_SHOWN` jobs. */
+export function departmentTrends(
   { years, yearsWithJobs }: DepartmentYears,
-  { kind, year }: { kind: StaffKind | 'all'; year: number | null },
-): { trends: Trends; classRows: ClassRow[] } {
+  kind: StaffKind | 'all',
+): Trends {
   const trends = buildTrends(years, {
     kind,
     group: null,
     from: yearsWithJobs[0] ?? 0,
     to: yearsWithJobs.at(-1) ?? 0,
   })
-  const records = years.find((census) => census.year === year)?.records ?? []
-  return {
-    trends: withholdSmallPoints(trends),
-    classRows: classTotals(
-      records.filter((record) => kind === 'all' || record.kind === kind),
-    ),
-  }
-}
-
-function withholdPoint(point: TrendPoint): TrendPoint {
-  if (point.jobs >= MIN_JOBS_SHOWN) return point
-  return { ...point, spendCents: null, medianRateCents: null }
-}
-
-/** Trends with spend and median withheld wherever a point has fewer than `MIN_JOBS_SHOWN` jobs. */
-export function withholdSmallPoints(trends: Trends): Trends {
   return {
     series: trends.series.map(({ key, points }) => ({
       key,
-      points: points.map(withholdPoint),
+      points: points.map(withhold),
     })),
-    total: trends.total.map(withholdPoint),
+    total: trends.total.map(withhold),
   }
 }
 
 /** A position class or rank row; spend and median are `null` when withheld or not applicable. */
-export type ClassRow = {
-  kind: StaffKind
-  label: string
-  jobs: number
-  fteHundredths: number
-  spendCents: number | null
-  medianRateCents: number | null
-}
+export type ClassRow = { label: string } & Omit<TrendPoint, 'year'>
 
 const OTHER_LABEL: Record<StaffKind, string> = {
   classified: `Other position classes (fewer than ${MIN_JOBS_SHOWN} jobs each)`,
@@ -154,46 +175,44 @@ function classLabelOf(record: FallRecord): string {
   return title ? `${code} ${title}` : code
 }
 
-function classRow(kind: StaffKind, label: string, records: FallRecord[]) {
-  const paid = records.filter((record) => !isClassifiedTemp(record))
-  const isShown = records.length >= MIN_JOBS_SHOWN && paid.length > 0
-  return {
-    kind,
-    label,
-    jobs: records.length,
-    fteHundredths: summarize(records).fteHundredths,
-    spendCents: isShown ? summarize(paid).spendCents : null,
-    medianRateCents: isShown
-      ? medianRateCents(
-          paid
-            .filter((record) => record.jobType === 'Primary')
-            .map((record) => record.annualSalaryRateCents),
-        )
-      : null,
-  }
+function classRow(label: string, records: FallRecord[]): ClassRow {
+  return { label, ...withhold(measureJobs(records)) }
 }
 
-/** Jobs by position class (classified) and rank (unclassified), classes under `MIN_JOBS_SHOWN` jobs folded into one row per kind. */
-export function classTotals(records: FallRecord[]): ClassRow[] {
-  return (['unclassified', 'classified'] as const).flatMap((kind) => {
-    const byLabel = new Map<string, FallRecord[]>()
-    for (const record of records) {
-      if (record.kind !== kind) continue
-      const label = classLabelOf(record)
-      byLabel.set(label, [...(byLabel.get(label) ?? []), record])
-    }
-    const shown: ClassRow[] = []
-    const folded: FallRecord[] = []
-    for (const [label, members] of byLabel) {
-      if (members.length >= MIN_JOBS_SHOWN) {
-        shown.push(classRow(kind, label, members))
-      } else {
-        folded.push(...members)
-      }
-    }
-    shown.sort((a, b) => b.jobs - a.jobs || a.label.localeCompare(b.label))
-    return folded.length === 0
-      ? shown
-      : [...shown, classRow(kind, OTHER_LABEL[kind], folded)]
-  })
+function kindRows(kind: StaffKind, records: FallRecord[]): ClassRow[] {
+  const byLabel = new Map<string, FallRecord[]>()
+  for (const record of records) {
+    if (record.kind !== kind) continue
+    const label = classLabelOf(record)
+    const members = byLabel.get(label) ?? []
+    members.push(record)
+    byLabel.set(label, members)
+  }
+  const shown: ClassRow[] = []
+  const folded: FallRecord[] = []
+  for (const [label, members] of byLabel) {
+    if (members.length >= MIN_JOBS_SHOWN) shown.push(classRow(label, members))
+    else folded.push(...members)
+  }
+  shown.sort((a, b) => b.jobs - a.jobs || a.label.localeCompare(b.label))
+  return folded.length === 0
+    ? shown
+    : [...shown, classRow(OTHER_LABEL[kind], folded)]
+}
+
+/**
+ * One census's jobs by rank (unclassified) and position class (classified),
+ * classes under `MIN_JOBS_SHOWN` jobs folded into one row per kind.
+ */
+export function departmentClasses(
+  { years }: DepartmentYears,
+  { kind, year }: { kind: StaffKind | 'all'; year: number | null },
+): Record<StaffKind, ClassRow[]> {
+  const records = years.find((census) => census.year === year)?.records ?? []
+  const rowsOf = (of: StaffKind) =>
+    kind === 'all' || kind === of ? kindRows(of, records) : []
+  return {
+    unclassified: rowsOf('unclassified'),
+    classified: rowsOf('classified'),
+  }
 }

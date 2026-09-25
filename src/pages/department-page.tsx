@@ -9,31 +9,25 @@ import {
 import { useMemo } from 'react'
 import { DepartmentBudgetSection } from '@/components/department-budget-section'
 import { DepartmentJobsSection } from '@/components/department-jobs-section'
-import type { BudgetYear } from '@/data/budget'
-import { censusYearOf, type FallYear } from '@/data/fall'
 import { budgetYearQuery, fallYearQuery, manifestQuery } from '@/data/queries'
 import { departmentBudget } from '@/lib/department-budget'
 import { type CodeProfile, describeCode } from '@/lib/department-index'
 import {
-  type DepartmentCensus,
-  departmentJobFigures,
+  departmentClasses,
+  departmentTrends,
   departmentYears,
+  toDepartmentCensuses,
 } from '@/lib/department-jobs'
 import {
   type DepartmentSearch,
   resolveDepartmentView,
 } from '@/lib/department-search'
-import { fiscalYearForCensus } from '@/lib/overview'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const SPONSORED_NOTE =
   'The budget excludes sponsored research funds, so a unit’s budgeted salaries can fall well short of its jobs’ salary spend.'
 
-function toBudgets(results: { data: BudgetYear }[]) {
-  return results.map(({ data }) => data)
-}
-
-function toFallYears(results: { data: FallYear }[]) {
+function toData<T>(results: { data: T }[]): T[] {
   return results.map(({ data }) => data)
 }
 
@@ -44,22 +38,15 @@ function useDepartmentData() {
   const { data: manifest } = useSuspenseQuery(manifestQuery)
   const budgets = useSuspenseQueries({
     queries: fiscalYears.map(budgetYearQuery),
-    combine: toBudgets,
+    combine: toData,
   })
   const falls = useSuspenseQueries({
     queries: fallYears.map(fallYearQuery),
-    combine: toFallYears,
+    combine: toData,
   })
   const censuses = useMemo(
-    () =>
-      falls.map(({ censusDate, records }): DepartmentCensus => {
-        const year = censusYearOf(censusDate)
-        const fiscalYear = fiscalYearForCensus(manifest, censusDate)
-        const orgs =
-          budgets.find((budget) => budget.fiscalYear === fiscalYear)?.orgs ?? {}
-        return { year, records, fiscalYear, orgs }
-      }),
-    [falls, budgets, manifest],
+    () => toDepartmentCensuses(manifest, falls, budgets),
+    [manifest, falls, budgets],
   )
   return { budgets, censuses }
 }
@@ -124,8 +111,9 @@ export function DepartmentPage() {
     [code, budgets, view.budget],
   )
   const { kind, year } = view
-  const figures = useMemo(
-    () => departmentJobFigures(jobs, { kind, year }),
+  const trends = useMemo(() => departmentTrends(jobs, kind), [jobs, kind])
+  const classRows = useMemo(
+    () => departmentClasses(jobs, { kind, year }),
     [jobs, kind, year],
   )
   if (!profile) return <NotFoundPage />
@@ -152,8 +140,8 @@ export function DepartmentPage() {
       )}
       {hasJobs ? (
         <DepartmentJobsSection
-          trends={figures.trends}
-          classRows={figures.classRows}
+          trends={trends}
+          classRows={classRows}
           placements={jobs.placements}
           view={view}
           yearsWithJobs={jobs.yearsWithJobs}

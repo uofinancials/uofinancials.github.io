@@ -1,14 +1,13 @@
 import { expect, test } from 'vitest'
 import type { BudgetYear } from '@/data/budget'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { createAreaAssigner } from './areas'
 import {
-  classTotals,
   type DepartmentCensus,
-  departmentJobFigures,
+  departmentClasses,
+  departmentTrends,
   departmentYears,
-  withholdSmallPoints,
 } from './department-jobs'
-import { buildTrends } from './trends'
 
 const ORGS: BudgetYear['orgs'] = {
   '222000': { name: 'Arts & Sciences, College of', level: 3, parent: null },
@@ -19,8 +18,18 @@ const biology = { code: '223100', name: 'CAS Biology' }
 const math = { code: '223500', name: 'CAS Mathematics Operations' }
 const elsewhere = { code: '999999', name: 'Zz Nowhere' }
 
-function census(year: number, records: DepartmentCensus['records']) {
-  return { year, records, fiscalYear: 2026, orgs: ORGS }
+function census(
+  year: number,
+  records: DepartmentCensus['records'],
+): DepartmentCensus {
+  const assign = createAreaAssigner(records, ORGS, year)
+  return { year, records, fiscalYear: 2026, orgs: ORGS, assign }
+}
+
+/** The class rows of one census's jobs, all paid under one code. */
+function classRows(records: DepartmentCensus['records']) {
+  const jobs = departmentYears('111111', [census(2025, records)])
+  return departmentClasses(jobs, { kind: 'all', year: 2025 })
 }
 
 const CENSUSES = [
@@ -64,42 +73,44 @@ const rank = (rankName: string, annualSalaryRateCents: number) =>
   unclassifiedJob({ rank: rankName, annualSalaryRateCents })
 
 test('classes of three or more jobs get a row; smaller ones fold into one row per kind', () => {
-  const rows = classTotals([
-    rank('Professor', 10_000_000),
-    rank('Professor', 12_000_000),
-    rank('Professor', 20_000_000),
-    rank('Instructor', 5_000_000),
-    rank('Instructor', 6_000_000),
-    rank('Lecturer', 7_000_000),
-    classifiedJob(),
-    classifiedJob({ positionClass: null }),
-  ])
-  expect(rows).toEqual([
-    {
-      kind: 'unclassified',
-      label: 'Professor',
-      jobs: 3,
-      fteHundredths: 300,
-      spendCents: 42_000_000,
-      medianRateCents: 12_000_000,
-    },
-    {
-      kind: 'unclassified',
-      label: 'Other ranks (fewer than 3 jobs each)',
-      jobs: 3,
-      fteHundredths: 300,
-      spendCents: 18_000_000,
-      medianRateCents: 6_000_000,
-    },
-    {
-      kind: 'classified',
-      label: 'Other position classes (fewer than 3 jobs each)',
-      jobs: 2,
-      fteHundredths: 200,
-      spendCents: null,
-      medianRateCents: null,
-    },
-  ])
+  expect(
+    classRows([
+      rank('Professor', 10_000_000),
+      rank('Professor', 12_000_000),
+      rank('Professor', 20_000_000),
+      rank('Instructor', 5_000_000),
+      rank('Instructor', 6_000_000),
+      rank('Lecturer', 7_000_000),
+      classifiedJob(),
+      classifiedJob({ positionClass: null }),
+    ]),
+  ).toEqual({
+    unclassified: [
+      {
+        label: 'Professor',
+        jobs: 3,
+        fteHundredths: 300,
+        spendCents: 42_000_000,
+        medianRateCents: 12_000_000,
+      },
+      {
+        label: 'Other ranks (fewer than 3 jobs each)',
+        jobs: 3,
+        fteHundredths: 300,
+        spendCents: 18_000_000,
+        medianRateCents: 6_000_000,
+      },
+    ],
+    classified: [
+      {
+        label: 'Other position classes (fewer than 3 jobs each)',
+        jobs: 2,
+        fteHundredths: 200,
+        spendCents: null,
+        medianRateCents: null,
+      },
+    ],
+  })
 })
 
 test('a class of temporaries shows FTE but no spend', () => {
@@ -107,9 +118,8 @@ test('a class of temporaries shows FTE but no spend', () => {
     apptPercent: 10,
     positionClass: { code: 'TS401', title: 'Temp' },
   })
-  expect(classTotals([temp, temp, temp])).toEqual([
+  expect(classRows([temp, temp, temp]).classified).toEqual([
     {
-      kind: 'classified',
       label: 'TS401 Temp',
       jobs: 3,
       fteHundredths: 30,
@@ -120,17 +130,10 @@ test('a class of temporaries shows FTE but no spend', () => {
 })
 
 test('trend points under three jobs lose spend and median, keeping FTE', () => {
-  const trends = withholdSmallPoints(
-    buildTrends(
-      [
-        {
-          year: 2025,
-          records: [unclassifiedJob(), unclassifiedJob(), classifiedJob()],
-        },
-      ],
-      { kind: 'all', group: null, from: 2025, to: 2025 },
-    ),
-  )
+  const jobs = departmentYears('111111', [
+    census(2025, [unclassifiedJob(), unclassifiedJob(), classifiedJob()]),
+  ])
+  const trends = departmentTrends(jobs, 'all')
   expect(trends.series[0]?.points[0]).toMatchObject({
     jobs: 2,
     spendCents: null,
@@ -145,17 +148,17 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
     ...CENSUSES,
     census(2023, [unclassifiedJob({ payDepartment: elsewhere })]),
   ])
-  const all = departmentJobFigures(jobs, { kind: 'all', year: 2025 })
-  expect(all.trends.total.map(({ year }) => year)).toEqual([2024, 2025])
-  expect(all.classRows.map(({ label, jobs }) => [label, jobs])).toEqual([
-    ['Other ranks (fewer than 3 jobs each)', 1],
+  expect(departmentTrends(jobs, 'all').total.map(({ year }) => year)).toEqual([
+    2024, 2025,
   ])
-  const classified = departmentJobFigures(jobs, {
-    kind: 'classified',
-    year: 2025,
+  expect(departmentClasses(jobs, { kind: 'all', year: 2025 })).toMatchObject({
+    unclassified: [{ label: 'Other ranks (fewer than 3 jobs each)', jobs: 1 }],
+    classified: [],
   })
-  expect(classified.classRows).toEqual([])
-  expect(classified.trends.total.map(({ jobs: count }) => count)).toEqual([
-    0, 0,
-  ])
+  expect(
+    departmentClasses(jobs, { kind: 'classified', year: 2025 }).unclassified,
+  ).toEqual([])
+  expect(
+    departmentTrends(jobs, 'classified').total.map(({ jobs: count }) => count),
+  ).toEqual([0, 0])
 })

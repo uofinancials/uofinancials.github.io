@@ -46,10 +46,3 @@ export function accountGroupOf(
   }
   return group
 }
-
-export function accountTypesOf(group: AccountGroup): string[] {
-  return Object.entries(ACCOUNT_TYPE_GROUPS)
-    .filter(([, of]) => of === group)
-    .map(([accountType]) => accountType)
-    .sort()
-}

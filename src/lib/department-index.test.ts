@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import type { BudgetRow, BudgetYear } from '@/data/budget'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { departmentIndex, describeCode, filterIndex } from './department-index'
+import { toDepartmentCensus } from './department-jobs'
 
 function row(org: string, cents: number): BudgetRow {
   return {
@@ -103,12 +104,7 @@ test('the filter keeps a matching area whole and narrows the rest to matching en
   expect(filterIndex(INDEX, '')).toBe(INDEX)
 })
 
-const CENSUS = {
-  year: 2025,
-  records: RECORDS,
-  fiscalYear: 2026,
-  orgs: BUDGET.orgs,
-}
+const CENSUS = toDepartmentCensus({ year: 2025, records: RECORDS }, BUDGET)
 
 test('a code is described by what each source publishes under it', () => {
   const renamed = {
