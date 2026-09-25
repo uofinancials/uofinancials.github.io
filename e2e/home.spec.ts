@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { readFileSync } from 'node:fs'
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 test('home page loads', async ({ page }) => {
   await page.goto('/')
@@ -364,14 +364,18 @@ test('people search by every word of a name, and a chosen name shows its records
   await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
 })
 
-test('a linked run is labelled as computed, and the people page does not scroll sideways at 360px', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 360, height: 800 })
+async function openLinkedPerson(page: Page) {
   await page.goto('/people?q=smith+j')
   const matches = page.getByRole('list', { name: 'Matching names' })
   await matches.getByRole('link').nth(1).click()
   await expect(page.getByRole('heading', { level: 2 })).toBeVisible()
+}
+
+test('a person’s computed figures, rate chart, and class median are labelled, and the view does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await openLinkedPerson(page)
   const main = page.getByRole('main')
   await expect(main).toContainText(
     'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the exact name and the same pay department of a single primary job.',
@@ -388,6 +392,15 @@ test('a linked run is labelled as computed, and the people page does not scroll 
     }),
   ).toBeVisible()
   await expect(main).toContainText('Groups used: ')
+  await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+})
+
+test('census tabs are held in the link and lead to the class distribution, and the search view cites its sources', async ({
+  page,
+}) => {
+  await openLinkedPerson(page)
   await expect(
     page.getByRole('heading', { name: 'Fall 2023 records' }),
   ).toBeVisible()
@@ -399,24 +412,15 @@ test('a linked run is labelled as computed, and the people page does not scroll 
   await expect(
     page.getByRole('heading', { name: 'Fall 2021 records' }),
   ).toBeVisible()
-  await expect(
-    page
-      .getByRole('link', {
-        name: /^Salary distribution, .+, Fall 2021$/,
-      })
-      .first(),
-  ).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
-  await page
-    .getByRole('link', { name: /^Salary distribution, .+, Fall 2021$/ })
-    .last()
-    .click()
+  const distributions = page.getByRole('link', {
+    name: /^Salary distribution, .+, Fall 2021$/,
+  })
+  await expect(distributions.first()).toBeVisible()
+  await distributions.last().click()
   await expect(page).toHaveURL(/\/salaries\?.*position=/)
   await expect(page.getByRole('main')).toContainText('Class or rank: ')
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(page).not.toHaveURL(/position=/)
-  const width = await page.evaluate(() => document.documentElement.scrollWidth)
-  expect(width).toBeLessThanOrEqual(360)
   await page.goto('/people?q=smith')
   await expect(
     page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
