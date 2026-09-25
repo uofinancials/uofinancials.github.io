@@ -6,10 +6,21 @@ import {
   changeBinLabel,
   changeCounts,
   continuingPairs,
+  filterNames,
   filterPairs,
   payChangeDistribution,
   payChangeTrends,
 } from './pay-changes'
+import type { TrendFilter } from './trends'
+
+const ALL_JOBS: TrendFilter = {
+  kind: 'all',
+  group: null,
+  dept: null,
+  position: null,
+  from: 2014,
+  to: 2025,
+}
 
 /** Two censuses in which each name's primary job moves from its first record to its second. */
 function linkedYears(fromYear: number, jobs: [FallRecord, FallRecord][]) {
@@ -79,7 +90,7 @@ test('each line is the median of its pairs, blank below three', () => {
       ],
     ]),
   ])
-  const [all, faculty, classified] = payChangeTrends(pairs, [2020, 2021])
+  const [all, faculty, classified] = payChangeTrends(pairs, [2020, 2021], null)
   expect(all?.key).toBe(ALL_PAIRS)
   expect(all?.points[0]?.median).toBeCloseTo(0.04, 10)
   expect(faculty).toMatchObject({
@@ -193,19 +204,68 @@ test('filters narrow by the earlier job’s kind, pay department, and class or r
       ],
     ]),
   )
-  const names = (filter: Parameters<typeof filterPairs>[1]) =>
-    filterPairs(pairs, filter).map(({ from }) => from.name)
-  expect(names({ kind: 'all', dept: null, position: null })).toEqual([
-    'Person 0',
+  const names = (filter: Partial<TrendFilter>) =>
+    filterPairs(pairs, { ...ALL_JOBS, ...filter }).map(({ from }) => from.name)
+  expect(names({})).toEqual(['Person 0', 'Person 2'])
+  expect(names({ kind: 'classified' })).toEqual(['Person 0'])
+  expect(names({ dept: '222222', position: 'rank Professor' })).toEqual([
     'Person 2',
   ])
-  expect(names({ kind: 'classified', dept: null, position: null })).toEqual([
-    'Person 0',
-  ])
+  expect(names({ position: 'class 0104' })).toEqual(['Person 0'])
+  expect(names({ group: 'Classified staff' })).toEqual(['Person 0'])
+  expect(names({ from: 2025 })).toEqual([])
+  expect(names({ to: 2024 })).toEqual([])
+})
+
+test('an opened group’s lines are its earlier jobs’ published categories', () => {
+  const pairs = continuingPairs(
+    linkedYears(2020, [
+      ...[100_000, 102_000, 104_000].map(
+        (toCents): [FallRecord, FallRecord] => [
+          unclassifiedJob({
+            eeoCategory: 'Other Professionals',
+            annualSalaryRateCents: 100_000,
+          }),
+          unclassifiedJob({
+            eeoCategory: 'Senior Administrators',
+            annualSalaryRateCents: toCents,
+          }),
+        ],
+      ),
+      [
+        unclassifiedJob({ eeoCategory: 'Senior Administrators' }),
+        unclassifiedJob({ eeoCategory: 'Senior Administrators' }),
+      ],
+    ]),
+  )
+  const opened = payChangeTrends(
+    filterPairs(pairs, { ...ALL_JOBS, group: 'Admins and professionals' }),
+    [2020],
+    'Admins and professionals',
+  )
   expect(
-    names({ kind: 'all', dept: '222222', position: 'rank Professor' }),
-  ).toEqual(['Person 2'])
-  expect(names({ kind: 'all', dept: null, position: 'class 0104' })).toEqual([
-    'Person 0',
+    opened.map(({ key, points }) => [key, points[0]?.pairs, points[0]?.median]),
+  ).toEqual([
+    [ALL_PAIRS, 4, 0.01],
+    ['Other Professionals', 3, 0.02],
+    ['Senior Administrators', 1, null],
   ])
+})
+
+test('a filter names its department and class or rank from the first job with them, or keeps the code', () => {
+  const years = [
+    census(2025, [
+      unclassifiedJob({
+        rank: 'Professor',
+        payDepartment: { code: '222222', name: 'Physics' },
+      }),
+    ]),
+  ]
+  expect(
+    filterNames(years, { dept: '222222', position: 'rank Professor' }),
+  ).toEqual({ dept: 'Physics (222222)', position: 'Professor' })
+  expect(filterNames(years, { dept: '000000', position: null })).toEqual({
+    dept: '000000',
+    position: null,
+  })
 })

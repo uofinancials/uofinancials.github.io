@@ -1,6 +1,8 @@
 import { z } from 'zod'
+import { orgCodeParam } from '../data/budget.ts'
 import { staffKindSchema } from '../data/fall.ts'
 import { formatCompactDollars, formatDollars, formatFte } from './format.ts'
+import { pairYears } from './pay-changes.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 import type { TrendFilter, TrendPoint, TrendSeries } from './trends.ts'
 
@@ -17,11 +19,19 @@ export const STAFF_KIND_OPTIONS: [string, string][] = [
   ['unclassified', 'Unclassified'],
 ]
 
-export const TREND_METRICS = ['spend', 'fte', 'median'] as const
+/** The measures of one census's jobs, shared with the department page. */
+export const CENSUS_METRICS = ['spend', 'fte', 'median'] as const
+export type CensusMetric = (typeof CENSUS_METRICS)[number]
+
+/** The census measures and the change in continuing jobs' rates between census pairs. */
+export const CHANGE_METRIC = 'change'
+export const TREND_METRICS = [...CENSUS_METRICS, CHANGE_METRIC] as const
 export type TrendMetric = (typeof TREND_METRICS)[number]
 
+export const CHANGE_LABEL = 'Median change in salary rate'
+
 export const METRIC_INFO: Record<
-  TrendMetric,
+  CensusMetric,
   {
     label: string
     pick: (point: TrendPoint) => number | null
@@ -52,7 +62,7 @@ export const METRIC_INFO: Record<
 /** The series that have a value for the metric in at least one census. */
 export function seriesWithMetric(
   series: TrendSeries[],
-  metric: TrendMetric,
+  metric: CensusMetric,
 ): TrendSeries[] {
   const { pick } = METRIC_INFO[metric]
   return series.filter(({ points }) =>
@@ -60,7 +70,7 @@ export function seriesWithMetric(
   )
 }
 
-/** The trends page's URL search params; a malformed value falls back to its default. */
+/** The trends page's URL search params; `pair` is the earlier census of the change measure's pair shown. A malformed value falls back to its default. */
 export const trendsSearchSchema = z.object({
   metric: z.enum(TREND_METRICS).optional().catch(undefined),
   group: z.enum(TREND_GROUPS).optional().catch(undefined),
@@ -68,13 +78,20 @@ export const trendsSearchSchema = z.object({
   kind: staffKindSchema.optional().catch(undefined),
   from: z.number().int().optional().catch(undefined),
   to: z.number().int().optional().catch(undefined),
+  dept: orgCodeParam.optional().catch(undefined),
+  position: z.string().min(1).optional().catch(undefined),
+  pair: z.number().int().optional().catch(undefined),
 })
 
 export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 
-export type TrendView = TrendFilter & { metric: TrendMetric; hide: string[] }
+export type TrendView = TrendFilter & {
+  metric: TrendMetric
+  hide: string[]
+  pair: number
+}
 
-/** The view a search asks for, with the census years clamped to those listed. */
+/** The view a search asks for, with the census years clamped to those listed and a pair not in the range falling back to its latest. */
 export function resolveTrendView(
   search: TrendsSearch,
   years: number[],
@@ -83,24 +100,37 @@ export function resolveTrendView(
   const last = Math.max(...years)
   const from = Math.min(Math.max(search.from ?? first, first), last)
   const to = Math.min(Math.max(search.to ?? last, from), last)
+  const pairs = pairYears(years, from, to)
+  const { pair } = search
   return {
     metric: search.metric ?? 'spend',
     group: search.group ?? null,
     hide: search.hide ?? [],
     kind: search.kind ?? 'all',
+    dept: search.dept ?? null,
+    position: search.position ?? null,
     from,
     to,
+    pair:
+      pair !== undefined && pairs.includes(pair)
+        ? pair
+        : (pairs.at(-1) ?? from),
   }
 }
 
-export const METRIC_OPTIONS = TREND_METRICS.map(
+export const METRIC_OPTIONS = CENSUS_METRICS.map(
   (metric) => [metric, METRIC_INFO[metric].label] as const,
 )
+
+export const TREND_METRIC_OPTIONS = [
+  ...METRIC_OPTIONS,
+  [CHANGE_METRIC, CHANGE_LABEL] as const,
+]
 
 /** Each series' metric value per census, `null` where it has none. */
 export function metricValues(
   series: TrendSeries[],
-  metric: TrendMetric,
+  metric: CensusMetric,
 ): { key: string; values: (number | null)[] }[] {
   const { pick } = METRIC_INFO[metric]
   return series.map(({ key, points }) => ({ key, values: points.map(pick) }))

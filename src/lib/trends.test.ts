@@ -3,7 +3,14 @@ import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { EXEC_OTHER_CATEGORY } from './trend-groups'
 import { buildTrends, medianRateCents, type TrendFilter } from './trends'
 
-const ALL: TrendFilter = { kind: 'all', group: null, from: 2014, to: 2025 }
+const ALL: TrendFilter = {
+  kind: 'all',
+  group: null,
+  dept: null,
+  position: null,
+  from: 2014,
+  to: 2025,
+}
 const temp = classifiedJob({
   name: 'Temp, Tia',
   apptPercent: 10,
@@ -141,4 +148,40 @@ test('opened Executives puts jobs there by the EXEC grade alone on one line', ()
     [EXEC_OTHER_CATEGORY, 2],
     ['Executive Admins', 2],
   ])
+})
+
+test('the pay department and class or rank filters keep only matching jobs, in every measure', () => {
+  const physics = { code: '222222', name: 'Physics' }
+  const years = [
+    {
+      year: 2025,
+      records: [
+        unclassifiedJob({ payDepartment: physics, rank: 'Professor' }),
+        unclassifiedJob({
+          payDepartment: physics,
+          rank: 'Professor',
+          annualSalaryRateCents: 7_000_000,
+        }),
+        unclassifiedJob({ payDepartment: physics }),
+        unclassifiedJob({ rank: 'Professor' }),
+        classifiedJob({ payDepartment: physics }),
+      ],
+    },
+  ]
+  const jobs = (filter: Partial<TrendFilter>) =>
+    buildTrends(years, { ...ALL, ...filter }).total[0]?.jobs
+  expect(jobs({ dept: '222222' })).toBe(4)
+  expect(jobs({ position: 'rank Professor' })).toBe(3)
+  expect(jobs({ position: 'class 0104' })).toBe(1)
+  const both = buildTrends(years, {
+    ...ALL,
+    dept: '222222',
+    position: 'rank Professor',
+  })
+  expect(both.total[0]).toMatchObject({
+    jobs: 2,
+    spendCents: null,
+    fteHundredths: 200,
+  })
+  expect(both.series.map(({ key }) => key)).toEqual(['Faculty'])
 })

@@ -2,9 +2,9 @@ import { SeriesChart } from '@/components/series-chart'
 import { TrendsTable } from '@/components/trends-table'
 import type { Trends } from '@/lib/trends'
 import {
+  type CensusMetric,
   METRIC_INFO,
   metricValues,
-  type TrendMetric,
 } from '@/lib/trends-search'
 
 export function TrendsFigure({
@@ -14,7 +14,7 @@ export function TrendsFigure({
   label,
 }: {
   trends: Trends
-  metric: TrendMetric
+  metric: CensusMetric
   hidden?: string[]
   label: string
 }) {

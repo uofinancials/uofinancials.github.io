@@ -2,6 +2,7 @@ import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { isClassifiedTemp, summarize } from './overview.ts'
 import {
   openedLineOf,
+  peerGroupOf,
   TREND_GROUPS,
   type TrendGroup,
   trendGroupOf,
@@ -24,8 +25,26 @@ export type TrendFilter = {
   kind: StaffKind | 'all'
   /** When set, the lines are this group's published EEO categories. */
   group: TrendGroup | null
+  /** A pay department code. */
+  dept: string | null
+  /** A `peerGroupOf` key. */
+  position: string | null
   from: number
   to: number
+}
+
+/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, and class or rank; the years are not checked. */
+export function matchesJob(
+  record: FallRecord,
+  group: TrendGroup,
+  filter: TrendFilter,
+): boolean {
+  return (
+    (filter.kind === 'all' || record.kind === filter.kind) &&
+    (filter.group === null || group === filter.group) &&
+    (filter.dept === null || record.payDepartment.code === filter.dept) &&
+    (filter.position === null || peerGroupOf(record)?.key === filter.position)
+  )
 }
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
@@ -101,8 +120,7 @@ export function buildTrends(
     const shown: FallRecord[] = []
     for (const record of records) {
       const group = trendGroupOf(record, year)
-      if (filter.kind !== 'all' && record.kind !== filter.kind) continue
-      if (filter.group !== null && group !== filter.group) continue
+      if (!matchesJob(record, group, filter)) continue
       shown.push(record)
       const key = filter.group ? openedLineOf(record, filter.group) : group
       const byYear = lines.get(key) ?? new Map<number, FallRecord[]>()

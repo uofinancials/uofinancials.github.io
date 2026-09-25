@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import {
   resolveTrendView,
   seriesWithMetric,
+  type TrendsSearch,
   trendsSearchSchema,
 } from './trends-search'
 
@@ -13,9 +14,21 @@ test('an empty search is every listed census, by group, in spend', () => {
     group: null,
     hide: [],
     kind: 'all',
+    dept: null,
+    position: null,
     from: 2014,
     to: 2025,
+    pair: 2014,
   })
+})
+
+test('a pair outside the range, or without both censuses listed, falls back to the range’s latest', () => {
+  const years = [2014, 2015, 2016, 2025]
+  const pair = (search: TrendsSearch) => resolveTrendView(search, years).pair
+  expect(pair({ pair: 2015 })).toBe(2015)
+  expect(pair({ pair: 2016 })).toBe(2015)
+  expect(pair({ pair: 2015, to: 2015 })).toBe(2014)
+  expect(pair({ from: 2025 })).toBe(2025)
 })
 
 test('years are clamped to the listed censuses, and a reversed range to one year', () => {

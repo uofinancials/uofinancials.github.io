@@ -5,7 +5,7 @@ import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
 import { tabLinkClass } from '@/components/tab-link-class'
-import { type PeerMedians, peerGroupOf } from '@/lib/peer-median'
+import type { PeerMedians } from '@/lib/peer-median'
 import {
   type Person,
   type PersonYear,
@@ -13,6 +13,7 @@ import {
   primaryJobOf,
 } from '@/lib/person-lookup'
 import { payDepartmentsOf, positionsOf, runOf } from '@/lib/person-summary'
+import { peerGroupOf } from '@/lib/trend-groups'
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =
@@ -59,8 +60,8 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
           <Link
             className="underline"
-            to="/pay-changes"
-            search={{ dept: code, pair: entry.year }}
+            to="/trends"
+            search={{ metric: 'change', dept: code, pair: entry.year }}
           >
             Pay changes, {department}
           </Link>
@@ -88,8 +89,8 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         <p className="text-sm">
           <Link
             className="underline"
-            to="/pay-changes"
-            search={{ position: group.key, pair: entry.year }}
+            to="/trends"
+            search={{ metric: 'change', position: group.key, pair: entry.year }}
           >
             Pay changes, {group.label}
           </Link>

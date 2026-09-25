@@ -1,17 +1,24 @@
-import type { FallRecord, FallYear, StaffKind } from '../data/fall.ts'
+import type { FallRecord, FallYear } from '../data/fall.ts'
 import { isClassifiedTemp } from './overview.ts'
 import { isRankRename, normalizeTitle } from './pay-change-labels.ts'
-import { type PeerGroup, peerGroupOf } from './peer-median.ts'
 import { department, titleOf } from './person-fields.ts'
 import { findPersonLinks, type PersonLink } from './person-links.ts'
 import {
   emptyCounts,
   type GroupCounts,
+  openedLineOf,
+  type PeerGroup,
+  peerGroupOf,
   TREND_GROUPS,
   type TrendGroup,
   trendGroupOf,
 } from './trend-groups.ts'
-import { MIN_JOBS_SHOWN, medianOf } from './trends.ts'
+import {
+  MIN_JOBS_SHOWN,
+  matchesJob,
+  medianOf,
+  type TrendFilter,
+} from './trends.ts'
 
 /** A census pair's label, e.g. `2024-25`. */
 export function pairLabel(fromYear: number): string {
@@ -81,22 +88,23 @@ export function continuingPairs(years: FallYear[]): ContinuingPair[] {
   })
 }
 
-/** Narrows pairs by the earlier job: its staff kind, pay department code, and `peerGroupOf` key. */
-export type PayChangeFilter = {
-  kind: StaffKind | 'all'
-  dept: string | null
-  position: string | null
+/** The earlier census of each consecutive pair of listed censuses with both in the range. */
+export function pairYears(years: number[], from: number, to: number): number[] {
+  return years.filter(
+    (year) => year >= from && year + 1 <= to && years.includes(year + 1),
+  )
 }
 
+/** The pairs in the filter's range whose earlier job passes it. */
 export function filterPairs(
   pairs: ContinuingPair[],
-  { kind, dept, position }: PayChangeFilter,
+  filter: TrendFilter,
 ): ContinuingPair[] {
   return pairs.filter(
-    ({ from, peer }) =>
-      (kind === 'all' || from.kind === kind) &&
-      (dept === null || from.payDepartment.code === dept) &&
-      (position === null || peer?.key === position),
+    ({ fromYear, from, group }) =>
+      fromYear >= filter.from &&
+      fromYear + 1 <= filter.to &&
+      matchesJob(from, group, filter),
   )
 }
 
@@ -119,10 +127,13 @@ function measure(fromYear: number, ratios: number[] = []): ChangePoint {
   }
 }
 
-/** All pairs, then one series per group with a pair, for each pair year. */
+const GROUP_ORDER: readonly string[] = TREND_GROUPS
+
+/** All pairs, then one series per group with a pair, or per published category of an opened group, for each pair year. */
 export function payChangeTrends(
   pairs: ContinuingPair[],
   fromYears: number[],
+  opened: TrendGroup | null,
 ): ChangeSeries[] {
   const ratios = new Map<string, number[]>()
   const add = (key: string, ratio: number) => {
@@ -130,14 +141,19 @@ export function payChangeTrends(
     if (bucket) bucket.push(ratio)
     else ratios.set(key, [ratio])
   }
-  for (const { fromYear, group, ratio } of pairs) {
+  const keys = new Set<string>()
+  for (const { fromYear, from, group, ratio } of pairs) {
+    const key = opened ? openedLineOf(from, opened) : group
+    keys.add(key)
     add(`${ALL_PAIRS}|${fromYear}`, ratio)
-    add(`${group}|${fromYear}`, ratio)
+    add(`${key}|${fromYear}`, ratio)
   }
   const lines = [
     ALL_PAIRS,
-    ...TREND_GROUPS.filter((group) =>
-      fromYears.some((fromYear) => ratios.has(`${group}|${fromYear}`)),
+    ...[...keys].sort((a, b) =>
+      opened
+        ? a.localeCompare(b)
+        : GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b),
     ),
   ]
   return lines.map((key) => ({
@@ -262,22 +278,28 @@ export function changeCounts(
   )
 }
 
-/** How the filter's department and class or rank read, from the first pair with them; `null` for one not set. */
+/** How the filter's department and class or rank read, from the first job with them; the code or key itself when no job has it, `null` for one not set. */
 export function filterNames(
-  pairs: ContinuingPair[],
-  { dept, position }: Pick<PayChangeFilter, 'dept' | 'position'>,
+  years: { records: FallRecord[] }[],
+  { dept, position }: Pick<TrendFilter, 'dept' | 'position'>,
 ): { dept: string | null; position: string | null } {
+  const find = (isMatch: (record: FallRecord) => boolean) => {
+    for (const { records } of years) {
+      const record = records.find(isMatch)
+      if (record) return record
+    }
+    return undefined
+  }
   const payDepartment =
     dept === null
-      ? null
-      : pairs.find(({ from }) => from.payDepartment.code === dept)?.from
-          .payDepartment
+      ? undefined
+      : find(({ payDepartment }) => payDepartment.code === dept)?.payDepartment
   const peer =
     position === null
-      ? null
-      : pairs.find(({ peer }) => peer?.key === position)?.peer
+      ? undefined
+      : find((record) => peerGroupOf(record)?.key === position)
   return {
     dept: payDepartment ? department(payDepartment) : dept,
-    position: peer?.label ?? position,
+    position: (peer && peerGroupOf(peer)?.label) ?? position,
   }
 }

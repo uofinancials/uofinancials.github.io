@@ -1,12 +1,13 @@
 import { RadioField } from '@/components/radio-field'
+import { RemovableFilter } from '@/components/removable-filter'
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/trend-groups'
 import {
   ALL_GROUPS,
   GROUP_OPTIONS,
-  METRIC_OPTIONS,
   STAFF_KIND_OPTIONS,
+  TREND_METRIC_OPTIONS,
   type TrendsSearch,
   type TrendView,
 } from '@/lib/trends-search'
@@ -43,16 +44,43 @@ function LineToggles({
   )
 }
 
-/** The trends view's controls; each change is a new URL search. */
+function JobFilters({
+  names,
+  onChange,
+}: {
+  names: { dept: string | null; position: string | null }
+  onChange: (search: TrendsSearch) => void
+}) {
+  return (
+    <>
+      {names.dept !== null && (
+        <RemovableFilter
+          text={`Pay department: ${names.dept}`}
+          onRemove={() => onChange({ dept: undefined })}
+        />
+      )}
+      {names.position !== null && (
+        <RemovableFilter
+          text={`Class or rank: ${names.position}`}
+          onRemove={() => onChange({ position: undefined })}
+        />
+      )}
+    </>
+  )
+}
+
+/** The trends view's controls, with the pay department and class or rank filters a link sets; each change is a new URL search. */
 export function TrendsControls({
   view,
   years,
   lines,
+  names,
   onChange,
 }: {
   view: TrendView
   years: number[]
   lines: string[]
+  names: { dept: string | null; position: string | null }
   onChange: (search: TrendsSearch) => void
 }) {
   const yearOptions = years.map((year): [string, string] => [
@@ -65,7 +93,7 @@ export function TrendsControls({
         legend="Measure"
         name="metric"
         value={view.metric}
-        options={METRIC_OPTIONS}
+        options={TREND_METRIC_OPTIONS}
         onSelect={(metric) => onChange({ metric })}
       />
       <div className="flex flex-wrap gap-4">
@@ -103,6 +131,7 @@ export function TrendsControls({
           onSelect={(value) => onChange({ to: Number(value) })}
         />
       </div>
+      <JobFilters names={names} onChange={onChange} />
       <LineToggles lines={lines} hidden={view.hide} onChange={onChange} />
     </div>
   )

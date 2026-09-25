@@ -8,8 +8,11 @@ const VIEW = {
   group: null,
   hide: ['Overloads'],
   kind: 'all',
+  dept: null,
+  position: null,
   from: 2014,
   to: 2025,
+  pair: 2024,
 } as const
 
 test('each control asks for a new search, and opening a group shows every line again', async () => {
@@ -19,6 +22,7 @@ test('each control asks for a new search, and opening a group shows every line a
       view={{ ...VIEW, hide: [...VIEW.hide] }}
       years={[2014, 2025]}
       lines={['Faculty', 'Overloads']}
+      names={{ dept: null, position: null }}
       onChange={handleChange}
     />,
   )

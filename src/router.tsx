@@ -24,14 +24,12 @@ import {
   departmentsSearchSchema,
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
-import { payChangesSearchSchema } from '@/lib/pay-changes-search'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
-import { PayChangesPage } from '@/pages/pay-changes-page'
 import { PeoplePage } from '@/pages/people-page'
 import { PersonPage } from '@/pages/person-page'
 import { SourcesPage } from '@/pages/sources-page'
@@ -167,14 +165,6 @@ const personRoute = createRoute({
   component: PersonPage,
 })
 
-const payChangesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/pay-changes',
-  validateSearch: payChangesSearchSchema,
-  loader: loadFallYears,
-  component: PayChangesPage,
-})
-
 const sourcesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sources',
@@ -193,7 +183,6 @@ const routeTree = rootRoute.addChildren([
   departmentRoute,
   peopleRoute,
   personRoute,
-  payChangesRoute,
   sourcesRoute,
 ])
 

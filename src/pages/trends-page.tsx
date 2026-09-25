@@ -1,6 +1,7 @@
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
+import { PayChangesSection } from '@/components/pay-changes-section'
 import { SourceCitation } from '@/components/source-citation'
 import { TrendsControls } from '@/components/trends-controls'
 import { TrendsFigure } from '@/components/trends-figure'
@@ -12,9 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
 import { SPEND_METHOD } from '@/lib/overview'
+import { filterNames } from '@/lib/pay-changes'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,
@@ -22,12 +25,15 @@ import {
   TREND_GROUPS,
   type TrendGroup,
 } from '@/lib/trend-groups'
-import { buildTrends, MIN_JOBS_SHOWN } from '@/lib/trends'
+import { buildTrends, MIN_JOBS_SHOWN, type Trends } from '@/lib/trends'
 import {
+  type CensusMetric,
+  CHANGE_METRIC,
   METRIC_INFO,
   resolveTrendView,
   seriesWithMetric,
   type TrendsSearch,
+  type TrendView,
 } from '@/lib/trends-search'
 
 const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
@@ -69,29 +75,72 @@ function GroupMapping() {
   )
 }
 
-function toCensuses(results: { data: FallYear }[]) {
-  return results.map(({ data }) => ({
-    year: censusYearOf(data.censusDate),
-    records: data.records,
-  }))
+function toFallYears(results: { data: FallYear }[]) {
+  return results.map(({ data }) => data)
+}
+
+function useTrends() {
+  const { years } = useLoaderData({ from: '/trends' })
+  const search = useSearch({ from: '/trends' })
+  const fallYears = useSuspenseQueries({
+    queries: years.map(fallYearQuery),
+    combine: toFallYears,
+  })
+  const censuses = useMemo(
+    () =>
+      fallYears.map(({ censusDate, records }) => ({
+        year: censusYearOf(censusDate),
+        records,
+      })),
+    [fallYears],
+  )
+  const view = resolveTrendView(search, years)
+  const { kind, group, dept, position, from, to } = view
+  const trends = useMemo(
+    () => buildTrends(censuses, { kind, group, dept, position, from, to }),
+    [censuses, kind, group, dept, position, from, to],
+  )
+  const names = useMemo(
+    () => filterNames(censuses, { dept, position }),
+    [censuses, dept, position],
+  )
+  const changes = usePayChanges(fallYears, years, view)
+  return { years, view, trends, names, changes }
+}
+
+function CensusSection({
+  trends,
+  view,
+  metric,
+}: {
+  trends: Trends
+  view: TrendView
+  metric: CensusMetric
+}) {
+  const title = `${METRIC_INFO[metric].label} by ${view.group ? `EEO category in ${view.group}` : 'group'}, Fall ${view.from}-${view.to}`
+  return (
+    <section className="space-y-4">
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <TrendsFigure
+        trends={trends}
+        metric={metric}
+        hidden={view.hide}
+        label={title}
+      />
+      <SourceCitation
+        source={{ kind: 'fall-range', from: view.from, to: view.to }}
+        computed={COMPUTED}
+      />
+    </section>
+  )
 }
 
 export function TrendsPage() {
-  const { years } = useLoaderData({ from: '/trends' })
-  const search = useSearch({ from: '/trends' })
   const navigate = useNavigate({ from: '/trends' })
-  const censuses = useSuspenseQueries({
-    queries: years.map(fallYearQuery),
-    combine: toCensuses,
-  })
-  const view = resolveTrendView(search, years)
-  const { kind, group, from, to } = view
-  const trends = useMemo(
-    () => buildTrends(censuses, { kind, group, from, to }),
-    [censuses, kind, group, from, to],
-  )
-  const series = seriesWithMetric(trends.series, view.metric)
-  const title = `${METRIC_INFO[view.metric].label} by ${view.group ? `EEO category in ${view.group}` : 'group'}, Fall ${view.from}-${view.to}`
+  const { years, view, trends, names, changes } = useTrends()
+  const { metric } = view
+  const series =
+    metric === CHANGE_METRIC ? [] : seriesWithMetric(trends.series, metric)
   const handleChange = (patch: TrendsSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
@@ -102,22 +151,25 @@ export function TrendsPage() {
       <TrendsControls
         view={view}
         years={years}
-        lines={series.map(({ key }) => key)}
+        lines={(changes?.series ?? series).map(({ key }) => key)}
+        names={names}
         onChange={handleChange}
       />
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        <TrendsFigure
+      {metric === CHANGE_METRIC ? (
+        changes && (
+          <PayChangesSection
+            changes={changes}
+            view={view}
+            onChange={handleChange}
+          />
+        )
+      ) : (
+        <CensusSection
           trends={{ series, total: trends.total }}
-          metric={view.metric}
-          hidden={view.hide}
-          label={title}
+          view={view}
+          metric={metric}
         />
-        <SourceCitation
-          source={{ kind: 'fall-range', from: view.from, to: view.to }}
-          computed={COMPUTED}
-        />
-      </section>
+      )}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Groups</h2>
         <p className="text-sm text-muted-foreground">
