@@ -4,6 +4,7 @@ import { budgetYearSchema, fiscalYearLabel } from './budget.ts'
 import { fallYearSchema } from './fall.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
+import { outlookSchema } from './outlook.ts'
 import { raiseTermsSchema } from './raises.ts'
 
 const NETWORK_RETRIES = 2
@@ -37,6 +38,7 @@ function dataQuery<T>(file: string, schema: z.ZodType<T>) {
 export const manifestQuery = dataQuery('manifest.json', manifestSchema)
 export const opeRatesQuery = dataQuery('ope.json', opeRatesSchema)
 export const raiseTermsQuery = dataQuery('raises.json', raiseTermsSchema)
+export const outlookQuery = dataQuery('outlook.json', outlookSchema)
 
 export function fallYearQuery(year: number) {
   return dataQuery(`fall/${year}.json`, fallYearSchema)
