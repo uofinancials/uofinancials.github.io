@@ -5,9 +5,13 @@ import {
   createRouter,
   type RouterHistory,
 } from '@tanstack/react-router'
+import { PageError } from '@/components/page-error'
+import { PageLoading } from '@/components/page-loading'
 import { SiteLayout } from '@/components/site-layout'
+import { manifestQuery, raiseTermsQuery } from '@/data/queries'
 import { HomePage } from '@/pages/home-page'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { SourcesPage } from '@/pages/sources-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: SiteLayout,
@@ -20,7 +24,18 @@ const homeRoute = createRoute({
   component: HomePage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute])
+const sourcesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/sources',
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData(manifestQuery),
+      queryClient.ensureQueryData(raiseTermsQuery),
+    ]),
+  component: SourcesPage,
+})
+
+const routeTree = rootRoute.addChildren([homeRoute, sourcesRoute])
 
 export function createAppRouter(options: {
   queryClient: QueryClient
@@ -30,6 +45,8 @@ export function createAppRouter(options: {
     routeTree,
     context: { queryClient: options.queryClient },
     history: options.history,
+    defaultPendingComponent: PageLoading,
+    defaultErrorComponent: PageError,
   })
 }
 

@@ -11,6 +11,19 @@ export function SiteLayout() {
           <Link to="/" className="font-semibold">
             UO Financials
           </Link>
+          <nav aria-label="Main">
+            <ul className="flex gap-4 text-sm">
+              <li>
+                <Link
+                  to="/sources"
+                  className="text-muted-foreground hover:text-foreground"
+                  activeProps={{ className: 'text-foreground' }}
+                >
+                  Sources
+                </Link>
+              </li>
+            </ul>
+          </nav>
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 p-4 md:p-6">
