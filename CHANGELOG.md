@@ -110,10 +110,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   90th percentile rates of primary jobs (temporaries left out), and the highest
   rate.
 - The Salaries view is set from the page and kept in its link: the census, one
-  group, classified or unclassified staff, 9- or 12-month terms, and a college
-  or VP area. Each department page links to its own distribution, shown as a
-  filter that can be removed. A filter matching fewer than three jobs shows only
-  the count, and percentiles need three primary jobs.
+  group, classified or unclassified staff, 9- or 12-month terms, a college or VP
+  area, and a position class or rank. Each department page links to its own
+  distribution, shown as a filter that can be removed. A filter matching fewer
+  than three jobs shows only the count, and percentiles need three primary jobs.
 - A People page (`/people`) that searches every Fall census from 2014 to 2025 by
   name: each word typed must appear in the name, and up to 50 matching names are
   listed with the years they appear in and the pay department of their latest
@@ -131,7 +131,8 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     job being its job type and pay department;
   - census tabs, each with every field the report publishes for that year's
     jobs, its citation, and links to the pay department's page and salary
-    distribution;
+    distribution and to the salary distribution of each job's position class or
+    rank;
   - a job history of title, class or rank, pay department, job type,
     appointment, and term for every census.
 - A People link in the navigation, which now wraps on narrow screens.

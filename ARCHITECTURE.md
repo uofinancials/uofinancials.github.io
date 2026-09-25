@@ -130,8 +130,9 @@ flowchart LR
   driven by the `src/lib` department modules over every Fall and budget year.
 - `/salaries` - the number of jobs in each salary rate range for one Fall
   census, by employee group, with primary-job percentiles, filtered by group,
-  staff kind, term, and college or VP area or department; driven by the
-  `src/lib` distribution over one Fall year and its budget year.
+  staff kind, term, college or VP area or department, and position class or
+  rank; driven by the `src/lib` distribution over one Fall year and its budget
+  year.
 - `/people` - names across every Fall census matching a search, and for a chosen
   name its computed figures, its rates by job over time, its records for one
   census at a time, and its job history; not indexed by search engines; driven
