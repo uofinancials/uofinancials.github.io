@@ -20,8 +20,9 @@ export type Savings = {
   egCents: number
 }
 
+/** Basis points in a whole. */
 export const BASIS = 10_000
-const BASIS_BIG = 10_000n
+export const BASIS_BIG = 10_000n
 
 export const FULL_COST_METHOD =
   "Full cost is salary x (1 - leave rate) x (1 + OPE rate), following BRP's rate guidance, with each job's OPE rate group estimated by this site. It uses the OPE rate for the fiscal year stated and the latest published leave rate. The PERS side-account charge is left out, because the census does not say which fund pays a job. Overloads are costed at salary, with no OPE."
@@ -45,7 +46,8 @@ export type Rates = {
   leave: Map<string, number>
 } | null
 
-function divideHalfUp(numerator: bigint, denominator: bigint): bigint {
+/** Division rounded half up, for non-negative operands. */
+export function divideHalfUp(numerator: bigint, denominator: bigint): bigint {
   return (numerator * 2n + denominator) / (denominator * 2n)
 }
 
@@ -95,12 +97,13 @@ function fullCostOf(
   return Number(divideHalfUp(product, BASIS_BIG * BASIS_BIG))
 }
 
-export function costOf(job: Job, rateCents: number, rates: Rates): JobCost {
+/** A job's cost at its current rate; zero once removed. */
+export function costOf(job: Job, rates: Rates): JobCost {
   if (job.isRemoved)
     return { salaryCents: 0, fullCostCents: rates ? 0 : null, egCents: 0 }
   const salaryCents = jobSpendCents({
     ...job.record,
-    annualSalaryRateCents: rateCents,
+    annualSalaryRateCents: job.rateCents,
   })
   const fullCostCents = fullCostOf(salaryCents, job.group, rates)
   const egCents = Number(

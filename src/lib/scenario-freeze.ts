@@ -1,6 +1,8 @@
+import type { FallRecord } from '../data/fall.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { isClassifiedTemp, jobSpendCents } from './overview.ts'
 import {
+  addCost,
   BASIS,
   costOf,
   emptySavings,
@@ -20,9 +22,8 @@ export type FreezeRule = {
   afterFreeze: 'refill' | 'eliminate'
 }
 
-export type FreezeSavings = {
-  /** The freeze's place in the rule stack. */
-  rule: number
+export type FreezeResult = {
+  kind: 'freeze'
   rateBasisPoints: number
   /** One per projected year: what the freeze saves, with `jobs` the positions it leaves empty, rounded. */
   byYear: Savings[]
@@ -98,69 +99,62 @@ function subtractCost(cost: JobCost, part: JobCost): JobCost {
   }
 }
 
-type Freeze = { rule: number; freeze: FreezeRule; rateBasisPoints: number }
-
-function addTo(savings: Savings, cost: JobCost) {
-  savings.salaryCents += cost.salaryCents
-  savings.egCents += cost.egCents
-  if (savings.fullCostCents !== null && cost.fullCostCents !== null) {
-    savings.fullCostCents += cost.fullCostCents
-  }
+/** One freeze's scope and, per projected year, its share and what it has saved so far; `jobs` accumulates fractional positions. */
+type Tracker = {
+  rateBasisPoints: number
+  scope: Set<FallRecord>
+  years: { share: number; savings: Savings }[]
 }
 
-function saveYear(options: {
-  census: DepartmentCensus
-  jobs: Job[]
-  freezes: Freeze[]
-  rates: Rates
-  year: number
-}): Savings[] {
-  const { census, jobs, freezes, rates, year } = options
-  const scopes = freezes.map(({ freeze }) => scopeJobs(census, freeze.scope))
-  const savings = freezes.map(() => emptySavings(rates))
-  const positions = freezes.map(() => 0)
-  for (const job of jobs) {
-    if (job.isRemoved) continue
-    let left = costOf(job, job.rateCents, rates)
-    let heldFraction = 1
-    freezes.forEach(({ freeze, rateBasisPoints }, index) => {
-      if (!scopes[index]?.has(job.record)) return
-      const share = freezeShare(freeze, rateBasisPoints, year)
-      const saved = scaleCost(left, share)
-      left = subtractCost(left, saved)
-      const target = savings[index]
-      if (target) addTo(target, saved)
-      positions[index] =
-        (positions[index] ?? 0) + (heldFraction * share) / BASIS
-      heldFraction *= 1 - share / BASIS
+/** Adds one job's savings to each freeze covering it, each year, each freeze on what the earlier ones left. */
+function saveJob(cost: JobCost, covering: Tracker[]): void {
+  const left = new Map<number, JobCost>()
+  const held = new Map<number, number>()
+  for (const tracker of covering) {
+    tracker.years.forEach(({ share, savings }, year) => {
+      const cents = left.get(year) ?? cost
+      const fraction = held.get(year) ?? 1
+      const saved = scaleCost(cents, share)
+      addCost(savings, saved, 1)
+      savings.jobs += (fraction * share) / BASIS
+      left.set(year, subtractCost(cents, saved))
+      held.set(year, fraction * (1 - share / BASIS))
     })
   }
-  return savings.map((saving, index) => ({
-    ...saving,
-    jobs: Math.round(positions[index] ?? 0),
-  }))
 }
 
-/** Each freeze's savings per projected year, over the jobs and rates every other rule left. */
+/** Each freeze's savings per projected year, in stack order, over the jobs and rates every other rule left. */
 export function freezeSavings(options: {
   census: DepartmentCensus
   history: DepartmentCensus[]
   jobs: Job[]
-  freezes: { rule: number; freeze: FreezeRule }[]
+  freezes: FreezeRule[]
   rates: Rates
   projectedYears: number
-}): FreezeSavings[] {
+}): FreezeResult[] {
   const { census, history, jobs, rates, projectedYears } = options
-  const freezes = options.freezes.map((entry) => ({
-    ...entry,
-    rateBasisPoints: departureRate(history, entry.freeze.scope),
-  }))
-  const byYear = Array.from({ length: projectedYears }, (_, index) =>
-    saveYear({ census, jobs, freezes, rates, year: index + 1 }),
-  )
-  return freezes.map(({ rule, rateBasisPoints }, index) => ({
-    rule,
+  const trackers: Tracker[] = options.freezes.map((freeze) => {
+    const rateBasisPoints = departureRate(history, freeze.scope)
+    return {
+      rateBasisPoints,
+      scope: scopeJobs(census, freeze.scope),
+      years: Array.from({ length: projectedYears }, (_, index) => ({
+        share: freezeShare(freeze, rateBasisPoints, index + 1),
+        savings: emptySavings(rates),
+      })),
+    }
+  })
+  for (const job of jobs) {
+    if (job.isRemoved) continue
+    const covering = trackers.filter(({ scope }) => scope.has(job.record))
+    if (covering.length > 0) saveJob(costOf(job, rates), covering)
+  }
+  return trackers.map(({ rateBasisPoints, years }) => ({
+    kind: 'freeze',
     rateBasisPoints,
-    byYear: byYear.map((year) => year[index] ?? emptySavings(rates)),
+    byYear: years.map(({ savings }) => ({
+      ...savings,
+      jobs: Math.round(savings.jobs),
+    })),
   }))
 }

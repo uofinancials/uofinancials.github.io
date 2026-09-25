@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { orgCodeParam } from '../data/budget.ts'
 import { staffKindSchema } from '../data/fall.ts'
+import { CENTS_PER_DOLLAR } from './format.ts'
 import { TERMS } from './salary-distribution.ts'
 import type { Rule, ScenarioScope } from './scenario.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 
-const CENTS_PER_DOLLAR = 100
 const BASIS_POINTS_PER_PERCENT = 100
 const MAX_FREEZE_YEARS = 5
 

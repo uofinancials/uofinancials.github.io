@@ -1,8 +1,10 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
+  ANY_SCOPE,
   AREA,
   budgetRow,
+  censusSavings,
   RATES,
   scenarioBudget,
   UNIT,
@@ -12,14 +14,7 @@ import { egShares } from './eg-share'
 import { type Rule, runScenario, type ScenarioScope } from './scenario'
 
 const PAY = { code: UNIT, name: 'CAS Biology' }
-const ALL: ScenarioScope = {
-  group: null,
-  kind: 'all',
-  term: null,
-  position: null,
-  dept: null,
-}
-const CLASSIFIED: ScenarioScope = { ...ALL, kind: 'classified' }
+const CLASSIFIED: ScenarioScope = { ...ANY_SCOPE, kind: 'classified' }
 
 const RECORDS = [
   unclassifiedJob({
@@ -54,6 +49,8 @@ function run(rules: Rule[], opeFiscalYear = 2026) {
     rates: RATES,
     egShares: SHARES,
     opeFiscalYear,
+    history: [],
+    projectedYears: 0,
   })
 }
 
@@ -76,15 +73,15 @@ test('rules apply in order to what earlier rules left, and sum to the total', ()
   const result = run([
     {
       kind: 'threshold',
-      scope: ALL,
+      scope: ANY_SCOPE,
       overCents: 15_000_000,
       cutBasisPoints: 10_000,
     },
-    { kind: 'cut', scope: ALL, cutBasisPoints: 1_000 },
+    { kind: 'cut', scope: ANY_SCOPE, cutBasisPoints: 1_000 },
     { kind: 'remove', scope: CLASSIFIED },
     { kind: 'remove', scope: CLASSIFIED },
   ])
-  expect(result.rules).toEqual([
+  expect(censusSavings(result)).toEqual([
     {
       jobs: 1,
       salaryCents: 5_000_000,
@@ -116,14 +113,16 @@ test('rules apply in order to what earlier rules left, and sum to the total', ()
 })
 
 test('a threshold cuts only the part above it, and leaves jobs at or under it uncounted', () => {
-  const [halved] = run([
-    {
-      kind: 'threshold',
-      scope: ALL,
-      overCents: 10_000_000,
-      cutBasisPoints: 5_000,
-    },
-  ]).rules
+  const [halved] = censusSavings(
+    run([
+      {
+        kind: 'threshold',
+        scope: ANY_SCOPE,
+        overCents: 10_000_000,
+        cutBasisPoints: 5_000,
+      },
+    ]),
+  )
   // Only A is over: half of its 10,000,000 above the threshold.
   expect(halved).toEqual({
     jobs: 1,
@@ -136,7 +135,7 @@ test('a threshold cuts only the part above it, and leaves jobs at or under it un
 test('with no OPE rate for the year, full cost is null and the E&G share weights salary', () => {
   const result = run([{ kind: 'remove', scope: CLASSIFIED }], 2019)
   expect(result.opeFiscalYear).toBeNull()
-  expect(result.rules).toEqual([
+  expect(censusSavings(result)).toEqual([
     {
       jobs: 1,
       salaryCents: 5_000_000,
@@ -180,6 +179,8 @@ test('full cost is exact past 2^53 and rounds half up to the cent', () => {
     rates,
     egShares: new Map(),
     opeFiscalYear: 2027,
+    history: [],
+    projectedYears: 0,
   })
   // 123,456,789 x 8,933 x 17,740 = 19,564,372,661,470,380, over 10^8.
   expect(base.fullCostCents).toBe(195_643_727)

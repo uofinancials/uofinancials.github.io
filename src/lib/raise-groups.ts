@@ -62,11 +62,11 @@ const UOPA_CLASS_ROWS: Record<string, RaiseRow> = {
 }
 /** UOPA was recognized in 2017; before it these classes were in SEIU 503. */
 const UOPA_FIRST_CENSUS = 2017
-const TEAMSTERS_CLASS_PREFIX = 'J'
+export const TEAMSTERS_CLASS_PREFIX = 'J'
 const NO_RANK = 'No Rank'
 const OA_GRADE = /^OA\d{2}$/
 const COACH_GRADE = /^CCH\d$/
-const POSTDOC_RANK = /^Postdoctoral/
+export const POSTDOC_RANK = /^Postdoctoral/
 const PRO_TEM_TITLE = /pro tem|visiting|retired|emerit/i
 const TENURE_STATUSES = new Set(['Indefinite Tenure', 'Tenure Track'])
 

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import type { Projection } from '@/data/outlook'
 import type { Savings, ScenarioResult } from './scenario'
-import { scenarioOutlook, yearlySavings } from './scenario-outlook'
+import { outlookRows, yearlySavings } from './scenario-outlook'
 
 const SOURCE = {
   url: 'https://example.org/packet.pdf',
@@ -50,11 +50,14 @@ const savings = (egCents: number): Savings => ({
 
 const RESULT: ScenarioResult = {
   base: savings(0),
-  rules: [],
-  total: savings(500),
-  freezes: [
-    { rule: 0, rateBasisPoints: 0, byYear: [savings(100), savings(200)] },
+  rules: [
+    {
+      kind: 'freeze',
+      rateBasisPoints: 0,
+      byYear: [savings(100), savings(200)],
+    },
   ],
+  total: savings(500),
   temporaries: 0,
   opeFiscalYear: 2027,
   leaveFiscalYear: 2027,
@@ -66,7 +69,7 @@ test('savings start in the first year after the census and grow 3% a year, freez
 })
 
 test('the remaining gap and balance roll forward from the first saving year, with weeks of expenses less savings', () => {
-  const rows = scenarioOutlook({
+  const rows = outlookRows({
     result: RESULT,
     projection: PROJECTION,
     censusFiscalYear: 2026,
@@ -116,7 +119,7 @@ test('the remaining gap and balance roll forward from the first saving year, wit
 })
 
 test('a census after every projected year saves nothing against it', () => {
-  const rows = scenarioOutlook({
+  const rows = outlookRows({
     result: RESULT,
     projection: PROJECTION,
     censusFiscalYear: 2028,

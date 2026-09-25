@@ -1,5 +1,6 @@
 import type { BudgetRow, BudgetYear } from '@/data/budget'
 import type { OpeRates } from '@/data/ope'
+import type { ScenarioResult, ScenarioScope } from '@/lib/scenario'
 
 export const AREA = '222000'
 export const UNIT = '223100'
@@ -93,4 +94,20 @@ export const RATES: OpeRates = {
     },
   ],
   persRepayment: [],
+}
+
+/** A scope that reaches every job. */
+export const ANY_SCOPE: ScenarioScope = {
+  group: null,
+  kind: 'all',
+  term: null,
+  position: null,
+  dept: null,
+}
+
+/** Each rule's savings, `null` for a freeze. */
+export function censusSavings(result: ScenarioResult) {
+  return result.rules.map((rule) =>
+    rule.kind === 'census' ? rule.savings : null,
+  )
 }

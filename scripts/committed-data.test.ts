@@ -48,6 +48,9 @@ import {
   RAISES_DATA_PATH,
 } from './scrape/cache.ts'
 
+/** Parsing and linking every census takes about five seconds alone, more beside other test files. */
+const ALL_YEARS_TIMEOUT_MS = 20_000
+
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8'))
 }
@@ -74,6 +77,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect(linked).toHaveLength(13_189)
     expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(13_189)
   },
+  ALL_YEARS_TIMEOUT_MS,
 )
 
 function loadFallCensuses() {

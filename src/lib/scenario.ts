@@ -2,8 +2,8 @@ import type { FallRecord } from '../data/fall.ts'
 import type { OpeRates } from '../data/ope.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import {
+  type FreezeResult,
   type FreezeRule,
-  type FreezeSavings,
   freezeSavings,
 } from './scenario-freeze.ts'
 import {
@@ -21,7 +21,7 @@ import {
   toJobs,
 } from './scenario-jobs.ts'
 
-export type { FreezeRule, FreezeSavings } from './scenario-freeze.ts'
+export type { FreezeResult, FreezeRule } from './scenario-freeze.ts'
 export type { Savings, ScenarioScope } from './scenario-jobs.ts'
 
 export type Rule =
@@ -37,14 +37,16 @@ export type Rule =
 
 type CensusRule = Exclude<Rule, FreezeRule>
 
+/** What one rule did: a census rule's savings, or a freeze's savings by projected year. */
+export type RuleResult = { kind: 'census'; savings: Savings } | FreezeResult
+
 export type ScenarioResult = {
   /** The census's jobs a scenario can change, and what they cost. */
   base: Savings
-  /** One per rule, in order: the jobs it changed and what it saved; zero for a freeze, whose savings are in `freezes`. */
-  rules: Savings[]
-  /** The sum of `rules`: the base less what remains after every rule but the freezes. */
+  /** One per rule, in order. */
+  rules: RuleResult[]
+  /** The census rules' savings summed: the base less what remains before any freeze. */
   total: Savings
-  freezes: FreezeSavings[]
   /** Classified temporaries left out of the base. */
   temporaries: number
   /** `null` when no OPE rate is published for the requested fiscal year. */
@@ -83,16 +85,22 @@ function applyRule(
   const savings = emptySavings(rates)
   for (const job of jobs) {
     if (job.isRemoved || !inScope.has(job.record)) continue
-    const before = costOf(job, job.rateCents, rates)
     const rateCents = rateAfter(rule, job.rateCents)
     if (rateCents === job.rateCents) continue
+    const before = costOf(job, rates)
     if (rateCents === null) job.isRemoved = true
     else job.rateCents = rateCents
     addCost(savings, before, 1)
-    addCost(savings, costOf(job, job.rateCents, rates), -1)
+    addCost(savings, costOf(job, rates), -1)
     savings.jobs += 1
   }
   return savings
+}
+
+function nextFreeze(results: FreezeResult[]): FreezeResult {
+  const result = results.shift()
+  if (!result) throw new Error('A freeze rule has no freeze result')
+  return result
 }
 
 function sumSavings(parts: Savings[], rates: Rates): Savings {
@@ -115,36 +123,37 @@ export function runScenario(options: {
   rates: OpeRates
   egShares: Map<string, number>
   opeFiscalYear: number
-  history?: DepartmentCensus[]
-  projectedYears?: number
+  history: DepartmentCensus[]
+  projectedYears: number
 }): ScenarioResult {
   const { census, rules, rates, egShares, opeFiscalYear } = options
   const yearRates = ratesFor(rates, opeFiscalYear)
   const jobs = toJobs(census, egShares)
   const base = emptySavings(yearRates)
-  for (const job of jobs)
-    addCost(base, costOf(job, job.rateCents, yearRates), 1)
+  for (const job of jobs) addCost(base, costOf(job, yearRates), 1)
   base.jobs = jobs.length
-  const ruleSavings = rules.map((rule) =>
+  const censusResults = rules.map((rule) =>
     rule.kind === 'freeze'
-      ? emptySavings(yearRates)
+      ? null
       : applyRule(rule, jobs, scopeJobs(census, rule.scope), yearRates),
   )
-  const freezes = freezeSavings({
+  const freezeResults = freezeSavings({
     census,
-    history: options.history ?? [],
+    history: options.history,
     jobs,
-    freezes: rules.flatMap((freeze, rule) =>
-      freeze.kind === 'freeze' ? [{ rule, freeze }] : [],
-    ),
+    freezes: rules.filter((rule) => rule.kind === 'freeze'),
     rates: yearRates,
-    projectedYears: options.projectedYears ?? 0,
+    projectedYears: options.projectedYears,
   })
   return {
     base,
-    rules: ruleSavings,
-    total: sumSavings(ruleSavings, yearRates),
-    freezes,
+    rules: censusResults.map((savings) =>
+      savings ? { kind: 'census', savings } : nextFreeze(freezeResults),
+    ),
+    total: sumSavings(
+      censusResults.filter((savings) => savings !== null),
+      yearRates,
+    ),
     temporaries: census.records.length - jobs.length,
     opeFiscalYear: yearRates ? opeFiscalYear : null,
     leaveFiscalYear: latestLeaveYear(rates),

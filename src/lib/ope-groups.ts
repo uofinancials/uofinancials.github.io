@@ -1,5 +1,6 @@
 import type { FallClassified, FallRecord } from '../data/fall.ts'
 import { isClassifiedTemp } from './overview.ts'
+import { POSTDOC_RANK, TEAMSTERS_CLASS_PREFIX } from './raise-groups.ts'
 import type { TrendGroup } from './trend-groups.ts'
 
 /** A group name as `ope.json` lists it, and the leave-rate line within it (`appliesTo`). */
@@ -21,7 +22,7 @@ const SKILLED: OpeGroupRef = {
 const TECHNICAL: OpeGroupRef = { group: 'Classified Technical', leave: null }
 
 /** Classified EEO categories as published Fall 2019-2025, by OPE group. */
-export const CLASSIFIED_CATEGORY_GROUPS: Record<string, OpeGroupRef> = {
+const CLASSIFIED_CATEGORY_GROUPS: Record<string, OpeGroupRef> = {
   'Service/Maint': SERVICE,
   'Service/Maint - Protective': SERVICE,
   'Protective Service': SERVICE,
@@ -34,8 +35,6 @@ export const CLASSIFIED_CATEGORY_GROUPS: Record<string, OpeGroupRef> = {
 
 /** BRP's Athletics group is every job under this level-3 org, whose units all start with its first two digits. */
 const ATHLETICS_CODE_PREFIX = '48'
-const TEAMSTERS_CLASS_PREFIX = 'J'
-const POSTDOC_RANK = /^Postdoctoral/
 const NINE_MONTHS = 9
 const HALF_TIME_PERCENT = 50
 

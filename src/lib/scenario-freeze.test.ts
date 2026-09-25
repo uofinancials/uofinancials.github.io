@@ -1,19 +1,19 @@
 import { expect, test } from 'vitest'
 import type { FallRecord } from '@/data/fall'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { AREA, RATES, scenarioBudget, UNIT } from '@/test/scenario-fixtures'
+import {
+  ANY_SCOPE,
+  AREA,
+  RATES,
+  scenarioBudget,
+  UNIT,
+} from '@/test/scenario-fixtures'
 import { toDepartmentCensus } from './department-jobs'
 import { type Rule, runScenario, type ScenarioScope } from './scenario'
 import { departureRate, type FreezeRule, freezeShare } from './scenario-freeze'
 
 const PAY = { code: UNIT, name: 'CAS Biology' }
-const CLASSIFIED: ScenarioScope = {
-  group: null,
-  kind: 'classified',
-  term: null,
-  position: null,
-  dept: null,
-}
+const CLASSIFIED: ScenarioScope = { ...ANY_SCOPE, kind: 'classified' }
 const BUDGET = scenarioBudget([])
 
 const job = (name: string, annualSalaryRateCents: number) =>
@@ -71,15 +71,18 @@ test('a freeze compounds while it lasts, then refills or holds its last share', 
   ).toEqual([7_975, 7_975, 7_975])
 })
 
-test("a freeze saves its share of the scope's cost each year, and saves nothing in the census rules", () => {
+test("a freeze saves its share of the scope's cost each year, and nothing in the census total", () => {
   const result = run([freeze()])
-  expect(result.rules).toEqual([
-    { jobs: 0, salaryCents: 0, fullCostCents: 0, egCents: 0 },
-  ])
+  expect(result.total).toEqual({
+    jobs: 0,
+    salaryCents: 0,
+    fullCostCents: 0,
+    egCents: 0,
+  })
   // Avila's full cost is 4,000,000 x 0.9 x 1.9 = 6,840,000, all of it E&G.
-  expect(result.freezes).toEqual([
+  expect(result.rules).toEqual([
     {
-      rule: 0,
+      kind: 'freeze',
       rateBasisPoints: 5_500,
       byYear: [
         {
@@ -107,9 +110,12 @@ test('a freeze applies after every other rule, and a second freeze to what the f
     { kind: 'cut', scope: CLASSIFIED, cutBasisPoints: 5_000 },
     freeze({ years: 1 }),
   ])
-  const [first, second] = result.freezes
+  const [first, , second] = result.rules
+  if (first?.kind !== 'freeze' || second?.kind !== 'freeze') {
+    throw new Error('The first and third rules are freezes')
+  }
   // After the cut, Avila's rate is 2,000,000: 55% of it, then 55% of the 45% left.
-  expect(first?.byYear[0]?.salaryCents).toBe(1_100_000)
-  expect(second?.byYear[0]?.salaryCents).toBe(495_000)
+  expect(first.byYear[0]?.salaryCents).toBe(1_100_000)
+  expect(second.byYear[0]?.salaryCents).toBe(495_000)
   expect(result.total.salaryCents).toBe(2_000_000)
 })
