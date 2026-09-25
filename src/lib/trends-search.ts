@@ -29,8 +29,8 @@ export const STAFF_KIND_OPTIONS: [string, string][] = [
 export const CENSUS_METRICS = ['spend', 'fte', 'median'] as const
 export type CensusMetric = (typeof CENSUS_METRICS)[number]
 
-/** The census measures and the change in continuing jobs' rates between census pairs. */
 export const CHANGE_METRIC = 'change'
+/** The census measures and the change in continuing jobs' rates between census pairs. */
 export const TREND_METRICS = [...CENSUS_METRICS, CHANGE_METRIC] as const
 export type TrendMetric = (typeof TREND_METRICS)[number]
 
@@ -99,7 +99,6 @@ export type TrendView = TrendFilter & {
   pair: number
 }
 
-/** What a figure's lines are, for its title. */
 export function linesLabel(group: TrendGroup | null): string {
   return group ? `EEO category in ${group}` : 'group'
 }
