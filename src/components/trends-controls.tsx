@@ -1,3 +1,4 @@
+import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/trend-groups'
 import {
   METRIC_INFO,
@@ -128,10 +129,7 @@ export function TrendsControls({
           options={KIND_OPTIONS}
           onSelect={(value) =>
             onChange({
-              kind:
-                value === 'classified' || value === 'unclassified'
-                  ? value
-                  : undefined,
+              kind: staffKindSchema.safeParse(value).data,
             })
           }
         />

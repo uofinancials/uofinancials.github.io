@@ -1,5 +1,5 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
-import { isClassifiedTemp, jobSpendCents } from './overview.ts'
+import { isClassifiedTemp, NO_CATEGORY, summarize } from './overview.ts'
 import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 
 /** Each figure is `null` when the line has no job it applies to that year. */
@@ -24,8 +24,6 @@ export type TrendFilter = {
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
 
-export const NO_CATEGORY = 'No category'
-
 export function medianRateCents(rates: number[]): number | null {
   const sorted = [...rates].sort((a, b) => a - b)
   const upper = sorted[Math.floor(sorted.length / 2)]
@@ -39,14 +37,9 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
   const paid = records.filter((record) => !isClassifiedTemp(record))
   return {
     year,
-    spendCents:
-      paid.length === 0
-        ? null
-        : paid.reduce((sum, record) => sum + jobSpendCents(record), 0),
+    spendCents: paid.length === 0 ? null : summarize(paid).spendCents,
     fteHundredths:
-      records.length === 0
-        ? null
-        : records.reduce((sum, record) => sum + record.apptPercent, 0),
+      records.length === 0 ? null : summarize(records).fteHundredths,
     medianRateCents: medianRateCents(
       paid
         .filter((record) => record.jobType === 'Primary')
@@ -56,13 +49,6 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
 }
 
 const GROUP_ORDER: readonly string[] = TREND_GROUPS
-
-function lineOrder(isOpened: boolean) {
-  return (a: string, b: string) =>
-    isOpened
-      ? a.localeCompare(b)
-      : GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b)
-}
 
 /** One series per group (or per published category of an opened group), and their total, per census in range. */
 export function buildTrends(
@@ -75,25 +61,27 @@ export function buildTrends(
   const lines = new Map<string, Map<number, FallRecord[]>>()
   const total: TrendPoint[] = []
   for (const { year, records } of inRange) {
-    const shown = records.filter(
-      (record) =>
-        (filter.kind === 'all' || record.kind === filter.kind) &&
-        (filter.group === null || trendGroupOf(record, year) === filter.group),
-    )
-    total.push(measure(year, shown))
-    for (const record of shown) {
-      const key = filter.group
-        ? (record.eeoCategory ?? NO_CATEGORY)
-        : trendGroupOf(record, year)
+    const shown: FallRecord[] = []
+    for (const record of records) {
+      const group = trendGroupOf(record, year)
+      if (filter.kind !== 'all' && record.kind !== filter.kind) continue
+      if (filter.group !== null && group !== filter.group) continue
+      shown.push(record)
+      const key = filter.group ? (record.eeoCategory ?? NO_CATEGORY) : group
       const byYear = lines.get(key) ?? new Map<number, FallRecord[]>()
       const members = byYear.get(year) ?? []
       members.push(record)
       byYear.set(year, members)
       lines.set(key, byYear)
     }
+    total.push(measure(year, shown))
   }
   const series = [...lines.keys()]
-    .sort(lineOrder(filter.group !== null))
+    .sort((a, b) =>
+      filter.group
+        ? a.localeCompare(b)
+        : GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b),
+    )
     .map((key) => ({
       key,
       points: inRange.map(({ year }) =>

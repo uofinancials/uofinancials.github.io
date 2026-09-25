@@ -1,5 +1,6 @@
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
+import { useMemo } from 'react'
 import { SourceCitation } from '@/components/source-citation'
 import { TrendsChart } from '@/components/trends-chart'
 import { TrendsControls } from '@/components/trends-controls'
@@ -12,12 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { censusYearOf } from '@/data/fall'
+import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
+import { SPEND_METHOD } from '@/lib/overview'
 import {
+  publishedCategoriesOf,
   TREND_GROUPS,
   type TrendGroup,
-  UNCLASSIFIED_CATEGORY_GROUPS,
 } from '@/lib/trend-groups'
 import { buildTrends } from '@/lib/trends'
 import {
@@ -27,8 +29,7 @@ import {
   type TrendsSearch,
 } from '@/lib/trends-search'
 
-const COMPUTED =
-  'salary spend is the published annual salary rate x FTE, summed over jobs; jobs on unpaid leave count as zero and classified temporaries are left out. FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Groups are this site’s mapping of UO’s EEO categories, below.'
+const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Groups are this site’s mapping of UO’s EEO categories, below.`
 
 const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
   'Classified temporaries':
@@ -37,13 +38,6 @@ const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
     'Jobs of type Overload, in every year. UO publishes an Overload category from 2019; before, overloads carried the holder’s category.',
   'Classified staff': 'Every other classified job, whatever its category.',
   'Category not published': 'Unclassified jobs with no category (Fall 2017).',
-}
-
-function categoriesOf(group: TrendGroup): string {
-  return Object.entries(UNCLASSIFIED_CATEGORY_GROUPS)
-    .filter(([, mapped]) => mapped === group)
-    .map(([category]) => category)
-    .join(', ')
 }
 
 function GroupMapping() {
@@ -63,7 +57,7 @@ function GroupMapping() {
             </TableHead>
             <TableCell className="whitespace-normal">
               {GROUP_RULES[group] ??
-                `Unclassified jobs in the categories ${categoriesOf(group)}.`}
+                `Unclassified jobs in the categories ${publishedCategoriesOf(group).join(', ')}.`}
             </TableCell>
           </TableRow>
         ))}
@@ -72,18 +66,26 @@ function GroupMapping() {
   )
 }
 
+function toCensuses(results: { data: FallYear }[]) {
+  return results.map(({ data }) => ({
+    year: censusYearOf(data.censusDate),
+    records: data.records,
+  }))
+}
+
 export function TrendsPage() {
   const { years } = useLoaderData({ from: '/trends' })
   const search = useSearch({ from: '/trends' })
   const navigate = useNavigate({ from: '/trends' })
-  const censuses = useSuspenseQueries({ queries: years.map(fallYearQuery) })
+  const censuses = useSuspenseQueries({
+    queries: years.map(fallYearQuery),
+    combine: toCensuses,
+  })
   const view = resolveTrendView(search, years)
-  const trends = buildTrends(
-    censuses.map(({ data }) => ({
-      year: censusYearOf(data.censusDate),
-      records: data.records,
-    })),
-    view,
+  const { kind, group, from, to } = view
+  const trends = useMemo(
+    () => buildTrends(censuses, { kind, group, from, to }),
+    [censuses, kind, group, from, to],
   )
   const series = seriesWithMetric(trends.series, view.metric)
   const title = `${METRIC_INFO[view.metric].label} by ${view.group ? `EEO category in ${view.group}` : 'group'}, Fall ${view.from}-${view.to}`

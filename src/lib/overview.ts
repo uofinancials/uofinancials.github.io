@@ -25,7 +25,7 @@ export type Overview = {
 const UNPAID_STATUS = /^On Leave (No|Without) Pay|^Terminated$/
 const TEMP_POSITION_CLASS = /^TS/
 const PERCENT = 100
-const NO_CATEGORY = 'No category'
+export const NO_CATEGORY = 'No category'
 const FISCAL_YEAR_START_MONTH = 7
 export const UNASSIGNED_AREA = 'Area not assigned'
 
@@ -37,6 +37,10 @@ export function isClassifiedTemp(record: FallRecord): boolean {
       TEMP_POSITION_CLASS.test(record.positionClass.code))
   )
 }
+
+/** How `jobSpendCents` and the spend totals are computed, as stated on the page. */
+export const SPEND_METHOD =
+  'salary spend is the published annual salary rate x FTE, summed over jobs; jobs on unpaid leave count as zero and classified temporaries are left out. It estimates annual pay; it is not payroll.'
 
 /** Published annual salary rate x FTE, rounded to the cent; zero when unpaid. */
 export function jobSpendCents(record: FallRecord): number {

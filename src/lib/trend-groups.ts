@@ -50,3 +50,9 @@ export function trendGroupOf(
   }
   return group
 }
+
+export function publishedCategoriesOf(group: TrendGroup): string[] {
+  return Object.entries(UNCLASSIFIED_CATEGORY_GROUPS)
+    .filter(([, mapped]) => mapped === group)
+    .map(([category]) => category)
+}

@@ -57,6 +57,12 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
       ).records,
     }))
+    const yearsWithoutClass = years.filter(({ records }) =>
+      records.some(
+        (record) => record.kind === 'classified' && !record.positionClass,
+      ),
+    )
+    expect(yearsWithoutClass.map(({ year }) => year)).toEqual([2015])
     const { series, total } = buildTrends(years, {
       kind: 'all',
       group: null,
