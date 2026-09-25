@@ -1,5 +1,7 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { FallYear } from '@/data/fall'
+import { raiseTermsQuery } from '@/data/queries'
 import {
   changeCounts,
   continuingPairs,
@@ -7,6 +9,7 @@ import {
   payChangeDistribution,
   payChangeTrends,
 } from '@/lib/pay-changes'
+import { viewRaiseComparison } from '@/lib/raise-comparison'
 import { CHANGE_METRIC, type TrendView } from '@/lib/trends-search'
 
 /** The change measure's figures for the view; `null` under any other measure, so the continuing pairs are built only for it. */
@@ -17,6 +20,19 @@ export function usePayChanges(fallYears: FallYear[], view: TrendView) {
     [fallYears, isChange],
   )
   const { kind, group, dept, position, from, to, fromYears, pair } = view
+  const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
+  const raises = useMemo(
+    () =>
+      pairs &&
+      viewRaiseComparison({
+        pairs,
+        filter: { kind, group, dept, position, from, to },
+        fromYear: pair,
+        years: fallYears,
+        raises: raiseTerms,
+      }),
+    [pairs, fallYears, raiseTerms, kind, group, dept, position, from, to, pair],
+  )
   const shown = useMemo(
     () =>
       pairs && filterPairs(pairs, { kind, group, dept, position, from, to }),
@@ -31,8 +47,9 @@ export function usePayChanges(fallYears: FallYear[], view: TrendView) {
         distribution: payChangeDistribution(
           shown.filter(({ fromYear }) => fromYear === pair),
         ),
+        raises,
       },
-    [shown, fromYears, group, pair],
+    [shown, fromYears, group, pair, raises],
   )
 }
 

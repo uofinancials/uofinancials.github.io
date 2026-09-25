@@ -43,7 +43,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   SEIU 503 and Teamsters 206 classified staff, UO police, and officers of
   administration, 2013-2026, each citing its agreement or UO page, section, and
   page, with percentages as published. Ten years-and-groups with no public
-  source are listed as gaps.
+  source are listed as gaps. Each across-the-board term also records which part
+  of its group it applies to (for United Academics, tenure-related, career
+  instructional, career research, or pro tem faculty; for UOPA, police officers,
+  dispatchers, or community service officers), read by this site from the term's
+  published scope. The two terms whose day is not published record the window
+  their source gives.
 - Person links between consecutive Fall Census years: a name is linked to the
   same name in the next year when each year lists exactly one primary job for it
   and both are in the same pay department. The links are computed, not published
@@ -171,10 +176,26 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     prefix), rank, or job title, each with its share, and how many have a rank
     UO did not publish;
   - for one chosen pair, a histogram and table of the changes in 1-point steps
-    from -5% to 20%, split by group.
+    from -5% to 20%, split by group;
+  - for the same pair, each raise group's median change beside the
+    across-the-board increase its cited terms give between the two census dates,
+    compounded, and the difference in points labelled as other than
+    across-the-board (merit, steps, equity, promotions), an estimate for the
+    group and never a person (2024-25: SEIU 503 10.8% against 6.6%, United
+    Academics tenure-related 7.9% against 7.9%, from the census reports and the
+    cited agreements and UO pages, retrieved 2026-09-24). The terms used are
+    listed with their citations, and the groups' recorded gaps show as "No term
+    recorded".
 - Each continuing job is counted in the group, category, department, and class
   or rank of the earlier census. The chosen pair is kept in the link with the
   rest of the Trends view. A figure covering fewer than three jobs is not shown.
+- A continuing job's raise group is estimated from its published class, rank, OA
+  salary grade, and title, since UO publishes no bargaining unit: Teamsters 206,
+  UOPA (from Fall 2017), and SEIU 503 by position class; United Academics by
+  rank, split by title, tenure status, and research rank; officers of
+  administration by OA grade. Executives, coaches, postdoctoral scholars, and
+  police sergeants are in none, and the page counts them. The raise comparison
+  applies every Trends filter except an opened group, and says so.
 - Rank moves that UO relabelled are listed on the page and are not counted as
   rank or title changes: the 2025 career-instructor ranks, the 2015 postdoctoral
   and Early Childhood CARES ranks, and the 2016 administrators given a rank.

@@ -1,6 +1,7 @@
 import { PayChangeCountsTable } from '@/components/pay-change-counts-table'
 import { PayChangeDistribution } from '@/components/pay-change-distribution'
 import { PayChangeLines } from '@/components/pay-change-lines'
+import { RaiseComparisonSection } from '@/components/raise-comparison-section'
 import { SourceCitation } from '@/components/source-citation'
 import {
   Table,
@@ -80,7 +81,7 @@ function LabelTables() {
 
 /** The change measure's lines, counts, one pair's distribution, citation, and label tables; the pairs are those in the view's range. */
 export function PayChangesSection({
-  changes: { fromYears, series, counts, distribution },
+  changes: { fromYears, series, counts, distribution, raises },
   view,
   onChange,
 }: {
@@ -112,6 +113,13 @@ export function PayChangesSection({
           caption={`Continuing jobs with a changed class, rank, or title, ${span}`}
         />
       </section>
+      {raises && (
+        <RaiseComparisonSection
+          comparison={raises}
+          pair={view.pair}
+          isGroupOpened={view.group !== null}
+        />
+      )}
       <PayChangeDistribution
         distribution={distribution}
         pair={view.pair}

@@ -24,6 +24,12 @@ const CHANGE = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
+const POINTS = new Intl.NumberFormat('en-US', {
+  signDisplay: 'exceptZero',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
 const YEARS = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
@@ -65,6 +71,13 @@ export function formatShare(part: number, whole: number): string {
 /** Formats a change given as a fraction, e.g. `+14.1%`. */
 export function formatChange(ratio: number): string {
   return CHANGE.format(ratio)
+}
+
+const PERCENT_POINTS = 100
+
+/** Formats a difference of two fractions in percentage points, e.g. `+4.2 points`. */
+export function formatPoints(difference: number): string {
+  return `${POINTS.format(difference * PERCENT_POINTS)} points`
 }
 
 export function formatYears(years: number): string {

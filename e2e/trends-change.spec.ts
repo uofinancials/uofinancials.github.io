@@ -73,3 +73,35 @@ test('a person links to the pay changes of their class or rank, the filter can b
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(page).not.toHaveURL(/position=/)
 })
+
+test('the change measure sets each raise group’s median beside its cited across-the-board increase', async ({
+  page,
+}) => {
+  await page.goto('/trends?metric=change&pair=2024')
+  const table = page.getByRole('table', {
+    name: 'Across-the-board and other increases, Fall 2024-25 (estimated)',
+  })
+  await expect(
+    table.getByRole('row', {
+      name: /^SEIU 503 1,500 \+10\.8% \+6\.6% \+4\.2 points/,
+    }),
+  ).toBeVisible()
+  await expect(
+    table.getByRole('row', {
+      name: /^United Academics, tenure-related 754 \+7\.9% \+7\.9% 0\.0 points/,
+    }),
+  ).toBeVisible()
+  await expect(page.getByRole('main')).toContainText(
+    '151 continuing jobs are in no raise group',
+  )
+  await expect(
+    page
+      .getByRole('table', { name: 'Across-the-board terms used' })
+      .getByRole('link', { name: /SEIU/ })
+      .first(),
+  ).toHaveAttribute('href', /^https:\/\//)
+  await page.goto('/trends?metric=change&pair=2024&group=Faculty')
+  await expect(page.getByRole('main')).toContainText(
+    'leaves out the opened group',
+  )
+})

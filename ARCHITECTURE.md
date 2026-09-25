@@ -31,7 +31,8 @@ files.
 - `public/data/ope.json` - OPE, leave, and PERS repayment rates by rate group
   and year, and the rate groups; written by `scripts/scrape`.
 - `public/data/raises.json` - raise terms by employee group, each with its
-  citation, and the recorded gaps; edited by hand.
+  citation and, for across-the-board terms, the populations it applies to, and
+  the recorded gaps; edited by hand.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
   dates, and counts; written by `scripts/scrape`.
 
@@ -64,11 +65,11 @@ flowchart LR
   the stacked bar chart, the trends table and controls, the department budget
   and jobs sections, the census filter controls, the salary distribution figure,
   the removable filter, the pay changes section with its lines, counts table,
-  and distribution, the people list's controls, table, sort controls, column
-  picker, and group figure, the person view with its computed figures, rate
-  chart, records table, and job history, and the hooks and query that load one
-  census's placed jobs, the people list's matching jobs, the pay changes of a
-  Trends view, and the name index.
+  distribution, and raise comparison, the people list's controls, table, sort
+  controls, column picker, and group figure, the person view with its computed
+  figures, rate chart, records table, and job history, and the hooks and query
+  that load one census's placed jobs, the people list's matching jobs, the pay
+  changes of a Trends view, and the name index.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -80,8 +81,9 @@ flowchart LR
   name matching, linked runs, and a record's published fields), the people
   list's filtering, sorting, and paging of one census's jobs, a person's
   computed figures, rates by job, job history, a job's class or rank and the
-  medians beside it, and continuing jobs' pay changes with the rank renames and
-  title abbreviations they use.
+  medians beside it, continuing jobs' pay changes with the rank renames and
+  title abbreviations they use, a job's estimated raise group, and each raise
+  group's median change beside its compounded across-the-board terms.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -119,8 +121,8 @@ flowchart LR
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
   departments, the people list and person page, sources page, and `404.html`.
-- `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, and
-  its link from the person page.
+- `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, its
+  raise comparison, and its link from the person page.
 
 ## Pages
 
@@ -130,9 +132,11 @@ flowchart LR
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
   every Fall census, or for continuing jobs in each pair of consecutive censuses
   the median change in salary rate, the counts of changed class, rank, and
-  title, and one pair's distribution of changes; filtered by pay department or
-  class or rank, with the view held in the URL; driven by `src/lib` groups,
-  trends, person links, and pay changes over every Fall year.
+  title, and one pair's distribution of changes and median change by raise group
+  beside its across-the-board terms; filtered by pay department or class or
+  rank, with the view held in the URL; driven by `src/lib` groups, trends,
+  person links, pay changes, and the raise comparison over every Fall year and
+  the raise terms.
 - `/departments` - each college or VP area in the latest census's budget year,
   with its budget units and the latest census's pay departments, filtered by
   name or code; driven by the `src/lib` department index over one Fall year and
