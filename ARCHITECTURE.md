@@ -117,8 +117,7 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  departments, the salaries redirect, the people list and person page, sources
-  page, and `404.html`.
+  departments, the people list and person page, sources page, and `404.html`.
 - `e2e/pay-changes.spec.ts` - the pay changes page and its link from the person
   page.
 
@@ -138,7 +137,6 @@ flowchart LR
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, and for an area how its jobs were placed;
   driven by the `src/lib` department modules over every Fall and budget year.
-- `/salaries` - redirects to `/people` with its filters.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   charts of the matching jobs by salary rate, with primary-job percentiles, and
   by group, and names from other censuses when a name has no job in it; not

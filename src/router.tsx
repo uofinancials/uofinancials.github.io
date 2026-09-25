@@ -18,7 +18,7 @@ import {
   manifestQuery,
   raiseTermsQuery,
 } from '@/data/queries'
-import { censusSearchSchema, resolveCensusYear } from '@/lib/census-search'
+import { resolveCensusYear } from '@/lib/census-search'
 import {
   departmentSearchSchema,
   departmentsSearchSchema,
@@ -139,15 +139,6 @@ async function loadCensus({
   return { years, year, fiscalYear }
 }
 
-const salariesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/salaries',
-  validateSearch: censusSearchSchema,
-  beforeLoad: ({ search }) => {
-    throw redirect({ to: '/people', search, replace: true })
-  },
-})
-
 const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people',
@@ -200,7 +191,6 @@ const routeTree = rootRoute.addChildren([
   trendsRoute,
   departmentsRoute,
   departmentRoute,
-  salariesRoute,
   peopleRoute,
   personRoute,
   payChangesRoute,

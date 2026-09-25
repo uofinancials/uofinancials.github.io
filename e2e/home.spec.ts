@@ -316,18 +316,6 @@ test('the people chart shows the latest census by salary rate, and each filter i
   ).toHaveValue('222000')
 })
 
-test('an old salaries link opens the people list with its filters', async ({
-  page,
-}) => {
-  await page.goto('/salaries?term=9&group=Faculty&year=2020')
-  await expect(page).toHaveURL(/\/people\?/)
-  await expect(page).toHaveURL(/term=9/)
-  await expect(page).toHaveURL(/group=Faculty/)
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'People, Fall 2020' }),
-  ).toBeVisible()
-})
-
 test('a department page links to its jobs, and the department filter can be removed', async ({
   page,
 }) => {

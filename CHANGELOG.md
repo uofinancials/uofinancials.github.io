@@ -136,8 +136,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - a name with no job in the census listed with the censuses it appears in.
 - The list is kept in its link, and the page asks search engines not to index
   it. Records marked `possibleStudent` are shown as published. The department
-  and person pages link to it with their filters, and old `/salaries` links open
-  it with theirs.
+  and person pages link to it with their filters.
 - Each name has its own page (`/people/<name>`), also not indexed, with a back
   button to the list. Old `/people?name=` links lead to it. It shows, from top
   to bottom:
