@@ -1,3 +1,4 @@
+import { RemovableFilter } from '@/components/removable-filter'
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
 import type { Place, SalariesSearch, SalariesView } from '@/lib/salaries-search'
@@ -14,27 +15,6 @@ const TERM_OPTIONS: [string, string][] = [
   [ALL, '9 and 12 months'],
   ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
 ]
-
-function RemovableFilter({
-  text,
-  onRemove,
-}: {
-  text: string
-  onRemove: () => void
-}) {
-  return (
-    <p className="flex flex-wrap items-center gap-2 text-sm">
-      {text}
-      <button
-        type="button"
-        className="rounded-md border px-2 py-0.5"
-        onClick={onRemove}
-      >
-        Remove
-      </button>
-    </p>
-  )
-}
 
 /** The salaries view's controls; each change is a new URL search. */
 export function SalariesControls({

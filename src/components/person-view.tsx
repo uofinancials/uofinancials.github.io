@@ -4,11 +4,12 @@ import { PersonHistoryTable } from '@/components/person-history-table'
 import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
-import type { PeerMedians } from '@/lib/peer-median'
+import { type PeerMedians, peerGroupOf } from '@/lib/peer-median'
 import {
   type Person,
   type PersonYear,
   personYearsOf,
+  primaryJobOf,
 } from '@/lib/person-lookup'
 import { payDepartmentsOf, positionsOf, runOf } from '@/lib/person-summary'
 import { cn } from '@/lib/utils'
@@ -44,6 +45,8 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
 
 function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
   const departments = payDepartmentsOf(entry.records)
+  const primary = primaryJobOf(entry.records)
+  const group = primary && peerGroupOf(primary)
   return (
     <section className="space-y-2">
       <h3 className="font-semibold">Fall {entry.year} records</h3>
@@ -64,6 +67,13 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           >
             Salary distribution, {department}, Fall {entry.year}
           </Link>
+          <Link
+            className="underline"
+            to="/pay-changes"
+            search={{ dept: code, pair: entry.year }}
+          >
+            Pay changes, {department}
+          </Link>
         </p>
       ))}
       {positionsOf(entry.records).map(({ position, label }) => (
@@ -77,6 +87,17 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
         </p>
       ))}
+      {group && (
+        <p className="text-sm">
+          <Link
+            className="underline"
+            to="/pay-changes"
+            search={{ position: group.key, pair: entry.year }}
+          >
+            Pay changes, {group.label}
+          </Link>
+        </p>
+      )}
     </section>
   )
 }

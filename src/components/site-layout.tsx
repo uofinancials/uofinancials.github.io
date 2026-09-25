@@ -7,6 +7,7 @@ const NAV_LINKS = [
   ['/trends', 'Trends'],
   ['/departments', 'Departments'],
   ['/salaries', 'Salaries'],
+  ['/pay-changes', 'Pay changes'],
   ['/people', 'People'],
   ['/sources', 'Sources'],
 ] as const

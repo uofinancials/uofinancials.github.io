@@ -14,6 +14,7 @@ for (const path of [
   '/departments/223100',
   '/salaries',
   '/people',
+  '/pay-changes',
   '/sources',
   '/no-such-page',
 ]) {

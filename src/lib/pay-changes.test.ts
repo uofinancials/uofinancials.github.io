@@ -66,7 +66,7 @@ test('pairs leave out temporaries, staff kind moves, and term changes, and group
   ])
 })
 
-test('each line is the median and quartiles of its pairs, blank below three', () => {
+test('each line is the median of its pairs, blank below three', () => {
   const pairs = continuingPairs([
     ...linkedYears(2020, [
       classifiedPair(100_000, 100_000),
@@ -84,14 +84,12 @@ test('each line is the median and quartiles of its pairs, blank below three', ()
   expect(all?.points[0]?.median).toBeCloseTo(0.04, 10)
   expect(faculty).toMatchObject({
     key: 'Faculty',
-    points: [{ pairs: 1, median: null, p25: null, p75: null }, { pairs: 0 }],
+    points: [{ pairs: 1, median: null }, { pairs: 0 }],
   })
   expect(classified?.key).toBe('Classified staff')
   const point = classified?.points[0]
   expect(point?.pairs).toBe(4)
   expect(point?.median).toBeCloseTo(0.03, 10)
-  expect(point?.p25).toBeCloseTo(0.015, 10)
-  expect(point?.p75).toBeCloseTo(0.055, 10)
 })
 
 test('changes fall in whole-point bins from -5% to 20%, with open bins either side', () => {

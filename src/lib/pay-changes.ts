@@ -8,6 +8,13 @@ import { emptyCounts } from './salary-distribution.ts'
 import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 import { percentileOf } from './trends.ts'
 
+const MEDIAN = 50
+
+/** A census pair's label, e.g. `2024-25`. */
+export function pairLabel(fromYear: number): string {
+  return `${fromYear}-${String(fromYear + 1).slice(-2)}`
+}
+
 /** A person link whose two primary jobs are the same staff kind and term, neither a classified temporary; grouped by the earlier job. */
 export type ContinuingPair = {
   fromYear: number
@@ -58,13 +65,11 @@ export function filterPairs(
   )
 }
 
-/** Median and quartiles of the change over a pair year's pairs; each `null` below `MIN_JOBS_SHOWN` pairs. */
+/** The median change over a pair year's pairs; `null` below `MIN_JOBS_SHOWN` pairs. */
 export type ChangePoint = {
   fromYear: number
   pairs: number
   median: number | null
-  p25: number | null
-  p75: number | null
 }
 
 export type ChangeSeries = { key: string; points: ChangePoint[] }
@@ -73,14 +78,11 @@ export const ALL_PAIRS = 'All continuing jobs'
 
 function measure(fromYear: number, ratios: number[]): ChangePoint {
   const sorted = [...ratios].sort((a, b) => a - b)
-  const shown = sorted.length >= MIN_JOBS_SHOWN
-  const at = (p: number) => (shown ? percentileOf(sorted, p) : null)
   return {
     fromYear,
     pairs: sorted.length,
-    median: at(50),
-    p25: at(25),
-    p75: at(75),
+    median:
+      sorted.length >= MIN_JOBS_SHOWN ? percentileOf(sorted, MEDIAN) : null,
   }
 }
 
@@ -252,4 +254,31 @@ export function changeCounts(
       pairs.filter((pair) => pair.fromYear === fromYear),
     ),
   )
+}
+
+/** How the filter's department and class or rank read, from the first pair with them; `null` for one not set. */
+export function filterNames(
+  pairs: ContinuingPair[],
+  { dept, position }: Pick<PayChangeFilter, 'dept' | 'position'>,
+): { dept: string | null; position: string | null } {
+  const inDept =
+    dept === null
+      ? undefined
+      : pairs.find(({ from }) => from.payDepartment.code === dept)
+  const inPosition =
+    position === null
+      ? undefined
+      : pairs.find(({ from }) => peerGroupOf(from)?.key === position)
+  return {
+    dept:
+      dept === null
+        ? null
+        : inDept
+          ? `${inDept.from.payDepartment.name} (${dept})`
+          : dept,
+    position:
+      position === null
+        ? null
+        : ((inPosition && peerGroupOf(inPosition.from)?.label) ?? position),
+  }
 }
