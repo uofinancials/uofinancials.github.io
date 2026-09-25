@@ -73,7 +73,13 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
-  loader: loadFallYears,
+  loader: async (options) => {
+    const [loaded] = await Promise.all([
+      loadFallYears(options),
+      options.context.queryClient.ensureQueryData(raiseTermsQuery),
+    ])
+    return loaded
+  },
   component: TrendsPage,
 })
 

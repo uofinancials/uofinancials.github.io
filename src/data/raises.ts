@@ -123,6 +123,7 @@ export const raiseTermsSchema = z.strictObject({
 })
 
 export type RaiseTerm = z.infer<typeof raiseTermSchema>
+export type RaiseTerms = z.infer<typeof raiseTermsSchema>
 export type EmployeeGroup = z.infer<typeof employeeGroupSchema>
 export type Population = z.infer<typeof populationSchema>
 export type AcrossTheBoardTerm = Extract<

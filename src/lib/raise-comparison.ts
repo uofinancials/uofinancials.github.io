@@ -1,10 +1,14 @@
 import type { FallYear } from '../data/fall.ts'
-import type { AcrossTheBoardTerm, RaiseTerm } from '../data/raises.ts'
+import type {
+  AcrossTheBoardTerm,
+  RaiseTerm,
+  RaiseTerms,
+} from '../data/raises.ts'
 import type { ContinuingPair } from './pay-changes.ts'
 import { RAISE_ROWS, type RaiseRow } from './raise-groups.ts'
 import { MIN_JOBS_SHOWN, medianOf } from './trends.ts'
 
-const BASIS_POINTS_PER_UNIT = 10_000
+export const BASIS_POINTS_PER_UNIT = 10_000
 
 /** A pair's census dates: a term counts if it took effect after `after` and on or before `through`. */
 export type CensusWindow = { after: string; through: string }
@@ -79,6 +83,10 @@ export type RaiseComparison = {
   rows: RaiseComparisonRow[]
   /** Continuing jobs in no raise row. */
   unplaced: number
+  /** Every term the rows compound, each once. */
+  terms: AcrossTheBoardTerm[]
+  /** The recorded gaps of the rows' groups. */
+  gaps: RaiseTerms['gaps']
 }
 
 function compareRow(
@@ -107,13 +115,22 @@ function compareRow(
 /** One pair year's continuing jobs by raise row; a row with no job and no term is left out. */
 export function raiseComparison(
   pairs: ContinuingPair[],
-  terms: RaiseTerm[],
+  { terms, gaps }: RaiseTerms,
   window: CensusWindow,
 ): RaiseComparison {
+  const rows = RAISE_ROWS.map((row) =>
+    compareRow(row, pairs, terms, window),
+  ).filter(({ jobs, acrossTheBoard }) => jobs > 0 || acrossTheBoard)
   return {
-    rows: RAISE_ROWS.map((row) => compareRow(row, pairs, terms, window)).filter(
-      ({ jobs, acrossTheBoard }) => jobs > 0 || acrossTheBoard,
-    ),
+    rows,
     unplaced: pairs.filter(({ raise }) => raise === null).length,
+    terms: [
+      ...new Set(
+        rows.flatMap(({ acrossTheBoard }) => acrossTheBoard?.terms ?? []),
+      ),
+    ],
+    gaps: gaps.filter(({ employeeGroup }) =>
+      rows.some(({ row }) => row.group === employeeGroup),
+    ),
   }
 }

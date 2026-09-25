@@ -112,7 +112,13 @@ test('each row has its median beside the increase and the difference; rows with 
   )
   const comparison = raiseComparison(
     continuingPairs(years),
-    SEIU_TERMS,
+    {
+      terms: SEIU_TERMS,
+      gaps: [
+        { employeeGroup: 'SEIU 503', fiscalYears: 'FY27', note: 'Bargaining.' },
+        { employeeGroup: 'UOPA', fiscalYears: 'FY27', note: 'Unpublished.' },
+      ],
+    },
     censusWindow(years, 2024) ?? window(0),
   )
   expect(comparison.unplaced).toBe(1)
@@ -122,4 +128,11 @@ test('each row has its median beside the increase and the difference; rows with 
   expect(seiu?.median).toBeCloseTo(0.0863)
   expect(seiu?.acrossTheBoard?.basisPoints).toBe(661)
   expect(seiu?.other).toBeCloseTo(0.0202)
+  expect(comparison.terms.map(({ effectiveDate }) => effectiveDate)).toEqual([
+    '2025-06-01',
+    '2025-11-01',
+  ])
+  expect(comparison.gaps.map(({ employeeGroup }) => employeeGroup)).toEqual([
+    'SEIU 503',
+  ])
 })
