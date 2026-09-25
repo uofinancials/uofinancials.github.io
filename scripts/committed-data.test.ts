@@ -17,6 +17,7 @@ import {
   isClassifiedTemp,
   summarize,
 } from '../src/lib/overview.ts'
+import { peerMedianFor, peerMedians } from '../src/lib/peer-median.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import { indexPeople } from '../src/lib/person-lookup.ts'
 import { runCards } from '../src/lib/person-summary.ts'
@@ -380,5 +381,37 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Classified temporaries': 2,
     })
     expect(maxRateCents).toBe(940_000_000)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'Fall 2025 class and rank medians match an independent computation',
+  () => {
+    const { censusDate, records } = fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+    )
+    const medians = peerMedians([{ censusDate, records }])
+    const analyst = records.find(
+      (record) =>
+        record.kind === 'classified' &&
+        record.positionClass?.code === 'C1464' &&
+        record.jobType === 'Primary' &&
+        record.termOfServiceMonths === 12,
+    )
+    const professor = records.find(
+      (record) =>
+        record.kind === 'unclassified' &&
+        record.rank === 'Professor' &&
+        record.jobType === 'Primary' &&
+        record.termOfServiceMonths === 9,
+    )
+    expect(analyst && peerMedianFor(medians, 2025, analyst)).toMatchObject({
+      medianCents: 11_367_000,
+      jobs: 81,
+    })
+    expect(professor && peerMedianFor(medians, 2025, professor)).toMatchObject({
+      medianCents: 15_440_700,
+      jobs: 363,
+    })
   },
 )

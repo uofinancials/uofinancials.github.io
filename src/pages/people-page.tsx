@@ -11,6 +11,7 @@ import { SourceCitation } from '@/components/source-citation'
 import type { FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
 import { formatCount } from '@/lib/format'
+import { type PeerMedians, peerMedians } from '@/lib/peer-median'
 import {
   formatYearRanges,
   indexPeople,
@@ -23,8 +24,12 @@ import { resolveCensusYear } from '@/lib/salaries-search'
 
 const MATCH_NOTE = `a name matches when every word typed appears in it, ignoring case and commas. Its years are the censuses that list the name, and its department is the pay department of its primary job in the latest of them (or its first listed job, with no primary job). The same name may be more than one person.`
 
-function toPeople(results: { data: FallYear }[]): Person[] {
-  return indexPeople(results.map(({ data }) => data))
+function toLookup(results: { data: FallYear }[]): {
+  people: Person[]
+  medians: PeerMedians
+} {
+  const years = results.map(({ data }) => data)
+  return { people: indexPeople(years), medians: peerMedians(years) }
 }
 
 function Matches({ people, q }: { people: Person[]; q: string }) {
@@ -61,9 +66,9 @@ export function PeoplePage() {
   const { years } = useLoaderData({ from: '/people' })
   const { q = '', name, year } = useSearch({ from: '/people' })
   const navigate = useNavigate({ from: '/people' })
-  const people = useSuspenseQueries({
+  const { people, medians } = useSuspenseQueries({
     queries: years.map(fallYearQuery),
-    combine: toPeople,
+    combine: toLookup,
   })
   const person = people.find((entry) => entry.name === name)
   const firstYear = Math.min(...years)
@@ -88,6 +93,7 @@ export function PeoplePage() {
         (person ? (
           <PersonView
             person={person}
+            medians={medians}
             year={resolveCensusYear(year, yearsOf(person))}
           />
         ) : (

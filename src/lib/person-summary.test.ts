@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { formatChange, formatYears } from './format'
+import { peerMedians } from './peer-median'
 import { indexPeople } from './person-lookup'
 import {
   jobHistory,
+  MEDIAN_SERIES,
   payDepartmentsOf,
   personRates,
   positionsOf,
@@ -66,7 +68,7 @@ test('an unlinked year has only the start-date card', () => {
 })
 
 test('each job type and pay department is a line of published rates, gapped where absent', () => {
-  const { years, series } = personRates(ann())
+  const { years, series } = personRates(ann(), new Map())
   expect(years).toEqual([2020, 2021, 2022, 2023, 2025])
   expect(series).toEqual([
     {
@@ -87,10 +89,9 @@ test('two jobs of one type in one department and year stay separate lines', () =
       classifiedJob({ jobType: 'Secondary', annualSalaryRateCents: 200 }),
     ]),
   ])
-  expect(person && personRates(person).series.map(({ key }) => key)).toEqual([
-    'Secondary · Dept',
-    'Secondary · Dept (2)',
-  ])
+  expect(
+    person && personRates(person, new Map()).series.map(({ key }) => key),
+  ).toEqual(['Secondary · Dept', 'Secondary · Dept (2)'])
 })
 
 test('the job history lists every job as published, with its run’s link', () => {
@@ -140,4 +141,35 @@ test('a year’s positions are listed once each with how they read', () => {
     { position: 'E0104', label: 'Office Specialist 2 (E0104)' },
     { position: 'Instructor', label: 'Instructor' },
   ])
+})
+
+test('the median line follows the primary job’s group, gapped where it has no median', () => {
+  const peers = (year: number) =>
+    census(
+      year,
+      [1, 2, 3].map((index) =>
+        classifiedJob({
+          name: `Peer ${index}`,
+          annualSalaryRateCents: index * 1_000_000,
+        }),
+      ),
+    )
+  const years = [
+    census(2020, [classifiedJob({ annualSalaryRateCents: 5_000_000 })]),
+    census(2021, [classifiedJob({ annualSalaryRateCents: 5_500_000 })]),
+  ]
+  const [ann] = indexPeople(years)
+  const medians = peerMedians([
+    {
+      ...peers(2020),
+      records: [...peers(2020).records, ...(years[0]?.records ?? [])],
+    },
+    years[1] ?? census(2021, []),
+  ])
+  const rates = ann && personRates(ann, medians)
+  expect(rates?.series.at(-1)).toEqual({
+    key: MEDIAN_SERIES,
+    values: [2_500_000, null],
+  })
+  expect(rates?.medianGroups).toEqual(['Office Specialist 2 (class 0104)'])
 })

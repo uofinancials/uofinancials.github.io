@@ -1,4 +1,5 @@
 import type { FallRecord } from '../data/fall.ts'
+import { type PeerMedians, peerMedianFor } from './peer-median.ts'
 import { historyValues } from './person-fields.ts'
 import {
   type Person,
@@ -107,10 +108,16 @@ export function runCards(run: PersonRun): RunCards {
   }
 }
 
-/** Each job type and pay department's published rate per census year, `null` where the year has none. */
-export function personRates(person: Person): {
+export const MEDIAN_SERIES = 'Median rate, primary job’s class or rank'
+
+/** Each job type and pay department's published rate per census year, `null` where the year has none, then the median of the primary job's class or rank and the groups that median came from. */
+export function personRates(
+  person: Person,
+  medians: PeerMedians,
+): {
   years: number[]
   series: { key: string; values: (number | null)[] }[]
+  medianGroups: string[]
 } {
   const personYears = personYearsOf(person)
   const byKey = new Map<string, (number | null)[]>()
@@ -126,9 +133,27 @@ export function personRates(person: Person): {
       byKey.set(key, values)
     }
   })
+  const peers = personYears.map(({ year, records }) => {
+    const primary = primaryJobOf(records)
+    return primary ? peerMedianFor(medians, year, primary) : null
+  })
+  const medianGroups = [
+    ...new Set(peers.flatMap((peer) => (peer ? [peer.group.label] : []))),
+  ]
+  const jobSeries = [...byKey].map(([key, values]) => ({ key, values }))
   return {
     years: personYears.map(({ year }) => year),
-    series: [...byKey].map(([key, values]) => ({ key, values })),
+    series:
+      medianGroups.length === 0
+        ? jobSeries
+        : [
+            ...jobSeries,
+            {
+              key: MEDIAN_SERIES,
+              values: peers.map((peer) => peer?.medianCents ?? null),
+            },
+          ],
+    medianGroups,
   }
 }
 

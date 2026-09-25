@@ -4,6 +4,7 @@ import { PersonHistoryTable } from '@/components/person-history-table'
 import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
+import type { PeerMedians } from '@/lib/peer-median'
 import {
   type Person,
   type PersonYear,
@@ -81,7 +82,15 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
 }
 
 /** One name's computed figures, rate chart, records for the selected census, and job history. */
-export function PersonView({ person, year }: { person: Person; year: number }) {
+export function PersonView({
+  person,
+  medians,
+  year,
+}: {
+  person: Person
+  medians: PeerMedians
+  year: number
+}) {
   const run = runOf(person, year)
   const entry = run?.years.find((candidate) => candidate.year === year)
   return (
@@ -89,7 +98,7 @@ export function PersonView({ person, year }: { person: Person; year: number }) {
       <h2 className="text-xl font-semibold">{person.name}</h2>
       <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
       {run && <PersonCards run={run} />}
-      <PersonRatesFigure person={person} />
+      <PersonRatesFigure person={person} medians={medians} />
       <YearTabs person={person} year={year} />
       {entry && <YearRecords name={person.name} entry={entry} />}
       <PersonHistoryTable person={person} />

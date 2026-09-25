@@ -383,6 +383,12 @@ test('a linked run is labelled as computed, and the people page does not scroll 
     page.getByRole('columnheader', { name: /^Primary · / }).first(),
   ).toBeVisible()
   await expect(
+    page.getByRole('columnheader', {
+      name: 'Median rate, primary job’s class or rank',
+    }),
+  ).toBeVisible()
+  await expect(main).toContainText('Groups used: ')
+  await expect(
     page.getByRole('heading', { name: 'Fall 2023 records' }),
   ).toBeVisible()
   await page
