@@ -12,7 +12,7 @@ export function SiteLayout() {
             UO Financials
           </Link>
           <nav aria-label="Main">
-            <ul className="flex gap-4 text-sm">
+            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               <li>
                 <Link
                   to="/trends"
@@ -38,6 +38,15 @@ export function SiteLayout() {
                   activeProps={{ className: 'text-foreground' }}
                 >
                   Salaries
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/people"
+                  className="text-muted-foreground hover:text-foreground"
+                  activeProps={{ className: 'text-foreground' }}
+                >
+                  People
                 </Link>
               </li>
               <li>

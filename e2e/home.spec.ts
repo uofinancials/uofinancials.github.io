@@ -13,6 +13,7 @@ for (const path of [
   '/departments',
   '/departments/223100',
   '/salaries',
+  '/people',
   '/sources',
   '/no-such-page',
 ]) {
@@ -328,4 +329,54 @@ test('the salaries page does not scroll sideways at 360px', async ({
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+})
+
+test('people search by every word of a name, and a chosen name shows its records with its sources', async ({
+  page,
+}) => {
+  await page.goto('/people')
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    'content',
+    'noindex',
+  )
+  await page.getByRole('searchbox', { name: 'Search by name' }).fill('smith j')
+  await expect(page).toHaveURL(/q=smith/)
+  const matches = page.getByRole('list', { name: 'Matching names' })
+  const first = matches.getByRole('link').first()
+  const name = await first.textContent()
+  expect(name).toMatch(/smith.* j/i)
+  await first.click()
+  await expect(page).toHaveURL(/name=/)
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { level: 2, name: name ?? '' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('rowheader', { name: 'Annual salary rate' }).first(),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole('link', { name: /^Fall \d{4} Census salary reports$/ })
+      .first(),
+  ).toBeVisible()
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
+})
+
+test('a linked run is labelled as computed, and the people page does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/people?q=smith+j')
+  const matches = page.getByRole('list', { name: 'Matching names' })
+  await matches.getByRole('link').nth(1).click()
+  await expect(page.getByRole('heading', { level: 2 })).toBeVisible()
+  await expect(page.getByRole('main')).toContainText(
+    'Fall 2021-2023: linked year to year on the exact name and the same pay department of a single primary job. Computed by this site; not published by UO.',
+  )
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+  await page.goto('/people?q=zzzz')
+  await expect(page.getByRole('main')).toContainText('No name matches.')
 })

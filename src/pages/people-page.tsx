@@ -1,0 +1,131 @@
+import { useSuspenseQueries } from '@tanstack/react-query'
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router'
+import { PersonRecordsTable } from '@/components/person-records-table'
+import { SourceCitation } from '@/components/source-citation'
+import type { FallYear } from '@/data/fall'
+import { fallYearQuery } from '@/data/queries'
+import { formatCount } from '@/lib/format'
+import {
+  formatYearRanges,
+  indexPeople,
+  MIN_QUERY_CHARS,
+  matchPeople,
+  type Person,
+} from '@/lib/person-lookup'
+
+const SAME_NAME_NOTE =
+  'UO publishes no person identifier. Records are grouped by the name exactly as published, so one name may be more than one person, and one person may appear under more than one name.'
+const LINK_NOTE =
+  'linked year to year on the exact name and the same pay department of a single primary job. Computed by this site; not published by UO.'
+
+function toPeople(results: { data: FallYear }[]): Person[] {
+  return indexPeople(results.map(({ data }) => data))
+}
+
+function Matches({ people, q }: { people: Person[]; q: string }) {
+  const found = matchPeople(people, q)
+  if (!found) return <p>Type at least {MIN_QUERY_CHARS} characters.</p>
+  if (found.total === 0) return <p>No name matches.</p>
+  return (
+    <div className="space-y-2">
+      <ul aria-label="Matching names" className="space-y-1">
+        {found.matches.map((person) => (
+          <li key={person.name} className="flex flex-wrap gap-x-2">
+            <Link
+              className="underline"
+              to="/people"
+              search={{ q, name: person.name }}
+            >
+              {person.name}
+            </Link>
+            <span className="text-sm text-muted-foreground">
+              Fall {formatYearRanges(person.years.map(({ year }) => year))} ·{' '}
+              {person.latestPayDepartment}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-sm text-muted-foreground">
+        {formatCount(found.matches.length)} of {formatCount(found.total)} names
+      </p>
+    </div>
+  )
+}
+
+function PersonRecords({ person }: { person: Person }) {
+  const recordsByYear = new Map(
+    person.years.map(({ year, records }) => [year, records]),
+  )
+  return (
+    <section className="space-y-6">
+      <h2 className="text-xl font-semibold">{person.name}</h2>
+      <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
+      {person.runs.map((run) => (
+        <div key={run.years[0]} className="space-y-4 border-l pl-4">
+          {run.isLinked && (
+            <p className="text-sm">
+              Fall {formatYearRanges(run.years)}: {LINK_NOTE}
+            </p>
+          )}
+          {run.years.map((year) => (
+            <div key={year} className="space-y-2">
+              <h3 className="font-semibold">Fall {year}</h3>
+              <PersonRecordsTable
+                records={recordsByYear.get(year) ?? []}
+                caption={`${person.name}, Fall ${year}`}
+              />
+              <SourceCitation source={{ kind: 'fall', year }} />
+            </div>
+          ))}
+        </div>
+      ))}
+    </section>
+  )
+}
+
+export function PeoplePage() {
+  const { years } = useLoaderData({ from: '/people' })
+  const { q = '', name } = useSearch({ from: '/people' })
+  const navigate = useNavigate({ from: '/people' })
+  const people = useSuspenseQueries({
+    queries: years.map(fallYearQuery),
+    combine: toPeople,
+  })
+  const person = people.find((entry) => entry.name === name)
+  return (
+    <div className="space-y-6">
+      <meta name="robots" content="noindex" />
+      <h1 className="text-2xl font-semibold">People</h1>
+      <p className="text-sm text-muted-foreground">
+        Every job the Fall {years[0]}-{years.at(-1)} Census salary reports
+        publish under a name, as published.
+      </p>
+      <label className="flex max-w-sm flex-col gap-1 text-sm">
+        <span className="text-muted-foreground">Search by name</span>
+        <input
+          type="search"
+          className="rounded-md border bg-background px-2 py-1"
+          value={q}
+          onChange={(event) =>
+            navigate({
+              search: { q: event.target.value || undefined, name },
+              replace: true,
+            })
+          }
+        />
+      </label>
+      {name !== undefined &&
+        (person ? (
+          <PersonRecords person={person} />
+        ) : (
+          <p>No Fall record is published under the name {name}.</p>
+        ))}
+      <Matches people={people} q={q} />
+    </div>
+  )
+}

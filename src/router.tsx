@@ -21,12 +21,14 @@ import {
   departmentsSearchSchema,
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
+import { peopleSearchSchema } from '@/lib/person-lookup'
 import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
+import { PeoplePage } from '@/pages/people-page'
 import { SalariesPage } from '@/pages/salaries-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
@@ -52,18 +54,24 @@ const homeRoute = createRoute({
   component: OverviewPage,
 })
 
+async function loadFallYears({
+  context: { queryClient },
+}: {
+  context: { queryClient: QueryClient }
+}) {
+  const manifest = await queryClient.ensureQueryData(manifestQuery)
+  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+  await Promise.all(
+    years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
+  )
+  return { years }
+}
+
 const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
-  loader: async ({ context: { queryClient } }) => {
-    const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-    await Promise.all(
-      years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
-    )
-    return { years }
-  },
+  loader: loadFallYears,
   component: TrendsPage,
 })
 
@@ -127,6 +135,14 @@ const salariesRoute = createRoute({
   component: SalariesPage,
 })
 
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/people',
+  validateSearch: peopleSearchSchema,
+  loader: loadFallYears,
+  component: PeoplePage,
+})
+
 const sourcesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sources',
@@ -144,6 +160,7 @@ const routeTree = rootRoute.addChildren([
   departmentsRoute,
   departmentRoute,
   salariesRoute,
+  peopleRoute,
   sourcesRoute,
 ])
 

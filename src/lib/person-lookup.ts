@@ -1,5 +1,12 @@
+import { z } from 'zod'
 import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
 import { findPersonLinks } from './person-links.ts'
+
+/** The people page's URL search params: the search text and the chosen name. */
+export const peopleSearchSchema = z.object({
+  q: z.string().optional().catch(undefined),
+  name: z.string().optional().catch(undefined),
+})
 
 export const MIN_QUERY_CHARS = 2
 export const MAX_MATCHES = 50
