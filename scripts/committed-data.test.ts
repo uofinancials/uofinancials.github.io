@@ -5,6 +5,7 @@ import { budgetYearSchema } from '../src/data/budget.ts'
 import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
+import { raiseTermsSchema } from '../src/data/raises.ts'
 import {
   identityProblems,
   totalExpenditureCents,
@@ -14,6 +15,7 @@ import {
   DATA_DIR,
   MANIFEST_PATH,
   OPE_DATA_PATH,
+  RAISES_DATA_PATH,
 } from './scrape/cache.ts'
 
 function readJson(file: string): unknown {
@@ -85,5 +87,19 @@ test.skipIf(!existsSync(OPE_DATA_PATH))(
         rates.groups.map((group) => group.name).sort(),
       )
     }
+  },
+)
+
+test.skipIf(!existsSync(RAISES_DATA_PATH))(
+  'the committed raise terms match their schema and each cites its source',
+  () => {
+    const { terms } = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
+    expect(terms.length).toBeGreaterThan(0)
+    expect(
+      terms.filter(
+        (term) =>
+          !term.source.location || !term.source.url.startsWith('https://'),
+      ),
+    ).toEqual([])
   },
 )

@@ -1,0 +1,941 @@
+{
+  "terms": [
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Bargaining unit faculty hired on or before June 30, 2012",
+      "kind": "across-the-board",
+      "percent": "1.5",
+      "amountCents": null,
+      "effectiveDate": "2013-01-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §1(a), printed p. 54",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Bargaining unit faculty hired on or before December 31, 2012",
+      "kind": "across-the-board",
+      "percent": "1.5",
+      "amountCents": null,
+      "effectiveDate": "2013-07-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §1(b), printed p. 54",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Bargaining unit faculty hired on or before December 31, 2013",
+      "kind": "across-the-board",
+      "percent": "1.5",
+      "amountCents": null,
+      "effectiveDate": "2014-07-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §1(c), printed p. 54",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Bargaining unit faculty employed on the effective date of the agreement, prorated below 1.0 FTE",
+      "kind": "one-time",
+      "percent": null,
+      "amountCents": 35000,
+      "effectiveDate": null,
+      "note": "Paid in the first regular paycheck after 30 days from the agreement's effective date.",
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §1(d), printed p. 54",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured professor faculty",
+      "kind": "merit-pool",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2013-07-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §2(a), printed pp. 54-55",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Non-tenure-track faculty",
+      "kind": "merit-pool",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2013-07-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §2(a), printed pp. 54-55",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured professor faculty",
+      "kind": "merit-pool",
+      "percent": "3.5",
+      "amountCents": null,
+      "effectiveDate": "2014-07-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §2(b), printed p. 55",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Non-tenure-track faculty",
+      "kind": "merit-pool",
+      "percent": "3.5",
+      "amountCents": null,
+      "effectiveDate": "2014-07-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
+        "document": "United Academics CBA 2013-2015",
+        "location": "Article 26 §2(b), printed p. 55",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Eligible faculty",
+      "kind": "across-the-board",
+      "percent": "0.75",
+      "amountCents": null,
+      "effectiveDate": "2018-01-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/university-announces-salary-increases-faculty-and-oas",
+        "document": "UO news, 2017-09-27",
+        "location": "Salary increase announcement",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Eligible faculty",
+      "kind": "merit-pool",
+      "percent": "2.25",
+      "amountCents": null,
+      "effectiveDate": "2018-01-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/university-announces-salary-increases-faculty-and-oas",
+        "document": "UO news, 2017-09-27",
+        "location": "Salary increase announcement",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured faculty with an appointment on December 31, 2018",
+      "kind": "across-the-board",
+      "percent": "1.25",
+      "amountCents": null,
+      "effectiveDate": "2019-01-01",
+      "note": "Part of a 2.0% pool with up to 0.75% for diversity equity raises.",
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
+        "document": "United Academics CBA 2018-2021",
+        "location": "Article 26 §1(a)(i) and (c), printed p. 76",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured faculty",
+      "kind": "equity-pool",
+      "percent": "0.75",
+      "amountCents": null,
+      "effectiveDate": "2019-01-01",
+      "note": "Up to 0.75%; any unused remainder returns to the across-the-board pool.",
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
+        "document": "United Academics CBA 2018-2021",
+        "location": "Article 26 §1(a)(ii) and (c), printed p. 76",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career non-tenure-track faculty with an appointment on December 31, 2018",
+      "kind": "across-the-board",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2019-01-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
+        "document": "United Academics CBA 2018-2021",
+        "location": "Article 26 §1(b) and (c), printed p. 76",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured faculty with an appointment on December 31, 2019",
+      "kind": "merit-pool",
+      "percent": "1.625",
+      "amountCents": null,
+      "effectiveDate": "2020-01-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
+        "document": "United Academics CBA 2018-2021",
+        "location": "Article 26 §2(a) and (d), printed pp. 76-77",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured faculty",
+      "kind": "equity-pool",
+      "percent": "0.50",
+      "amountCents": null,
+      "effectiveDate": "2020-01-01",
+      "note": "External equity pool, distributed against AAU public peer salaries.",
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
+        "document": "United Academics CBA 2018-2021",
+        "location": "Article 26 §2(b) and (d), printed pp. 76-77",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career non-tenure-track faculty with an appointment on December 31, 2019",
+      "kind": "merit-pool",
+      "percent": "2.125",
+      "amountCents": null,
+      "effectiveDate": "2020-01-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
+        "document": "United Academics CBA 2018-2021",
+        "location": "Article 26 §2(c) and (d), printed p. 77",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Eligible faculty with an appointment as of October 31, 2021",
+      "kind": "across-the-board",
+      "percent": "5",
+      "amountCents": null,
+      "effectiveDate": "2022-01-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/12/2021-2024-UA-UO-Salary-MOU-120820210830.pdf",
+        "document": "UA-UO 2021-2024 Salary Increase Agreement",
+        "location": "Section 1, p. 1",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Eligible faculty with an appointment as of October 31, 2022",
+      "kind": "across-the-board",
+      "percent": "2",
+      "amountCents": null,
+      "effectiveDate": "2022-10-01",
+      "note": "The agreement set January 1, 2023; UO moved it to October 1, 2022 (UO news, 2022-10-04, https://news.uoregon.edu/content/faculty-and-oas-receive-salary-increase-early).",
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/12/2021-2024-UA-UO-Salary-MOU-120820210830.pdf",
+        "document": "UA-UO 2021-2024 Salary Increase Agreement",
+        "location": "Section 2, p. 1",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career, tenure-track, and tenured faculty appointed on or before July 1, 2023",
+      "kind": "merit-pool",
+      "percent": "3",
+      "amountCents": null,
+      "effectiveDate": "2024-01-01",
+      "note": null,
+      "source": {
+        "url": "https://www.uauoregon.org/wp-content/uploads/2021/12/2021-2024-UA-UO-Salary-MOU-120820210830.pdf",
+        "document": "UA-UO 2021-2024 Salary Increase Agreement",
+        "location": "Section 3, p. 2",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "All bargaining unit faculty except postdoctoral scholars",
+      "kind": "across-the-board",
+      "percent": "4.5",
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "Applied from the 1st of the ratification month if ratified by the 15th, otherwise the 1st of the next month; the agreement was ratified in April 2025.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §1, printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "All active bargaining unit faculty, prorated by FTE",
+      "kind": "one-time",
+      "percent": null,
+      "amountCents": 200000,
+      "effectiveDate": null,
+      "note": "Paid on ratification of the 2025-2027 agreement (April 2025).",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §1, printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track, tenured, and Career faculty who held an FY25 appointment",
+      "kind": "across-the-board",
+      "percent": "3.25",
+      "amountCents": null,
+      "effectiveDate": "2025-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §2(a), printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career instructional faculty covered by the internal equity study",
+      "kind": "equity-pool",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2025-09-16",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §2(b), printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career research faculty",
+      "kind": "across-the-board",
+      "percent": "1.0",
+      "amountCents": null,
+      "effectiveDate": "2025-09-01",
+      "note": "In addition to the 3.25% across-the-board increase.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §2(c), printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career faculty who held an FY26 appointment",
+      "kind": "across-the-board",
+      "percent": "3.0",
+      "amountCents": null,
+      "effectiveDate": "2026-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §3(a), printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Career instructional faculty",
+      "kind": "across-the-board",
+      "percent": "1.62",
+      "amountCents": null,
+      "effectiveDate": "2026-09-01",
+      "note": "Remaining equity pool funds added to the FY27 Career across-the-board increase.",
+      "source": {
+        "url": "https://hr.uoregon.edu/annual-salary-increases-process-and-procedures",
+        "document": "UO HR, Annual Salary Increases Process and Procedures",
+        "location": "Fiscal Year 2026 Process, Faculty",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured faculty who held an FY26 appointment",
+      "kind": "across-the-board",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2026-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §3(b), printed p. 83",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Tenure-track and tenured faculty appointed on or before December 16, 2025",
+      "kind": "merit-pool",
+      "percent": "3.0",
+      "amountCents": null,
+      "effectiveDate": "2026-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §3(b), printed pp. 83-84",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Pro tem, visiting, and retired faculty",
+      "kind": "across-the-board",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2025-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §4(a), printed p. 84",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "United Academics",
+      "appliesTo": "Pro tem, visiting, and retired faculty",
+      "kind": "across-the-board",
+      "percent": "2.0",
+      "amountCents": null,
+      "effectiveDate": "2026-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
+        "document": "United Academics CBA 2025-2027",
+        "location": "Article 26 §4(b), printed p. 84",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees",
+      "kind": "across-the-board",
+      "percent": "1",
+      "amountCents": null,
+      "effectiveDate": "2017-10-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-new-economic-terms-current-contract",
+        "document": "UO news, 2017-10-13",
+        "location": "New economic terms",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees",
+      "kind": "across-the-board",
+      "percent": "1",
+      "amountCents": null,
+      "effectiveDate": "2018-07-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-new-economic-terms-current-contract",
+        "document": "UO news, 2017-10-13",
+        "location": "New economic terms",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees not at the top step",
+      "kind": "step",
+      "percent": null,
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "Full steps in the remaining two years of the contract (FY18 and FY19); step size not stated.",
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-new-economic-terms-current-contract",
+        "document": "UO news, 2017-10-13",
+        "location": "New economic terms",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees",
+      "kind": "across-the-board",
+      "percent": "3",
+      "amountCents": null,
+      "effectiveDate": "2019-07-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-contract",
+        "document": "UO news, 2019-11-04",
+        "location": "Contract summary",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees",
+      "kind": "across-the-board",
+      "percent": "2.1",
+      "amountCents": null,
+      "effectiveDate": "2020-07-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-contract",
+        "document": "UO news, 2019-11-04",
+        "location": "Contract summary",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees not at the top step of their classification",
+      "kind": "step",
+      "percent": "4.75",
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "In each year of the contract (FY20 and FY21), on the employee's salary eligibility date.",
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-contract",
+        "document": "UO news, 2019-11-04",
+        "location": "Contract summary",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees with 5+ years at the university and 1+ year at the top of their range",
+      "kind": "longevity",
+      "percent": "2.5",
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "A premium added to base salary once the conditions are met.",
+      "source": {
+        "url": "https://news.uoregon.edu/content/seiu-members-ratify-contract",
+        "document": "UO news, 2019-11-04",
+        "location": "Contract summary",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees",
+      "kind": "across-the-board",
+      "percent": "6.50",
+      "amountCents": null,
+      "effectiveDate": "2024-04-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 21 §1(A), printed p. 33",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees, prorated by FTE",
+      "kind": "one-time",
+      "percent": null,
+      "amountCents": 150000,
+      "effectiveDate": null,
+      "note": "Paid with April 2024 pay.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 21 §1(A), printed p. 33",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees",
+      "kind": "across-the-board",
+      "percent": "2.00",
+      "amountCents": null,
+      "effectiveDate": "2024-11-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 21 §1(A), printed p. 33",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees",
+      "kind": "across-the-board",
+      "percent": "3.50",
+      "amountCents": null,
+      "effectiveDate": "2025-06-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 21 §1(A), printed p. 33",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "All classified employees",
+      "kind": "across-the-board",
+      "percent": "3.00",
+      "amountCents": null,
+      "effectiveDate": "2025-11-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 21 §1(A), printed p. 33",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees with 5+ years at the university and 12+ months at the top of their range",
+      "kind": "longevity",
+      "percent": "2.50",
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "A premium added to base salary once the conditions are met.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 21 §1(B), printed p. 33",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "appliesTo": "Classified employees below the top of their range whose performance is not deficient",
+      "kind": "step",
+      "percent": null,
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "An annual performance pay increase on the salary eligibility date; the step size is set by the salary schedules, not the article.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
+        "document": "SEIU 503 CBA 2022-2026 with reopener",
+        "location": "Article 22 §3, printed p. 37",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Teamsters 206",
+      "appliesTo": "Bargaining unit employees",
+      "kind": "across-the-board",
+      "percent": "6.5",
+      "amountCents": null,
+      "effectiveDate": "2024-07-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
+        "document": "Teamsters Local 206 CBA 2024-2027",
+        "location": "Article 7 §2(A), pdf p. 6",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Teamsters 206",
+      "appliesTo": "Bargaining unit employees",
+      "kind": "one-time",
+      "percent": null,
+      "amountCents": 150000,
+      "effectiveDate": null,
+      "note": "Paid with July 2024 pay.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
+        "document": "Teamsters Local 206 CBA 2024-2027",
+        "location": "Article 7 §2(A), pdf p. 6",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Teamsters 206",
+      "appliesTo": "Bargaining unit employees",
+      "kind": "across-the-board",
+      "percent": "5.5",
+      "amountCents": null,
+      "effectiveDate": "2025-07-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
+        "document": "Teamsters Local 206 CBA 2024-2027",
+        "location": "Article 7 §2(A), pdf p. 6",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Teamsters 206",
+      "appliesTo": "Bargaining unit employees",
+      "kind": "across-the-board",
+      "percent": "3.0",
+      "amountCents": null,
+      "effectiveDate": "2026-07-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
+        "document": "Teamsters Local 206 CBA 2024-2027",
+        "location": "Article 7 §2(A), pdf p. 6",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Teamsters 206",
+      "appliesTo": "Employees with 5+ years at the university and 12+ months at the top of their range",
+      "kind": "longevity",
+      "percent": "2.50",
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "A premium added to base salary once the conditions are met.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
+        "document": "Teamsters Local 206 CBA 2024-2027",
+        "location": "Article 7 §2(B), pdf p. 6",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "UOPA",
+      "appliesTo": "Community service officers",
+      "kind": "across-the-board",
+      "percent": "10",
+      "amountCents": null,
+      "effectiveDate": "2023-07-01",
+      "note": "Retroactive to July 1, 2023.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
+        "document": "UOPA CBA 2024-2026",
+        "location": "Article 19 §1, printed p. 28",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "UOPA",
+      "appliesTo": "Police officers",
+      "kind": "across-the-board",
+      "percent": "3",
+      "amountCents": null,
+      "effectiveDate": "2023-07-01",
+      "note": "Retroactive to July 1, 2023.",
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
+        "document": "UOPA CBA 2024-2026",
+        "location": "Article 19 §1, printed p. 28",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "UOPA",
+      "appliesTo": "All bargaining unit members",
+      "kind": "across-the-board",
+      "percent": "3.8",
+      "amountCents": null,
+      "effectiveDate": "2024-07-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
+        "document": "UOPA CBA 2024-2026",
+        "location": "Article 19 §1, printed p. 28",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "UOPA",
+      "appliesTo": "All bargaining unit members",
+      "kind": "across-the-board",
+      "percent": "3.8",
+      "amountCents": null,
+      "effectiveDate": "2025-07-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
+        "document": "UOPA CBA 2024-2026",
+        "location": "Article 19 §1, printed p. 28",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "appliesTo": "Eligible officers of administration",
+      "kind": "across-the-board",
+      "percent": "0.75",
+      "amountCents": null,
+      "effectiveDate": "2018-01-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/university-announces-salary-increases-faculty-and-oas",
+        "document": "UO news, 2017-09-27",
+        "location": "Salary increase announcement",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "appliesTo": "Eligible officers of administration",
+      "kind": "merit-pool",
+      "percent": "2.25",
+      "amountCents": null,
+      "effectiveDate": "2018-01-01",
+      "note": null,
+      "source": {
+        "url": "https://news.uoregon.edu/content/university-announces-salary-increases-faculty-and-oas",
+        "document": "UO news, 2017-09-27",
+        "location": "Salary increase announcement",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "appliesTo": "Officers of administration eligible in January 2022",
+      "kind": "across-the-board",
+      "percent": "4",
+      "amountCents": null,
+      "effectiveDate": null,
+      "note": "Effective in January 2022; the day is not stated.",
+      "source": {
+        "url": "https://news.uoregon.edu/content/multiyear-pay-increases-announced-uo-employees",
+        "document": "UO news, 2021-12-14",
+        "location": "Multiyear pay increases announcement",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "appliesTo": "Eligible officers of administration",
+      "kind": "across-the-board",
+      "percent": "4",
+      "amountCents": null,
+      "effectiveDate": "2024-10-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/salary-increase-information",
+        "document": "UO HR, OA Salary Increase Information",
+        "location": "OA Salary Increase Multiyear Plan",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "appliesTo": "Eligible officers of administration",
+      "kind": "across-the-board",
+      "percent": "3",
+      "amountCents": null,
+      "effectiveDate": "2025-09-01",
+      "note": null,
+      "source": {
+        "url": "https://hr.uoregon.edu/salary-increase-information",
+        "document": "UO HR, OA Salary Increase Information",
+        "location": "OA Salary Increase Multiyear Plan",
+        "retrievedOn": "2026-09-24"
+      }
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "appliesTo": "Eligible officers of administration",
+      "kind": "merit-pool",
+      "percent": "3.75",
+      "amountCents": null,
+      "effectiveDate": "2026-09-01",
+      "note": "OAs who meet expectations receive at least 2%; 0.25% is reserved for vice presidents and deans.",
+      "source": {
+        "url": "https://hr.uoregon.edu/salary-increase-information",
+        "document": "UO HR, OA Salary Increase Information",
+        "location": "OA Salary Increase Multiyear Plan",
+        "retrievedOn": "2026-09-24"
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "employeeGroup": "United Academics",
+      "fiscalYears": "FY16-FY17",
+      "note": "The 2015-2018 United Academics agreement was not found at a public URL."
+    },
+    {
+      "employeeGroup": "United Academics",
+      "fiscalYears": "FY21",
+      "note": "The 2018-2021 agreement provides no FY21 raise."
+    },
+    {
+      "employeeGroup": "United Academics",
+      "fiscalYears": "FY14-FY27",
+      "note": "Postdoctoral scholars have no across-the-board or merit terms entered; the 2025-2027 agreement excludes them from the 4.5% increase."
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "fiscalYears": "FY14-FY17",
+      "note": "No UO source states SEIU raise percentages for these years."
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "fiscalYears": "FY22-FY24",
+      "note": "UO reports two across-the-board increases in 2022 but not their percentages; the original 2022-2026 Article 21 is not published."
+    },
+    {
+      "employeeGroup": "SEIU 503",
+      "fiscalYears": "FY27",
+      "note": "The 2022-2026 agreement expired June 30, 2026; successor terms are in bargaining."
+    },
+    {
+      "employeeGroup": "Teamsters 206",
+      "fiscalYears": "FY14-FY24",
+      "note": "Only the 2024-2027 agreement is published."
+    },
+    {
+      "employeeGroup": "UOPA",
+      "fiscalYears": "FY14-FY23, FY27",
+      "note": "Only the 2024-2026 agreement is published."
+    },
+    {
+      "employeeGroup": "Officers of Administration",
+      "fiscalYears": "FY14-FY17, FY19-FY21, FY23-FY24",
+      "note": "No primary UO source found; FY23 was moved to an October 1, 2022 across-the-board increase whose percent is not stated."
+    },
+    {
+      "employeeGroup": "Coaches and executives",
+      "fiscalYears": "FY14-FY27",
+      "note": "Individually negotiated; no published raise policy."
+    }
+  ]
+}
