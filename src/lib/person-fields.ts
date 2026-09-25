@@ -126,24 +126,17 @@ export function historyValues(record: FallRecord): string[] {
   return HISTORY_FIELDS.map(({ value }) => value(record) ?? NO_VALUE)
 }
 
-const LIST_FIELDS: (Field & { sort: PeopleSort | null })[] = [
-  { ...TITLE, sort: 'title' },
-  { ...CLASS_OR_RANK, sort: 'position' },
-  { ...PAY_DEPARTMENT, sort: 'dept' },
-  { ...RATE, sort: 'rate' },
-  { ...APPOINTMENT, sort: 'appt' },
-  { ...TERM, sort: null },
-  { ...JOB_TYPE, sort: null },
-  { ...EEO_CATEGORY, sort: 'category' },
+/** The people list's columns after the name: each field, the sort it offers if any, and whether it is a number. */
+export const LIST_FIELDS: (Field & {
+  sort: PeopleSort | null
+  isNumber: boolean
+})[] = [
+  { ...TITLE, sort: 'title', isNumber: false },
+  { ...CLASS_OR_RANK, sort: 'position', isNumber: false },
+  { ...PAY_DEPARTMENT, sort: 'dept', isNumber: false },
+  { ...RATE, sort: 'rate', isNumber: true },
+  { ...APPOINTMENT, sort: 'appt', isNumber: true },
+  { ...TERM, sort: null, isNumber: false },
+  { ...JOB_TYPE, sort: null, isNumber: false },
+  { ...EEO_CATEGORY, sort: 'category', isNumber: false },
 ]
-
-/** The people list's columns after the name, each with the sort it offers, if any. */
-export const LIST_COLUMNS = LIST_FIELDS.map(({ label, sort }) => ({
-  label,
-  sort,
-}))
-
-/** One job's published fields in `LIST_COLUMNS` order. */
-export function listValues(record: FallRecord): string[] {
-  return LIST_FIELDS.map(({ value }) => value(record) ?? NO_VALUE)
-}

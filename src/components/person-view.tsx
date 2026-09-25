@@ -4,6 +4,7 @@ import { PersonHistoryTable } from '@/components/person-history-table'
 import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
+import { tabLinkClass } from '@/components/tab-link-class'
 import { type PeerMedians, peerGroupOf } from '@/lib/peer-median'
 import {
   type Person,
@@ -28,12 +29,7 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
               params={{ name: person.name }}
               search={{ year: entry.year }}
               aria-current={entry.year === year ? 'page' : undefined}
-              className={cn(
-                'block rounded-t-md px-3 py-1 text-sm tabular-nums',
-                entry.year === year
-                  ? 'border border-b-0 bg-background font-semibold'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
+              className={cn(tabLinkClass(entry.year === year), 'tabular-nums')}
             >
               {entry.year}
             </Link>

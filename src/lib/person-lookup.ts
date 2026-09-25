@@ -17,7 +17,6 @@ export type Person = {
   name: string
   searchKey: string
   runs: PersonRun[]
-  latestPayDepartment: string
 }
 
 function normalize(text: string): string {
@@ -71,12 +70,6 @@ export function primaryJobOf(records: FallRecord[]): FallRecord | undefined {
   return records.find((record) => record.jobType === 'Primary')
 }
 
-function latestPayDepartment(years: PersonYear[]): string {
-  const records = years.at(-1)?.records ?? []
-  const job = primaryJobOf(records) ?? records[0]
-  return job?.payDepartment.name ?? ''
-}
-
 /** One entry per name exactly as published, sorted by name. */
 export function indexPeople(years: FallYear[]): Person[] {
   const linked = linkedYearsByName(years)
@@ -89,7 +82,6 @@ export function indexPeople(years: FallYear[]): Person[] {
         runs: chain(personYears, ({ year }) => linkedFrom.has(year - 1)).map(
           (run) => ({ years: run, isLinked: run.length > 1 }),
         ),
-        latestPayDepartment: latestPayDepartment(personYears),
       }
     })
     .sort((a, b) => a.name.localeCompare(b.name, 'en'))
@@ -111,10 +103,13 @@ export function queryWords(query: string): string[] {
   return normalized === '' ? [] : normalized.split(' ')
 }
 
+function hasEveryWordIn(key: string, words: string[]): boolean {
+  return words.every((word) => key.includes(word))
+}
+
 /** Whether the text holds every word, ignoring case and commas. */
 export function hasEveryWord(text: string, words: string[]): boolean {
-  const key = normalize(text)
-  return words.every((word) => key.includes(word))
+  return words.length === 0 || hasEveryWordIn(normalize(text), words)
 }
 
 /** People whose name holds every word of the query, or `null` for a query too short to search. */
@@ -122,11 +117,10 @@ export function matchPeople(
   people: Person[],
   query: string,
 ): { matches: Person[]; total: number } | null {
-  const normalized = normalize(query)
-  if (normalized.length < MIN_QUERY_CHARS) return null
-  const words = normalized.split(' ')
+  if (normalize(query).length < MIN_QUERY_CHARS) return null
+  const words = queryWords(query)
   const found = people.filter(({ searchKey }) =>
-    words.every((word) => searchKey.includes(word)),
+    hasEveryWordIn(searchKey, words),
   )
   return { matches: found.slice(0, MAX_MATCHES), total: found.length }
 }

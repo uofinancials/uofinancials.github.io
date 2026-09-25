@@ -1,4 +1,5 @@
 import type { FallRecord } from '../data/fall.ts'
+import { CENTS_PER_DOLLAR, formatDollars } from './format.ts'
 import type {
   PeopleChart,
   PeopleSearch,
@@ -12,12 +13,12 @@ import {
   type Distribution,
   filterJobs,
   positionOf,
+  type SalaryBin,
 } from './salary-distribution.ts'
 import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 import { measureJobs } from './trends.ts'
 
 export const PAGE_SIZE = 50
-const CENTS_PER_DOLLAR = 100
 
 export type PeopleView = SalariesView & {
   q: string
@@ -160,13 +161,76 @@ export type GroupRow = {
 
 /** Each group with a job: its job count and median rate, as `measureJobs` gives them. */
 export function groupSummary(records: FallRecord[], year: number): GroupRow[] {
-  return TREND_GROUPS.map((group) => {
-    const members = records.filter(
-      (record) => trendGroupOf(record, year) === group,
-    )
+  const byGroup = new Map<TrendGroup, FallRecord[]>()
+  for (const record of records) {
+    const group = trendGroupOf(record, year)
+    const members = byGroup.get(group) ?? []
+    members.push(record)
+    byGroup.set(group, members)
+  }
+  return TREND_GROUPS.flatMap((group) => {
+    const members = byGroup.get(group)
+    if (!members) return []
     const { jobs, medianRateCents } = measureJobs(members)
-    return { group, jobs, medianRateCents }
-  }).filter(({ jobs }) => jobs > 0)
+    return [{ group, jobs, medianRateCents }]
+  })
+}
+
+/** The rate range as the whole dollars a search holds. */
+export function rateRangeDollars({
+  minCents,
+  ceilingCents,
+}: Pick<PeopleView, 'minCents' | 'ceilingCents'>): {
+  min: number | undefined
+  max: number | undefined
+} {
+  return {
+    min: minCents === null ? undefined : minCents / CENTS_PER_DOLLAR,
+    max:
+      ceilingCents === null ? undefined : ceilingCents / CENTS_PER_DOLLAR - 1,
+  }
+}
+
+/** The search for a bin's range: its floor, and its last whole dollar unless it is the open top bin. */
+export function binRangeSearch({
+  floorCents,
+  ceilingCents,
+}: SalaryBin): PeopleSearch {
+  return rateRangeDollars({
+    minCents: floorCents,
+    ceilingCents,
+  })
+}
+
+/** Each typed filter of the view, as a chip's text and the search that clears it. */
+export function typedFilters(
+  view: PeopleView,
+): { text: string; clear: PeopleSearch }[] {
+  const { min, max } = rateRangeDollars(view)
+  const chips: { text: string; clear: PeopleSearch }[] = []
+  if (view.q) chips.push({ text: `Name: ${view.q}`, clear: { q: undefined } })
+  if (view.title) {
+    chips.push({ text: `Title: ${view.title}`, clear: { title: undefined } })
+  }
+  if (view.category) {
+    chips.push({
+      text: `EEO category: ${view.category}`,
+      clear: { category: undefined },
+    })
+  }
+  if (min !== undefined) {
+    chips.push({
+      text: `Rate from ${formatDollars(min * CENTS_PER_DOLLAR)}`,
+      clear: { min: undefined },
+    })
+  }
+  if (max !== undefined) {
+    chips.push({
+      text: `Rate to ${formatDollars(max * CENTS_PER_DOLLAR)}`,
+      clear: { max: undefined },
+    })
+  }
+  return chips
 }
 
 const recordIds = new WeakMap<FallRecord, number>()

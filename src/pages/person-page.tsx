@@ -1,4 +1,4 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import {
   Link,
   useCanGoBack,
@@ -6,8 +6,8 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router'
+import { peopleIndexQuery } from '@/components/people-index-query'
 import { PersonView } from '@/components/person-view'
-import { peopleIndexQuery } from '@/data/queries'
 import { yearsOf } from '@/lib/person-lookup'
 import { resolveCensusYear } from '@/lib/salaries-search'
 
@@ -36,7 +36,7 @@ function BackButton() {
 export function PersonPage() {
   const { name } = useParams({ from: '/people/$name' })
   const { year } = useSearch({ from: '/people/$name' })
-  const { data } = useSuspenseQuery(peopleIndexQuery(useQueryClient()))
+  const { data } = useSuspenseQuery(peopleIndexQuery)
   const person = data.people.find((entry) => entry.name === name)
   return (
     <div className="space-y-6">

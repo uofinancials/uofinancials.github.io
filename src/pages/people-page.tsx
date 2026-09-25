@@ -1,40 +1,17 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useSearch,
-} from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { GroupJobsFigure } from '@/components/group-jobs-figure'
 import { PeopleControls } from '@/components/people-controls'
+import { peopleIndexQuery } from '@/components/people-index-query'
 import { PeopleTable } from '@/components/people-table'
+import { SalariesControls } from '@/components/salaries-controls'
 import { SalaryDistributionFigure } from '@/components/salary-distribution-figure'
 import { SortControls } from '@/components/sort-controls'
 import { SourceCitation } from '@/components/source-citation'
-import { TotalsChart } from '@/components/totals-chart'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { useCensusPlace } from '@/components/use-census-place'
-import type { FallRecord } from '@/data/fall'
-import { peopleIndexQuery } from '@/data/queries'
-import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
-import {
-  binsInRange,
-  countNames,
-  distinctValues,
-  filterPeopleJobs,
-  groupSummary,
-  type PeopleView,
-  pageOf,
-  resolvePeopleView,
-  sortJobs,
-} from '@/lib/people-list'
+import { tabLinkClass } from '@/components/tab-link-class'
+import { type Matching, usePeople } from '@/components/use-people'
+import { formatCount } from '@/lib/format'
+import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people-list'
 import {
   PEOPLE_CHARTS,
   type PeopleChart,
@@ -42,50 +19,15 @@ import {
   type PeopleSort,
   type SortDirection,
 } from '@/lib/people-search'
-import { titleOf } from '@/lib/person-fields'
 import { formatYearRanges, matchPeople, yearsOf } from '@/lib/person-lookup'
-import {
-  buildDistribution,
-  RATE_NOTE,
-  type SalaryBin,
-} from '@/lib/salary-distribution'
+import { RATE_NOTE, type SalaryBin } from '@/lib/salary-distribution'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
-import { cn } from '@/lib/utils'
 
-const CENTS_PER_DOLLAR = 100
-const NUMBER_CELL = 'text-right tabular-nums'
 const CHART_LABELS: Record<PeopleChart, string> = {
   rates: 'Salary rates',
   groups: 'By group',
 }
 const COMPUTED = `the list shows each job as published, in the order chosen, ties by name. A name or title matches when it holds every word typed, ignoring case and commas, and the rate range includes both ends. The charts count each job once, in the $10,000 range its published rate falls in or in its group as on the Trends page. Percentiles and medians are over primary jobs, temporaries left out, and need ${MIN_JOBS_SHOWN} of them. Charts over fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
-
-function usePeople() {
-  const { years, year, fiscalYear } = useLoaderData({ from: '/people' })
-  const search = useSearch({ from: '/people' })
-  const view = useMemo(() => resolvePeopleView(search, years), [search, years])
-  const { records, areas, place, placed, positionName } = useCensusPlace({
-    year,
-    fiscalYear,
-    dept: view.dept,
-    position: view.position,
-  })
-  const jobs = useMemo(() => filterPeopleJobs(placed, view), [placed, view])
-  const sorted = useMemo(() => sortJobs(jobs, view), [jobs, view])
-  const titles = useMemo(() => distinctValues(records, titleOf), [records])
-  const categories = useMemo(
-    () => distinctValues(records, (record) => record.eeoCategory),
-    [records],
-  )
-  return {
-    search,
-    years,
-    view,
-    controls: { years, areas, place, positionName, titles, categories },
-    jobs,
-    sorted,
-  }
-}
 
 function ChartTabs({ chart }: { chart: PeopleChart }) {
   return (
@@ -98,12 +40,7 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
               search={(previous) => ({ ...previous, chart: option })}
               replace
               aria-current={option === chart ? 'page' : undefined}
-              className={cn(
-                'block rounded-t-md px-3 py-1 text-sm',
-                option === chart
-                  ? 'border border-b-0 bg-background font-semibold'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
+              className={tabLinkClass(option === chart)}
             >
               {CHART_LABELS[option]}
             </Link>
@@ -114,62 +51,18 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
   )
 }
 
-function GroupFigure({ jobs, view }: { jobs: FallRecord[]; view: PeopleView }) {
-  const rows = groupSummary(jobs, view.year)
-  return (
-    <section className="space-y-4">
-      <TotalsChart
-        bars={rows.map(({ group, jobs: count }) => ({
-          key: group,
-          value: count,
-        }))}
-        valueLabel="Jobs"
-        format={formatCount}
-        label={`Matching jobs by group, Fall ${view.year}`}
-      />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead scope="col">Group</TableHead>
-            <TableHead scope="col" className="text-right">
-              Jobs
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              Median rate, primary jobs
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map(({ group, jobs: count, medianRateCents }) => (
-            <TableRow key={group}>
-              <TableHead scope="row" className="font-normal">
-                {group}
-              </TableHead>
-              <TableCell className={NUMBER_CELL}>
-                {formatCount(count)}
-              </TableCell>
-              <TableCell className={NUMBER_CELL}>
-                {formatOrBlank(medianRateCents, formatDollars)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </section>
-  )
-}
-
 function SummaryChart({
-  jobs,
+  matching,
   view,
   onSelectBin,
 }: {
-  jobs: FallRecord[]
+  matching: Matching
   view: PeopleView
   onSelectBin: (bin: SalaryBin) => void
 }) {
-  if (jobs.length === 0) return null
-  if (jobs.length < MIN_JOBS_SHOWN) {
+  const count = matching.jobs.length
+  if (count === 0) return null
+  if (count < MIN_JOBS_SHOWN) {
     return (
       <p>The charts are shown for {MIN_JOBS_SHOWN} or more matching jobs.</p>
     )
@@ -179,13 +72,16 @@ function SummaryChart({
       <ChartTabs chart={view.chart} />
       {view.chart === 'rates' ? (
         <SalaryDistributionFigure
-          distribution={binsInRange(buildDistribution(jobs, view.year), view)}
+          distribution={matching.distribution}
           label={`Matching jobs by salary rate, Fall ${view.year}`}
           onSelectBin={onSelectBin}
           isCollapsed
         />
       ) : (
-        <GroupFigure jobs={jobs} view={view} />
+        <GroupJobsFigure
+          rows={matching.groups}
+          label={`Matching jobs by group, Fall ${view.year}`}
+        />
       )}
     </div>
   )
@@ -216,7 +112,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
 }
 
 function OtherCensusNames({ q, year }: { q: string; year: number }) {
-  const { data } = useQuery(peopleIndexQuery(useQueryClient()))
+  const { data } = useQuery(peopleIndexQuery)
   if (!data) return <p>Looking for “{q}” in the other Fall censuses…</p>
   const found = matchPeople(data.people, q)
   if (!found || found.total === 0) return <p>No name matches “{q}”.</p>
@@ -247,18 +143,10 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
   )
 }
 
-function binRangeSearch({ floorCents, ceilingCents }: SalaryBin): PeopleSearch {
-  return {
-    min: floorCents / CENTS_PER_DOLLAR,
-    max:
-      ceilingCents === null ? undefined : ceilingCents / CENTS_PER_DOLLAR - 1,
-  }
-}
-
 export function PeoplePage() {
   const navigate = useNavigate({ from: '/people' })
-  const { search, view, controls, jobs, sorted } = usePeople()
-  const shown = pageOf(sorted, view.page)
+  const { search, years, view, census, matching } = usePeople()
+  const shown = pageOf(matching.sorted, view.page)
   const change = (patch: PeopleSearch, replace = false) =>
     navigate({
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
@@ -276,23 +164,32 @@ export function PeoplePage() {
       </p>
       <PeopleControls
         view={view}
-        {...controls}
+        titles={census.titles}
+        categories={census.categories}
         onChange={(patch) => change(patch)}
         onType={(patch) => change(patch, true)}
       />
+      <SalariesControls
+        view={view}
+        years={years}
+        areas={census.areas}
+        place={census.place}
+        positionName={census.positionName}
+        onChange={(patch) => change(patch)}
+      />
       <p className="font-medium">
-        {formatCount(jobs.length)} jobs, {formatCount(countNames(jobs))} names
-        match
+        {formatCount(matching.jobs.length)} jobs,{' '}
+        {formatCount(matching.nameCount)} names match
       </p>
       <SummaryChart
-        jobs={jobs}
+        matching={matching}
         view={view}
         onSelectBin={(bin) => change(binRangeSearch(bin))}
       />
-      {view.q && jobs.length === 0 && (
+      {view.q && matching.jobs.length === 0 && (
         <OtherCensusNames q={view.q} year={view.year} />
       )}
-      {jobs.length > 0 && (
+      {matching.jobs.length > 0 && (
         <section className="space-y-3">
           <SortControls view={view} onSort={handleSort} />
           <PeopleTable rows={shown.rows} view={view} onSort={handleSort} />

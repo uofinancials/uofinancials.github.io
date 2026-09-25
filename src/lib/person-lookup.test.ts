@@ -30,7 +30,6 @@ test('a name’s years split into runs where no link joins them', () => {
     [[2016], false],
     [[2018, 2019], true],
   ])
-  expect(ann?.latestPayDepartment).toBe('Physics')
   expect(ann && yearsOf(ann)).toEqual([2014, 2015, 2016, 2018, 2019])
 })
 
@@ -46,16 +45,6 @@ test('a year with two primary jobs is not linked, and keeps both records', () =>
   expect(
     ann?.runs.flatMap((run) => run.years.map(({ records }) => records.length)),
   ).toEqual([2, 1])
-})
-
-test('the latest pay department is the latest census’s primary job’s', () => {
-  const [ann] = indexPeople([
-    census(2025, [
-      classifiedJob({ jobType: 'Secondary', payDepartment: physics }),
-      classifiedJob(),
-    ]),
-  ])
-  expect(ann?.latestPayDepartment).toBe('Dept')
 })
 
 const people = indexPeople([

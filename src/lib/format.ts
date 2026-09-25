@@ -36,7 +36,7 @@ const COMPACT_DOLLARS = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
-const CENTS_PER_DOLLAR = 100
+export const CENTS_PER_DOLLAR = 100
 const HUNDREDTHS = 100
 
 /** Formats integer cents as whole dollars, e.g. `$1,916,052,234`. */

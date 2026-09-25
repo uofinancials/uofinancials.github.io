@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
+  binRangeSearch,
   binsInRange,
   countNames,
   distinctValues,
@@ -10,6 +11,7 @@ import {
   pageOf,
   resolvePeopleView,
   sortJobs,
+  typedFilters,
 } from './people-list'
 import { buildDistribution } from './salary-distribution'
 
@@ -140,4 +142,22 @@ test('the chart keeps the bins that overlap the rate range', () => {
   expect(floors({ min: 250_000 })).toEqual([250])
   expect(floors({ max: 9_999 })).toEqual([0])
   expect(floors({})).toHaveLength(26)
+})
+
+test('a bin’s range is its floor to its last whole dollar, and the top bin has no maximum', () => {
+  const [first, ...rest] = buildDistribution([], 2025).bins
+  const top = rest.at(-1)
+  if (!first || !top) throw new Error('no bins')
+  expect(binRangeSearch(first)).toEqual({ min: 0, max: 9_999 })
+  expect(binRangeSearch(top)).toEqual({ min: 250_000, max: undefined })
+  expect(view(binRangeSearch(first)).ceilingCents).toBe(first.ceilingCents)
+})
+
+test('each typed filter reads as a chip with the search that clears it', () => {
+  expect(typedFilters(view({ q: 'smith', min: 50_000, max: 59_999 }))).toEqual([
+    { text: 'Name: smith', clear: { q: undefined } },
+    { text: 'Rate from $50,000', clear: { min: undefined } },
+    { text: 'Rate to $59,999', clear: { max: undefined } },
+  ])
+  expect(typedFilters(view({ group: 'Faculty' }))).toEqual([])
 })

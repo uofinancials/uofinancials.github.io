@@ -1,15 +1,15 @@
 import { useId } from 'react'
 import { RemovableFilter } from '@/components/removable-filter'
-import { SalariesControls } from '@/components/salaries-controls'
 import { SearchField } from '@/components/search-field'
 import { SelectField } from '@/components/select-field'
-import { formatDollars } from '@/lib/format'
-import type { PeopleView } from '@/lib/people-list'
+import {
+  type PeopleView,
+  rateRangeDollars,
+  typedFilters,
+} from '@/lib/people-list'
 import type { PeopleSearch } from '@/lib/people-search'
-import type { Place } from '@/lib/salaries-search'
 
 const ALL = 'all'
-const CENTS_PER_DOLLAR = 100
 
 function DollarField({
   label,
@@ -70,65 +70,21 @@ function TitleField({
   )
 }
 
-function dollarsOf(cents: number | null): number | undefined {
-  return cents === null ? undefined : cents / CENTS_PER_DOLLAR
-}
-
-/** The whole-dollar maximum a view's exclusive ceiling stands for. */
-function maxDollarsOf({ ceilingCents }: PeopleView): number | undefined {
-  return ceilingCents === null ? undefined : ceilingCents / CENTS_PER_DOLLAR - 1
-}
-
-function chipsOf(view: PeopleView): { text: string; clear: PeopleSearch }[] {
-  const chips: { text: string; clear: PeopleSearch }[] = []
-  const max = maxDollarsOf(view)
-  if (view.q) chips.push({ text: `Name: ${view.q}`, clear: { q: undefined } })
-  if (view.title) {
-    chips.push({ text: `Title: ${view.title}`, clear: { title: undefined } })
-  }
-  if (view.category) {
-    chips.push({
-      text: `EEO category: ${view.category}`,
-      clear: { category: undefined },
-    })
-  }
-  if (view.minCents !== null) {
-    chips.push({
-      text: `Rate from ${formatDollars(view.minCents)}`,
-      clear: { min: undefined },
-    })
-  }
-  if (max !== undefined) {
-    chips.push({
-      text: `Rate to ${formatDollars(max * CENTS_PER_DOLLAR)}`,
-      clear: { max: undefined },
-    })
-  }
-  return chips
-}
-
-/** The people list's filters, and a chip for each typed one; `onType` changes the search without a history entry. */
+/** The people list's own filters, and a chip for each typed one; `onType` changes the search without a history entry. */
 export function PeopleControls({
   view,
-  years,
-  areas,
-  place,
-  positionName,
   titles,
   categories,
   onChange,
   onType,
 }: {
   view: PeopleView
-  years: number[]
-  areas: { code: string; name: string }[]
-  place: Place
-  positionName: string | null
   titles: string[]
   categories: string[]
   onChange: (search: PeopleSearch) => void
   onType: (search: PeopleSearch) => void
 }) {
+  const range = rateRangeDollars(view)
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4">
@@ -158,24 +114,16 @@ export function PeopleControls({
         />
         <DollarField
           label="Rate from ($)"
-          value={dollarsOf(view.minCents)}
+          value={range.min}
           onChange={(min) => onType({ min })}
         />
         <DollarField
           label="Rate to ($)"
-          value={maxDollarsOf(view)}
+          value={range.max}
           onChange={(max) => onType({ max })}
         />
       </div>
-      <SalariesControls
-        view={view}
-        years={years}
-        areas={areas}
-        place={place}
-        positionName={positionName}
-        onChange={onChange}
-      />
-      {chipsOf(view).map(({ text, clear }) => (
+      {typedFilters(view).map(({ text, clear }) => (
         <RemovableFilter
           key={text}
           text={text}

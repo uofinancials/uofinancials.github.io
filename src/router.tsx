@@ -9,13 +9,13 @@ import {
 } from '@tanstack/react-router'
 import { PageError } from '@/components/page-error'
 import { PageLoading } from '@/components/page-loading'
+import { peopleIndexQuery } from '@/components/people-index-query'
 import { SiteLayout } from '@/components/site-layout'
 import { orgCode } from '@/data/budget'
 import {
   budgetYearQuery,
   fallYearQuery,
   manifestQuery,
-  peopleIndexQuery,
   raiseTermsQuery,
 } from '@/data/queries'
 import {
@@ -149,14 +149,6 @@ const salariesRoute = createRoute({
   component: SalariesPage,
 })
 
-async function loadPeopleIndex({
-  context: { queryClient },
-}: {
-  context: { queryClient: QueryClient }
-}) {
-  await queryClient.ensureQueryData(peopleIndexQuery(queryClient))
-}
-
 const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people',
@@ -180,7 +172,8 @@ const personRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people/$name',
   validateSearch: personSearchSchema,
-  loader: loadPeopleIndex,
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(peopleIndexQuery),
   component: PersonPage,
 })
 

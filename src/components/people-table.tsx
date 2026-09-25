@@ -8,12 +8,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { FallRecord } from '@/data/fall'
+import { NO_VALUE } from '@/lib/format'
 import { type PeopleView, recordKey } from '@/lib/people-list'
 import type { PeopleSort, SortDirection } from '@/lib/people-search'
-import { LIST_COLUMNS, listValues } from '@/lib/person-fields'
+import { LIST_FIELDS } from '@/lib/person-fields'
 import { cn } from '@/lib/utils'
 
-const NUMBER_COLUMNS = new Set<PeopleSort | null>(['appt', 'rate'])
 const ARIA_SORT: Record<SortDirection, 'ascending' | 'descending'> = {
   asc: 'ascending',
   desc: 'descending',
@@ -22,11 +22,13 @@ const ARIA_SORT: Record<SortDirection, 'ascending' | 'descending'> = {
 function SortHeader({
   label,
   sort,
+  isNumber = false,
   view,
   onSort,
 }: {
   label: string
   sort: PeopleSort | null
+  isNumber?: boolean
   view: PeopleView
   onSort: (sort: PeopleSort, dir: SortDirection) => void
 }) {
@@ -35,7 +37,7 @@ function SortHeader({
     <TableHead
       scope="col"
       aria-sort={isSorted ? ARIA_SORT[view.dir] : undefined}
-      className={cn(NUMBER_COLUMNS.has(sort) && 'text-right')}
+      className={cn(isNumber && 'text-right')}
     >
       {sort === null ? (
         label
@@ -70,11 +72,12 @@ export function PeopleTable({
       <TableHeader>
         <TableRow>
           <SortHeader label="Name" sort="name" view={view} onSort={onSort} />
-          {LIST_COLUMNS.map(({ label, sort }) => (
+          {LIST_FIELDS.map(({ label, sort, isNumber }) => (
             <SortHeader
               key={label}
               label={label}
               sort={sort}
+              isNumber={isNumber}
               view={view}
               onSort={onSort}
             />
@@ -97,16 +100,16 @@ export function PeopleTable({
                 {record.name}
               </Link>
             </TableHead>
-            {listValues(record).map((value, index) => (
+            {LIST_FIELDS.map(({ label, value, isNumber }) => (
               <TableCell
-                key={LIST_COLUMNS[index]?.label}
+                key={label}
                 className={
-                  NUMBER_COLUMNS.has(LIST_COLUMNS[index]?.sort ?? null)
+                  isNumber
                     ? 'text-right tabular-nums'
                     : 'min-w-28 whitespace-normal'
                 }
               >
-                {value}
+                {value(record) ?? NO_VALUE}
               </TableCell>
             ))}
           </TableRow>
