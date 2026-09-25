@@ -6,18 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { NO_VALUE } from '@/lib/format'
+import { HISTORY_LABELS } from '@/lib/person-fields'
 import type { Person } from '@/lib/person-lookup'
 import { jobHistory } from '@/lib/person-summary'
-
-const COLUMNS = [
-  'Title',
-  'Class or rank',
-  'Pay department',
-  'Job type',
-  'Appointment',
-  'Term',
-]
 
 /** Every job under the name, census by census, with the published fields that change most. */
 export function PersonHistoryTable({ person }: { person: Person }) {
@@ -34,7 +25,7 @@ export function PersonHistoryTable({ person }: { person: Person }) {
         <TableHeader>
           <TableRow>
             <TableHead scope="col">Fall</TableHead>
-            {COLUMNS.map((column) => (
+            {HISTORY_LABELS.map((column) => (
               <TableHead key={column} scope="col">
                 {column}
               </TableHead>
@@ -50,14 +41,9 @@ export function PersonHistoryTable({ person }: { person: Person }) {
                   <span className="text-muted-foreground"> linked</span>
                 )}
               </TableHead>
-              <TableCell>{row.title}</TableCell>
-              <TableCell>{row.classOrRank ?? NO_VALUE}</TableCell>
-              <TableCell>{row.payDepartment}</TableCell>
-              <TableCell>{row.jobType}</TableCell>
-              <TableCell className="tabular-nums">{row.apptPercent}%</TableCell>
-              <TableCell className="tabular-nums">
-                {row.termOfServiceMonths} months
-              </TableCell>
+              {HISTORY_LABELS.map((column, index) => (
+                <TableCell key={column}>{row.values[index]}</TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>

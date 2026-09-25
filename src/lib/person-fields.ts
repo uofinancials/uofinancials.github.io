@@ -11,8 +11,7 @@ function department({ code, name }: { code: string | null; name: string }) {
   return code === null ? name : `${name} (${code})`
 }
 
-/** The job title, from whichever report published the record. */
-export function titleOf(record: FallRecord): string {
+function titleOf(record: FallRecord): string {
   return record.kind === 'classified' ? record.jobTitle : record.academicTitle
 }
 
@@ -22,9 +21,24 @@ function positionClassOf(record: FallRecord): string | null {
   return title === null ? code : `${code} ${title}`
 }
 
-/** A classified job's position class or an unclassified job's rank, as published. */
-export function classOrRankOf(record: FallRecord): string | null {
-  return record.kind === 'classified' ? positionClassOf(record) : record.rank
+const TITLE: Field = { label: 'Title', value: titleOf }
+const JOB_TYPE: Field = { label: 'Job type', value: (record) => record.jobType }
+const PAY_DEPARTMENT: Field = {
+  label: 'Pay department',
+  value: (record) => department(record.payDepartment),
+}
+const APPOINTMENT: Field = {
+  label: 'Appointment',
+  value: (record) => `${record.apptPercent}%`,
+}
+const TERM: Field = {
+  label: 'Term of service',
+  value: (record) => `${record.termOfServiceMonths} months`,
+}
+const CLASS_OR_RANK: Field = {
+  label: 'Class or rank',
+  value: (record) =>
+    record.kind === 'classified' ? positionClassOf(record) : record.rank,
 }
 
 function unclassifiedField(
@@ -44,7 +58,7 @@ const FIELDS: Field[] = [
     value: (record) =>
       record.kind === 'classified' ? 'Classified' : 'Unclassified',
   },
-  { label: 'Title', value: titleOf },
+  TITLE,
   { label: 'Position class', kind: 'classified', value: positionClassOf },
   unclassifiedField('Rank', 'rank'),
   unclassifiedField('Rank date', 'rankDate'),
@@ -52,25 +66,19 @@ const FIELDS: Field[] = [
   unclassifiedField('Primary activity', 'primaryActivity'),
   unclassifiedField('OA salary grade', 'oaSalaryGrade'),
   { label: 'EEO category', value: (record) => record.eeoCategory },
-  { label: 'Job type', value: (record) => record.jobType },
+  JOB_TYPE,
   { label: 'Job status', value: (record) => record.jobStatus },
   {
     label: 'Home department',
     value: (record) => department(record.homeDepartment),
   },
-  {
-    label: 'Pay department',
-    value: (record) => department(record.payDepartment),
-  },
+  PAY_DEPARTMENT,
   {
     label: 'Annual salary rate',
     value: (record) => formatDollars(record.annualSalaryRateCents),
   },
-  { label: 'Appointment', value: (record) => `${record.apptPercent}%` },
-  {
-    label: 'Term of service',
-    value: (record) => `${record.termOfServiceMonths} months`,
-  },
+  APPOINTMENT,
+  TERM,
   { label: 'Job start', value: (record) => record.jobStartDate },
   { label: 'Job end', value: (record) => record.jobEndDate },
   { label: 'Report page', value: (record) => String(record.sourcePage) },
@@ -87,4 +95,20 @@ export function personFields(
       values: records.map((record) => value(record) ?? NO_VALUE),
     }),
   )
+}
+
+const HISTORY_FIELDS = [
+  TITLE,
+  CLASS_OR_RANK,
+  PAY_DEPARTMENT,
+  JOB_TYPE,
+  APPOINTMENT,
+  TERM,
+]
+
+export const HISTORY_LABELS = HISTORY_FIELDS.map(({ label }) => label)
+
+/** The job history's published fields of one job, in `HISTORY_LABELS` order. */
+export function historyValues(record: FallRecord): string[] {
+  return HISTORY_FIELDS.map(({ value }) => value(record) ?? NO_VALUE)
 }

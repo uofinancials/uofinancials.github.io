@@ -35,9 +35,10 @@ export function PersonRatesFigure({ person }: { person: Person }) {
         Each job line is its published annual salary rate, gapped where a census
         lists no such job; a job is its job type and pay department, so a new
         title in the same job continues its line. {TOTAL_SERIES} is computed by
-        this site: the sum of each job's rate × its appointment %, an estimate
-        of annual pay that overstates classified temporaries' pay, whose rates
-        are annualised hourly rates.
+        this site: the sum of each job's rate × its appointment %, with jobs on
+        unpaid leave as zero, as the other pages estimate spend. It estimates
+        annual pay, and overstates classified temporaries' pay, whose rates are
+        annualised hourly rates.
       </p>
       <Table>
         <caption className="sr-only">{label}</caption>

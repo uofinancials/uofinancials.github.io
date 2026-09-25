@@ -19,7 +19,7 @@ import {
   type Person,
   yearsOf,
 } from '@/lib/person-lookup'
-import { resolvePersonYear } from '@/lib/person-summary'
+import { resolveCensusYear } from '@/lib/salaries-search'
 
 const MATCH_NOTE = `a name matches when every word typed appears in it, ignoring case and commas. Its years are the censuses that list the name, and its department is the pay department of its primary job in the latest of them (or its first listed job, with no primary job). The same name may be more than one person.`
 
@@ -85,7 +85,10 @@ export function PeoplePage() {
       />
       {name !== undefined &&
         (person ? (
-          <PersonView person={person} year={resolvePersonYear(person, year)} />
+          <PersonView
+            person={person}
+            year={resolveCensusYear(year, yearsOf(person))}
+          />
         ) : (
           <p>No Fall record is published under the name {name}.</p>
         ))}

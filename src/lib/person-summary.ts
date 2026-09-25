@@ -1,28 +1,20 @@
 import type { FallRecord } from '../data/fall.ts'
-import { classOrRankOf, titleOf } from './person-fields.ts'
-import type { Person, PersonRun, PersonYear } from './person-lookup.ts'
-import { yearsOf } from './person-lookup.ts'
+import { jobSpendCents } from './overview.ts'
+import { historyValues } from './person-fields.ts'
+import {
+  type Person,
+  type PersonRun,
+  type PersonYear,
+  personYearsOf,
+  primaryJobOf,
+} from './person-lookup.ts'
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000
-const PERCENT = 100
-
-/** The census a search asks for when the name has it, or else the name's latest. */
-export function resolvePersonYear(
-  person: Person,
-  year: number | undefined,
-): number {
-  const years = yearsOf(person)
-  return year !== undefined && years.includes(year) ? year : Math.max(...years)
-}
 
 export function runOf(person: Person, year: number): PersonRun | undefined {
   return person.runs.find((run) =>
     run.years.some((entry) => entry.year === year),
   )
-}
-
-function primaryJob({ records }: PersonYear): FallRecord | undefined {
-  return records.find((record) => record.jobType === 'Primary')
 }
 
 /** A published rate at two censuses; `ratio` is the change as a fraction of the first. */
@@ -36,16 +28,21 @@ export type RateChange = {
 
 /** Figures computed from one run's published records, never published by UO. */
 export type RunCards = {
+  firstYear: number
+  lastYear: number
+  /** Consecutive census pairs in the run. */
+  pairs: number
   /** Years from the earliest published job start in the run to its last census date. */
   yearsSinceStart: number | null
   /** The primary job's rate at the run's first and last census; `null` for an unlinked run. */
   runChange: RateChange | null
   /** The mean yearly change over pairs whose appointment and term held; `null` when none did. */
-  averageChange: { ratio: number; pairsUsed: number; pairs: number } | null
+  averageChange: { ratio: number; pairsUsed: number } | null
 }
 
 function rateChange(from: PersonYear, to: PersonYear): RateChange | null {
-  const [fromJob, toJob] = [primaryJob(from), primaryJob(to)]
+  const fromJob = primaryJobOf(from.records)
+  const toJob = primaryJobOf(to.records)
   if (!fromJob || !toJob) return null
   return {
     fromYear: from.year,
@@ -58,92 +55,78 @@ function rateChange(from: PersonYear, to: PersonYear): RateChange | null {
   }
 }
 
-function isComparable(from: PersonYear, to: PersonYear): boolean {
-  const [fromJob, toJob] = [primaryJob(from), primaryJob(to)]
-  return (
-    fromJob !== undefined &&
-    toJob !== undefined &&
-    fromJob.apptPercent === toJob.apptPercent &&
-    fromJob.termOfServiceMonths === toJob.termOfServiceMonths
-  )
+/** The pair's rate change, or none when the primary job's appointment or term changed. */
+function comparableRatio(from: PersonYear, to: PersonYear): number[] {
+  const fromJob = primaryJobOf(from.records)
+  const toJob = primaryJobOf(to.records)
+  if (
+    !fromJob ||
+    !toJob ||
+    fromJob.apptPercent !== toJob.apptPercent ||
+    fromJob.termOfServiceMonths !== toJob.termOfServiceMonths
+  ) {
+    return []
+  }
+  return [
+    (toJob.annualSalaryRateCents - fromJob.annualSalaryRateCents) /
+      fromJob.annualSalaryRateCents,
+  ]
 }
 
 function yearsSinceStart(run: PersonRun): number | null {
-  const starts = run.years.flatMap(({ records }) =>
-    records.map((record) => record.jobStartDate),
-  )
-  const earliest = starts.sort()[0]
+  const earliest = run.years
+    .flatMap(({ records }) => records.map((record) => record.jobStartDate))
+    .sort()[0]
   const last = run.years.at(-1)
   if (!earliest || !last) return null
   return (Date.parse(last.censusDate) - Date.parse(earliest)) / MS_PER_YEAR
 }
 
-function consecutivePairs(years: PersonYear[]): [PersonYear, PersonYear][] {
-  return years.slice(1).flatMap((to, index) => {
+function averageChange(years: PersonYear[]): RunCards['averageChange'] {
+  const ratios = years.slice(1).flatMap((to, index) => {
     const from = years[index]
-    return from ? [[from, to]] : []
+    return from ? comparableRatio(from, to) : []
   })
-}
-
-function averageChange(run: PersonRun): RunCards['averageChange'] {
-  const pairs = consecutivePairs(run.years)
-  const ratios = pairs
-    .filter(([from, to]) => isComparable(from, to))
-    .flatMap(([from, to]) => rateChange(from, to)?.ratio ?? [])
   if (ratios.length === 0) return null
   return {
     ratio: ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length,
     pairsUsed: ratios.length,
-    pairs: pairs.length,
   }
 }
 
 export function runCards(run: PersonRun): RunCards {
-  const [first, last] = [run.years[0], run.years.at(-1)]
+  const first = run.years[0]
+  const last = run.years.at(-1)
   return {
+    firstYear: first?.year ?? 0,
+    lastYear: last?.year ?? 0,
+    pairs: run.years.length - 1,
     yearsSinceStart: yearsSinceStart(run),
     runChange: run.isLinked && first && last ? rateChange(first, last) : null,
-    averageChange: run.isLinked ? averageChange(run) : null,
+    averageChange: run.isLinked ? averageChange(run.years) : null,
   }
 }
 
 export const TOTAL_SERIES = 'Total, estimated (rate × appointment)'
 
-function jobKeys(records: FallRecord[]): string[] {
-  const seen = new Map<string, number>()
-  return records.map((record) => {
-    const key = `${record.jobType} · ${record.payDepartment.name}`
-    const count = (seen.get(key) ?? 0) + 1
-    seen.set(key, count)
-    return count === 1 ? key : `${key} (${count})`
-  })
-}
-
-function estimatedTotalCents(records: FallRecord[]): number {
-  return Math.round(
-    records.reduce(
-      (sum, record) =>
-        sum + (record.annualSalaryRateCents * record.apptPercent) / PERCENT,
-      0,
-    ),
-  )
-}
-
-/** Each job's published rate per census year, `null` where the year has no such job, then the estimated total of rate × appointment. */
+/** Each job type and pay department's published rate per census year, `null` where the year has none, then the estimated total. */
 export function personRates(person: Person): {
   years: number[]
   series: { key: string; values: (number | null)[] }[]
 } {
-  const personYears = person.runs.flatMap((run) => run.years)
+  const personYears = personYearsOf(person)
   const byKey = new Map<string, (number | null)[]>()
   personYears.forEach(({ records }, index) => {
-    const keys = jobKeys(records)
-    records.forEach((record, position) => {
-      const key = keys[position] ?? ''
+    const seen = new Map<string, number>()
+    for (const record of records) {
+      const job = `${record.jobType} · ${record.payDepartment.name}`
+      const count = (seen.get(job) ?? 0) + 1
+      seen.set(job, count)
+      const key = count === 1 ? job : `${job} (${count})`
       const values = byKey.get(key) ?? personYears.map(() => null)
       values[index] = record.annualSalaryRateCents
       byKey.set(key, values)
-    })
+    }
   })
   return {
     years: personYears.map(({ year }) => year),
@@ -151,39 +134,35 @@ export function personRates(person: Person): {
       ...[...byKey].map(([key, values]) => ({ key, values })),
       {
         key: TOTAL_SERIES,
-        values: personYears.map(({ records }) => estimatedTotalCents(records)),
+        values: personYears.map(({ records }) =>
+          records.reduce((sum, record) => sum + jobSpendCents(record), 0),
+        ),
       },
     ],
   }
 }
 
-export type HistoryRow = {
-  key: string
-  year: number
-  isLinked: boolean
-  title: string
-  classOrRank: string | null
-  payDepartment: string
-  jobType: string
-  apptPercent: number
-  termOfServiceMonths: number
-}
-
-/** Every job under the name, census by census, as published. */
-export function jobHistory(person: Person): HistoryRow[] {
+/** Every job under the name, census by census, with its history fields as published. */
+export function jobHistory(
+  person: Person,
+): { key: string; year: number; isLinked: boolean; values: string[] }[] {
   return person.runs.flatMap(({ years, isLinked }) =>
     years.flatMap(({ year, records }) =>
       records.map((record, index) => ({
         key: `${year}-${index}`,
         year,
         isLinked,
-        title: titleOf(record),
-        classOrRank: classOrRankOf(record),
-        payDepartment: record.payDepartment.name,
-        jobType: record.jobType,
-        apptPercent: record.apptPercent,
-        termOfServiceMonths: record.termOfServiceMonths,
+        values: historyValues(record),
       })),
+    ),
+  )
+}
+
+/** The distinct pay departments with a code among one census's jobs, by code. */
+export function payDepartmentsOf(records: FallRecord[]): Map<string, string> {
+  return new Map(
+    records.flatMap(({ payDepartment: { code, name } }) =>
+      code === null ? [] : [[code, name] as const],
     ),
   )
 }

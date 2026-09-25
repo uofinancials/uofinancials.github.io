@@ -4,8 +4,12 @@ import { PersonHistoryTable } from '@/components/person-history-table'
 import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
-import type { Person, PersonYear } from '@/lib/person-lookup'
-import { runOf } from '@/lib/person-summary'
+import {
+  type Person,
+  type PersonYear,
+  personYearsOf,
+} from '@/lib/person-lookup'
+import { payDepartmentsOf, runOf } from '@/lib/person-summary'
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =
@@ -15,36 +19,30 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
   return (
     <nav aria-label="Census year">
       <ul className="flex flex-wrap gap-1 border-b">
-        {person.runs.flatMap((run) =>
-          run.years.map((entry) => (
-            <li key={entry.year}>
-              <Link
-                to="/people"
-                search={(previous) => ({ ...previous, year: entry.year })}
-                aria-current={entry.year === year ? 'page' : undefined}
-                className={cn(
-                  'block rounded-t-md px-3 py-1 text-sm tabular-nums',
-                  entry.year === year
-                    ? 'border border-b-0 bg-background font-semibold'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {entry.year}
-              </Link>
-            </li>
-          )),
-        )}
+        {personYearsOf(person).map((entry) => (
+          <li key={entry.year}>
+            <Link
+              to="/people"
+              search={(previous) => ({ ...previous, year: entry.year })}
+              aria-current={entry.year === year ? 'page' : undefined}
+              className={cn(
+                'block rounded-t-md px-3 py-1 text-sm tabular-nums',
+                entry.year === year
+                  ? 'border border-b-0 bg-background font-semibold'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {entry.year}
+            </Link>
+          </li>
+        ))}
       </ul>
     </nav>
   )
 }
 
 function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
-  const departments = new Map(
-    entry.records.flatMap(({ payDepartment: { code, name } }) =>
-      code === null ? [] : [[code, name] as const],
-    ),
-  )
+  const departments = payDepartmentsOf(entry.records)
   return (
     <section className="space-y-2">
       <h3 className="font-semibold">Fall {entry.year} records</h3>

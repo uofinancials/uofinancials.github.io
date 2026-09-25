@@ -66,10 +66,14 @@ function recordsByNameAndYear(years: FallYear[]): Map<string, PersonYear[]> {
   return byName
 }
 
+/** The one job a census lists as the record's primary job, if any. */
+export function primaryJobOf(records: FallRecord[]): FallRecord | undefined {
+  return records.find((record) => record.jobType === 'Primary')
+}
+
 function latestPayDepartment(years: PersonYear[]): string {
   const records = years.at(-1)?.records ?? []
-  const job =
-    records.find((record) => record.jobType === 'Primary') ?? records[0]
+  const job = primaryJobOf(records) ?? records[0]
   return job?.payDepartment.name ?? ''
 }
 
@@ -91,9 +95,14 @@ export function indexPeople(years: FallYear[]): Person[] {
     .sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
+/** The name's census years in order, each with its records. */
+export function personYearsOf(person: Person): PersonYear[] {
+  return person.runs.flatMap((run) => run.years)
+}
+
 /** Every census year the name appears in, in order. */
 export function yearsOf(person: Person): number[] {
-  return person.runs.flatMap((run) => run.years.map(({ year }) => year))
+  return personYearsOf(person).map(({ year }) => year)
 }
 
 /** People whose name holds every word of the query, or `null` for a query too short to search. */

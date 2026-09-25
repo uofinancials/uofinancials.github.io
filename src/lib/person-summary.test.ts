@@ -4,8 +4,8 @@ import { formatChange, formatYears } from './format'
 import { indexPeople } from './person-lookup'
 import {
   jobHistory,
+  payDepartmentsOf,
   personRates,
-  resolvePersonYear,
   runCards,
   runOf,
   TOTAL_SERIES,
@@ -52,8 +52,8 @@ test('a linked run’s cards: time since the earliest start, the run’s change,
     toCents: 6_600_000,
     ratio: 0.32,
   })
+  expect(cards).toMatchObject({ firstYear: 2020, lastYear: 2023, pairs: 3 })
   expect(cards?.averageChange?.pairsUsed).toBe(2)
-  expect(cards?.averageChange?.pairs).toBe(3)
   expect(cards?.averageChange?.ratio).toBeCloseTo((0.1 + 0) / 2, 10)
 })
 
@@ -63,12 +63,6 @@ test('an unlinked year has only the start-date card', () => {
   expect(cards?.runChange).toBeNull()
   expect(cards?.averageChange).toBeNull()
   expect(cards?.yearsSinceStart).toBeCloseTo(5.8, 1)
-})
-
-test('a year the name lacks falls back to its latest census', () => {
-  expect(resolvePersonYear(ann(), 2024)).toBe(2025)
-  expect(resolvePersonYear(ann(), 2021)).toBe(2021)
-  expect(resolvePersonYear(ann(), undefined)).toBe(2025)
 })
 
 test('each job type and pay department is a line of published rates, gapped where absent, with the total of rate × appointment', () => {
@@ -110,14 +104,38 @@ test('the job history lists every job as published, with its run’s link', () =
   expect(rows[4]).toMatchObject({
     year: 2023,
     isLinked: true,
-    title: 'Instructor',
-    classOrRank: 'Instructor',
-    payDepartment: 'Physics',
-    jobType: 'Overload',
-    apptPercent: 10,
-    termOfServiceMonths: 9,
+    values: [
+      'Instructor',
+      'Instructor',
+      'Physics (222222)',
+      'Overload',
+      '10%',
+      '9 months',
+    ],
   })
   expect(rows[5]).toMatchObject({ year: 2025, isLinked: false })
+})
+
+test('the total counts a job on unpaid leave as zero', () => {
+  const [person] = indexPeople([
+    census(2025, [
+      classifiedJob({ jobStatus: 'On Leave Without Pay' }),
+      classifiedJob({ jobType: 'Secondary', apptPercent: 50 }),
+    ]),
+  ])
+  expect(person && personRates(person).series.at(-1)?.values).toEqual([
+    2_500_000,
+  ])
+})
+
+test('a year’s pay departments are listed once each, by code', () => {
+  expect([
+    ...payDepartmentsOf([
+      classifiedJob(),
+      classifiedJob({ jobType: 'Secondary' }),
+      unclassifiedJob({ payDepartment: { code: null, name: 'None' } }),
+    ]),
+  ]).toEqual([['111111', 'Dept']])
 })
 
 test('changes and years format with a sign and one decimal', () => {
