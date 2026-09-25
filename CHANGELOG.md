@@ -113,28 +113,21 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   jobs, and ranks or classes with fewer than three jobs are shown together.
 - The department page's view is kept in its link: the budget breakdown, the
   measure, classified or unclassified staff, and the census of the class table.
-- A Salaries page (`/salaries`) showing how many jobs fall in each $10,000 range
-  of published annual salary rate, up to a "$250,000 and over" range, for one
-  Fall census, as a bar chart split by the Trends page's employee groups and a
-  table of the same counts. Beside it are each group's job count, the 10th to
-  90th percentile rates of primary jobs (temporaries left out), and the highest
-  rate.
-- The Salaries view is set from the page and kept in its link: the census, one
-  group, classified or unclassified staff, 9- or 12-month terms, a college or VP
-  area, and a position class or rank. Each department page links to its own
-  distribution, shown as a filter that can be removed. A filter matching fewer
-  than three jobs shows only the count, and percentiles need three primary jobs.
 - A People page (`/people`) listing one Fall census's jobs by name, the latest
   by default, 50 to a page, with every published job field in a table (Fall
   2025: 6,840 jobs, 6,268 names, from the reports retrieved 2026-09-24):
   - filters by name and by title (each word typed must appear, with the census's
     titles suggested), EEO category, a published rate range in whole dollars
-    with both ends included, and the Salaries page's census, group, staff, term,
-    college or VP area or department, and position class or rank, each typed
-    filter shown as a chip that removes it;
+    with both ends included, the census, one of the Trends page's employee
+    groups, classified or unclassified staff, 9- or 12-month terms, a college or
+    VP area or department, and a position class or rank, each typed filter or
+    department shown as a chip that removes it;
   - the number of matching jobs and names, and above the table two charts of the
-    matching jobs: their salary rate ranges as on the Salaries page, where
-    choosing a range sets the rate filter, and their count and median rate by
+    matching jobs, shown for three jobs or more: how many fall in each $10,000
+    range of published annual salary rate, up to "$250,000 and over", split by
+    group, with each group's count, the 10th to 90th percentile rates of primary
+    jobs (temporaries left out), and the highest rate behind a toggle, where
+    choosing a range sets the rate filter; and their count and median rate by
     group;
   - sorting by name, title, class or rank, pay department, rate, appointment,
     EEO category, or group, either way, ties by name;
@@ -142,9 +135,9 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     hidden by default;
   - a name with no job in the census listed with the censuses it appears in.
 - The list is kept in its link, and the page asks search engines not to index
-  it. Records marked `possibleStudent` are shown as published. The Salaries and
-  department pages link to it with their filters, and it links back to the
-  Salaries page.
+  it. Records marked `possibleStudent` are shown as published. The department
+  and person pages link to it with their filters, and old `/salaries` links open
+  it with theirs.
 - Each name has its own page (`/people/<name>`), also not indexed, with a back
   button to the list. Old `/people?name=` links lead to it. It shows, from top
   to bottom:
@@ -159,9 +152,8 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     (class number whatever its letter prefix, rank, or for unranked jobs the OA
     salary grade; primary jobs, temporaries left out, three jobs or more);
   - census tabs, each with every field the report publishes for that year's
-    jobs, its citation, and links to the pay department's page and salary
-    distribution and to the salary distribution of each job's position class or
-    rank, to the People list of that department and class or rank, and to the
+    jobs, its citation, and links to the pay department's page, to the People
+    list of that department and of each job's position class or rank, and to the
     pay changes of that department and of the primary job's class or rank;
   - a job history of title, class or rank, pay department, job type,
     appointment, and term for every census.

@@ -62,8 +62,8 @@ flowchart LR
   report link, the source citation caption, the loading and error states, the
   select, radio, and search fields, the totals chart and table, the line chart,
   the stacked bar chart, the trends table and controls, the department budget
-  and jobs sections, the salaries controls, the salary distribution figure, the
-  removable filter, the pay changes controls, lines, counts table, and
+  and jobs sections, the census filter controls, the salary distribution figure,
+  the removable filter, the pay changes controls, lines, counts table, and
   distribution, the people list's controls, table, sort controls, column picker,
   and group figure, the person view with its computed figures, rate chart,
   records table, and job history, and the hooks and query that load one census's
@@ -117,8 +117,8 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  departments, salaries, the people list and person page, sources page, and
-  `404.html`.
+  departments, the salaries redirect, the people list and person page, sources
+  page, and `404.html`.
 - `e2e/pay-changes.spec.ts` - the pay changes page and its link from the person
   page.
 
@@ -138,16 +138,12 @@ flowchart LR
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, and for an area how its jobs were placed;
   driven by the `src/lib` department modules over every Fall and budget year.
-- `/salaries` - the number of jobs in each salary rate range for one Fall
-  census, by employee group, with primary-job percentiles, filtered by group,
-  staff kind, term, college or VP area or department, and position class or
-  rank; driven by the `src/lib` distribution over one Fall year and its budget
-  year.
+- `/salaries` - redirects to `/people` with its filters.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
-  charts of the matching jobs by salary rate and by group, and names from other
-  censuses when a name has no job in it; not indexed by search engines; driven
-  by the `src/lib` people list and distribution over one Fall year and its
-  budget year.
+  charts of the matching jobs by salary rate, with primary-job percentiles, and
+  by group, and names from other censuses when a name has no job in it; not
+  indexed by search engines; driven by the `src/lib` people list and
+  distribution over one Fall year and its budget year.
 - `/people/$name` - one name's computed figures, its rates by job over time, its
   records for one census at a time, and its job history, with a back button; not
   indexed by search engines; driven by the `src/lib` person lookup and summary
