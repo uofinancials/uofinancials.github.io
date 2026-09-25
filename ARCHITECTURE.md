@@ -91,8 +91,11 @@ flowchart LR
   computed figures, rates by job, job history, a job's class or rank and the
   medians beside it, continuing jobs' pay changes with the rank renames and
   title abbreviations they use, a job's estimated raise group, and each raise
-  group's median change beside its compounded across-the-board terms, and the
-  budget outlook's gap by year, chart series, and cited sources.
+  group's median change beside its compounded across-the-board terms, the budget
+  outlook's gap by year, chart series, and cited sources, and scenarios: a job's
+  estimated OPE rate group, each area's estimated E&G share, rules over one
+  census, the hiring freeze, savings against the projection, and the rules' URL
+  form.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -127,6 +130,8 @@ flowchart LR
   data file.
 - `scripts/committed-outlook.test.ts` - the budget outlook's published
   arithmetic: lines to totals, run rates, and fund balances.
+- `scripts/committed-scenario.test.ts` - OPE rate groups, E&G shares, and
+  scenario results on the committed data.
 
 ### End-to-end tests (`e2e/`)
 
