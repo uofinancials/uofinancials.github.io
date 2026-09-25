@@ -11,7 +11,7 @@ export type AreaAssignment =
   | { area: string; basis: 'published' | 'name' | 'hand' }
   | { area: null; basis: 'unassigned' }
 
-const ORG_LEVEL_AREA = 3
+export const ORG_LEVEL_AREA = 3
 const ORG_LEVEL_UNIT = 5
 
 const ADMINISTRATIVE_SERVICES = '410211'

@@ -2,9 +2,8 @@ import { useSuspenseQueries } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { SourceCitation } from '@/components/source-citation'
-import { TrendsChart } from '@/components/trends-chart'
 import { TrendsControls } from '@/components/trends-controls'
-import { TrendsTable } from '@/components/trends-table'
+import { TrendsFigure } from '@/components/trends-figure'
 import {
   Table,
   TableBody,
@@ -104,16 +103,11 @@ export function TrendsPage() {
       />
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">{title}</h2>
-        <TrendsChart
-          series={series}
+        <TrendsFigure
+          trends={{ series, total: trends.total }}
+          metric={view.metric}
           hidden={view.hide}
-          metric={view.metric}
           label={title}
-        />
-        <TrendsTable
-          series={series}
-          total={trends.total}
-          metric={view.metric}
         />
         <SourceCitation
           source={{ kind: 'fall-range', from: view.from, to: view.to }}

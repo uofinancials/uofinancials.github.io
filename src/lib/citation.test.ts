@@ -101,6 +101,29 @@ test('a range of Fall years cites their shared reports page and the latest retri
   ).toThrow('Fall 2024-2025 needs one shared source page; the manifest lists 2')
 })
 
+test('a range of budget years cites their shared page and the latest retrieval', () => {
+  const [latest] = MANIFEST.budget
+  if (!latest) throw new Error('fixture has no budget')
+  const earlier = { ...latest, fiscalYear: 2026, retrievedOn: '2026-09-24' }
+  const manifest = { ...MANIFEST, budget: [earlier, latest] }
+  expect(
+    citeSource(manifest, { kind: 'budget-range', from: 2026, to: 2027 }),
+  ).toEqual({
+    dataset: 'FY26-FY27 operational expenditure budgets',
+    publisher: 'UO Budget and Resource Planning',
+    href: 'https://example.org/budget-reports',
+    retrievedOn: '2026-09-24',
+    anchor: 'budget-fy26',
+  })
+  const moved = {
+    ...MANIFEST,
+    budget: [{ ...earlier, sourcePage: 'https://example.org/old' }, latest],
+  }
+  expect(() =>
+    citeSource(moved, { kind: 'budget-range', from: 2026, to: 2027 }),
+  ).toThrow('FY26-FY27 needs one shared source page; the manifest lists 2')
+})
+
 test('a Fall year cites its reports page and the latest retrieval', () => {
   expect(citeSource(MANIFEST, { kind: 'fall', year: 2025 })).toEqual({
     dataset: 'Fall 2025 Census salary reports',

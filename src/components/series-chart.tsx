@@ -4,12 +4,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import type { TrendSeries } from '@/lib/trends'
-import { METRIC_INFO, type TrendMetric } from '@/lib/trends-search'
 
 const LINE_COLORS = 8
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
+const AXIS_PADDING = { left: 16, right: 16 }
+
+type ChartSeries = { key: string; values: (number | null)[] }
 
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
 function lineStyle(index: number) {
@@ -19,27 +20,26 @@ function lineStyle(index: number) {
   }
 }
 
-/** One line per series over the censuses; the table beside it carries the numbers. */
-export function TrendsChart({
+/** One line per series over the x labels; the table beside it carries the numbers. */
+export function SeriesChart({
+  labels,
   series,
-  hidden,
-  metric,
+  hidden = [],
+  format,
+  formatAxis,
   label,
 }: {
-  series: TrendSeries[]
-  hidden: string[]
-  metric: TrendMetric
+  labels: string[]
+  series: ChartSeries[]
+  hidden?: string[]
+  format: (value: number) => string
+  formatAxis: (value: number) => string
   label: string
 }) {
-  const { pick, format, formatAxis } = METRIC_INFO[metric]
-  const years = series[0]?.points.map((point) => point.year) ?? []
-  const data = years.map((year, index) => ({
-    year,
+  const data = labels.map((x, index) => ({
+    x,
     values: Object.fromEntries(
-      series.map(({ key, points }) => {
-        const point = points[index]
-        return [key, point ? pick(point) : null]
-      }),
+      series.map(({ key, values }) => [key, values[index] ?? null]),
     ),
   }))
   return (
@@ -47,7 +47,7 @@ export function TrendsChart({
       <ChartContainer config={{}} className="aspect-auto h-96 w-full">
         <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} />
-          <XAxis dataKey="year" tickLine={false} />
+          <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />
           <YAxis
             width={AXIS_WIDTH_PX}
             tickLine={false}

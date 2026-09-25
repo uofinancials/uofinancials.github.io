@@ -6,6 +6,7 @@ export type SourceRef =
   | { kind: 'fall'; year: number }
   | { kind: 'fall-range'; from: number; to: number }
   | { kind: 'budget'; fiscalYear: number }
+  | { kind: 'budget-range'; from: number; to: number }
   | { kind: 'rates' }
 
 export type Citation = {
@@ -34,9 +35,25 @@ export function sourceAnchor(source: SourceRef): string {
       return `fall-${source.from}`
     case 'budget':
       return `budget-${fiscalYearLabel(source.fiscalYear).toLowerCase()}`
+    case 'budget-range':
+      return `budget-${fiscalYearLabel(source.from).toLowerCase()}`
     case 'rates':
       return 'rates'
   }
+}
+
+function sharedSourcePage(
+  entries: { sourcePage: string }[],
+  range: string,
+): string {
+  const pages = new Set(entries.map((entry) => entry.sourcePage))
+  const [href] = pages
+  if (!href || pages.size > 1) {
+    throw new Error(
+      `${range} needs one shared source page; the manifest lists ${pages.size}`,
+    )
+  }
+  return href
 }
 
 function citeFallRange(
@@ -44,21 +61,31 @@ function citeFallRange(
   { from, to }: { from: number; to: number },
 ): Citation {
   const entries = manifest.fall.filter(({ year }) => year >= from && year <= to)
-  const pages = new Set(entries.map((entry) => entry.sourcePage))
-  const [href] = pages
-  if (!href || pages.size > 1) {
-    throw new Error(
-      `Fall ${from}-${to} needs one shared source page; the manifest lists ${pages.size}`,
-    )
-  }
   return {
     dataset: `Fall ${from}-${to} Census salary reports`,
     publisher: DATA_ENABLEMENT,
-    href,
+    href: sharedSourcePage(entries, `Fall ${from}-${to}`),
     retrievedOn: latest(
       entries.flatMap((entry) => entry.files.map((file) => file.retrievedOn)),
     ),
     anchor: sourceAnchor({ kind: 'fall-range', from, to }),
+  }
+}
+
+function citeBudgetRange(
+  manifest: Manifest,
+  { from, to }: { from: number; to: number },
+): Citation {
+  const entries = manifest.budget.filter(
+    ({ fiscalYear }) => fiscalYear >= from && fiscalYear <= to,
+  )
+  const range = `${fiscalYearLabel(from)}-${fiscalYearLabel(to)}`
+  return {
+    dataset: `${range} operational expenditure budgets`,
+    publisher: BUDGET_AND_RESOURCE_PLANNING,
+    href: sharedSourcePage(entries, range),
+    retrievedOn: latest(entries.map((entry) => entry.retrievedOn)),
+    anchor: sourceAnchor({ kind: 'budget-range', from, to }),
   }
 }
 
@@ -77,6 +104,8 @@ export function citeSource(manifest: Manifest, source: SourceRef): Citation {
     }
     case 'fall-range':
       return citeFallRange(manifest, source)
+    case 'budget-range':
+      return citeBudgetRange(manifest, source)
     case 'budget': {
       const label = fiscalYearLabel(source.fiscalYear)
       const entry = manifest.budget.find(

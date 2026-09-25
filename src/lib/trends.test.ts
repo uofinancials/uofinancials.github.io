@@ -46,12 +46,14 @@ test('each group gets a point per census; temps count in FTE only', () => {
   expect(trends.series[0]?.points).toEqual([
     {
       year: 2024,
+      jobs: 1,
       spendCents: 2_500_000,
       fteHundredths: 50,
       medianRateCents: 5_000_000,
     },
     {
       year: 2025,
+      jobs: 1,
       spendCents: 9_000_000,
       fteHundredths: 100,
       medianRateCents: 9_000_000,
@@ -64,12 +66,14 @@ test('each group gets a point per census; temps count in FTE only', () => {
   expect(trends.series[2]?.points[1]?.medianRateCents).toBeNull()
   expect(trends.series[3]?.points[1]).toEqual({
     year: 2025,
+    jobs: 1,
     spendCents: null,
     fteHundredths: 10,
     medianRateCents: null,
   })
   expect(trends.total[1]).toEqual({
     year: 2025,
+    jobs: 4,
     spendCents: 9_000_000 + 100_000 + 5_000_000,
     fteHundredths: 100 + 10 + 100 + 10,
     medianRateCents: 7_000_000,
