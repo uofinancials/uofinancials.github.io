@@ -30,7 +30,7 @@ import {
   type TrendsSearch,
 } from '@/lib/trends-search'
 
-const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend and median are left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
+const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
 
 const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
   Executives: `Unclassified jobs in the categories ${publishedCategoriesOf('Executives').join(', ')}, or with the OA salary grade ${EXECUTIVE_GRADE} whatever their category, a grade UO publishes from Fall 2016. Opened, the jobs placed by the grade alone are one line, “${EXEC_OTHER_CATEGORY}”.`,

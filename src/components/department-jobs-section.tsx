@@ -36,7 +36,7 @@ const KIND_TITLES = {
   unclassified: 'Unclassified jobs by rank',
   classified: 'Classified jobs by position class',
 } as const
-const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Groups are those of the Trends page. Spend and median are left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} jobs, and classes with fewer jobs are shown together.`
+const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Groups are those of the Trends page. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Classes with fewer than ${MIN_JOBS_SHOWN} jobs are shown together.`
 const AREA_NOTE =
   'An area’s jobs are those whose pay department the site places in it: by UO’s budget hierarchy for the census’s fiscal year, by a department-name prefix every placed department shares, or by hand. The table shows how many were placed each way.'
 
