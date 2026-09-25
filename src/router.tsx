@@ -16,6 +16,7 @@ import {
   budgetYearQuery,
   fallYearQuery,
   manifestQuery,
+  outlookQuery,
   raiseTermsQuery,
 } from '@/data/queries'
 import { resolveCensusYear } from '@/lib/census-search'
@@ -26,6 +27,7 @@ import {
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
+import { BudgetPage } from '@/pages/budget-page'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
 import { NotFoundPage } from '@/pages/not-found-page'
@@ -171,6 +173,14 @@ const personRoute = createRoute({
   component: PersonPage,
 })
 
+const budgetRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/budget',
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(outlookQuery),
+  component: BudgetPage,
+})
+
 const sourcesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sources',
@@ -178,6 +188,7 @@ const sourcesRoute = createRoute({
     Promise.all([
       queryClient.ensureQueryData(manifestQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
+      queryClient.ensureQueryData(outlookQuery),
     ]),
   component: SourcesPage,
 })
@@ -189,6 +200,7 @@ const routeTree = rootRoute.addChildren([
   departmentRoute,
   peopleRoute,
   personRoute,
+  budgetRoute,
   sourcesRoute,
 ])
 

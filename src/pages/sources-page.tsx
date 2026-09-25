@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
-import { manifestQuery, raiseTermsQuery } from '@/data/queries'
+import { manifestQuery, outlookQuery, raiseTermsQuery } from '@/data/queries'
+import { outlookSources } from '@/lib/budget-outlook'
 import { listCitedDocuments, sourceAnchor } from '@/lib/citation'
 import { formatCount, formatDollars } from '@/lib/format'
 
@@ -182,15 +183,37 @@ function RaiseSources() {
   return (
     <SourceTable head={['Document', 'Terms', 'Retrieved']}>
       <TableBody>
-        {listCitedDocuments(data.terms).map((document) => (
+        {listCitedDocuments(data.terms.map(({ source }) => source)).map(
+          (document) => (
+            <TableRow key={document.url}>
+              <TableCell>
+                <a className="underline" href={document.url}>
+                  {document.document}
+                </a>
+              </TableCell>
+              <TableCell className={NUMBER_CELL}>
+                {formatCount(document.citations)}
+              </TableCell>
+              <TableCell>{document.retrievedOn}</TableCell>
+            </TableRow>
+          ),
+        )}
+      </TableBody>
+    </SourceTable>
+  )
+}
+
+function OutlookSources() {
+  const { data } = useSuspenseQuery(outlookQuery)
+  return (
+    <SourceTable head={['Document', 'Retrieved']}>
+      <TableBody>
+        {listCitedDocuments(outlookSources(data)).map((document) => (
           <TableRow key={document.url}>
             <TableCell>
               <a className="underline" href={document.url}>
                 {document.document}
               </a>
-            </TableCell>
-            <TableCell className={NUMBER_CELL}>
-              {formatCount(document.terms)}
             </TableCell>
             <TableCell>{document.retrievedOn}</TableCell>
           </TableRow>
@@ -250,6 +273,14 @@ export function SourcesPage() {
           hand from these documents, each term citing its section and page.
         </p>
         <RaiseSources />
+      </Section>
+      <Section title="Budget outlook">
+        <p>
+          The E&G fund projection, the budget figures, and the announced budget
+          actions on the budget page, entered by hand from these documents, each
+          figure citing its page.
+        </p>
+        <OutlookSources />
       </Section>
     </div>
   )

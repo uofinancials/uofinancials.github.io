@@ -1,0 +1,573 @@
+{
+  "projections": [
+    {
+      "id": "bot-2026-06",
+      "title": "E&G Fund Long-Term Financial Projections",
+      "fiscalYears": [
+        2026,
+        2027,
+        2028,
+        2029,
+        2030,
+        2031
+      ],
+      "source": {
+        "url": "https://trustees.uoregon.edu/sites/default/files/2026-05/full-bot-materials-web2.pdf",
+        "document": "Board of Trustees meeting materials, June 1-2, 2026, agenda item 4",
+        "location": "printed p. 38",
+        "retrievedOn": "2026-09-25"
+      },
+      "lines": [
+        {
+          "label": "Undergraduate Tuition",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            48616230700,
+            47728306100,
+            47507714800,
+            47432813400,
+            48035838700,
+            49615202300
+          ]
+        },
+        {
+          "label": "Graduate Tuition",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            9028835400,
+            9146210200,
+            9374865500,
+            9609237100,
+            9849468000,
+            10095704700
+          ]
+        },
+        {
+          "label": "Summer Tuition",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            2123584900,
+            2066353100,
+            2054716300,
+            2066302500,
+            2081821600,
+            2119706900
+          ]
+        },
+        {
+          "label": "Student Fees, Remissions and Other",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            -6268650900,
+            -6352412700,
+            -6451473800,
+            -6210756700,
+            -5970833800,
+            -5833893600
+          ]
+        },
+        {
+          "label": "Total Tuition and Fees",
+          "section": "revenue",
+          "kind": "subtotal",
+          "cents": [
+            53500000000,
+            52588456700,
+            52485822800,
+            52897596200,
+            53996294500,
+            55996720300
+          ]
+        },
+        {
+          "label": "State Appropriation",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            10950000000,
+            11552250000,
+            12187623800,
+            12857943100,
+            13372260800,
+            13907151200
+          ]
+        },
+        {
+          "label": "Gifts, Grants, and Contracts",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            18500000,
+            18500000,
+            18500000,
+            18500000,
+            18500000,
+            18500000
+          ]
+        },
+        {
+          "label": "ICC Revenue",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            3300000000,
+            3100000000,
+            3193000000,
+            3288790000,
+            3387453700,
+            3489077300
+          ]
+        },
+        {
+          "label": "Interest & Investment",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            1140000000,
+            1140000000,
+            1140000000,
+            1140000000,
+            1140000000,
+            1140000000
+          ]
+        },
+        {
+          "label": "Other Revenues",
+          "section": "revenue",
+          "kind": "line",
+          "cents": [
+            980000000,
+            980000000,
+            980000000,
+            980000000,
+            980000000,
+            980000000
+          ]
+        },
+        {
+          "label": "Total Revenue",
+          "section": "revenue",
+          "kind": "total",
+          "cents": [
+            69888500000,
+            69379206700,
+            70004946500,
+            71182829300,
+            72894509000,
+            75531448800
+          ]
+        },
+        {
+          "label": "Personnel",
+          "section": "expense",
+          "kind": "line",
+          "cents": [
+            55400000000,
+            57523354900,
+            59625985700,
+            61597821400,
+            63989061500,
+            66368917500
+          ]
+        },
+        {
+          "label": "S&S",
+          "section": "expense",
+          "kind": "line",
+          "cents": [
+            11439999900,
+            11769411000,
+            12316095200,
+            12852179900,
+            13423066200,
+            14013394300
+          ]
+        },
+        {
+          "label": "Student Aid",
+          "section": "expense",
+          "kind": "line",
+          "cents": [
+            460000000,
+            460000000,
+            471500000,
+            483287500,
+            495369700,
+            507753900
+          ]
+        },
+        {
+          "label": "Capital Outlay",
+          "section": "expense",
+          "kind": "line",
+          "cents": [
+            500000000,
+            503500000,
+            516087600,
+            528989700,
+            542214500,
+            555769800
+          ]
+        },
+        {
+          "label": "Net Transfers",
+          "section": "expense",
+          "kind": "line",
+          "cents": [
+            1640000000,
+            1400000000,
+            1400000000,
+            1400000000,
+            1400000000,
+            1400000000
+          ]
+        },
+        {
+          "label": "Total Expenses",
+          "section": "expense",
+          "kind": "total",
+          "cents": [
+            69440000000,
+            71656265900,
+            74329668500,
+            76862278600,
+            79849711900,
+            82845835600
+          ]
+        }
+      ],
+      "runRateCents": [
+        448500000,
+        -2277059300,
+        -4324721900,
+        -5679449300,
+        -6955202900,
+        -7314386800
+      ],
+      "beginningFundBalanceCents": [
+        11966855700,
+        12415355700,
+        10138296500,
+        5813574600,
+        134125300,
+        -6821077600
+      ],
+      "endingFundBalanceCents": [
+        12415355700,
+        10138296500,
+        5813574600,
+        134125300,
+        -6821077600,
+        -14135464400
+      ],
+      "weeksOfExpenses": [
+        9.3,
+        7.4,
+        4.1,
+        0.1,
+        -4.4,
+        -8.9
+      ],
+      "presentValueCents": -6326469500,
+      "reductionTargetCents": 6500000000,
+      "reductionTargetSource": {
+        "url": "https://trustees.uoregon.edu/sites/default/files/2026-05/full-bot-materials-web2.pdf",
+        "document": "Board of Trustees meeting materials, June 1-2, 2026, agenda item 4",
+        "location": "printed p. 26",
+        "retrievedOn": "2026-09-25"
+      },
+      "cases": [
+        {
+          "label": "Base case: incoming classes held at FY27 levels",
+          "runRateCents": [
+            448500000,
+            -2277059300,
+            -4324721900,
+            -5679449300,
+            -6955202900,
+            -7314386800
+          ],
+          "endingFundBalanceCents": [
+            12415355700,
+            10138296500,
+            5813574600,
+            134125300,
+            -6821077600,
+            -14135464400
+          ],
+          "weeksOfExpenses": [
+            9.3,
+            7.4,
+            4.1,
+            0.1,
+            -4.4,
+            -8.9
+          ],
+          "presentValueCents": -6326469500
+        },
+        {
+          "label": "100 fewer nonresident first-year students from FY28",
+          "runRateCents": [
+            448500000,
+            -2277059300,
+            -4708551600,
+            -6408273000,
+            -7998557700,
+            -8636098400
+          ],
+          "endingFundBalanceCents": [
+            12415355700,
+            10138296500,
+            5429744900,
+            -978528100,
+            -8977085800,
+            -17613184200
+          ],
+          "weeksOfExpenses": [
+            9.3,
+            7.4,
+            3.8,
+            -0.7,
+            -5.8,
+            -11.1
+          ],
+          "presentValueCents": -7469664100
+        },
+        {
+          "label": "100 more nonresident first-year students from FY28",
+          "runRateCents": [
+            448500000,
+            -2277059300,
+            -3944574100,
+            -4957616800,
+            -5921856500,
+            -6005353800
+          ],
+          "endingFundBalanceCents": [
+            12415355700,
+            10138296500,
+            6193722300,
+            1236105500,
+            -4685751000,
+            -10691104800
+          ],
+          "weeksOfExpenses": [
+            9.3,
+            7.4,
+            4.3,
+            0.8,
+            -3.1,
+            -6.7
+          ],
+          "presentValueCents": -5194240900
+        },
+        {
+          "label": "State funding $20 million below projection from FY28",
+          "runRateCents": [
+            448500000,
+            -2277059300,
+            -6324721900,
+            -7789449300,
+            -9149602900,
+            -9596562800
+          ],
+          "endingFundBalanceCents": [
+            12415355700,
+            10138296500,
+            3813574600,
+            -3975874700,
+            -13125477600,
+            -22722040400
+          ],
+          "weeksOfExpenses": [
+            9.3,
+            7.4,
+            2.7,
+            -2.7,
+            -8.5,
+            -14.3
+          ],
+          "presentValueCents": -8300403400
+        },
+        {
+          "label": "State funding $20 million above projection from FY28",
+          "runRateCents": [
+            448500000,
+            -2277059300,
+            -2324721900,
+            -3569449300,
+            -4760802900,
+            -5032210800
+          ],
+          "endingFundBalanceCents": [
+            12415355700,
+            10138296500,
+            7813574600,
+            4244125300,
+            -516677600,
+            -5548888400
+          ],
+          "weeksOfExpenses": [
+            9.3,
+            7.4,
+            5.5,
+            2.9,
+            -0.3,
+            -3.5
+          ],
+          "presentValueCents": -4352535500
+        },
+        {
+          "label": "No nonresident tuition increases for new cohorts, FY28-FY31",
+          "runRateCents": [
+            448500000,
+            -2277059300,
+            -4637309700,
+            -6576364200,
+            -8669664300,
+            -10041880800
+          ],
+          "endingFundBalanceCents": [
+            12415355700,
+            10138296500,
+            5500986800,
+            -1075377400,
+            -9745041700,
+            -19786922500
+          ],
+          "weeksOfExpenses": [
+            9.3,
+            7.4,
+            3.8,
+            -0.7,
+            -6.3,
+            -12.4
+          ],
+          "presentValueCents": -8685574600
+        }
+      ],
+      "casesSource": {
+        "url": "https://trustees.uoregon.edu/sites/default/files/2026-05/full-bot-materials-web2.pdf",
+        "document": "Board of Trustees meeting materials, June 1-2, 2026, agenda item 4",
+        "location": "printed p. 41",
+        "retrievedOn": "2026-09-25"
+      },
+      "assumptions": [
+        {
+          "text": "The projection leaves out any budget action still needed to close the deficit.",
+          "location": "printed p. 33"
+        },
+        {
+          "text": "Tuition for students starting from FY28 rises 4.0% a year for residents and 3.25% for nonresidents. These rates are illustrative; the Board sets tuition each spring.",
+          "location": "printed pp. 33, 37"
+        },
+        {
+          "text": "The guaranteed tuition program continues, so continuing undergraduates keep their rates.",
+          "location": "printed p. 33"
+        },
+        {
+          "text": "Incoming first-year classes stay at the Fall 2026 forecast: 2,641 resident, 1,888 nonresident, and 136 international students. Undergraduate headcount falls from 20,730 in FY26 to 19,207 in FY31.",
+          "location": "printed pp. 34, 36"
+        },
+        {
+          "text": "The state appropriation grows each year, to $139,071,512 in FY31.",
+          "location": "printed pp. 34, 37"
+        },
+        {
+          "text": "Indirect cost recovery (ICC) revenue dips in FY27 and then grows modestly.",
+          "location": "printed p. 34"
+        },
+        {
+          "text": "Pay follows the United Academics contract and the announced officer of administration salary programs, with 3% raises for groups without a settled contract and for the later years.",
+          "location": "printed p. 35"
+        },
+        {
+          "text": "Blended OPE rates rise sharply in FY27 with higher PERS rates, then level off.",
+          "location": "printed p. 35"
+        },
+        {
+          "text": "Supplies and services start from the FY26 forecast, adjusted for inflation and for some specific increases such as utilities and insurance.",
+          "location": "printed p. 35"
+        },
+        {
+          "text": "The FY26 budget reductions take full effect in FY27.",
+          "location": "printed p. 35"
+        }
+      ]
+    }
+  ],
+  "reportedRunRates": [
+    {
+      "fiscalYear": 2026,
+      "runRateCents": 478686300,
+      "basis": "unaudited fourth-quarter actual",
+      "source": {
+        "url": "https://trustees.uoregon.edu/sites/default/files/2026-09/ffc-meeting-packet-september-2026.pdf",
+        "document": "Finance and Facilities Committee meeting materials, September 28, 2026",
+        "location": "printed p. 20",
+        "retrievedOn": "2026-09-25"
+      }
+    }
+  ],
+  "allFunds": {
+    "fiscalYear": 2027,
+    "egExpenseCents": 71650000000,
+    "egRevenueCents": 69378500000,
+    "otherExpenseCents": 83700000000,
+    "otherRevenueCents": 86141000000,
+    "totalExpenseCents": 155350000000,
+    "totalRevenueCents": 155519500000,
+    "source": {
+      "url": "https://trustees.uoregon.edu/sites/default/files/2026-05/ffc-meeting-packet-june-1-2026.pdf",
+      "document": "Finance and Facilities Committee meeting materials, June 1, 2026",
+      "location": "printed pp. 32, 35-36",
+      "retrievedOn": "2026-09-25"
+    }
+  },
+  "actions": [
+    {
+      "date": "2025-09-08",
+      "text": "UO announced $29.2 million a year of recurring E&G budget reductions for FY26, including $4.3 million of non-labor savings. They eliminated 176 positions: 117 filled and 59 vacant.",
+      "source": {
+        "url": "https://president.uoregon.edu/september-budget-reduction-information",
+        "document": "September budget reduction information",
+        "location": "web page",
+        "retrievedOn": "2026-09-25"
+      }
+    },
+    {
+      "date": "2026-05-14",
+      "text": "The president announced a hiring and pay action freeze and limits on non-essential travel; pay increases already committed for September went ahead. No savings estimate for the freeze has been published.",
+      "source": {
+        "url": "https://president.uoregon.edu/news-uo-budget-and-road-ahead",
+        "document": "News on the UO budget and the road ahead",
+        "location": "web page",
+        "retrievedOn": "2026-09-25"
+      }
+    },
+    {
+      "date": "2026-06-02",
+      "text": "The Board adopted the FY27 budget of $1,553,500,000 and required a budget reduction plan for the projected multi-year deficit, with a revised FY27 expenditure authorization, by December 15, 2026.",
+      "source": {
+        "url": "https://trustees.uoregon.edu/sites/default/files/2026-09/full-bot-packet-september-2026_0.pdf",
+        "document": "Board of Trustees meeting materials, September 28-29, 2026",
+        "location": "printed p. 16",
+        "retrievedOn": "2026-09-25"
+      }
+    },
+    {
+      "date": "2026-07-20",
+      "text": "Vice presidents and deans are modelling general fund reductions of 5%, 10%, and 15% across administrative and academic units, phased over one or more years. The message says these are not final decisions.",
+      "source": {
+        "url": "https://president.uoregon.edu/message-president-scholz-uo-budget-process",
+        "document": "A message from President Scholz: UO Budget Process",
+        "location": "web page",
+        "retrievedOn": "2026-09-25"
+      }
+    }
+  ]
+}

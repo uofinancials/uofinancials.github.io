@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { citedSourceSchema } from './cited-source.ts'
 
 const nonBlank = z.string().min(1)
 const isoDate = z.iso.date()
@@ -45,12 +46,7 @@ const termFields = {
   appliesTo: nonBlank,
   effectiveDate: isoDate.nullable(),
   note: nonBlank.nullable(),
-  source: z.strictObject({
-    url: z.url(),
-    document: nonBlank,
-    location: nonBlank,
-    retrievedOn: isoDate,
-  }),
+  source: citedSourceSchema,
 }
 
 const raiseTermSchema = z
