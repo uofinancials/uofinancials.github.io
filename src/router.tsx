@@ -34,7 +34,6 @@ import { OverviewPage } from '@/pages/overview-page'
 import { PayChangesPage } from '@/pages/pay-changes-page'
 import { PeoplePage } from '@/pages/people-page'
 import { PersonPage } from '@/pages/person-page'
-import { SalariesPage } from '@/pages/salaries-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
 
@@ -144,9 +143,9 @@ const salariesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/salaries',
   validateSearch: censusSearchSchema,
-  loaderDeps: ({ search }) => ({ year: search.year }),
-  loader: loadCensus,
-  component: SalariesPage,
+  beforeLoad: ({ search }) => {
+    throw redirect({ to: '/people', search, replace: true })
+  },
 })
 
 const peopleRoute = createRoute({

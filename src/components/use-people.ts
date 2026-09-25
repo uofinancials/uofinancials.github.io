@@ -114,7 +114,6 @@ export function usePeople() {
     [records],
   )
   return {
-    search,
     years,
     view,
     census: { areas, place, positionName, titles, categories },

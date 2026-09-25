@@ -279,27 +279,25 @@ test('a code no source publishes is not found', async ({ page }) => {
   ).toBeVisible()
 })
 
-test('salary rates show the latest census by job kind, and each filter is held in the link', async ({
+test('the people chart shows the latest census by salary rate, and each filter is held in the link', async ({
   page,
 }) => {
-  await page.goto('/salaries')
+  await page.goto('/people')
   const main = page.getByRole('main')
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Salary rates, Fall 2025' }),
-  ).toBeVisible()
-  await expect(main).toContainText('$75,787')
-  await expect(main).toContainText('$9,400,000')
-  await expect(
-    page.getByRole('rowheader', { name: '$250,000 and over' }),
-  ).toBeVisible()
-  await expect(
-    page.getByRole('link', { name: 'Fall 2025 Census salary reports' }),
+    page.getByRole('heading', { level: 1, name: 'People, Fall 2025' }),
   ).toBeVisible()
   await expect(
     page
       .getByRole('figure', { name: /jobs by salary rate/ })
       .locator('.recharts-bar-rectangle'),
   ).not.toHaveCount(0)
+  await page.getByText('The chart’s numbers').click()
+  await expect(main).toContainText('$75,787')
+  await expect(main).toContainText('$9,400,000')
+  await expect(
+    page.getByRole('rowheader', { name: '$250,000 and over' }),
+  ).toBeVisible()
   await page.getByRole('combobox', { name: 'Term' }).selectOption('9')
   await expect(page).toHaveURL(/term=9/)
   await page.getByRole('combobox', { name: 'Group' }).selectOption('Faculty')
@@ -309,7 +307,7 @@ test('salary rates show the latest census by job kind, and each filter is held i
   await page.getByRole('combobox', { name: 'Fall census' }).selectOption('2014')
   await page.reload()
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Salary rates, Fall 2014' }),
+    page.getByRole('heading', { level: 1, name: 'People, Fall 2014' }),
   ).toBeVisible()
   await expect(page.getByRole('combobox', { name: 'Group' })).toHaveValue(
     'Faculty',
@@ -319,33 +317,33 @@ test('salary rates show the latest census by job kind, and each filter is held i
   ).toHaveValue('222000')
 })
 
-test('a department page links to its salary distribution, and the department filter can be removed', async ({
+test('an old salaries link opens the people list with its filters', async ({
+  page,
+}) => {
+  await page.goto('/salaries?term=9&group=Faculty&year=2020')
+  await expect(page).toHaveURL(/\/people\?/)
+  await expect(page).toHaveURL(/term=9/)
+  await expect(page).toHaveURL(/group=Faculty/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'People, Fall 2020' }),
+  ).toBeVisible()
+})
+
+test('a department page links to its jobs, and the department filter can be removed', async ({
   page,
 }) => {
   await page.goto('/departments/223100?year=2020')
-  await page
-    .getByRole('link', { name: 'Salary distribution, Fall 2020' })
-    .click()
+  await page.getByRole('link', { name: 'Jobs by name, Fall 2020' }).click()
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Salary rates, Fall 2020' }),
+    page.getByRole('heading', { level: 1, name: 'People, Fall 2020' }),
   ).toBeVisible()
   const main = page.getByRole('main')
   await expect(main).toContainText('Department: CAS Biology (223100)')
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(main).not.toContainText('Department: CAS Biology')
-  await page.goto('/salaries?dept=000000')
+  await page.goto('/people?dept=000000')
   await expect(main).toContainText('No jobs for code 000000 in Fall 2025')
-  await expect(main).toContainText('0 jobs match')
-})
-
-test('the salaries page does not scroll sideways at 360px', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 360, height: 800 })
-  await page.goto('/salaries')
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  const width = await page.evaluate(() => document.documentElement.scrollWidth)
-  expect(width).toBeLessThanOrEqual(360)
+  await expect(main).toContainText('0 jobs, 0 names match')
 })
 
 test('people search by every word of a name, and a chosen name shows its records with its sources', async ({
@@ -430,7 +428,7 @@ test('a person’s computed figures, rate chart, and class median are labelled, 
   expect(width).toBeLessThanOrEqual(360)
 })
 
-test('census tabs are held in the link and lead to the class distribution, and the search view cites its sources', async ({
+test('census tabs are held in the link and lead to the class’s jobs, and the search view cites its sources', async ({
   page,
 }) => {
   await openLinkedPerson(page)
@@ -445,12 +443,12 @@ test('census tabs are held in the link and lead to the class distribution, and t
   await expect(
     page.getByRole('heading', { name: 'Fall 2021 records' }),
   ).toBeVisible()
-  const distributions = page.getByRole('link', {
-    name: /^Salary distribution, .+, Fall 2021$/,
+  const people = page.getByRole('link', {
+    name: /^People, .+, Fall 2021$/,
   })
-  await expect(distributions.first()).toBeVisible()
-  await distributions.last().click()
-  await expect(page).toHaveURL(/\/salaries\?.*position=/)
+  await expect(people.first()).toBeVisible()
+  await people.last().click()
+  await expect(page).toHaveURL(/\/people\?.*position=/)
   await expect(page.getByRole('main')).toContainText('Class or rank: ')
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(page).not.toHaveURL(/position=/)
@@ -511,12 +509,6 @@ test('the people list filters, sorts, and pages one census, and its chart sets t
   await expect(
     page.getByRole('columnheader', { name: 'Median rate, primary jobs' }),
   ).toBeVisible()
-  await page
-    .getByRole('link', { name: /^Salary distribution without names/ })
-    .click()
-  await expect(page).toHaveURL(/\/salaries/)
-  await page.getByRole('link', { name: /^The jobs by name/ }).click()
-  await expect(page).toHaveURL(/\/people/)
 })
 
 test('the people list does not scroll sideways at 360px', async ({ page }) => {

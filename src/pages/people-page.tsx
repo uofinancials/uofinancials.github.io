@@ -171,36 +171,9 @@ function JobsSection({
   )
 }
 
-function SalariesLink({
-  search,
-  year,
-}: {
-  search: PeopleSearch
-  year: number
-}) {
-  return (
-    <p className="text-sm">
-      <Link
-        className="underline"
-        to="/salaries"
-        search={{
-          year: search.year,
-          group: search.group,
-          kind: search.kind,
-          term: search.term,
-          dept: search.dept,
-          position: search.position,
-        }}
-      >
-        Salary distribution without names, Fall {year}
-      </Link>
-    </p>
-  )
-}
-
 export function PeoplePage() {
   const navigate = useNavigate({ from: '/people' })
-  const { search, years, view, census, matching } = usePeople()
+  const { years, view, census, matching } = usePeople()
   const change = (patch: PeopleSearch, replace = false) =>
     navigate({
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
@@ -231,6 +204,11 @@ export function PeoplePage() {
         positionName={census.positionName}
         onChange={(patch) => change(patch)}
       />
+      {census.place.scope === 'unknown' && (
+        <p>
+          No jobs for code {census.place.code} in Fall {view.year}.
+        </p>
+      )}
       <p className="font-medium">
         {formatCount(matching.jobs.length)} jobs,{' '}
         {formatCount(matching.nameCount)} names match
@@ -246,7 +224,6 @@ export function PeoplePage() {
       {matching.jobs.length > 0 && (
         <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
       )}
-      <SalariesLink search={search} year={view.year} />
       <SourceCitation
         source={{ kind: 'fall', year: view.year }}
         computed={COMPUTED}
