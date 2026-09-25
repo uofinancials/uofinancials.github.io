@@ -53,12 +53,18 @@ flowchart LR
 
 ### Site (`src/`)
 
-- `src/main.tsx` - mounts the app.
-- `src/app.tsx` - the page shell.
+- `src/main.tsx` - creates the query client and router and mounts the app.
+- `src/app.tsx` - the query and router providers.
+- `src/router.tsx` - the route tree, each route's data loading, and the default
+  loading, error, and not-found pages.
+- `src/pages` - one component per route.
+- `src/components` - the shared layout with the independence notice and error
+  report link, the source citation caption, and the loading and error states.
 - `src/components/ui` - shadcn/ui components.
-- `src/data` - the schemas and types of the committed data files.
-- `src/lib` - shared helpers and the person links between consecutive Fall
-  years.
+- `src/data` - the schemas and types of the committed data files, and the
+  queries that fetch and parse them.
+- `src/lib` - source citations, number formatting, and the person links between
+  consecutive Fall years.
 
 ### Import (`scripts/`)
 
@@ -93,9 +99,20 @@ flowchart LR
 
 ### End-to-end tests (`e2e/`)
 
-- `e2e/home.spec.ts` - loads the built home page.
+- `e2e/home.spec.ts` - the built site's routes, notice, sources page, and
+  `404.html`.
+
+## Pages
+
+- `/` - the home page.
+- `/sources` - every source file in the manifest and every document the raise
+  terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
+  `src/lib`.
+- Any other path - the not-found page, inside the shared layout.
 
 ## Deployment
 
 - `.github/workflows/ci.yml` - on every push and pull request, runs the checks,
   unit tests, and end-to-end tests; on `main`, publishes `dist/` to Pages.
+- `pnpm build` writes `dist/404.html` as a copy of `index.html`, so Pages serves
+  the app for every path.

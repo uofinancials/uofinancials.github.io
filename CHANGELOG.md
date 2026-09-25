@@ -48,3 +48,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   same name in the next year when each year lists exactly one primary job for it
   and both are in the same pay department. The links are computed, not published
   by UO; the committed 2014-2025 data (retrieved 2026-09-24) yields 52,880.
+- Pages share one layout: a header with the site name and navigation, and the
+  footer with the independence notice and the error report link. Paths the site
+  does not have show a not-found page inside that layout, and every path loads
+  directly on GitHub Pages.
+- A Sources page (`/sources`) listing each Fall Census report, budget workbook,
+  and OPE rate page the site uses - with its retrieval date, SHA-256, and
+  counts - and every document the raise terms cite.
+- Figures can carry a source caption naming the dataset and its publisher,
+  linking to the source, and linking its retrieval date to the dataset's entry
+  on the Sources page; a computed figure says how it was computed.
+- The site follows the system's light or dark setting.
+- A page whose data cannot load names the file that failed and offers a retry.
