@@ -74,7 +74,8 @@ export function PeoplePage() {
       <h1 className="text-2xl font-semibold">People</h1>
       <p className="text-sm text-muted-foreground">
         Every job the Fall {firstYear}-{lastYear} Census salary reports publish
-        under a name, as published.
+        under a name, as published, with figures this site computes from those
+        records, each labelled as computed.
       </p>
       <SearchField
         label="Search by name"

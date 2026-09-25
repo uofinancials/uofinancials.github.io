@@ -36,9 +36,10 @@ export function PersonRatesFigure({ person }: { person: Person }) {
         lists no such job; a job is its job type and pay department, so a new
         title in the same job continues its line. {TOTAL_SERIES} is computed by
         this site: the sum of each job's rate × its appointment %, with jobs on
-        unpaid leave as zero, as the other pages estimate spend. It estimates
-        annual pay, and overstates classified temporaries' pay, whose rates are
-        annualised hourly rates.
+        unpaid leave as zero, the same per-job estimate the other pages use for
+        spend, though here classified temporaries are included. It estimates
+        annual pay, and overstates a classified temporary's pay, whose rate is
+        an annualised hourly rate.
       </p>
       <Table>
         <caption className="sr-only">{label}</caption>

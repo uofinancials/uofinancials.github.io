@@ -60,7 +60,7 @@ export function PersonCards({ run }: { run: PersonRun }) {
           <Figure
             label={`Rate change, Fall ${runChange.fromYear}-${runChange.toYear}`}
             value={formatChange(runChange.ratio)}
-            method={`The primary job's published annual rate, ${formatDollars(runChange.fromCents)} to ${formatDollars(runChange.toCents)}. A rate is not pay, and it can change with a new job.`}
+            method={`The primary job's published annual rate, ${formatDollars(runChange.fromCents)} to ${formatDollars(runChange.toCents)}. A rate is not pay; it can change with a new job, and a 9-month rate is not comparable with a 12-month one.`}
           />
         )}
         {run.isLinked && (
