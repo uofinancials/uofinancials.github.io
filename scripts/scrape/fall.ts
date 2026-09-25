@@ -1,6 +1,10 @@
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { type FallYear, staffKindSchema } from '../../src/data/fall.ts'
+import {
+  censusYearOf,
+  type FallYear,
+  staffKindSchema,
+} from '../../src/data/fall.ts'
 import {
   type FallEntry,
   type Manifest,
@@ -57,7 +61,7 @@ function toYearFile(censusDate: string, sources: SourcePdf[]): FallYear {
 
 function toManifestEntry(censusDate: string, sources: SourcePdf[]): FallEntry {
   return {
-    year: Number(censusDate.slice(0, 4)),
+    year: censusYearOf(censusDate),
     censusDate,
     sourcePage: SALARY_REPORTS_PAGE,
     files: sources

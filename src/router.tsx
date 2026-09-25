@@ -15,9 +15,11 @@ import {
   raiseTermsQuery,
 } from '@/data/queries'
 import { selectOverviewSources } from '@/lib/overview'
+import { trendsSearchSchema } from '@/lib/trends-search'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
 import { SourcesPage } from '@/pages/sources-page'
+import { TrendsPage } from '@/pages/trends-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: SiteLayout,
@@ -40,6 +42,21 @@ const homeRoute = createRoute({
   component: OverviewPage,
 })
 
+const trendsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/trends',
+  validateSearch: trendsSearchSchema,
+  loader: async ({ context: { queryClient } }) => {
+    const manifest = await queryClient.ensureQueryData(manifestQuery)
+    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+    await Promise.all(
+      years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
+    )
+    return { years }
+  },
+  component: TrendsPage,
+})
+
 const sourcesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sources',
@@ -51,7 +68,7 @@ const sourcesRoute = createRoute({
   component: SourcesPage,
 })
 
-const routeTree = rootRoute.addChildren([homeRoute, sourcesRoute])
+const routeTree = rootRoute.addChildren([homeRoute, trendsRoute, sourcesRoute])
 
 export function createAppRouter(options: {
   queryClient: QueryClient
