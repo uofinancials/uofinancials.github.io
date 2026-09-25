@@ -1,8 +1,9 @@
 import type { FallRecord } from '../data/fall.ts'
-import { isClassifiedTemp } from './overview.ts'
+import { isClassifiedTemp, NO_CATEGORY } from './overview.ts'
 
 export const TREND_GROUPS = [
   'Faculty',
+  'Executives',
   'Admins and professionals',
   'Unclassified staff',
   'Classified staff',
@@ -17,8 +18,8 @@ export type TrendGroup = (typeof TREND_GROUPS)[number]
 export const UNCLASSIFIED_CATEGORY_GROUPS: Record<string, TrendGroup> = {
   Faculty: 'Faculty',
   'Librarians (Ranked)': 'Faculty',
-  'Exec/Admin/Mgr': 'Admins and professionals',
-  'Executive Admins': 'Admins and professionals',
+  'Exec/Admin/Mgr': 'Executives',
+  'Executive Admins': 'Executives',
   'Senior Administrators': 'Admins and professionals',
   'First/Mid Level Admins': 'Admins and professionals',
   'Other Professionals': 'Admins and professionals',
@@ -33,6 +34,9 @@ export const UNCLASSIFIED_CATEGORY_GROUPS: Record<string, TrendGroup> = {
   Other: 'Unclassified staff',
 }
 
+/** The OA salary grade UO publishes for executive jobs, from Fall 2016. */
+export const EXECUTIVE_GRADE = 'EXEC'
+
 /** A job's group, stable across UO's category restructures; throws on a category no census has used. */
 export function trendGroupOf(
   record: FallRecord,
@@ -41,6 +45,7 @@ export function trendGroupOf(
   if (isClassifiedTemp(record)) return 'Classified temporaries'
   if (record.jobType === 'Overload') return 'Overloads'
   if (record.kind === 'classified') return 'Classified staff'
+  if (record.oaSalaryGrade === EXECUTIVE_GRADE) return 'Executives'
   if (record.eeoCategory === null) return 'Category not published'
   const group = UNCLASSIFIED_CATEGORY_GROUPS[record.eeoCategory]
   if (!group) {
@@ -49,6 +54,17 @@ export function trendGroupOf(
     )
   }
   return group
+}
+
+export const EXEC_OTHER_CATEGORY = 'EXEC grade, other category'
+
+/** A job's line when its group is opened: its published category, or `EXEC_OTHER_CATEGORY` for a job in Executives by the grade alone. */
+export function openedLineOf(record: FallRecord, group: TrendGroup): string {
+  const category = record.eeoCategory ?? NO_CATEGORY
+  const isByGradeOnly =
+    group === 'Executives' &&
+    UNCLASSIFIED_CATEGORY_GROUPS[category] !== 'Executives'
+  return isByGradeOnly ? EXEC_OTHER_CATEGORY : category
 }
 
 export function publishedCategoriesOf(group: TrendGroup): string[] {
@@ -62,6 +78,7 @@ export type GroupCounts = Record<TrendGroup, number>
 export function emptyCounts(): GroupCounts {
   return {
     Faculty: 0,
+    Executives: 0,
     'Admins and professionals': 0,
     'Unclassified staff': 0,
     'Classified staff': 0,

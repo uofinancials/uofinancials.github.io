@@ -1,7 +1,6 @@
 import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
-import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { isClassifiedTemp } from './overview.ts'
-import { medianRateCents } from './trends.ts'
+import { MIN_JOBS_SHOWN, medianRateCents } from './trends.ts'
 
 const NO_RANK = 'No Rank'
 const OA_GRADE = /^(OA\d{2}|EXEC|CCH\d)$/

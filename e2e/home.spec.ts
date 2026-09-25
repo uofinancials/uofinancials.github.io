@@ -149,6 +149,21 @@ test('trends show every census by group, and a group opens into its published ca
   ).toBeVisible()
 })
 
+test('trends Executives opens into its categories and one line for the EXEC grade alone', async ({
+  page,
+}) => {
+  await page.goto('/trends?group=Executives&from=2018')
+  await expect(
+    page.getByRole('columnheader', { name: 'Executive Admins' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', { name: 'EXEC grade, other category' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', { name: 'Senior Administrators' }),
+  ).toHaveCount(0)
+})
+
 test('trends lines can be hidden and the page does not scroll sideways at 360px', async ({
   page,
 }) => {
@@ -157,9 +172,9 @@ test('trends lines can be hidden and the page does not scroll sideways at 360px'
   const lines = page
     .getByRole('figure', { name: /Salary spend by group/ })
     .locator('.recharts-line')
-  await expect(lines).toHaveCount(6)
+  await expect(lines).toHaveCount(7)
   await page.getByRole('checkbox', { name: 'Faculty' }).uncheck()
-  await expect(lines).toHaveCount(5)
+  await expect(lines).toHaveCount(6)
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })

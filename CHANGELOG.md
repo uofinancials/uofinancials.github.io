@@ -74,10 +74,20 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A Trends page (`/trends`) showing salary spend, FTE, and median salary rate
   (the median published rate of primary jobs) for every Fall census from 2014 to
   2025, as a line chart with a year-by-year table. UO's EEO categories,
-  restructured in 2018, 2019, and 2021, are mapped to seven groups that mean the
+  restructured in 2018, 2019, and 2021, are mapped to eight groups that mean the
   same jobs in every year, and the page shows the mapping. Classified
   temporaries appear in FTE only; dollars are as published, not adjusted for
   inflation.
+- An Executives group - the president, provost, vice presidents, vice provosts,
+  deans, and others in UO's Exec/Admin/Mgr (2014-2017) or Executive Admins
+  (2018-2025) category, or with the OA salary grade EXEC that UO publishes from
+  Fall 2016 - of 29 to 37 jobs a year in the committed data (retrieved
+  2026-09-24). It is counted apart from Admins and professionals on every page
+  that splits by group. Opened on the Trends page, the jobs placed by the grade
+  alone form one line.
+- On the Trends page, as on the department page, spend is left blank for any
+  figure covering fewer than three paid jobs and median salary rate for fewer
+  than three primary jobs.
 - The Trends view is set from the page and kept in its link: the measure, one
   group opened into its categories as UO publishes them, classified or
   unclassified staff, the range of years, and which lines are hidden. One source
@@ -98,9 +108,9 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   are those the site places in it, with a table of how each year's jobs were
   placed. The budget and the census are joined only where their codes match
   exactly, and the page says when a source publishes nothing under the code.
-- To keep the page an aggregate, spend and median salary rate are left blank for
-  any figure covering fewer than three jobs, and ranks or classes with fewer
-  than three jobs are shown together.
+- To keep the page an aggregate, spend is left blank for any figure covering
+  fewer than three paid jobs and median salary rate for fewer than three primary
+  jobs, and ranks or classes with fewer than three jobs are shown together.
 - The department page's view is kept in its link: the budget breakdown, the
   measure, classified or unclassified staff, and the census of the class table.
 - A Salaries page (`/salaries`) showing how many jobs fall in each $10,000 range

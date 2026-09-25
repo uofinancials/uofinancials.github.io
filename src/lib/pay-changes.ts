@@ -1,5 +1,4 @@
 import type { FallRecord, FallYear, StaffKind } from '../data/fall.ts'
-import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { isClassifiedTemp } from './overview.ts'
 import { isRankRename, normalizeTitle } from './pay-change-labels.ts'
 import { type PeerGroup, peerGroupOf } from './peer-median.ts'
@@ -12,7 +11,7 @@ import {
   type TrendGroup,
   trendGroupOf,
 } from './trend-groups.ts'
-import { medianOf } from './trends.ts'
+import { MIN_JOBS_SHOWN, medianOf } from './trends.ts'
 
 /** A census pair's label, e.g. `2024-25`. */
 export function pairLabel(fromYear: number): string {

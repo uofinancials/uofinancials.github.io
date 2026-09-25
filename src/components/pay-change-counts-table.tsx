@@ -6,9 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MIN_JOBS_SHOWN } from '@/lib/department-jobs'
 import { formatCount, formatShare, NO_VALUE } from '@/lib/format'
 import { type ChangeCounts, pairLabel } from '@/lib/pay-changes'
+import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 

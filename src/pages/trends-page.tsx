@@ -16,11 +16,13 @@ import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
 import { SPEND_METHOD } from '@/lib/overview'
 import {
+  EXEC_OTHER_CATEGORY,
+  EXECUTIVE_GRADE,
   publishedCategoriesOf,
   TREND_GROUPS,
   type TrendGroup,
 } from '@/lib/trend-groups'
-import { buildTrends } from '@/lib/trends'
+import { buildTrends, MIN_JOBS_SHOWN } from '@/lib/trends'
 import {
   METRIC_INFO,
   resolveTrendView,
@@ -28,15 +30,17 @@ import {
   type TrendsSearch,
 } from '@/lib/trends-search'
 
-const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Groups are this site’s mapping of UO’s EEO categories, below.`
+const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
 
 const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
+  Executives: `Unclassified jobs in the categories ${publishedCategoriesOf('Executives').join(', ')}, or with the OA salary grade ${EXECUTIVE_GRADE} whatever their category, a grade UO publishes from Fall 2016. Opened, the jobs placed by the grade alone are one line, “${EXEC_OTHER_CATEGORY}”.`,
+  'Admins and professionals': `Unclassified jobs in the categories ${publishedCategoriesOf('Admins and professionals').join(', ')}, without the ${EXECUTIVE_GRADE} grade.`,
   'Classified temporaries':
     'Classified jobs with a TS position class, or none (Fall 2015). Their published rates are annualised hourly rates, so they count in FTE only.',
   Overloads:
     'Jobs of type Overload, in every year. UO publishes an Overload category from 2019; before, overloads carried the holder’s category.',
   'Classified staff': 'Every other classified job, whatever its category.',
-  'Category not published': 'Unclassified jobs with no category (Fall 2017).',
+  'Category not published': `Unclassified jobs with no category and no ${EXECUTIVE_GRADE} grade (Fall 2017).`,
 }
 
 function GroupMapping() {

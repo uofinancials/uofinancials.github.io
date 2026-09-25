@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { EXEC_OTHER_CATEGORY } from './trend-groups'
 import { buildTrends, medianRateCents, type TrendFilter } from './trends'
 
 const ALL: TrendFilter = { kind: 'all', group: null, from: 2014, to: 2025 }
@@ -17,7 +18,7 @@ test('the median of an even count is the mean of the middle two, rounded to the 
   expect(medianRateCents([])).toBeNull()
 })
 
-test('each group gets a point per census; temps count in FTE only', () => {
+test('each group gets a point per census; temps count in FTE only; spend needs three paid jobs and median three primary rates', () => {
   const trends = buildTrends(
     [
       {
@@ -47,16 +48,16 @@ test('each group gets a point per census; temps count in FTE only', () => {
     {
       year: 2024,
       jobs: 1,
-      spendCents: 2_500_000,
+      spendCents: null,
       fteHundredths: 50,
-      medianRateCents: 5_000_000,
+      medianRateCents: null,
     },
     {
       year: 2025,
       jobs: 1,
-      spendCents: 9_000_000,
+      spendCents: null,
       fteHundredths: 100,
-      medianRateCents: 9_000_000,
+      medianRateCents: null,
     },
   ])
   expect(trends.series[2]?.points[0]).toMatchObject({
@@ -76,7 +77,7 @@ test('each group gets a point per census; temps count in FTE only', () => {
     jobs: 4,
     spendCents: 9_000_000 + 100_000 + 5_000_000,
     fteHundredths: 100 + 10 + 100 + 10,
-    medianRateCents: 7_000_000,
+    medianRateCents: null,
   })
 })
 
@@ -110,4 +111,34 @@ test('an opened group lines up its published categories; kind and range filter f
   expect(opened.total.map((point) => point.fteHundredths)).toEqual([100, 200])
   expect(buildTrends(years, { ...ALL, from: 2018 }).total).toHaveLength(1)
   expect(buildTrends(years, { ...ALL, kind: 'classified' }).series).toEqual([])
+})
+
+test('opened Executives puts jobs there by the EXEC grade alone on one line', () => {
+  const opened = buildTrends(
+    [
+      {
+        year: 2018,
+        records: [
+          unclassifiedJob({ eeoCategory: 'Executive Admins' }),
+          unclassifiedJob({
+            eeoCategory: 'Executive Admins',
+            oaSalaryGrade: 'EXEC',
+          }),
+          unclassifiedJob({
+            eeoCategory: 'Senior Administrators',
+            oaSalaryGrade: 'EXEC',
+          }),
+          unclassifiedJob({ eeoCategory: null, oaSalaryGrade: 'EXEC' }),
+          unclassifiedJob({ eeoCategory: 'Senior Administrators' }),
+        ],
+      },
+    ],
+    { ...ALL, group: 'Executives' },
+  )
+  expect(
+    opened.series.map(({ key, points }) => [key, points[0]?.jobs]),
+  ).toEqual([
+    [EXEC_OTHER_CATEGORY, 2],
+    ['Executive Admins', 2],
+  ])
 })
