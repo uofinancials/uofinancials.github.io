@@ -17,6 +17,11 @@ import {
   isClassifiedTemp,
   summarize,
 } from '../src/lib/overview.ts'
+import {
+  changeCounts,
+  continuingPairs,
+  payChangeTrends,
+} from '../src/lib/pay-changes.ts'
 import { peerMedianFor, peerMedians } from '../src/lib/peer-median.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import { indexPeople } from '../src/lib/person-lookup.ts'
@@ -412,6 +417,28 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect(professor && peerMedianFor(medians, 2025, professor)).toMatchObject({
       medianCents: 15_440_700,
       jobs: 363,
+    })
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'Fall 2024-2025 pay changes match an independent computation',
+  () => {
+    const years = [2024, 2025].map((year) =>
+      fallYearSchema.parse(
+        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
+      ),
+    )
+    const pairs = continuingPairs(years)
+    const [all] = payChangeTrends(pairs, [2024])
+    expect(all?.points[0]?.pairs).toBe(4_865)
+    expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)
+    expect(changeCounts(pairs, [2024])[0]).toMatchObject({
+      unclassified: 3_338,
+      rankChanged: 169,
+      rankUnpublished: 0,
+      classified: 1_527,
+      classChanged: 48,
     })
   },
 )

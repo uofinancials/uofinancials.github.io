@@ -6,8 +6,8 @@ import {
   buildDistribution,
   filterJobs,
   positionLabel,
-  stackedCounts,
 } from './salary-distribution'
+import { stackedCounts } from './trend-groups'
 import { medianRateCents, percentileCents } from './trends'
 
 const temp = classifiedJob({ positionClass: { code: 'TS401', title: null } })

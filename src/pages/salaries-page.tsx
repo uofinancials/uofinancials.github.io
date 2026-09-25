@@ -30,9 +30,8 @@ import {
   filterJobs,
   PERCENTILES,
   positionLabel,
-  stackedCounts,
 } from '@/lib/salary-distribution'
-import type { TrendGroup } from '@/lib/trend-groups'
+import { stackedCounts, type TrendGroup } from '@/lib/trend-groups'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const RATE_NOTE =

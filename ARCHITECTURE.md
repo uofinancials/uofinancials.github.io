@@ -62,8 +62,9 @@ flowchart LR
   report link, the source citation caption, the loading and error states, the
   select, radio, and search fields, the totals chart and table, the line chart,
   the stacked bar chart, the trends table and controls, the department budget
-  and jobs sections, the salaries controls, and the person view with its
-  computed figures, rate chart, records table, and job history.
+  and jobs sections, the salaries controls, the removable filter, the pay
+  changes controls, lines, counts table, and distribution, and the person view
+  with its computed figures, rate chart, records table, and job history.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -72,9 +73,10 @@ flowchart LR
   department's budget and jobs, the department index, the salary rate
   distribution, each page's URL state, source citations, number formatting, the
   person links between consecutive Fall years, the person lookup (name index,
-  name matching, linked runs, and a record's published fields), and a person's
+  name matching, linked runs, and a record's published fields), a person's
   computed figures, rates by job, job history, and the class or rank medians
-  beside them.
+  beside them, and continuing jobs' pay changes with the rank renames and title
+  abbreviations they use.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -112,6 +114,8 @@ flowchart LR
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
   departments, salaries, people, sources page, and `404.html`.
+- `e2e/pay-changes.spec.ts` - the pay changes page and its link from the people
+  page.
 
 ## Pages
 
@@ -138,6 +142,11 @@ flowchart LR
   name its computed figures, its rates by job over time, its records for one
   census at a time, and its job history; not indexed by search engines; driven
   by the `src/lib` person lookup and summary over every Fall year.
+- `/pay-changes` - for continuing jobs in each pair of consecutive Fall
+  censuses, the median change in published salary rate by employee group, the
+  counts of changed class, rank, and title, and one pair's distribution of
+  changes, with the view held in the URL; driven by the `src/lib` person links
+  and pay changes over every Fall year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.
