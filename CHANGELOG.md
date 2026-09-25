@@ -114,3 +114,15 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   or VP area. Each department page links to its own distribution, shown as a
   filter that can be removed. A filter matching fewer than three jobs shows only
   the count, and percentiles need three primary jobs.
+- A People page (`/people`) that searches every Fall census from 2014 to 2025 by
+  name: each word typed must appear in the name, and up to 50 matching names are
+  listed with the years they appear in and their latest pay department. A chosen
+  name shows every job published under it, one table per census with every field
+  the report publishes and a citation of that census's report. The search and
+  the chosen name are kept in the link, and the page asks search engines not to
+  index it.
+- On the People page, consecutive years linked on the exact name and the same
+  pay department of a single primary job are grouped together and labelled as
+  computed by this site, since UO publishes no person identifier. Records marked
+  `possibleStudent` are shown as published.
+- A People link in the navigation, which now wraps on narrow screens.

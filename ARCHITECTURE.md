@@ -60,17 +60,18 @@ flowchart LR
 - `src/pages` - one component per route.
 - `src/components` - the shared layout with the independence notice and error
   report link, the source citation caption, the loading and error states, the
-  select and radio fields, the totals chart and table, the line chart, the
-  stacked bar chart, the trends table and controls, the department budget and
-  jobs sections, and the salaries controls.
+  select, radio, and search fields, the totals chart and table, the line chart,
+  the stacked bar chart, the trends table and controls, the department budget
+  and jobs sections, the salaries controls, and the table of a person's records.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
   cross-year employee groups and their trends, budget account groups, a
   department's budget and jobs, the department index, the salary rate
-  distribution, each page's URL state, source citations, number formatting, and
-  the person links between consecutive Fall years.
+  distribution, each page's URL state, source citations, number formatting, the
+  person links between consecutive Fall years, and the person lookup: the name
+  index, name matching, linked runs, and a record's published fields.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -107,7 +108,7 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  departments, salaries, sources page, and `404.html`.
+  departments, salaries, people, sources page, and `404.html`.
 
 ## Pages
 
@@ -129,6 +130,10 @@ flowchart LR
   census, by employee group, with primary-job percentiles, filtered by group,
   staff kind, term, and college or VP area or department; driven by the
   `src/lib` distribution over one Fall year and its budget year.
+- `/people` - names across every Fall census matching a search, and for a chosen
+  name every published record by census year, with linked years grouped; not
+  indexed by search engines; driven by the `src/lib` person lookup over every
+  Fall year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.
