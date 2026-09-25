@@ -4,11 +4,19 @@ import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../src/data/budget.ts'
 import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
+import { opeRatesSchema } from '../src/data/ope.ts'
+import { raiseTermsSchema } from '../src/data/raises.ts'
 import {
   identityProblems,
   totalExpenditureCents,
 } from './scrape/budget-file.ts'
-import { budgetDataPath, DATA_DIR, MANIFEST_PATH } from './scrape/cache.ts'
+import {
+  budgetDataPath,
+  DATA_DIR,
+  MANIFEST_PATH,
+  OPE_DATA_PATH,
+  RAISES_DATA_PATH,
+} from './scrape/cache.ts'
 
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8'))
@@ -56,5 +64,42 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         label,
       ).toEqual([])
     }
+  },
+)
+
+test.skipIf(!existsSync(OPE_DATA_PATH))(
+  'the committed OPE rates match their schema and manifest entry',
+  () => {
+    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+    const rates = opeRatesSchema.parse(readJson(OPE_DATA_PATH))
+    expect(manifest.rates).toMatchObject({
+      groups: rates.groups.length,
+      opeRates: rates.opeRates.length,
+      leaveRates: rates.leaveRates.length,
+      persRepayment: rates.persRepayment.length,
+    })
+    const years = new Set(rates.opeRates.map((rate) => rate.fiscalYear))
+    for (const year of years) {
+      const groups = rates.opeRates
+        .filter((rate) => rate.fiscalYear === year)
+        .map((rate) => rate.group)
+      expect(groups.sort(), `FY${year}`).toEqual(
+        rates.groups.map((group) => group.name).sort(),
+      )
+    }
+  },
+)
+
+test.skipIf(!existsSync(RAISES_DATA_PATH))(
+  'the committed raise terms match their schema and each cites its source',
+  () => {
+    const { terms } = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
+    expect(terms.length).toBeGreaterThan(0)
+    expect(
+      terms.filter(
+        (term) =>
+          !term.source.location || !term.source.url.startsWith('https://'),
+      ),
+    ).toEqual([])
   },
 )

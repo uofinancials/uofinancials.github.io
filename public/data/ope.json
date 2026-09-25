@@ -1,0 +1,864 @@
+{
+  "groups": [
+    {
+      "name": "Athletics",
+      "eclassCodes": [],
+      "accountCode": "10921",
+      "description": "All employees under the Level 3 Organization code – 480000."
+    },
+    {
+      "name": "Faculty/Staff A",
+      "eclassCodes": [
+        "AA",
+        "AB",
+        "AL",
+        "AQ",
+        "AR",
+        "FB",
+        "FE"
+      ],
+      "accountCode": "10922",
+      "description": "The Faculty/Staff A Employee Class consists of a majority of salaried staff employees and faculty members that are on a twelve-month schedule. Most of these employees are all eligible for sick leave and vacation leave."
+    },
+    {
+      "name": "Faculty/Staff B",
+      "eclassCodes": [
+        "FA",
+        "FK",
+        "FM",
+        "FN",
+        "FO",
+        "FQ",
+        "FR",
+        "AM",
+        "AN",
+        "AO",
+        "AP"
+      ],
+      "accountCode": "10923",
+      "description": "The Faculty/Staff B Employee Class consists of faculty members that are on a nine-month schedule that are sick leave eligible but not eligible for vacation leave, all post-doctoral scholars, and employees coded as Executives."
+    },
+    {
+      "name": "Faculty/Staff C",
+      "eclassCodes": [
+        "AC",
+        "AD",
+        "AS",
+        "AT",
+        "AW",
+        "AX",
+        "FS",
+        "FT",
+        "FC",
+        "FD",
+        "FW",
+        "FX"
+      ],
+      "accountCode": "10924",
+      "description": "The Faculty/Staff C Employee Class consists of all employees on summer term employment excluding students; and also includes faculty and staff on less than .5 FTE."
+    },
+    {
+      "name": "Classified Service",
+      "eclassCodes": [
+        "CF",
+        "CG",
+        "CH",
+        "CI"
+      ],
+      "accountCode": "10925",
+      "description": "The Classified Service Employee Class consists of hourly employees that are coded as service/maintenance such as groundskeepers, custodians, laborers, and food service workers"
+    },
+    {
+      "name": "Classified Skilled/Clerical",
+      "eclassCodes": [
+        "CA",
+        "CB",
+        "CD",
+        "CE",
+        "CN"
+      ],
+      "accountCode": "10926",
+      "description": "The Classified Skilled/Clerical Employee Class consists of hourly employees that are coded as skilled and clerical."
+    },
+    {
+      "name": "Classified Technical",
+      "eclassCodes": [
+        "CJ",
+        "CK",
+        "CL",
+        "CM",
+        "GG",
+        "GJ"
+      ],
+      "accountCode": "10927",
+      "description": "The Classified Technical Employee Class consists of hourly employees that are coded as technical and professional."
+    },
+    {
+      "name": "Temps",
+      "eclassCodes": [
+        "TS",
+        "AV",
+        "FV"
+      ],
+      "accountCode": "10928",
+      "description": "The Temps Employee Class consists of hourly faculty and hourly staff less than .5FTE, and temporary support staff employees."
+    },
+    {
+      "name": "Student",
+      "eclassCodes": [
+        "XA",
+        "XB"
+      ],
+      "accountCode": "10929",
+      "description": "The Students Employee Class consists of graduate employees, fellows, and undergraduate student employees."
+    }
+  ],
+  "opeRates": [
+    {
+      "fiscalYear": 2020,
+      "group": "Athletics",
+      "basisPoints": 4190,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Athletics",
+      "basisPoints": 4170,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Athletics",
+      "basisPoints": 4230,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Athletics",
+      "basisPoints": 4260,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Athletics",
+      "basisPoints": 3710,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Athletics",
+      "basisPoints": 3900,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Athletics",
+      "basisPoints": 3900,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Faculty/Staff A",
+      "basisPoints": 8040,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Faculty/Staff A",
+      "basisPoints": 7900,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Faculty/Staff A",
+      "basisPoints": 7820,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Faculty/Staff A",
+      "basisPoints": 7720,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Faculty/Staff A",
+      "basisPoints": 8160,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Faculty/Staff A",
+      "basisPoints": 7490,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Faculty/Staff A",
+      "basisPoints": 7490,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5290,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5250,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5180,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Faculty/Staff B",
+      "basisPoints": 4990,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5190,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5010,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5010,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3300,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3100,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3090,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3300,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3230,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3180,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3180,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Classified Service",
+      "basisPoints": 12350,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Classified Service",
+      "basisPoints": 11930,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Classified Service",
+      "basisPoints": 12950,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Classified Service",
+      "basisPoints": 12030,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Classified Service",
+      "basisPoints": 10650,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Classified Service",
+      "basisPoints": 10450,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Classified Service",
+      "basisPoints": 10450,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 8710,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 10230,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 10190,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 9690,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 9630,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 8950,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 8950,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Classified Technical",
+      "basisPoints": 8680,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Classified Technical",
+      "basisPoints": 8710,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Classified Technical",
+      "basisPoints": 8850,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Classified Technical",
+      "basisPoints": 8620,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Classified Technical",
+      "basisPoints": 8550,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Classified Technical",
+      "basisPoints": 8070,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Classified Technical",
+      "basisPoints": 8070,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Temps",
+      "basisPoints": 3380,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Temps",
+      "basisPoints": 3490,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Temps",
+      "basisPoints": 2940,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Temps",
+      "basisPoints": 3240,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Temps",
+      "basisPoints": 3510,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Temps",
+      "basisPoints": 2870,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Temps",
+      "basisPoints": 2870,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2020,
+      "group": "Student",
+      "basisPoints": 300,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2021,
+      "group": "Student",
+      "basisPoints": 300,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2022,
+      "group": "Student",
+      "basisPoints": 460,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2023,
+      "group": "Student",
+      "basisPoints": 260,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2024,
+      "group": "Student",
+      "basisPoints": 310,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2025,
+      "group": "Student",
+      "basisPoints": 360,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2026,
+      "group": "Student",
+      "basisPoints": 360,
+      "source": "history"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Athletics",
+      "basisPoints": 3750,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff A",
+      "basisPoints": 7740,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff B",
+      "basisPoints": 5110,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff C",
+      "basisPoints": 3400,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Classified Service",
+      "basisPoints": 10740,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Classified Skilled/Clerical",
+      "basisPoints": 9100,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Classified Technical",
+      "basisPoints": 8020,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Temps",
+      "basisPoints": 3230,
+      "source": "current"
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Student",
+      "basisPoints": 330,
+      "source": "current"
+    }
+  ],
+  "leaveRates": [
+    {
+      "fiscalYear": 2027,
+      "group": "Athletics",
+      "appliesTo": null,
+      "basisPoints": 370
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff A",
+      "appliesTo": null,
+      "basisPoints": 1067
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff B",
+      "appliesTo": "Faculty",
+      "basisPoints": 92
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff B",
+      "appliesTo": "Exec",
+      "basisPoints": 957
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Faculty/Staff C",
+      "appliesTo": null,
+      "basisPoints": 64
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Classified Service",
+      "appliesTo": null,
+      "basisPoints": 1307
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Classified Skilled/Clerical",
+      "appliesTo": null,
+      "basisPoints": 1132
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Classified Technical",
+      "appliesTo": null,
+      "basisPoints": 1088
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Temps",
+      "appliesTo": null,
+      "basisPoints": 225
+    },
+    {
+      "fiscalYear": 2027,
+      "group": "Student",
+      "appliesTo": null,
+      "basisPoints": 60
+    }
+  ],
+  "persRepayment": [
+    {
+      "fundType": "11",
+      "description": "E&G",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 126
+    },
+    {
+      "fundType": "11",
+      "description": "E&G",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 116
+    },
+    {
+      "fundType": "11",
+      "description": "E&G",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 255
+    },
+    {
+      "fundType": "12",
+      "description": "Designated Ops",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 157
+    },
+    {
+      "fundType": "12",
+      "description": "Designated Ops",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 135
+    },
+    {
+      "fundType": "12",
+      "description": "Designated Ops",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 309
+    },
+    {
+      "fundType": "13",
+      "description": "Service Center",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 189
+    },
+    {
+      "fundType": "13",
+      "description": "Service Center",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 166
+    },
+    {
+      "fundType": "13",
+      "description": "Service Center",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 369
+    },
+    {
+      "fundType": "15",
+      "description": "Internal Bank",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 115
+    },
+    {
+      "fundType": "15",
+      "description": "Internal Bank",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 106
+    },
+    {
+      "fundType": "15",
+      "description": "Internal Bank",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 235
+    },
+    {
+      "fundType": "21",
+      "description": "Housing",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 184
+    },
+    {
+      "fundType": "21",
+      "description": "Housing",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 169
+    },
+    {
+      "fundType": "21",
+      "description": "Housing",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 370
+    },
+    {
+      "fundType": "22",
+      "description": "Student Services",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 209
+    },
+    {
+      "fundType": "22",
+      "description": "Student Services",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 156
+    },
+    {
+      "fundType": "22",
+      "description": "Student Services",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 340
+    },
+    {
+      "fundType": "23",
+      "description": "Athletics",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 79
+    },
+    {
+      "fundType": "23",
+      "description": "Athletics",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 72
+    },
+    {
+      "fundType": "23",
+      "description": "Athletics",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 153
+    },
+    {
+      "fundType": "24",
+      "description": "Health Center",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 148
+    },
+    {
+      "fundType": "24",
+      "description": "Health Center",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 152
+    },
+    {
+      "fundType": "24",
+      "description": "Health Center",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 332
+    },
+    {
+      "fundType": "25",
+      "description": "Parking",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 272
+    },
+    {
+      "fundType": "25",
+      "description": "Parking",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 149
+    },
+    {
+      "fundType": "25",
+      "description": "Parking",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 322
+    },
+    {
+      "fundType": "29",
+      "description": "Other Aux",
+      "fiscalYears": [
+        2024,
+        2025
+      ],
+      "basisPoints": 188
+    },
+    {
+      "fundType": "29",
+      "description": "Other Aux",
+      "fiscalYears": [
+        2026
+      ],
+      "basisPoints": 183
+    },
+    {
+      "fundType": "29",
+      "description": "Other Aux",
+      "fiscalYears": [
+        2027
+      ],
+      "basisPoints": 382
+    }
+  ]
+}

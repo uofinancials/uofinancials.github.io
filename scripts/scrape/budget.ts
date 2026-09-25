@@ -9,7 +9,7 @@ import {
 } from './budget-links.ts'
 import { BUDGET_SOURCE_DIR, budgetDataPath, DATA_DIR } from './cache.ts'
 import { fetchCached, politeFetch } from './fetch.ts'
-import { type StepResult, sha256Hex } from './manifest-file.ts'
+import { fetchedFile, type StepResult } from './manifest-file.ts'
 
 const MAX_FAILURES_LISTED = 20
 
@@ -43,11 +43,8 @@ async function importLink(link: BudgetLink): Promise<BudgetEntry> {
     fiscalYear: link.fiscalYear,
     period: link.period,
     sourcePage: BUDGET_REPORTS_PAGE,
-    url: link.url,
     fileName: link.fileName,
-    sha256: sha256Hex(source.bytes),
-    lastModified: source.lastModified,
-    retrievedOn: source.retrievedOn,
+    ...fetchedFile(source),
     rows: year.rows.length,
     totalExpenditureBudgetCents: totalExpenditureCents(year.rows),
   }
@@ -62,8 +59,7 @@ async function readLinks(): Promise<BudgetLink[]> {
 }
 
 export async function runBudget(manifest: Manifest): Promise<StepResult> {
-  const links = await readLinks().catch((error: unknown) => String(error))
-  if (typeof links === 'string') return { manifest, problems: [links] }
+  const links = await readLinks()
   await mkdir(path.join(DATA_DIR, 'budget'), { recursive: true })
   const problems: string[] = []
   const written = new Map<number, BudgetEntry>()

@@ -71,7 +71,7 @@ export async function politeFetch(
 
 const cachedSourceSchema = z.strictObject({
   url: z.url(),
-  lastModified: z.string().min(1),
+  lastModified: z.string().min(1).nullable(),
   retrievedOn: z.iso.date(),
 })
 export type CachedSource = z.infer<typeof cachedSourceSchema> & {
@@ -91,7 +91,7 @@ export async function fetchCached(
   const cached = await readSidecar(sidecar, file)
   const response = await politeFetch(
     address,
-    cached ? { 'If-Modified-Since': cached.lastModified } : {},
+    cached?.lastModified ? { 'If-Modified-Since': cached.lastModified } : {},
   )
   if (cached && response.status === HTTP_NOT_MODIFIED) {
     return { ...cached, bytes: await readFile(file) }
@@ -101,8 +101,7 @@ export async function fetchCached(
   const bytes = Buffer.from(await response.arrayBuffer())
   const source = {
     url: address,
-    lastModified:
-      response.headers.get('last-modified') ?? new Date().toUTCString(),
+    lastModified: response.headers.get('last-modified'),
     retrievedOn: today(),
   }
   await mkdir(path.dirname(file), { recursive: true })

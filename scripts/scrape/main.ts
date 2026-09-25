@@ -6,10 +6,12 @@ import {
   type StepResult,
   writeManifest,
 } from './manifest-file.ts'
+import { runRates } from './rates.ts'
 
 const STEPS: Record<string, (manifest: Manifest) => Promise<StepResult>> = {
   fall: runFall,
   budget: runBudget,
+  rates: runRates,
 }
 
 async function main(requested: string[]): Promise<void> {
@@ -27,7 +29,10 @@ async function main(requested: string[]): Promise<void> {
     ([name]) => requested.length === 0 || requested.includes(name),
   )
   for (const [name, step] of selected) {
-    const result = await step(manifest)
+    const result = await step(manifest).catch((error: unknown) => ({
+      manifest,
+      problems: [String(error)],
+    }))
     manifest = result.manifest
     problems.push(...result.problems.map((problem) => `${name}: ${problem}`))
   }
