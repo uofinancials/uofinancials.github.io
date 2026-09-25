@@ -29,6 +29,7 @@ import {
   type Distribution,
   filterJobs,
   PERCENTILES,
+  positionLabel,
   stackedCounts,
 } from '@/lib/salary-distribution'
 import type { TrendGroup } from '@/lib/trend-groups'
@@ -145,12 +146,15 @@ function useSalaries() {
     () => buildDistribution(jobs, view.year),
     [jobs, view.year],
   )
-  return { years, view, areas, place, jobs, distribution }
+  const positionName =
+    view.position === null ? null : positionLabel(placed, view.position)
+  return { years, view, areas, place, positionName, jobs, distribution }
 }
 
 export function SalariesPage() {
   const navigate = useNavigate({ from: '/salaries' })
-  const { years, view, areas, place, jobs, distribution } = useSalaries()
+  const { years, view, areas, place, positionName, jobs, distribution } =
+    useSalaries()
   const stacks = stackedCounts(distribution)
   const groups = stacks.map(({ key }) => key)
   const title = `Salary rates, Fall ${view.year}`
@@ -165,6 +169,7 @@ export function SalariesPage() {
         years={years}
         areas={areas}
         place={place}
+        positionName={positionName}
         onChange={handleChange}
       />
       {place.scope === 'unknown' && (

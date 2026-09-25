@@ -102,17 +102,37 @@ export type JobFilter = {
   group: TrendGroup | null
   kind: StaffKind | 'all'
   term: Term | null
+  position: string | null
+}
+
+/** A job's position class code if classified, or its rank if unclassified, as published. */
+export function positionOf(record: FallRecord): string | null {
+  return record.kind === 'classified'
+    ? (record.positionClass?.code ?? null)
+    : record.rank
+}
+
+/** How a position reads on the page: a class's title and code, or a rank. */
+export function positionLabel(records: FallRecord[], position: string): string {
+  const classified = records.find(
+    (record) =>
+      record.kind === 'classified' && record.positionClass?.code === position,
+  )
+  const title =
+    classified?.kind === 'classified' ? classified.positionClass?.title : null
+  return title ? `${title} (${position})` : position
 }
 
 export function filterJobs(
   records: FallRecord[],
-  { group, kind, term }: JobFilter,
+  { group, kind, term, position }: JobFilter,
   censusYear: number,
 ): FallRecord[] {
   return records.filter(
     (record) =>
       (kind === 'all' || record.kind === kind) &&
       (term === null || record.termOfServiceMonths === term) &&
+      (position === null || positionOf(record) === position) &&
       (group === null || trendGroupOf(record, censusYear) === group),
   )
 }

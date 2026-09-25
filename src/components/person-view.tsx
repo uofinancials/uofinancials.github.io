@@ -9,7 +9,7 @@ import {
   type PersonYear,
   personYearsOf,
 } from '@/lib/person-lookup'
-import { payDepartmentsOf, runOf } from '@/lib/person-summary'
+import { payDepartmentsOf, positionsOf, runOf } from '@/lib/person-summary'
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =
@@ -62,6 +62,17 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
             search={{ dept: code, year: entry.year }}
           >
             Salary distribution, {department}, Fall {entry.year}
+          </Link>
+        </p>
+      ))}
+      {positionsOf(entry.records).map(({ position, label }) => (
+        <p key={position} className="text-sm">
+          <Link
+            className="underline"
+            to="/salaries"
+            search={{ position, year: entry.year }}
+          >
+            Salary distribution, {label}, Fall {entry.year}
           </Link>
         </p>
       ))}

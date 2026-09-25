@@ -6,6 +6,7 @@ import {
   jobHistory,
   payDepartmentsOf,
   personRates,
+  positionsOf,
   runCards,
   runOf,
 } from './person-summary'
@@ -125,4 +126,18 @@ test('changes and years format with a sign and one decimal', () => {
   expect(formatChange(-0.05)).toBe('-5.0%')
   expect(formatChange(0)).toBe('0.0%')
   expect(formatYears(9.24)).toBe('9.2 years')
+})
+
+test('a year’s positions are listed once each with how they read', () => {
+  expect(
+    positionsOf([
+      classifiedJob(),
+      classifiedJob({ jobType: 'Secondary' }),
+      unclassifiedJob(),
+      classifiedJob({ positionClass: null }),
+    ]),
+  ).toEqual([
+    { position: 'E0104', label: 'Office Specialist 2 (E0104)' },
+    { position: 'Instructor', label: 'Instructor' },
+  ])
 })

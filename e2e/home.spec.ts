@@ -401,6 +401,14 @@ test('a linked run is labelled as computed, and the people page does not scroll 
       .first(),
   ).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
+  await page
+    .getByRole('link', { name: /^Salary distribution, .+, Fall 2021$/ })
+    .last()
+    .click()
+  await expect(page).toHaveURL(/\/salaries\?.*position=/)
+  await expect(page.getByRole('main')).toContainText('Class or rank: ')
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(page).not.toHaveURL(/position=/)
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
   await page.goto('/people?q=smith')

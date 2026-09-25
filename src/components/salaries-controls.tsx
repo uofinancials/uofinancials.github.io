@@ -15,18 +15,41 @@ const TERM_OPTIONS: [string, string][] = [
   ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
 ]
 
+function RemovableFilter({
+  text,
+  onRemove,
+}: {
+  text: string
+  onRemove: () => void
+}) {
+  return (
+    <p className="flex flex-wrap items-center gap-2 text-sm">
+      {text}
+      <button
+        type="button"
+        className="rounded-md border px-2 py-0.5"
+        onClick={onRemove}
+      >
+        Remove
+      </button>
+    </p>
+  )
+}
+
 /** The salaries view's controls; each change is a new URL search. */
 export function SalariesControls({
   view,
   years,
   areas,
   place,
+  positionName,
   onChange,
 }: {
   view: SalariesView
   years: number[]
   areas: { code: string; name: string }[]
   place: Place
+  positionName: string | null
   onChange: (search: SalariesSearch) => void
 }) {
   return (
@@ -80,16 +103,16 @@ export function SalariesControls({
         />
       </div>
       {place.scope === 'department' && (
-        <p className="flex flex-wrap items-center gap-2 text-sm">
-          Department: {place.name} ({place.code})
-          <button
-            type="button"
-            className="rounded-md border px-2 py-0.5"
-            onClick={() => onChange({ dept: undefined })}
-          >
-            Remove
-          </button>
-        </p>
+        <RemovableFilter
+          text={`Department: ${place.name} (${place.code})`}
+          onRemove={() => onChange({ dept: undefined })}
+        />
+      )}
+      {positionName !== null && (
+        <RemovableFilter
+          text={`Class or rank: ${positionName}`}
+          onRemove={() => onChange({ position: undefined })}
+        />
       )}
     </div>
   )

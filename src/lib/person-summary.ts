@@ -7,6 +7,7 @@ import {
   personYearsOf,
   primaryJobOf,
 } from './person-lookup.ts'
+import { positionLabel, positionOf } from './salary-distribution.ts'
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000
 
@@ -154,4 +155,17 @@ export function payDepartmentsOf(records: FallRecord[]): Map<string, string> {
       code === null ? [] : [[code, name] as const],
     ),
   )
+}
+
+/** The distinct position classes and ranks among one census's jobs, with how each reads. */
+export function positionsOf(
+  records: FallRecord[],
+): { position: string; label: string }[] {
+  const positions = new Set(
+    records.flatMap((record) => positionOf(record) ?? []),
+  )
+  return [...positions].map((position) => ({
+    position,
+    label: positionLabel(records, position),
+  }))
 }
