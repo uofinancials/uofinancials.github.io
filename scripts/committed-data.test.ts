@@ -18,6 +18,7 @@ import {
   summarize,
 } from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
+import { indexPeople } from '../src/lib/person-lookup.ts'
 import { buildDistribution } from '../src/lib/salary-distribution.ts'
 import { buildTrends } from '../src/lib/trends.ts'
 import {
@@ -37,7 +38,7 @@ function readJson(file: string): unknown {
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links',
+  'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links and runs',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const years = manifest.fall.map((entry) => {
@@ -50,6 +51,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       return year
     })
     expect(findPersonLinks(years)).toHaveLength(52_880)
+    const people = indexPeople(years)
+    const runs = people.flatMap((person) => person.runs)
+    expect(people).toHaveLength(15_916)
+    expect(runs).toHaveLength(19_593)
+    expect(runs.filter(({ isLinked }) => isLinked)).toHaveLength(13_189)
   },
 )
 
