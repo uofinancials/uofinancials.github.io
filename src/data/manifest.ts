@@ -6,11 +6,12 @@ export const SALARY_REPORTS_PAGE =
   'https://data.uoregon.edu/employees/salary-reports'
 
 const isoDate = z.iso.date()
+const sha256 = z.string().regex(/^[0-9a-f]{64}$/)
 
 const sourceFileSchema = z.strictObject({
   kind: staffKindSchema,
   fileName: z.string().min(1),
-  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  sha256,
   pages: z.number().int().positive(),
   extractDate: isoDate,
   retrievedOn: isoDate,
@@ -31,7 +32,7 @@ const budgetEntrySchema = z.strictObject({
   sourcePage: z.url(),
   url: z.url(),
   fileName: z.string().min(1),
-  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  sha256,
   lastModified: z.string().min(1),
   retrievedOn: isoDate,
   rows: z.number().int().nonnegative(),
@@ -40,7 +41,7 @@ const budgetEntrySchema = z.strictObject({
 
 export const manifestSchema = z.strictObject({
   fall: z.array(fallEntrySchema),
-  budget: z.array(budgetEntrySchema).default([]),
+  budget: z.array(budgetEntrySchema),
 })
 
 export type FallEntry = z.infer<typeof fallEntrySchema>

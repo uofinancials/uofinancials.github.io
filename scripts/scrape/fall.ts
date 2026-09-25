@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { type FallYear, staffKindSchema } from '../../src/data/fall.ts'
@@ -9,7 +8,7 @@ import {
 } from '../../src/data/manifest.ts'
 import { DATA_DIR, FALL_SOURCE_DIR, listPdfs } from './cache.ts'
 import { type FallFile, parseFallFile } from './fall-file.ts'
-import type { StepResult } from './manifest-file.ts'
+import { type StepResult, sha256Hex, today } from './manifest-file.ts'
 
 type SourcePdf = FallFile & {
   fileName: string
@@ -23,8 +22,8 @@ async function readSource(file: string): Promise<SourcePdf> {
   return {
     ...(await parseFallFile(new Uint8Array(bytes))),
     fileName: path.basename(file),
-    sha256: createHash('sha256').update(bytes).digest('hex'),
-    retrievedOn: mtime.toLocaleDateString('en-CA'),
+    sha256: sha256Hex(bytes),
+    retrievedOn: today(mtime),
   }
 }
 

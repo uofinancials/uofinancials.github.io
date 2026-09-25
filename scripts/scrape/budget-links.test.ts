@@ -51,3 +51,15 @@ test('fails when the page changes shape', () => {
     ),
   ).toThrow(/unexpected budget file name "Budget.xlsx"/)
 })
+
+test('fails when a fiscal year has more than one workbook', () => {
+  expect(() =>
+    readBudgetLinks(
+      page(`<ul>
+        <li><a href="/b/FY31_External_Budget_Report_PD02.xlsx">a</a></li>
+        <li><a href="/b/FY31_External_Budget_Report_PD03.xlsx">b</a></li>
+      </ul>`),
+      PAGE,
+    ),
+  ).toThrow(/more than one workbook for a fiscal year/)
+})

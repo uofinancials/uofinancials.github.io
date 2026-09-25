@@ -3,13 +3,14 @@ import path from 'node:path'
 import { beforeAll, describe, expect, test } from 'vitest'
 import * as XLSX from 'xlsx'
 import type { BudgetRow, BudgetYear } from '../../src/data/budget.ts'
-import { parseBudgetWorkbook } from './budget-file.ts'
+import { parseBudgetWorkbook, totalExpenditureCents } from './budget-file.ts'
+import { parseBudgetFileName } from './budget-links.ts'
 import { BUDGET_SOURCE_DIR, hasBudgetSources } from './cache.ts'
 
 const PARSE_TIMEOUT_MS = 120_000
-const FILE_NAME = /^FY(\d{2})_External_Budget_Report_PD(\d{2})\.xlsx$/
-const CENTURY = 2000
 const PIVOT_SHEET = 'ExpndBdgt'
+// Pivot totals are Excel's floating-point sums, so they are rounded, not checked for sub-cent digits.
+const CENTS_PER_DOLLAR = 100
 const FUND_FILTER = /^([0-9A-Z]{6}) - /
 const ALL_ITEMS = '(All)'
 const MULTIPLE_ITEMS = '(Multiple Items)'
@@ -17,7 +18,6 @@ const MULTIPLE_ITEMS = '(Multiple Items)'
 const MULTIPLE_ITEM_FILTERS: Record<string, string[]> = {
   FY24: ['001100', '4369AB'],
 }
-const CENTS_PER_DOLLAR = 100
 const AMOUNT_KEYS = [
   'beginningBudgetCents',
   'permAdjustmentsCents',
@@ -68,7 +68,8 @@ function filterFunds(label: string, value: unknown): string[] | null {
 }
 
 function readPivot(label: string, bytes: Buffer): Pivot {
-  const sheet = XLSX.read(bytes, { type: 'buffer' }).Sheets[PIVOT_SHEET]
+  const sheet = XLSX.read(bytes, { type: 'buffer', sheets: PIVOT_SHEET })
+    .Sheets[PIVOT_SHEET]
   const rows = sheet
     ? XLSX.utils.sheet_to_json<unknown[]>(sheet, {
         header: 1,
@@ -96,23 +97,22 @@ describe.skipIf(!hasBudgetSources)('every downloaded budget workbook', () => {
   const workbooks: Workbook[] = []
 
   beforeAll(async () => {
-    const names = (await readdir(BUDGET_SOURCE_DIR)).filter((name) =>
-      FILE_NAME.test(name),
-    )
-    for (const name of names) {
-      const [, yy = '', period = ''] = FILE_NAME.exec(name) ?? []
+    for (const name of await readdir(BUDGET_SOURCE_DIR)) {
+      const file = parseBudgetFileName(name)
+      if (!file) continue
+      const label = `FY${String(file.fiscalYear).slice(2)}`
       const bytes = await readFile(path.join(BUDGET_SOURCE_DIR, name))
-      const { year } = parseBudgetWorkbook(
+      const parse = parseBudgetWorkbook(
         new Uint8Array(bytes),
-        CENTURY + Number(yy),
-        period,
+        file.fiscalYear,
+        file.period,
       )
-      if (!year) throw new Error(`${name} did not parse`)
+      if (parse.kind !== 'parsed') throw new Error(`${name} did not parse`)
       workbooks.push({
-        label: `FY${yy}`,
-        period,
-        year,
-        pivot: readPivot(`FY${yy}`, bytes),
+        label,
+        period: file.period,
+        year: parse.year,
+        pivot: readPivot(label, bytes),
       })
     }
   }, PARSE_TIMEOUT_MS)
@@ -122,11 +122,8 @@ describe.skipIf(!hasBudgetSources)('every downloaded budget workbook', () => {
       Object.keys(RESEARCHED),
     )
     for (const { label, year } of workbooks) {
-      const total = year.rows.reduce(
-        (sum, row) => sum + row.totalExpenditureBudgetCents,
-        0,
-      )
-      expect({ rows: year.rows.length, totalCents: total }, label).toEqual(
+      const totalCents = totalExpenditureCents(year.rows)
+      expect({ rows: year.rows.length, totalCents }, label).toEqual(
         RESEARCHED[label],
       )
     }

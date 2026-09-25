@@ -5,8 +5,8 @@ import {
   budgetYearSchema,
 } from '../../src/data/budget.ts'
 
-const DATA_SHEET = '_5_BCs_External'
-const HEADER = [
+export const DATA_SHEET = '_5_BCs_External'
+export const HEADER = [
   'FISCAL_YEAR',
   'POSTING_PERIOD',
   'ORG LVL 3',
@@ -33,6 +33,13 @@ const TWO_DIGIT = /^(\d{2})-(.+)$/
 
 type Column = (typeof HEADER)[number]
 export type BudgetRowFailure = { row: number; message: string }
+export type BudgetParse =
+  | { kind: 'parsed'; year: BudgetYear }
+  | { kind: 'failed'; failures: BudgetRowFailure[] }
+
+export function totalExpenditureCents(rows: BudgetRow[]): number {
+  return rows.reduce((sum, row) => sum + row.totalExpenditureBudgetCents, 0)
+}
 
 export function splitCode(
   value: unknown,
@@ -64,18 +71,22 @@ export function identityProblems(row: BudgetRow): string[] {
     row.carryForwardCents +
     row.tempBudgetCents +
     row.tempStrategicInitiativeCents
-  const total = row.totalPermBudgetCents + row.totalTempBudgetCents
-  return [
-    perm === row.totalPermBudgetCents
-      ? ''
-      : 'Total Perm Budget does not equal its parts',
-    temp === row.totalTempBudgetCents
-      ? ''
-      : 'Total Temp Budget does not equal its parts',
-    total === row.totalExpenditureBudgetCents
-      ? ''
-      : 'Total Expenditure Budget does not equal permanent plus temporary',
-  ].filter(Boolean)
+  const checks: [holds: boolean, problem: string][] = [
+    [
+      perm === row.totalPermBudgetCents,
+      'Total Perm Budget does not equal its parts',
+    ],
+    [
+      temp === row.totalTempBudgetCents,
+      'Total Temp Budget does not equal its parts',
+    ],
+    [
+      row.totalPermBudgetCents + row.totalTempBudgetCents ===
+        row.totalExpenditureBudgetCents,
+      'Total Expenditure Budget does not equal permanent plus temporary',
+    ],
+  ]
+  return checks.flatMap(([holds, problem]) => (holds ? [] : [problem]))
 }
 
 type Lookups = Pick<BudgetYear, 'orgs' | 'funds' | 'fundTypes' | 'accountTypes'>
@@ -146,11 +157,13 @@ export function parseBudgetWorkbook(
   bytes: Uint8Array,
   fiscalYear: number,
   period: string,
-): { year: BudgetYear | null; failures: BudgetRowFailure[] } {
-  const sheet = XLSX.read(bytes, { type: 'array' }).Sheets[DATA_SHEET]
+): BudgetParse {
+  const sheet = XLSX.read(bytes, { type: 'array', sheets: DATA_SHEET }).Sheets[
+    DATA_SHEET
+  ]
   if (!sheet) {
     return {
-      year: null,
+      kind: 'failed',
       failures: [{ row: 0, message: `no ${DATA_SHEET} sheet` }],
     }
   }
@@ -161,7 +174,7 @@ export function parseBudgetWorkbook(
   })
   if (JSON.stringify(header) !== JSON.stringify(HEADER)) {
     const message = `unexpected header ${JSON.stringify(header)}`
-    return { year: null, failures: [{ row: 1, message }] }
+    return { kind: 'failed', failures: [{ row: 1, message }] }
   }
   const lookups: Lookups = {
     orgs: {},
@@ -172,19 +185,21 @@ export function parseBudgetWorkbook(
   const rows: BudgetRow[] = []
   const failures: BudgetRowFailure[] = []
   body.forEach((cells, index) => {
+    const rowNumber = index + 2
     try {
       const row = readRow(cells, fiscalYear, lookups)
       const problems = identityProblems(row)
-      if (problems.length > 0) throw new Error(problems.join('; '))
-      rows.push(row)
+      if (problems.length > 0) {
+        failures.push({ row: rowNumber, message: problems.join('; ') })
+      } else {
+        rows.push(row)
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      failures.push({ row: index + 2, message })
+      failures.push({ row: rowNumber, message })
     }
   })
-  if (failures.length > 0) return { year: null, failures }
-  return {
-    year: budgetYearSchema.parse({ fiscalYear, period, ...lookups, rows }),
-    failures,
-  }
+  if (failures.length > 0) return { kind: 'failed', failures }
+  const year = budgetYearSchema.parse({ fiscalYear, period, ...lookups, rows })
+  return { kind: 'parsed', year }
 }

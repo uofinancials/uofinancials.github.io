@@ -1,6 +1,6 @@
 export type RobotsRules = { allow: string[]; disallow: string[] }
 
-const ALLOW_EVERYTHING: RobotsRules = { allow: [], disallow: [] }
+export const ALLOW_EVERYTHING: RobotsRules = { allow: [], disallow: [] }
 export const DISALLOW_EVERYTHING: RobotsRules = { allow: [], disallow: ['/'] }
 
 type Group = { agents: string[]; rules: RobotsRules }

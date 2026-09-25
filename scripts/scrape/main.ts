@@ -23,9 +23,10 @@ async function main(requested: string[]): Promise<void> {
   }
   let manifest = await readManifest()
   const problems: string[] = []
-  for (const name of requested.length > 0 ? requested : Object.keys(STEPS)) {
-    const step = STEPS[name]
-    if (!step) continue
+  const selected = Object.entries(STEPS).filter(
+    ([name]) => requested.length === 0 || requested.includes(name),
+  )
+  for (const [name, step] of selected) {
     const result = await step(manifest)
     manifest = result.manifest
     problems.push(...result.problems.map((problem) => `${name}: ${problem}`))

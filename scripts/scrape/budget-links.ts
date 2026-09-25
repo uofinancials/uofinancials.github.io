@@ -14,6 +14,14 @@ const SECTION_HEADING = 'Expenditure Budget Reports'
 const FILE_NAME = /^FY(\d{2})_External_Budget_Report_PD(\d{2})\.xlsx$/
 const CENTURY = 2000
 
+export function parseBudgetFileName(
+  fileName: string,
+): { fiscalYear: number; period: string } | null {
+  const match = FILE_NAME.exec(fileName)
+  if (!match) return null
+  return { fiscalYear: CENTURY + Number(match[1]), period: match[2] ?? '' }
+}
+
 export function readBudgetLinks(html: string, pageUrl: string): BudgetLink[] {
   const $ = cheerio.load(html)
   const heading = $('h2').filter(
@@ -31,22 +39,21 @@ export function readBudgetLinks(html: string, pageUrl: string): BudgetLink[] {
     .map((_, anchor) => {
       const url = new URL($(anchor).attr('href') ?? '', pageUrl)
       const fileName = decodeURIComponent(url.pathname.split('/').at(-1) ?? '')
-      const match = FILE_NAME.exec(fileName)
-      if (!match)
+      const parsed = parseBudgetFileName(fileName)
+      if (!parsed)
         throw new Error(
           `unexpected budget file name "${fileName}" on ${pageUrl}`,
         )
-      return {
-        fiscalYear: CENTURY + Number(match[1]),
-        period: match[2] ?? '',
-        fileName,
-        url: url.href,
-      }
+      return { ...parsed, fileName, url: url.href }
     })
     .get()
   if (links.length === 0)
     throw new Error(
       `no budget workbooks under "${SECTION_HEADING}" on ${pageUrl}`,
     )
+  const years = links.map((link) => link.fiscalYear)
+  if (new Set(years).size !== years.length) {
+    throw new Error(`more than one workbook for a fiscal year on ${pageUrl}`)
+  }
   return links
 }

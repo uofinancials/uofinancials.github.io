@@ -4,8 +4,11 @@ import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../src/data/budget.ts'
 import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
-import { identityProblems } from './scrape/budget-file.ts'
-import { DATA_DIR, MANIFEST_PATH } from './scrape/cache.ts'
+import {
+  identityProblems,
+  totalExpenditureCents,
+} from './scrape/budget-file.ts'
+import { budgetDataPath, DATA_DIR, MANIFEST_PATH } from './scrape/cache.ts'
 
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8'))
@@ -31,29 +34,27 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     for (const entry of manifest.budget) {
-      const label = `FY${String(entry.fiscalYear).slice(2)}`
+      const label = `FY${entry.fiscalYear}`
       const year = budgetYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'budget', `${label}.json`)),
+        readJson(budgetDataPath(entry.fiscalYear)),
       )
       expect(year.fiscalYear, label).toBe(entry.fiscalYear)
       expect(year.period, label).toBe(entry.period)
       expect(year.rows.length, label).toBe(entry.rows)
-      expect(
-        year.rows.reduce(
-          (sum, row) => sum + row.totalExpenditureBudgetCents,
-          0,
-        ),
-        label,
-      ).toBe(entry.totalExpenditureBudgetCents)
+      expect(totalExpenditureCents(year.rows), label).toBe(
+        entry.totalExpenditureBudgetCents,
+      )
       expect(year.rows.flatMap(identityProblems), label).toEqual([])
-      for (const row of year.rows) {
-        expect(year.orgs[row.org]?.level, `${label} org ${row.org}`).toBe(5)
-        expect(year.funds[row.fund], `${label} fund ${row.fund}`).toBeDefined()
-        expect(
-          year.accountTypes[row.accountType],
-          `${label} account ${row.accountType}`,
-        ).toBeDefined()
-      }
+      const unresolved = year.rows.filter(
+        (row) =>
+          year.orgs[row.org]?.level !== 5 ||
+          !year.funds[row.fund] ||
+          !year.accountTypes[row.accountType],
+      )
+      expect(
+        unresolved.map((row) => [row.org, row.fund, row.accountType]),
+        label,
+      ).toEqual([])
     }
   },
 )
