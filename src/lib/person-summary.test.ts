@@ -8,7 +8,6 @@ import {
   personRates,
   runCards,
   runOf,
-  TOTAL_SERIES,
 } from './person-summary'
 
 const physics = { code: '222222', name: 'Physics' }
@@ -65,7 +64,7 @@ test('an unlinked year has only the start-date card', () => {
   expect(cards?.yearsSinceStart).toBeCloseTo(5.8, 1)
 })
 
-test('each job type and pay department is a line of published rates, gapped where absent, with the total of rate × appointment', () => {
+test('each job type and pay department is a line of published rates, gapped where absent', () => {
   const { years, series } = personRates(ann())
   expect(years).toEqual([2020, 2021, 2022, 2023, 2025])
   expect(series).toEqual([
@@ -76,10 +75,6 @@ test('each job type and pay department is a line of published rates, gapped wher
     {
       key: 'Overload · Physics',
       values: [null, null, null, 1_000_000, null],
-    },
-    {
-      key: TOTAL_SERIES,
-      values: [5_000_000, 5_500_000, 3_300_000, 3_400_000, 7_000_000],
     },
   ])
 })
@@ -94,7 +89,6 @@ test('two jobs of one type in one department and year stay separate lines', () =
   expect(person && personRates(person).series.map(({ key }) => key)).toEqual([
     'Secondary · Dept',
     'Secondary · Dept (2)',
-    TOTAL_SERIES,
   ])
 })
 
@@ -114,18 +108,6 @@ test('the job history lists every job as published, with its run’s link', () =
     ],
   })
   expect(rows[5]).toMatchObject({ year: 2025, isLinked: false })
-})
-
-test('the total counts a job on unpaid leave as zero', () => {
-  const [person] = indexPeople([
-    census(2025, [
-      classifiedJob({ jobStatus: 'On Leave Without Pay' }),
-      classifiedJob({ jobType: 'Secondary', apptPercent: 50 }),
-    ]),
-  ])
-  expect(person && personRates(person).series.at(-1)?.values).toEqual([
-    2_500_000,
-  ])
 })
 
 test('a year’s pay departments are listed once each, by code', () => {

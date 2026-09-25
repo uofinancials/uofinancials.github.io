@@ -13,11 +13,11 @@ import {
   formatOrBlank,
 } from '@/lib/format'
 import type { Person } from '@/lib/person-lookup'
-import { personRates, TOTAL_SERIES } from '@/lib/person-summary'
+import { personRates } from '@/lib/person-summary'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 
-/** Each job's published rate and the estimated total by census, as a chart and a table. */
+/** Each job's published rate by census, as a chart and a table. */
 export function PersonRatesFigure({ person }: { person: Person }) {
   const { years, series } = personRates(person)
   const label = `${person.name}: annual salary rate by job, Fall ${years[0]}-${years.at(-1)}`
@@ -34,12 +34,9 @@ export function PersonRatesFigure({ person }: { person: Person }) {
       <p className="text-xs text-muted-foreground">
         Each job line is its published annual salary rate, gapped where a census
         lists no such job; a job is its job type and pay department, so a new
-        title in the same job continues its line. {TOTAL_SERIES} is computed by
-        this site: the sum of each job's rate × its appointment %, with jobs on
-        unpaid leave as zero, the same per-job estimate the other pages use for
-        spend, though here classified temporaries are included. It estimates
-        annual pay, and overstates a classified temporary's pay, whose rate is
-        an annualised hourly rate.
+        title in the same job continues its line. A rate is the full-time annual
+        rate, not pay: a part-time job's pay is lower, as its appointment % in
+        the job history shows.
       </p>
       <Table>
         <caption className="sr-only">{label}</caption>

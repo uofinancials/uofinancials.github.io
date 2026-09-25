@@ -1,5 +1,4 @@
 import type { FallRecord } from '../data/fall.ts'
-import { jobSpendCents } from './overview.ts'
 import { historyValues } from './person-fields.ts'
 import {
   type Person,
@@ -107,9 +106,7 @@ export function runCards(run: PersonRun): RunCards {
   }
 }
 
-export const TOTAL_SERIES = 'Total, estimated (rate × appointment)'
-
-/** Each job type and pay department's published rate per census year, `null` where the year has none, then the estimated total. */
+/** Each job type and pay department's published rate per census year, `null` where the year has none. */
 export function personRates(person: Person): {
   years: number[]
   series: { key: string; values: (number | null)[] }[]
@@ -130,15 +127,7 @@ export function personRates(person: Person): {
   })
   return {
     years: personYears.map(({ year }) => year),
-    series: [
-      ...[...byKey].map(([key, values]) => ({ key, values })),
-      {
-        key: TOTAL_SERIES,
-        values: personYears.map(({ records }) =>
-          records.reduce((sum, record) => sum + jobSpendCents(record), 0),
-        ),
-      },
-    ],
+    series: [...byKey].map(([key, values]) => ({ key, values })),
   }
 }
 

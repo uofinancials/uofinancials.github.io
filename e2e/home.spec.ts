@@ -380,9 +380,7 @@ test('a linked run is labelled as computed, and the people page does not scroll 
     page.getByRole('figure', { name: /annual salary rate by job/ }),
   ).toBeVisible()
   await expect(
-    page.getByRole('columnheader', {
-      name: 'Total, estimated (rate × appointment)',
-    }),
+    page.getByRole('columnheader', { name: /^Primary · / }).first(),
   ).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'Fall 2023 records' }),
