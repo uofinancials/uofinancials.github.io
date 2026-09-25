@@ -16,7 +16,6 @@ function expectWithinRounding(actual: number, expected: number) {
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(ROUNDING_CENTS)
 }
 
-/** Each year's sum of a section's subtotals and of the lines under none; checks each subtotal on the way. */
 function expectSectionSums(lines: ProjectionLine[], year: number) {
   let sinceSubtotal = 0
   let total = 0

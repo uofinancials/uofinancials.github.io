@@ -22,7 +22,6 @@ export type GapRow = {
   endingFundBalanceCents: number
 }
 
-/** One row per projected year: its totals, run rate, and ending fund balance. */
 export function gapRows(projection: Projection): GapRow[] {
   const revenue = sectionTotal(projection, 'revenue')
   const expenses = sectionTotal(projection, 'expense')
