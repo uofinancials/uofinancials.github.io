@@ -56,7 +56,6 @@ export function trendGroupOf(
   return group
 }
 
-/** The opened Executives line for EXEC-grade jobs that UO files under another category, or none. */
 export const EXEC_OTHER_CATEGORY = 'EXEC grade, other category'
 
 /** A job's line when its group is opened: its published category, or `EXEC_OTHER_CATEGORY` for a job in Executives by the grade alone. */
