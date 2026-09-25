@@ -6,6 +6,12 @@ import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
+import { createAreaAssigner, HAND_AREAS } from '../src/lib/areas.ts'
+import {
+  buildCensusOverview,
+  isClassifiedTemp,
+  summarize,
+} from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import {
   identityProblems,
@@ -104,5 +110,46 @@ test.skipIf(!existsSync(RAISES_DATA_PATH))(
           !term.source.location || !term.source.url.startsWith('https://'),
       ),
     ).toEqual([])
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'Fall 2025 totals match an independent computation',
+  () => {
+    const { records } = fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+    )
+    const others = records.filter((record) => !isClassifiedTemp(record))
+    expect(summarize(records)).toMatchObject({
+      people: 6_268,
+      jobs: 6_840,
+      fteHundredths: 609_943,
+    })
+    expect(summarize(others).spendCents).toBe(50_481_206_840)
+    expect(records.length - others.length).toBe(549)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'every Fall 2025 job in the area table has an area, and every hand row is used',
+  () => {
+    const { records } = fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+    )
+    const { orgs } = budgetYearSchema.parse(readJson(budgetDataPath(2026)))
+    expect(
+      buildCensusOverview({ year: 2025, records }, orgs).areaBases,
+    ).toEqual({ published: 4_463, name: 1_645, hand: 183, unassigned: 0 })
+    const assign = createAreaAssigner(records, orgs, 2025)
+    const handCodes = new Set(
+      records
+        .filter((record) => assign(record).basis === 'hand')
+        .map((record) => record.payDepartment.code),
+    )
+    const handAreas = HAND_AREAS[2025] ?? {}
+    expect([...handCodes].sort()).toEqual(Object.keys(handAreas).sort())
+    for (const area of Object.values(handAreas)) {
+      expect(orgs[area]?.level, area).toBe(3)
+    }
   },
 )

@@ -60,3 +60,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on the Sources page; a computed figure says how it was computed.
 - The site follows the system's light or dark setting.
 - A page whose data cannot load names the file that failed and offers a retry.
+- The home page is an overview of the latest Fall census (Fall 2025): people,
+  FTE, and estimated salary spend (published annual salary rate x FTE, zero for
+  unpaid leave), and the same by EEO category and by college or VP area, each as
+  a bar chart with a table and a source caption saying how it was computed.
+  Classified temporaries, whose published rates are annualised hourly rates, are
+  counted in people and FTE but kept out of salary spend and shown as their own
+  row.
+- College or VP areas come from the budget's organisation hierarchy for the
+  census's fiscal year. Where UO does not publish a pay department's area, the
+  site assigns it from the department's name, or by hand for 26 Fall 2025
+  departments, and the page says how many jobs each way covers.

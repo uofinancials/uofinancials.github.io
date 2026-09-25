@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import type { FallClassified, FallYear } from '@/data/fall'
+import { classifiedJob } from '@/test/fall-records'
 import { findPersonLinks } from './person-links'
 
 function job(
@@ -7,24 +8,11 @@ function job(
   payCode: string,
   jobType: FallClassified['jobType'] = 'Primary',
 ): FallClassified {
-  return {
-    kind: 'classified',
+  return classifiedJob({
     name,
     jobType,
-    jobStatus: 'Active',
-    jobStartDate: '2020-01-01',
-    jobEndDate: null,
-    homeDepartment: { code: null, name: 'Home' },
     payDepartment: { code: payCode, name: `Dept ${payCode}` },
-    annualSalaryRateCents: 5_000_000,
-    apptPercent: 100,
-    termOfServiceMonths: 12,
-    eeoCategory: 'Secy/Clerical',
-    sourcePage: 1,
-    possibleStudent: false,
-    jobTitle: 'Office Specialist 2',
-    positionClass: null,
-  }
+  })
 }
 
 function census(year: number, records: FallClassified[]): FallYear {
