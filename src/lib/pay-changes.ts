@@ -4,6 +4,7 @@ import { isRankRename, normalizeTitle } from './pay-change-labels.ts'
 import { type PeerGroup, peerGroupOf } from './peer-group.ts'
 import { titleOf } from './person-fields.ts'
 import { findPersonLinks, type PersonLink } from './person-links.ts'
+import { type RaiseRow, raiseRowOf } from './raise-groups.ts'
 import {
   compareLines,
   emptyCounts,
@@ -32,6 +33,8 @@ export type ContinuingPair = {
   group: TrendGroup
   /** The earlier job's class number, rank, or OA grade. */
   peer: PeerGroup | null
+  /** The earlier job's estimated raise row. */
+  raise: RaiseRow | null
   /** The change in published annual salary rate as a fraction of the earlier rate. */
   ratio: number
   /** `null` for a pair of unclassified jobs. */
@@ -57,12 +60,14 @@ function toPair(link: PersonLink): ContinuingPair {
   const { fromYear, from, to } = link
   const rank = rankChange(link)
   const peer = peerGroupOf(from)
+  const group = trendGroupOf(from, fromYear)
   return {
     fromYear,
     from,
     to,
-    group: trendGroupOf(from, fromYear),
+    group,
     peer,
+    raise: raiseRowOf(from, fromYear, group),
     ratio:
       (to.annualSalaryRateCents - from.annualSalaryRateCents) /
       from.annualSalaryRateCents,

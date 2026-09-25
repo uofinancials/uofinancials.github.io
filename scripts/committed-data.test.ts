@@ -33,6 +33,7 @@ import {
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import { indexPeople } from '../src/lib/person-lookup.ts'
 import { runCards } from '../src/lib/person-summary.ts'
+import { censusWindow, raiseComparison } from '../src/lib/raise-comparison.ts'
 import { buildDistribution } from '../src/lib/salary-distribution.ts'
 import { buildTrends } from '../src/lib/trends.ts'
 import {
@@ -515,5 +516,23 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       classified: 1_527,
       classChanged: 48,
     })
+    const { terms } = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
+    const window = censusWindow(years, 2024)
+    expect(window).toEqual({ after: '2024-11-01', through: '2025-11-01' })
+    if (!window) return
+    const comparison = raiseComparison(pairs, terms, window)
+    const rowsByLabel = Object.fromEntries(
+      comparison.rows.map(({ row, jobs, median, acrossTheBoard }) => [
+        row.label,
+        [jobs, median?.toFixed(4), acrossTheBoard?.basisPoints],
+      ]),
+    )
+    expect(rowsByLabel).toMatchObject({
+      'SEIU 503': [1_500, '0.1083', 661],
+      'United Academics, tenure-related': [754, '0.0790', 790],
+      'United Academics, pro tem, visiting, and retired': [187, '0.0659', 659],
+      'Officers of Administration': [1_360, '0.0300', 300],
+    })
+    expect(comparison.unplaced).toBe(151)
   },
 )
