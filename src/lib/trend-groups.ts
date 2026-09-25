@@ -1,5 +1,5 @@
 import type { FallRecord } from '../data/fall.ts'
-import { isClassifiedTemp } from './overview.ts'
+import { isClassifiedTemp, NO_CATEGORY } from './overview.ts'
 
 export const TREND_GROUPS = [
   'Faculty',
@@ -54,6 +54,18 @@ export function trendGroupOf(
     )
   }
   return group
+}
+
+/** The opened Executives line for EXEC-grade jobs that UO files under another category, or none. */
+export const EXEC_OTHER_CATEGORY = 'EXEC grade, other category'
+
+/** A job's line when its group is opened: its published category, or `EXEC_OTHER_CATEGORY` for a job in Executives by the grade alone. */
+export function openedLineOf(record: FallRecord, group: TrendGroup): string {
+  const category = record.eeoCategory ?? NO_CATEGORY
+  const isByGradeOnly =
+    group === 'Executives' &&
+    UNCLASSIFIED_CATEGORY_GROUPS[category] !== 'Executives'
+  return isByGradeOnly ? EXEC_OTHER_CATEGORY : category
 }
 
 export function publishedCategoriesOf(group: TrendGroup): string[] {

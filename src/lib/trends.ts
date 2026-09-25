@@ -1,10 +1,10 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
-import { isClassifiedTemp, NO_CATEGORY, summarize } from './overview.ts'
+import { isClassifiedTemp, summarize } from './overview.ts'
 import {
+  openedLineOf,
   TREND_GROUPS,
   type TrendGroup,
   trendGroupOf,
-  UNCLASSIFIED_CATEGORY_GROUPS,
 } from './trend-groups.ts'
 
 /** Each figure is `null` when the line has no job it applies to that year. */
@@ -64,23 +64,20 @@ export function medianRateCents(rates: number[]): number | null {
   return median === null ? null : Math.round(median)
 }
 
-/** Jobs, spend and FTE, and the median rate of a set of jobs; each figure `null` when no job it applies to is in the set, and spend and median `null` under `MIN_JOBS_SHOWN` jobs. */
+/** Jobs, spend and FTE, and the median rate of a set of jobs; FTE `null` when the set is empty, spend `null` under `MIN_JOBS_SHOWN` paid jobs, and median `null` under `MIN_JOBS_SHOWN` primary rates. */
 export function measureJobs(records: FallRecord[]): Omit<TrendPoint, 'year'> {
   const paid = records.filter((record) => !isClassifiedTemp(record))
-  const isShown = records.length >= MIN_JOBS_SHOWN
+  const rates = paid
+    .filter((record) => record.jobType === 'Primary')
+    .map((record) => record.annualSalaryRateCents)
   return {
     jobs: records.length,
     spendCents:
-      !isShown || paid.length === 0 ? null : summarize(paid).spendCents,
+      paid.length < MIN_JOBS_SHOWN ? null : summarize(paid).spendCents,
     fteHundredths:
       records.length === 0 ? null : summarize(records).fteHundredths,
-    medianRateCents: isShown
-      ? medianRateCents(
-          paid
-            .filter((record) => record.jobType === 'Primary')
-            .map((record) => record.annualSalaryRateCents),
-        )
-      : null,
+    medianRateCents:
+      rates.length < MIN_JOBS_SHOWN ? null : medianRateCents(rates),
   }
 }
 
@@ -89,17 +86,6 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
 }
 
 const GROUP_ORDER: readonly string[] = TREND_GROUPS
-
-/** The opened Executives line for EXEC-grade jobs that UO files under another category, or none. */
-export const EXEC_OTHER_CATEGORY = 'EXEC grade, other category'
-
-function categoryLineOf(record: FallRecord, group: TrendGroup): string {
-  const category = record.eeoCategory ?? NO_CATEGORY
-  const isByGradeOnly =
-    group === 'Executives' &&
-    UNCLASSIFIED_CATEGORY_GROUPS[category] !== 'Executives'
-  return isByGradeOnly ? EXEC_OTHER_CATEGORY : category
-}
 
 /** One series per group (or per published category of an opened group), and their total, per census in range. */
 export function buildTrends(
@@ -118,7 +104,7 @@ export function buildTrends(
       if (filter.kind !== 'all' && record.kind !== filter.kind) continue
       if (filter.group !== null && group !== filter.group) continue
       shown.push(record)
-      const key = filter.group ? categoryLineOf(record, filter.group) : group
+      const key = filter.group ? openedLineOf(record, filter.group) : group
       const byYear = lines.get(key) ?? new Map<number, FallRecord[]>()
       const members = byYear.get(year) ?? []
       members.push(record)

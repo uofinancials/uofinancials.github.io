@@ -146,7 +146,7 @@ export function departmentTrends(
   })
 }
 
-/** A position class or rank row; spend and median are `null` when withheld or not applicable. */
+/** A position class or rank row; spend and median as `measureJobs` gives them. */
 export type ClassRow = { label: string } & Omit<TrendPoint, 'year'>
 
 const OTHER_LABEL: Record<StaffKind, string> = {

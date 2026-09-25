@@ -1,11 +1,7 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import {
-  buildTrends,
-  EXEC_OTHER_CATEGORY,
-  medianRateCents,
-  type TrendFilter,
-} from './trends'
+import { EXEC_OTHER_CATEGORY } from './trend-groups'
+import { buildTrends, medianRateCents, type TrendFilter } from './trends'
 
 const ALL: TrendFilter = { kind: 'all', group: null, from: 2014, to: 2025 }
 const temp = classifiedJob({
@@ -22,7 +18,7 @@ test('the median of an even count is the mean of the middle two, rounded to the 
   expect(medianRateCents([])).toBeNull()
 })
 
-test('each group gets a point per census; temps count in FTE only; spend and median need three jobs', () => {
+test('each group gets a point per census; temps count in FTE only; spend needs three paid jobs and median three primary rates', () => {
   const trends = buildTrends(
     [
       {
@@ -81,7 +77,7 @@ test('each group gets a point per census; temps count in FTE only; spend and med
     jobs: 4,
     spendCents: 9_000_000 + 100_000 + 5_000_000,
     fteHundredths: 100 + 10 + 100 + 10,
-    medianRateCents: 7_000_000,
+    medianRateCents: null,
   })
 })
 

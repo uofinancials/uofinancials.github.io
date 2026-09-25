@@ -68,16 +68,20 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   },
 )
 
+function loadFallCensuses() {
+  const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+  return manifest.fall.map(({ year }) => ({
+    year,
+    records: fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
+    ).records,
+  }))
+}
+
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'every Fall year maps to trend groups, and 2014, 2015, and 2025 match an independent computation',
   () => {
-    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    const years = manifest.fall.map(({ year }) => ({
-      year,
-      records: fallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-      ).records,
-    }))
+    const years = loadFallCensuses()
     const yearsWithoutClass = years.filter(({ records }) =>
       records.some(
         (record) => record.kind === 'classified' && !record.positionClass,
@@ -132,13 +136,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'an opened group leaves spend and median blank on a point under three jobs',
   () => {
-    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    const years = manifest.fall.map(({ year }) => ({
-      year,
-      records: fallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-      ).records,
-    }))
+    const years = loadFallCensuses()
     const opened = buildTrends(years, {
       kind: 'all',
       group: 'Unclassified staff',
