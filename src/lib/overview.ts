@@ -29,10 +29,12 @@ const NO_CATEGORY = 'No category'
 const FISCAL_YEAR_START_MONTH = 7
 export const UNASSIGNED_AREA = 'Area not assigned'
 
+/** Fall 2015 publishes no position class for its temporaries, and only for them. */
 export function isClassifiedTemp(record: FallRecord): boolean {
   return (
     record.kind === 'classified' &&
-    TEMP_POSITION_CLASS.test(record.positionClass?.code ?? '')
+    (record.positionClass === null ||
+      TEMP_POSITION_CLASS.test(record.positionClass.code))
   )
 }
 

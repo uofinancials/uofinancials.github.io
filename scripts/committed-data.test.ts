@@ -13,6 +13,7 @@ import {
   summarize,
 } from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
+import { buildTrends } from '../src/lib/trends.ts'
 import {
   identityProblems,
   totalExpenditureCents,
@@ -43,6 +44,54 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       return year
     })
     expect(findPersonLinks(years)).toHaveLength(52_880)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'every Fall year maps to trend groups, and 2014, 2015, and 2025 match an independent computation',
+  () => {
+    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+    const years = manifest.fall.map(({ year }) => ({
+      year,
+      records: fallYearSchema.parse(
+        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
+      ).records,
+    }))
+    const { series, total } = buildTrends(years, {
+      kind: 'all',
+      group: null,
+      from: 2014,
+      to: 2025,
+    })
+    const figures = (year: number) =>
+      Object.fromEntries(
+        series.map(({ key, points }) => {
+          const point = points.find((p) => p.year === year)
+          return [key, [point?.spendCents, point?.fteHundredths]]
+        }),
+      )
+    expect(figures(2014)).toEqual({
+      Faculty: [12_574_491_957, 178_988],
+      'Admins and professionals': [9_588_563_897, 119_189],
+      'Unclassified staff': [902_120_531, 15_544],
+      'Classified staff': [5_792_903_943, 151_351],
+      Overloads: [709_844_782, 39_649],
+      'Category not published': [null, null],
+      'Classified temporaries': [null, 20_541],
+    })
+    expect(figures(2015)['Classified temporaries']).toEqual([null, 34_406])
+    expect(figures(2025)).toMatchObject({
+      Faculty: [18_829_315_972, 187_093],
+      'Admins and professionals': [18_748_350_891, 155_233],
+      'Unclassified staff': [1_538_953_523, 17_764],
+      'Classified staff': [10_912_994_388, 177_208],
+      Overloads: [451_592_066, 42_175],
+    })
+    expect(
+      total
+        .filter((point) => [2014, 2025].includes(point.year))
+        .map((point) => point.medianRateCents),
+    ).toEqual([5_171_100, 7_578_700])
   },
 )
 
