@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { budgetPeriodSchema } from './budget.ts'
 import { staffKindSchema } from './fall.ts'
 
 export const SALARY_REPORTS_PAGE =
@@ -24,9 +25,24 @@ const fallEntrySchema = z.strictObject({
   files: z.array(sourceFileSchema),
 })
 
+const budgetEntrySchema = z.strictObject({
+  fiscalYear: z.number().int(),
+  period: budgetPeriodSchema,
+  sourcePage: z.url(),
+  url: z.url(),
+  fileName: z.string().min(1),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  lastModified: z.string().min(1),
+  retrievedOn: isoDate,
+  rows: z.number().int().nonnegative(),
+  totalExpenditureBudgetCents: z.number().int(),
+})
+
 export const manifestSchema = z.strictObject({
   fall: z.array(fallEntrySchema),
+  budget: z.array(budgetEntrySchema).default([]),
 })
 
 export type FallEntry = z.infer<typeof fallEntrySchema>
+export type BudgetEntry = z.infer<typeof budgetEntrySchema>
 export type Manifest = z.infer<typeof manifestSchema>

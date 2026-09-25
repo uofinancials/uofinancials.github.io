@@ -1,4 +1,5 @@
 import type { Manifest } from '../../src/data/manifest.ts'
+import { runBudget } from './budget.ts'
 import { runFall } from './fall.ts'
 import {
   readManifest,
@@ -8,6 +9,7 @@ import {
 
 const STEPS: Record<string, (manifest: Manifest) => Promise<StepResult>> = {
   fall: runFall,
+  budget: runBudget,
 }
 
 async function main(requested: string[]): Promise<void> {

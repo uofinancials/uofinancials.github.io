@@ -35,6 +35,7 @@ async function robotsFor(url: URL): Promise<RobotsRules> {
       headers: { 'User-Agent': USER_AGENT },
     }),
   )
+  console.log(`GET ${url.origin}/robots.txt ${response.status}`)
   const rules = response.ok
     ? parseRobots(await response.text(), PRODUCT_TOKEN)
     : response.status >= HTTP_SERVER_ERROR

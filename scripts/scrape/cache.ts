@@ -9,6 +9,13 @@ export const FALL_SOURCE_DIR = path.resolve(
 
 export const hasFallSources = existsSync(FALL_SOURCE_DIR)
 
+export const BUDGET_SOURCE_DIR = path.resolve(
+  import.meta.dirname,
+  '../../.cache/sources/budget',
+)
+
+export const hasBudgetSources = existsSync(BUDGET_SOURCE_DIR)
+
 export const DATA_DIR = path.resolve(import.meta.dirname, '../../public/data')
 export const MANIFEST_PATH = path.join(DATA_DIR, 'manifest.json')
 
