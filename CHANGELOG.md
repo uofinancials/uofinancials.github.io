@@ -90,8 +90,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   than three primary jobs.
 - The Trends view is set from the page and kept in its link: the measure, one
   group opened into its categories as UO publishes them, classified or
-  unclassified staff, the range of years, and which lines are hidden. One source
-  caption cites the census reports for the years shown.
+  unclassified staff, the range of years, which lines are hidden, and a pay
+  department or position class or rank filter, set from the person page, that
+  narrows every measure and can be removed. One source caption cites the census
+  reports for the years shown.
 - Fall 2015 classified temporaries, which the 2015 report publishes without a
   position class, are recognised as temporaries.
 - A Departments page (`/departments`) listing each college or VP area in the
@@ -153,31 +155,31 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - census tabs, each with every field the report publishes for that year's
     jobs, its citation, and links to the pay department's page, to the People
     list of that department and of each job's position class or rank, and to the
-    pay changes of that department and of the primary job's class or rank;
+    Trends pay changes of that department and of the primary job's class or
+    rank;
   - a job history of title, class or rank, pay department, job type,
     appointment, and term for every census.
-- A Pay changes page (`/pay-changes`) for continuing jobs, which are person
-  links whose two primary jobs share their staff kind and 9- or 12-month term,
-  classified temporaries left out. For each pair of consecutive Fall censuses
-  from 2014-15 to 2024-25 it shows:
-  - the median change in published annual salary rate, overall and by the Trends
-    page's employee groups, as a line chart with a table (2024-25: 7.9% over
-    4,865 continuing jobs, from the reports retrieved 2026-09-24);
+- A Median change in salary rate measure on the Trends page, for continuing
+  jobs, which are person links whose two primary jobs share their staff kind and
+  9- or 12-month term, classified temporaries left out. For each pair of
+  consecutive Fall censuses in the range, from 2014-15 to 2024-25, it shows:
+  - the median change in published annual salary rate, overall and by employee
+    group, or by EEO category in an opened group, as a line chart with a table
+    (2024-25: 7.9% over 4,865 continuing jobs, from the reports retrieved
+    2026-09-24);
   - how many changed position class (by class number, whatever its letter
     prefix), rank, or job title, each with its share, and how many have a rank
     UO did not publish;
   - for one chosen pair, a histogram and table of the changes in 1-point steps
     from -5% to 20%, split by group.
-- Each continuing job is counted in the group, department, and class or rank of
-  the earlier census. The view is kept in its link: classified or unclassified
-  staff, the pair, and a pay department or class or rank filter set from the
-  People page, which can be removed. A figure covering fewer than three jobs is
-  not shown.
+- Each continuing job is counted in the group, category, department, and class
+  or rank of the earlier census. The chosen pair is kept in the link with the
+  rest of the Trends view. A figure covering fewer than three jobs is not shown.
 - Rank moves that UO relabelled are listed on the page and are not counted as
   rank or title changes: the 2025 career-instructor ranks, the 2015 postdoctoral
   and Early Childhood CARES ranks, and the 2016 administrators given a rank.
   Titles are compared without case, punctuation, or the abbreviations the page
-  lists. The page states the linking method and what it misses (people who
+  lists. The measure states the linking method and what it misses (people who
   change department or name), and that a changed label is not necessarily a
   promotion.
 - A People link in the navigation, which now wraps on narrow screens.

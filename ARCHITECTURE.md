@@ -63,11 +63,12 @@ flowchart LR
   select, radio, and search fields, the totals chart and table, the line chart,
   the stacked bar chart, the trends table and controls, the department budget
   and jobs sections, the census filter controls, the salary distribution figure,
-  the removable filter, the pay changes controls, lines, counts table, and
-  distribution, the people list's controls, table, sort controls, column picker,
-  and group figure, the person view with its computed figures, rate chart,
-  records table, and job history, and the hooks and query that load one census's
-  placed jobs, the people list's matching jobs, and the name index.
+  the removable filter, the pay changes section with its lines, counts table,
+  and distribution, the people list's controls, table, sort controls, column
+  picker, and group figure, the person view with its computed figures, rate
+  chart, records table, and job history, and the hooks and query that load one
+  census's placed jobs, the people list's matching jobs, the pay changes of a
+  Trends view, and the name index.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -78,9 +79,9 @@ flowchart LR
   person links between consecutive Fall years, the person lookup (name index,
   name matching, linked runs, and a record's published fields), the people
   list's filtering, sorting, and paging of one census's jobs, a person's
-  computed figures, rates by job, job history, and the class or rank medians
-  beside them, and continuing jobs' pay changes with the rank renames and title
-  abbreviations they use.
+  computed figures, rates by job, job history, a job's class or rank and the
+  medians beside it, and continuing jobs' pay changes with the rank renames and
+  title abbreviations they use.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -118,8 +119,8 @@ flowchart LR
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
   departments, the people list and person page, sources page, and `404.html`.
-- `e2e/pay-changes.spec.ts` - the pay changes page and its link from the person
-  page.
+- `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, and
+  its link from the person page.
 
 ## Pages
 
@@ -127,8 +128,11 @@ flowchart LR
   by EEO category and by college or VP area; driven by `src/lib` totals and area
   assignment over one Fall year and one budget year.
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
-  every Fall census, with the view held in the URL; driven by `src/lib` groups
-  and trends over every Fall year.
+  every Fall census, or for continuing jobs in each pair of consecutive censuses
+  the median change in salary rate, the counts of changed class, rank, and
+  title, and one pair's distribution of changes; filtered by pay department or
+  class or rank, with the view held in the URL; driven by `src/lib` groups,
+  trends, person links, and pay changes over every Fall year.
 - `/departments` - each college or VP area in the latest census's budget year,
   with its budget units and the latest census's pay departments, filtered by
   name or code; driven by the `src/lib` department index over one Fall year and
@@ -146,11 +150,6 @@ flowchart LR
   records for one census at a time, and its job history, with a back button; not
   indexed by search engines; driven by the `src/lib` person lookup and summary
   over every Fall year.
-- `/pay-changes` - for continuing jobs in each pair of consecutive Fall
-  censuses, the median change in published salary rate by employee group, the
-  counts of changed class, rank, and title, and one pair's distribution of
-  changes, with the view held in the URL; driven by the `src/lib` person links
-  and pay changes over every Fall year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.
