@@ -117,12 +117,22 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A People page (`/people`) that searches every Fall census from 2014 to 2025 by
   name: each word typed must appear in the name, and up to 50 matching names are
   listed with the years they appear in and the pay department of their latest
-  primary job, with the source reports cited beneath. A chosen name shows every
-  job published under it, one table per census with every field the report
-  publishes and a citation of that census's report. The search and the chosen
-  name are kept in the link, and the page asks search engines not to index it.
-- On the People page, consecutive years linked on the exact name and the same
-  pay department of a single primary job are grouped together and labelled as
-  computed by this site, since UO publishes no person identifier. Records marked
-  `possibleStudent` are shown as published.
+  primary job, with the source reports cited beneath. The search, the chosen
+  name, and its census year are kept in the link, and the page asks search
+  engines not to index it. Records marked `possibleStudent` are shown as
+  published.
+- A chosen name shows, from top to bottom:
+  - figures computed by this site from that name's own records, each with its
+    method and caveats: years since the earliest published job start, and, over
+    years linked on the exact name and the same pay department of a single
+    primary job, the primary job's rate change and its average yearly change
+    (leaving out years whose appointment or term changed);
+  - a chart and table of each job's published annual salary rate by census, a
+    job being its job type and pay department, with an estimated total of rate x
+    appointment;
+  - census tabs, each with every field the report publishes for that year's
+    jobs, its citation, and links to the pay department's page and salary
+    distribution;
+  - a job history of title, class or rank, pay department, job type,
+    appointment, and term for every census.
 - A People link in the navigation, which now wraps on narrow screens.

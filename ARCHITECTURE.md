@@ -62,7 +62,8 @@ flowchart LR
   report link, the source citation caption, the loading and error states, the
   select, radio, and search fields, the totals chart and table, the line chart,
   the stacked bar chart, the trends table and controls, the department budget
-  and jobs sections, the salaries controls, and the table of a person's records.
+  and jobs sections, the salaries controls, and the person view with its
+  computed figures, rate chart, records table, and job history.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -70,8 +71,9 @@ flowchart LR
   cross-year employee groups and their trends, budget account groups, a
   department's budget and jobs, the department index, the salary rate
   distribution, each page's URL state, source citations, number formatting, the
-  person links between consecutive Fall years, and the person lookup: the name
-  index, name matching, linked runs, and a record's published fields.
+  person links between consecutive Fall years, the person lookup (name index,
+  name matching, linked runs, and a record's published fields), and a person's
+  computed figures, rates by job, and job history.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -131,9 +133,9 @@ flowchart LR
   staff kind, term, and college or VP area or department; driven by the
   `src/lib` distribution over one Fall year and its budget year.
 - `/people` - names across every Fall census matching a search, and for a chosen
-  name every published record by census year, with linked years grouped; not
-  indexed by search engines; driven by the `src/lib` person lookup over every
-  Fall year.
+  name its computed figures, its rates by job over time, its records for one
+  census at a time, and its job history; not indexed by search engines; driven
+  by the `src/lib` person lookup and summary over every Fall year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.
