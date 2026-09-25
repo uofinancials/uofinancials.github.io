@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "scrape": "node scripts/scrape/main.ts",
     "check": "biome check . && prettier --check . && markdownlint-cli2 \"**/*.md\" && tsc -b",

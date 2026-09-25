@@ -63,3 +63,5 @@ export const raiseTermsSchema = z.strictObject({
     }),
   ),
 })
+
+export type RaiseTerm = z.infer<typeof raiseTermSchema>
