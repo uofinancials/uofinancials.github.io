@@ -39,7 +39,7 @@ const COLUMNS: {
   },
 ]
 
-/** Each census pair's counts of changed class, rank, and title, with their share; blank below `MIN_JOBS_SHOWN` pairs. */
+/** Each census pair's counts of changed class, rank, and title, with their share; blank where it would cover fewer than `MIN_JOBS_SHOWN` jobs. */
 export function PayChangeCountsTable({
   rows,
   caption,
@@ -74,7 +74,7 @@ export function PayChangeCountsTable({
             </TableCell>
             {COLUMNS.map(({ heading, count, of }) => (
               <TableCell key={heading} className={NUMBER_CELL}>
-                {row.pairs < MIN_JOBS_SHOWN || of(row) === 0
+                {of(row) < MIN_JOBS_SHOWN
                   ? NO_VALUE
                   : `${formatCount(count(row))} (${formatShare(count(row), of(row))})`}
               </TableCell>
