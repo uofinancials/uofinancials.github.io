@@ -24,17 +24,19 @@ function readJson(file: string): unknown {
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every committed Fall year matches its schema and its manifest entry',
+  'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    for (const entry of manifest.fall) {
+    const years = manifest.fall.map((entry) => {
       const year = fallYearSchema.parse(
         readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
       )
       const expected = entry.files.reduce((sum, file) => sum + file.records, 0)
       expect(year.censusDate).toBe(entry.censusDate)
       expect(year.records.length).toBe(expected)
-    }
+      return year
+    })
+    expect(findPersonLinks(years)).toHaveLength(52_880)
   },
 )
 
@@ -102,18 +104,5 @@ test.skipIf(!existsSync(RAISES_DATA_PATH))(
           !term.source.location || !term.source.url.startsWith('https://'),
       ),
     ).toEqual([])
-  },
-)
-
-test.skipIf(!existsSync(MANIFEST_PATH))(
-  'the committed Fall years yield the researched number of person links',
-  () => {
-    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    const years = manifest.fall.map((entry) =>
-      fallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
-      ),
-    )
-    expect(findPersonLinks(years)).toHaveLength(52_880)
   },
 )

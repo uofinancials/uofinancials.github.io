@@ -1,4 +1,4 @@
-import type { FallRecord, FallYear } from '@/data/fall.ts'
+import type { FallRecord, FallYear } from '../data/fall.ts'
 
 /**
  * A computed link between a name's records in `fromYear` and `fromYear + 1`:
@@ -21,10 +21,9 @@ function primaryPayDepartments(
   const departments = new Map<string, string | null>()
   for (const record of records) {
     if (record.jobType !== 'Primary') continue
-    const isSecondPrimary = departments.has(record.name)
     departments.set(
       record.name,
-      isSecondPrimary ? null : record.payDepartment.code,
+      departments.has(record.name) ? null : record.payDepartment.code,
     )
   }
   return departments
@@ -37,15 +36,15 @@ export function findPersonLinks(years: FallYear[]): PersonLink[] {
       primaryPayDepartments(year.records),
     ]),
   )
-  const fromYears = [...departmentsByYear.keys()].sort((a, b) => a - b)
-  return fromYears.flatMap((fromYear) => {
-    const current = departmentsByYear.get(fromYear) ?? new Map()
-    const next = departmentsByYear.get(fromYear + 1)
-    if (!next) return []
-    return [...current].flatMap(([name, code]) =>
-      code !== null && next.get(name) === code
-        ? [{ name, fromYear, payDepartmentCode: code }]
-        : [],
-    )
-  })
+  return [...departmentsByYear]
+    .sort(([a], [b]) => a - b)
+    .flatMap(([fromYear, current]) => {
+      const next = departmentsByYear.get(fromYear + 1)
+      if (!next) return []
+      return [...current].flatMap(([name, code]) =>
+        code !== null && next.get(name) === code
+          ? [{ name, fromYear, payDepartmentCode: code }]
+          : [],
+      )
+    })
 }
