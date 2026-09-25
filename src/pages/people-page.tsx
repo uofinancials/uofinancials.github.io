@@ -5,7 +5,7 @@ import {
   useNavigate,
   useSearch,
 } from '@tanstack/react-router'
-import { PersonRecordsTable } from '@/components/person-records-table'
+import { PersonView } from '@/components/person-view'
 import { SearchField } from '@/components/search-field'
 import { SourceCitation } from '@/components/source-citation'
 import type { FallYear } from '@/data/fall'
@@ -19,12 +19,9 @@ import {
   type Person,
   yearsOf,
 } from '@/lib/person-lookup'
+import { resolvePersonYear } from '@/lib/person-summary'
 
-const SAME_NAME_NOTE =
-  'UO publishes no person identifier. Records are grouped by the name exactly as published, so one name may be more than one person, and one person may appear under more than one name.'
 const MATCH_NOTE = `a name matches when every word typed appears in it, ignoring case and commas. Its years are the censuses that list the name, and its department is the pay department of its primary job in the latest of them (or its first listed job, with no primary job). The same name may be more than one person.`
-const LINK_NOTE =
-  'linked year to year on the exact name and the same pay department of a single primary job. Computed by this site; not published by UO.'
 
 function toPeople(results: { data: FallYear }[]): Person[] {
   return indexPeople(results.map(({ data }) => data))
@@ -60,38 +57,9 @@ function Matches({ people, q }: { people: Person[]; q: string }) {
   )
 }
 
-function PersonRecords({ person }: { person: Person }) {
-  return (
-    <section className="space-y-6">
-      <h2 className="text-xl font-semibold">{person.name}</h2>
-      <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
-      {person.runs.map((run) => (
-        <div key={run.years[0]?.year} className="space-y-4 border-l pl-4">
-          {run.isLinked && (
-            <p className="text-sm">
-              Fall {formatYearRanges(run.years.map(({ year }) => year))}:{' '}
-              {LINK_NOTE}
-            </p>
-          )}
-          {run.years.map(({ year, records }) => (
-            <div key={year} className="space-y-2">
-              <h3 className="font-semibold">Fall {year}</h3>
-              <PersonRecordsTable
-                records={records}
-                caption={`${person.name}, Fall ${year}`}
-              />
-              <SourceCitation source={{ kind: 'fall', year }} />
-            </div>
-          ))}
-        </div>
-      ))}
-    </section>
-  )
-}
-
 export function PeoplePage() {
   const { years } = useLoaderData({ from: '/people' })
-  const { q = '', name } = useSearch({ from: '/people' })
+  const { q = '', name, year } = useSearch({ from: '/people' })
   const navigate = useNavigate({ from: '/people' })
   const people = useSuspenseQueries({
     queries: years.map(fallYearQuery),
@@ -117,7 +85,7 @@ export function PeoplePage() {
       />
       {name !== undefined &&
         (person ? (
-          <PersonRecords person={person} />
+          <PersonView person={person} year={resolvePersonYear(person, year)} />
         ) : (
           <p>No Fall record is published under the name {name}.</p>
         ))}

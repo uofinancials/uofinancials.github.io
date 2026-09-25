@@ -372,9 +372,37 @@ test('a linked run is labelled as computed, and the people page does not scroll 
   const matches = page.getByRole('list', { name: 'Matching names' })
   await matches.getByRole('link').nth(1).click()
   await expect(page.getByRole('heading', { level: 2 })).toBeVisible()
-  await expect(page.getByRole('main')).toContainText(
-    'Fall 2021-2023: linked year to year on the exact name and the same pay department of a single primary job. Computed by this site; not published by UO.',
+  const main = page.getByRole('main')
+  await expect(main).toContainText(
+    'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the exact name and the same pay department of a single primary job.',
   )
+  await expect(
+    page.getByRole('figure', { name: /annual salary rate by job/ }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', {
+      name: 'Total, estimated (rate × appointment)',
+    }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Fall 2023 records' }),
+  ).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Census year' })
+    .getByRole('link', { name: '2021', exact: true })
+    .click()
+  await expect(page).toHaveURL(/year=2021/)
+  await expect(
+    page.getByRole('heading', { name: 'Fall 2021 records' }),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole('link', {
+        name: /^Salary distribution, .+, Fall 2021$/,
+      })
+      .first(),
+  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
   await page.goto('/people?q=smith')

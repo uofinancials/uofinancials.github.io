@@ -112,7 +112,7 @@ export const TOTAL_SERIES = 'Total, estimated (rate × appointment)'
 function jobKeys(records: FallRecord[]): string[] {
   const seen = new Map<string, number>()
   return records.map((record) => {
-    const key = `${titleOf(record)} · ${record.payDepartment.name} · ${record.jobType}`
+    const key = `${record.jobType} · ${record.payDepartment.name}`
     const count = (seen.get(key) ?? 0) + 1
     seen.set(key, count)
     return count === 1 ? key : `${key} (${count})`

@@ -71,16 +71,16 @@ test('a year the name lacks falls back to its latest census', () => {
   expect(resolvePersonYear(ann(), undefined)).toBe(2025)
 })
 
-test('each job is a line of published rates, gapped where absent, with the total of rate × appointment', () => {
+test('each job type and pay department is a line of published rates, gapped where absent, with the total of rate × appointment', () => {
   const { years, series } = personRates(ann())
   expect(years).toEqual([2020, 2021, 2022, 2023, 2025])
   expect(series).toEqual([
     {
-      key: 'Office Specialist 2 · Dept · Primary',
+      key: 'Primary · Dept',
       values: [5_000_000, 5_500_000, 6_600_000, 6_600_000, 7_000_000],
     },
     {
-      key: 'Instructor · Physics · Overload',
+      key: 'Overload · Physics',
       values: [null, null, null, 1_000_000, null],
     },
     {
@@ -90,7 +90,7 @@ test('each job is a line of published rates, gapped where absent, with the total
   ])
 })
 
-test('two same-titled jobs in one year stay separate lines', () => {
+test('two jobs of one type in one department and year stay separate lines', () => {
   const [person] = indexPeople([
     census(2025, [
       classifiedJob({ jobType: 'Secondary', annualSalaryRateCents: 100 }),
@@ -98,8 +98,8 @@ test('two same-titled jobs in one year stay separate lines', () => {
     ]),
   ])
   expect(person && personRates(person).series.map(({ key }) => key)).toEqual([
-    'Office Specialist 2 · Dept · Secondary',
-    'Office Specialist 2 · Dept · Secondary (2)',
+    'Secondary · Dept',
+    'Secondary · Dept (2)',
     TOTAL_SERIES,
   ])
 })
