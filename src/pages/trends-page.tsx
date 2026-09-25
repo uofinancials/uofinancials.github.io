@@ -34,6 +34,7 @@ const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, t
 
 const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
   Executives: `Unclassified jobs in the categories ${publishedCategoriesOf('Executives').join(', ')}, or with the OA salary grade ${EXECUTIVE_GRADE} whatever their category, a grade UO publishes from Fall 2016. Opened, the jobs placed by the grade alone are one line, “${EXEC_OTHER_CATEGORY}”.`,
+  'Admins and professionals': `Unclassified jobs in the categories ${publishedCategoriesOf('Admins and professionals').join(', ')}, without the ${EXECUTIVE_GRADE} grade.`,
   'Classified temporaries':
     'Classified jobs with a TS position class, or none (Fall 2015). Their published rates are annualised hourly rates, so they count in FTE only.',
   Overloads:
