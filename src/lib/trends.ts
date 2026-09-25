@@ -27,13 +27,19 @@ export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
 
 const PERCENT = 100
 
-/** The `p`th percentile of ascending cents, interpolated between ranks and rounded to the cent. */
-export function percentileCents(sorted: number[], p: number): number | null {
+/** The `p`th percentile of ascending values, interpolated between ranks. */
+export function percentileOf(sorted: number[], p: number): number | null {
   const rank = ((sorted.length - 1) * p) / PERCENT
   const lower = sorted[Math.floor(rank)]
   const upper = sorted[Math.ceil(rank)]
   if (lower === undefined || upper === undefined) return null
-  return Math.round(lower + (upper - lower) * (rank - Math.floor(rank)))
+  return lower + (upper - lower) * (rank - Math.floor(rank))
+}
+
+/** The `p`th percentile of ascending cents, rounded to the cent. */
+export function percentileCents(sorted: number[], p: number): number | null {
+  const value = percentileOf(sorted, p)
+  return value === null ? null : Math.round(value)
 }
 
 export function medianRateCents(rates: number[]): number | null {

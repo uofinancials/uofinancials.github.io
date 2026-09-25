@@ -32,7 +32,7 @@ export type Distribution = {
   percentiles: Record<Percentile, number> | null
 }
 
-function emptyCounts(): Record<TrendGroup, number> {
+export function emptyCounts(): Record<TrendGroup, number> {
   return {
     Faculty: 0,
     'Admins and professionals': 0,
@@ -154,7 +154,9 @@ export function binRange({ floorCents, ceilingCents }: SalaryBin): string {
 
 /** Each group's count per bin, for the groups with a job, with each group's place in `TREND_GROUPS`. */
 export function stackedCounts(
-  distribution: Distribution,
+  distribution: Pick<Distribution, 'counts'> & {
+    bins: { counts: Record<TrendGroup, number> }[]
+  },
 ): { key: TrendGroup; values: number[]; position: number }[] {
   return TREND_GROUPS.flatMap((group, position) =>
     distribution.counts[group] === 0

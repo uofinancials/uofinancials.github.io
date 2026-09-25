@@ -24,7 +24,12 @@ test('links an identical name whose one primary job keeps its pay department', (
     ]),
   ])
   expect(links).toEqual([
-    { name: 'Doe, Ann', fromYear: 2020, payDepartmentCode: '111111' },
+    {
+      name: 'Doe, Ann',
+      fromYear: 2020,
+      from: job('Doe, Ann', '111111'),
+      to: job('Doe, Ann', '111111'),
+    },
   ])
 })
 
@@ -56,7 +61,7 @@ test('links only consecutive years and exact names', () => {
     census(2022, [job('Doe, Ann', '111111')]),
     census(2023, [job('Doe, Ann', '111111'), job('McGee, Cy', '111111')]),
   ])
-  expect(links).toEqual([
-    { name: 'Doe, Ann', fromYear: 2022, payDepartmentCode: '111111' },
+  expect(links.map(({ name, fromYear }) => ({ name, fromYear }))).toEqual([
+    { name: 'Doe, Ann', fromYear: 2022 },
   ])
 })
