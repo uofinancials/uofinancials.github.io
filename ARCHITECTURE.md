@@ -57,7 +57,8 @@ flowchart LR
 - `src/app.tsx` - the page shell.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files.
-- `src/lib` - shared helpers.
+- `src/lib` - shared helpers and the person links between consecutive Fall
+  years.
 
 ### Import (`scripts/`)
 

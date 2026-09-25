@@ -44,3 +44,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   administration, 2013-2026, each citing its agreement or UO page, section, and
   page, with percentages as published. Ten years-and-groups with no public
   source are listed as gaps.
+- Person links between consecutive Fall Census years: a name is linked to the
+  same name in the next year when each year lists exactly one primary job for it
+  and both are in the same pay department. The links are computed, not published
+  by UO; the committed 2014-2025 data (retrieved 2026-09-24) yields 52,880.
