@@ -19,6 +19,7 @@ import {
 } from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import { indexPeople } from '../src/lib/person-lookup.ts'
+import { runCards } from '../src/lib/person-summary.ts'
 import { buildDistribution } from '../src/lib/salary-distribution.ts'
 import { buildTrends } from '../src/lib/trends.ts'
 import {
@@ -55,7 +56,9 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const runs = people.flatMap((person) => person.runs)
     expect(people).toHaveLength(15_916)
     expect(runs).toHaveLength(19_593)
-    expect(runs.filter(({ isLinked }) => isLinked)).toHaveLength(13_189)
+    const linked = runs.filter(({ isLinked }) => isLinked)
+    expect(linked).toHaveLength(13_189)
+    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(13_189)
   },
 )
 

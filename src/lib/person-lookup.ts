@@ -4,7 +4,11 @@ import { findPersonLinks } from './person-links.ts'
 export const MIN_QUERY_CHARS = 2
 export const MAX_MATCHES = 50
 
-export type PersonYear = { year: number; records: FallRecord[] }
+export type PersonYear = {
+  year: number
+  censusDate: string
+  records: FallRecord[]
+}
 
 /** Consecutive census years of one name; `isLinked` when a computed person link joins each pair. */
 export type PersonRun = { years: PersonYear[]; isLinked: boolean }
@@ -44,21 +48,19 @@ function linkedYearsByName(years: FallYear[]): Map<string, Set<number>> {
   return linked
 }
 
-function recordsByNameAndYear(
-  years: FallYear[],
-): Map<string, Map<number, FallRecord[]>> {
-  const byName = new Map<string, Map<number, FallRecord[]>>()
+function recordsByNameAndYear(years: FallYear[]): Map<string, PersonYear[]> {
+  const byName = new Map<string, PersonYear[]>()
   const ordered = [...years].sort((a, b) =>
     a.censusDate.localeCompare(b.censusDate),
   )
   for (const { censusDate, records } of ordered) {
     const year = censusYearOf(censusDate)
     for (const record of records) {
-      const byYear = byName.get(record.name) ?? new Map<number, FallRecord[]>()
-      byName.set(record.name, byYear)
-      const yearRecords = byYear.get(year)
-      if (yearRecords) yearRecords.push(record)
-      else byYear.set(year, [record])
+      const personYears = byName.get(record.name) ?? []
+      byName.set(record.name, personYears)
+      const current = personYears.at(-1)
+      if (current?.year === year) current.records.push(record)
+      else personYears.push({ year, censusDate, records: [record] })
     }
   }
   return byName
@@ -75,11 +77,7 @@ function latestPayDepartment(years: PersonYear[]): string {
 export function indexPeople(years: FallYear[]): Person[] {
   const linked = linkedYearsByName(years)
   return [...recordsByNameAndYear(years)]
-    .map(([name, byYear]) => {
-      const personYears = [...byYear].map(([year, records]) => ({
-        year,
-        records,
-      }))
+    .map(([name, personYears]) => {
       const linkedFrom = linked.get(name) ?? new Set()
       return {
         name,

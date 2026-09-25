@@ -11,6 +11,22 @@ function department({ code, name }: { code: string | null; name: string }) {
   return code === null ? name : `${name} (${code})`
 }
 
+/** The job title, from whichever report published the record. */
+export function titleOf(record: FallRecord): string {
+  return record.kind === 'classified' ? record.jobTitle : record.academicTitle
+}
+
+function positionClassOf(record: FallRecord): string | null {
+  if (record.kind !== 'classified' || !record.positionClass) return null
+  const { code, title } = record.positionClass
+  return title === null ? code : `${code} ${title}`
+}
+
+/** A classified job's position class or an unclassified job's rank, as published. */
+export function classOrRankOf(record: FallRecord): string | null {
+  return record.kind === 'classified' ? positionClassOf(record) : record.rank
+}
+
 function unclassifiedField(
   label: string,
   key: 'rank' | 'rankDate' | 'apptStatus' | 'primaryActivity' | 'oaSalaryGrade',
@@ -28,21 +44,8 @@ const FIELDS: Field[] = [
     value: (record) =>
       record.kind === 'classified' ? 'Classified' : 'Unclassified',
   },
-  {
-    label: 'Title',
-    value: (record) =>
-      record.kind === 'classified' ? record.jobTitle : record.academicTitle,
-  },
-  {
-    label: 'Position class',
-    kind: 'classified',
-    value: (record) =>
-      record.kind === 'classified' && record.positionClass
-        ? [record.positionClass.code, record.positionClass.title]
-            .filter((part) => part !== null)
-            .join(' ')
-        : null,
-  },
+  { label: 'Title', value: titleOf },
+  { label: 'Position class', kind: 'classified', value: positionClassOf },
   unclassifiedField('Rank', 'rank'),
   unclassifiedField('Rank date', 'rankDate'),
   unclassifiedField('Appointment status', 'apptStatus'),
