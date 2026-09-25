@@ -60,12 +60,14 @@ flowchart LR
 - `src/pages` - one component per route.
 - `src/components` - the shared layout with the independence notice and error
   report link, the source citation caption, the loading and error states, the
-  totals chart and table, and the trends chart, table, and controls.
+  select and radio fields, the totals chart and table, the line chart, the
+  trends table and controls, and the department budget and jobs sections.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
-  cross-year employee groups and their trends, the trends page's URL state,
+  cross-year employee groups and their trends, budget account groups, a
+  department's budget and jobs, the department index, each page's URL state,
   source citations, number formatting, and the person links between consecutive
   Fall years.
 - `src/test` - shared test fixtures.
@@ -104,7 +106,7 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  sources page, and `404.html`.
+  departments, sources page, and `404.html`.
 
 ## Pages
 
@@ -114,6 +116,14 @@ flowchart LR
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
   every Fall census, with the view held in the URL; driven by `src/lib` groups
   and trends over every Fall year.
+- `/departments` - each college or VP area in the latest census's budget year,
+  with its budget units and the latest census's pay departments, filtered by
+  name or code; driven by the `src/lib` department index over one Fall year and
+  one budget year.
+- `/departments/$code` - one code's budget by account group or fund type for
+  every budget year, its jobs by group for every Fall census, its jobs by rank
+  and position class in one census, and for an area how its jobs were placed;
+  driven by the `src/lib` department modules over every Fall and budget year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.

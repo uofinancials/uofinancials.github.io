@@ -84,3 +84,22 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   caption cites the census reports for the years shown.
 - Fall 2015 classified temporaries, which the 2015 report publishes without a
   position class, are recognised as temporaries.
+- A Departments page (`/departments`) listing each college or VP area in the
+  FY26 budget with its budget units and the Fall 2025 pay departments placed in
+  it, each with its FY26 budget and Fall 2025 job count, and a filter by name or
+  code.
+- A page per department code (`/departments/<code>`). It shows the code's budget
+  for FY21-FY27 by account group or fund type, with every account type in a
+  table. The budget is UO's Total Expenditure Budget as published, labelled as
+  including reserves and transfers and excluding sponsored funds; FY26 and FY27
+  are labelled with their posting period.
+- The same page shows the code's jobs from Fall 2014 to 2025 by group, as on the
+  Trends page, and one census's jobs by rank and position class. An area's jobs
+  are those the site places in it, with a table of how each year's jobs were
+  placed. The budget and the census are joined only where their codes match
+  exactly, and the page says when a source publishes nothing under the code.
+- To keep the page an aggregate, spend and median salary rate are left blank for
+  any figure covering fewer than three jobs, and ranks or classes with fewer
+  than three jobs are shown together.
+- The department page's view is kept in its link: the budget breakdown, the
+  measure, classified or unclassified staff, and the census of the class table.
