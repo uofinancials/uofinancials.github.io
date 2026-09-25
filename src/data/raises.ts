@@ -10,6 +10,14 @@ function basisPointsOf(percent: string): number {
   return Number(whole + fraction.padEnd(2, '0'))
 }
 
+const employeeGroupSchema = z.enum([
+  'United Academics',
+  'SEIU 503',
+  'Teamsters 206',
+  'UOPA',
+  'Officers of Administration',
+])
+
 /** Each group's populations an across-the-board term can name; `all` is every one of them. */
 export const GROUP_POPULATIONS = {
   'United Academics': [
@@ -22,15 +30,10 @@ export const GROUP_POPULATIONS = {
   'Teamsters 206': [],
   UOPA: ['police-officers', 'dispatchers', 'community-service-officers'],
   'Officers of Administration': [],
-} as const
-
-const employeeGroupSchema = z.enum([
-  'United Academics',
-  'SEIU 503',
-  'Teamsters 206',
-  'UOPA',
-  'Officers of Administration',
-])
+} as const satisfies Record<
+  z.infer<typeof employeeGroupSchema>,
+  readonly string[]
+>
 
 const populationSchema = z.enum([
   'all',
@@ -87,15 +90,6 @@ const raiseTermSchema = z
   .refine(
     (term) =>
       term.kind !== 'across-the-board' ||
-      (term.effectiveDate === null) !== (term.effectiveBetween === null),
-    {
-      message:
-        'an across-the-board term has an effective date or, without one, the window it fell in',
-    },
-  )
-  .refine(
-    (term) =>
-      term.kind !== 'across-the-board' ||
       term.populations.every(
         (population) =>
           population === 'all' ||
@@ -105,11 +99,25 @@ const raiseTermSchema = z
       ),
     { message: "an across-the-board term names only its group's populations" },
   )
-  .transform((term) =>
-    term.kind === 'across-the-board'
-      ? { ...term, basisPoints: basisPointsOf(term.percent) }
-      : term,
-  )
+  .transform((term, context) => {
+    if (term.kind !== 'across-the-board') return term
+    const from = term.effectiveDate ?? term.effectiveBetween?.from
+    const to = term.effectiveDate ?? term.effectiveBetween?.to
+    if (!from || !to || (term.effectiveDate && term.effectiveBetween)) {
+      context.issues.push({
+        code: 'custom',
+        input: term,
+        message:
+          'an across-the-board term has an effective date or, without one, the window it fell in',
+      })
+      return z.NEVER
+    }
+    return {
+      ...term,
+      basisPoints: basisPointsOf(term.percent),
+      effective: { from, to },
+    }
+  })
 
 export const raiseTermsSchema = z.strictObject({
   terms: z.array(raiseTermSchema),

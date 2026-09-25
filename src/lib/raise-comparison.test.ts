@@ -11,6 +11,7 @@ import {
   acrossTheBoard,
   censusWindow,
   raiseComparison,
+  viewRaiseComparison,
 } from './raise-comparison'
 import { RAISE_ROWS } from './raise-groups'
 
@@ -30,6 +31,7 @@ function term(
     amountCents: null,
     effectiveDate,
     effectiveBetween: null,
+    effective: { from: effectiveDate, to: effectiveDate },
     note: null,
     source: {
       url: 'https://example.org/cba.pdf',
@@ -73,6 +75,7 @@ test('a term applies to the populations it names, and a dateless one by its wind
       ...term('United Academics', 450, '2025-04-01'),
       effectiveDate: null,
       effectiveBetween: { from: '2025-04-01', to: '2025-05-01' },
+      effective: { from: '2025-04-01', to: '2025-05-01' },
     },
     term('United Academics', 325, '2025-09-01', [
       'tenure-related',
@@ -135,4 +138,33 @@ test('each row has its median beside the increase and the difference; rows with 
   expect(comparison.gaps.map(({ employeeGroup }) => employeeGroup)).toEqual([
     'SEIU 503',
   ])
+})
+
+test('the view comparison keeps one pair year and leaves out the opened group, but not the other filters', () => {
+  const years = [2023, 2024, 2025].map((year) =>
+    census(
+      year,
+      [0, 1, 2].map((person) => classifiedJob({ name: `P ${person}` })),
+    ),
+  )
+  const compare = (
+    filter: Partial<Parameters<typeof viewRaiseComparison>[0]['filter']>,
+  ) =>
+    viewRaiseComparison({
+      pairs: continuingPairs(years),
+      filter: {
+        kind: 'all',
+        group: 'Faculty',
+        dept: null,
+        position: null,
+        from: 2014,
+        to: 2025,
+        ...filter,
+      },
+      fromYear: 2024,
+      years,
+      raises: { terms: SEIU_TERMS, gaps: [] },
+    })?.rows[0]?.jobs
+  expect(compare({})).toBe(3)
+  expect(compare({ kind: 'unclassified' })).toBe(0)
 })

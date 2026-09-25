@@ -1,14 +1,14 @@
-import type { FallYear } from '../data/fall.ts'
+import { censusYearOf, type FallYear } from '../data/fall.ts'
 import type {
   AcrossTheBoardTerm,
   RaiseTerm,
   RaiseTerms,
 } from '../data/raises.ts'
-import type { ContinuingPair } from './pay-changes.ts'
+import { type ContinuingPair, filterPairs } from './pay-changes.ts'
 import { RAISE_ROWS, type RaiseRow } from './raise-groups.ts'
-import { MIN_JOBS_SHOWN, medianOf } from './trends.ts'
+import { MIN_JOBS_SHOWN, medianOf, type TrendFilter } from './trends.ts'
 
-export const BASIS_POINTS_PER_UNIT = 10_000
+const BASIS_POINTS_PER_UNIT = 10_000
 
 /** A pair's census dates: a term counts if it took effect after `after` and on or before `through`. */
 export type CensusWindow = { after: string; through: string }
@@ -18,26 +18,25 @@ export function censusWindow(
   fromYear: number,
 ): CensusWindow | null {
   const dateOf = (year: number) =>
-    years.find(({ censusDate }) => censusDate.startsWith(`${year}-`))
+    years.find(({ censusDate }) => censusYearOf(censusDate) === year)
       ?.censusDate
   const after = dateOf(fromYear)
   const through = dateOf(fromYear + 1)
   return after && through ? { after, through } : null
 }
 
-/** The compounded across-the-board increase, in basis points, and the terms it compounds. */
+/** The compounded across-the-board increase, in basis points and as a fraction, and the terms it compounds. */
 export type AcrossTheBoard = {
   basisPoints: number
+  ratio: number
   terms: AcrossTheBoardTerm[]
 }
 
 function isInWindow(
-  { effectiveDate, effectiveBetween }: AcrossTheBoardTerm,
+  { effective }: AcrossTheBoardTerm,
   { after, through }: CensusWindow,
 ): boolean {
-  const first = effectiveDate ?? effectiveBetween?.from
-  const last = effectiveDate ?? effectiveBetween?.to
-  return !!first && !!last && first > after && last <= through
+  return effective.from > after && effective.to <= through
 }
 
 /** `null` when no across-the-board term for the row took effect in the window. */
@@ -55,7 +54,12 @@ export function acrossTheBoard(
       isInWindow(term, window),
   )
   if (used.length === 0) return null
-  return { basisPoints: compoundBasisPoints(used), terms: used }
+  const basisPoints = compoundBasisPoints(used)
+  return {
+    basisPoints,
+    ratio: basisPoints / BASIS_POINTS_PER_UNIT,
+    terms: used,
+  }
 }
 
 /** Exact in integers, then rounded half up to the basis point. */
@@ -105,10 +109,7 @@ function compareRow(
     jobs: ratios.length,
     median,
     acrossTheBoard: increase,
-    other:
-      median !== null && increase
-        ? median - increase.basisPoints / BASIS_POINTS_PER_UNIT
-        : null,
+    other: median !== null && increase ? median - increase.ratio : null,
   }
 }
 
@@ -133,4 +134,28 @@ export function raiseComparison(
       rows.some(({ row }) => row.group === employeeGroup),
     ),
   }
+}
+
+/** The comparison for one pair year of the view; raise groups cut across the Trends groups, so the filter's group is not applied. `null` without both censuses. */
+export function viewRaiseComparison({
+  pairs,
+  filter,
+  fromYear,
+  years,
+  raises,
+}: {
+  pairs: ContinuingPair[]
+  filter: TrendFilter
+  fromYear: number
+  years: FallYear[]
+  raises: RaiseTerms
+}): RaiseComparison | null {
+  const window = censusWindow(years, fromYear)
+  if (!window) return null
+  const pairYear = pairs.filter((pair) => pair.fromYear === fromYear)
+  return raiseComparison(
+    filterPairs(pairYear, { ...filter, group: null }),
+    raises,
+    window,
+  )
 }

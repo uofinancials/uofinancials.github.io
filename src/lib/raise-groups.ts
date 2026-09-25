@@ -92,6 +92,14 @@ function unclassifiedRow(record: FallUnclassified): RaiseRow | null {
   return rank.includes('Research') ? UA_RESEARCH : UA_INSTRUCTIONAL
 }
 
+/** How `raiseRowOf` places a job, for the page's method text. */
+export const RAISE_ROW_METHOD =
+  "Each continuing job's raise group is this site's estimate from the earlier job's published class, rank, OA salary grade, and title, since UO publishes no bargaining unit: position class J is Teamsters 206; police officer, campus dispatcher, and community service officer classes are UOPA from Fall 2017; other classified jobs are SEIU 503; ranked unclassified jobs are United Academics, split by a pro tem, visiting, retired, or emeritus title, then tenure status, then a research rank; unranked jobs with an OA grade are officers of administration. Supervisors, law, and EC CARES faculty, whom the United Academics unit excludes, cannot be told apart and are counted in it."
+
+/** The jobs `raiseRowOf` places in no row. */
+export const UNPLACED_JOBS =
+  'executives, coaches, postdoctoral scholars, police sergeants, and unclassified jobs with neither a rank nor an OA salary grade'
+
 /** The raise row a job is estimated to be in, from its class, rank, grade, and title; `null` for temporaries, executives, coaches, postdoctoral scholars, and jobs with no rank or OA grade. */
 export function raiseRowOf(
   record: FallRecord,

@@ -25,10 +25,7 @@ function parse(term: object) {
 
 test('an across-the-board percent is also read as whole basis points', () => {
   const terms = ['3.8', '6.50', '10', '1.62'].map((percent) => {
-    const [term] = raiseTermsSchema.parse({
-      terms: [{ ...TERM, percent }],
-      gaps: [],
-    }).terms
+    const term = parse({ ...TERM, percent }).data?.terms[0]
     return term?.kind === 'across-the-board' && term.basisPoints
   })
   expect(terms).toEqual([380, 650, 1000, 162])
@@ -41,10 +38,18 @@ test("a term names only its own group's populations, and a dateless one its wind
   expect(parse({ ...TERM, populations: [] }).success).toBe(false)
   const dateless = { ...TERM, effectiveDate: null, note: 'Ratified in April.' }
   expect(parse(dateless).success).toBe(false)
+  const windowed = parse({
+    ...dateless,
+    effectiveBetween: { from: '2025-04-01', to: '2025-05-01' },
+  }).data?.terms[0]
+  expect(windowed?.kind === 'across-the-board' && windowed.effective).toEqual({
+    from: '2025-04-01',
+    to: '2025-05-01',
+  })
   expect(
     parse({
-      ...dateless,
+      ...TERM,
       effectiveBetween: { from: '2025-04-01', to: '2025-05-01' },
     }).success,
-  ).toBe(true)
+  ).toBe(false)
 })

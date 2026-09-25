@@ -15,22 +15,17 @@ import {
   formatPoints,
 } from '@/lib/format'
 import { pairLabel } from '@/lib/pay-changes'
-import {
-  BASIS_POINTS_PER_UNIT,
-  type RaiseComparison,
-} from '@/lib/raise-comparison'
+import type { RaiseComparison } from '@/lib/raise-comparison'
+import { RAISE_ROW_METHOD, UNPLACED_JOBS } from '@/lib/raise-groups'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const NO_TERM = 'No term recorded'
 
-const COMPUTED = `each continuing job's raise group is this site's estimate from the earlier job's published class, rank, OA salary grade, and title, since UO publishes no bargaining unit: position class J is Teamsters 206; police officer, campus dispatcher, and community service officer classes are UOPA from Fall 2017; other classified jobs are SEIU 503; ranked unclassified jobs are United Academics, split by a pro tem, visiting, retired, or emeritus title, then tenure status, then a research rank; unranked jobs with an OA grade are officers of administration. Supervisors, law, and EC CARES faculty, whom the United Academics unit excludes, cannot be told apart and are counted in it. The across-the-board increase compounds every cited across-the-board term for the row that took effect after the earlier census date and on or before the later one; which terms apply to which row is this site's reading of each term's published scope. A retroactive term may reach the census a pair later. The part other than across-the-board is the median change less the across-the-board increase, in percentage points: an estimate of merit, step, equity, promotion, and other increases for the group, never for a person. Medians are shown for ${MIN_JOBS_SHOWN} or more jobs.`
+const COMPUTED = `${RAISE_ROW_METHOD} The across-the-board increase compounds every cited across-the-board term for the row that took effect after the earlier census date and on or before the later one; which terms apply to which row is this site's reading of each term's published scope. A retroactive term may reach the census a pair later. The part other than across-the-board is the median change less the across-the-board increase, in percentage points: an estimate of merit, step, equity, promotion, and other increases for the group, never for a person. Medians are shown for ${MIN_JOBS_SHOWN} or more jobs.`
 
-function effectiveOf({ effectiveDate, effectiveBetween }: AcrossTheBoardTerm) {
-  if (effectiveDate) return effectiveDate
-  return effectiveBetween
-    ? `${effectiveBetween.from} to ${effectiveBetween.to}`
-    : ''
+function effectiveOf({ effective: { from, to } }: AcrossTheBoardTerm) {
+  return from === to ? from : `${from} to ${to}`
 }
 
 function TermsTable({ terms }: { terms: AcrossTheBoardTerm[] }) {
@@ -125,11 +120,7 @@ export function RaiseComparisonSection({
                 {formatOrBlank(median, formatChange)}
               </TableCell>
               <TableCell className={NUMBER_CELL}>
-                {acrossTheBoard
-                  ? formatChange(
-                      acrossTheBoard.basisPoints / BASIS_POINTS_PER_UNIT,
-                    )
-                  : NO_TERM}
+                {acrossTheBoard ? formatChange(acrossTheBoard.ratio) : NO_TERM}
               </TableCell>
               <TableCell className={NUMBER_CELL}>
                 {formatOrBlank(other, formatPoints)}
@@ -139,9 +130,8 @@ export function RaiseComparisonSection({
         </TableBody>
       </Table>
       <p className="text-sm text-muted-foreground">
-        {formatCount(unplaced)} continuing jobs are in no raise group:
-        executives, coaches, postdoctoral scholars, police sergeants, and
-        unclassified jobs with neither a rank nor an OA salary grade.
+        {formatCount(unplaced)} continuing jobs are in no raise group:{' '}
+        {UNPLACED_JOBS}.
       </p>
       {terms.length > 0 && (
         <>
