@@ -1,4 +1,4 @@
-import type { FallRecord, FallYear } from '../data/fall.ts'
+import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
 
 /**
  * A computed link between a name's records in `fromYear` and `fromYear + 1`:
@@ -9,10 +9,6 @@ export type PersonLink = {
   name: string
   fromYear: number
   payDepartmentCode: string
-}
-
-function censusYear(year: FallYear): number {
-  return Number(year.censusDate.slice(0, 4))
 }
 
 function primaryPayDepartments(
@@ -32,7 +28,7 @@ function primaryPayDepartments(
 export function findPersonLinks(years: FallYear[]): PersonLink[] {
   const departmentsByYear = new Map(
     years.map((year) => [
-      censusYear(year),
+      censusYearOf(year.censusDate),
       primaryPayDepartments(year.records),
     ]),
   )

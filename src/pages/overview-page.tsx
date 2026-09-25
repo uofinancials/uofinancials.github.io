@@ -7,10 +7,11 @@ import { TotalsTable } from '@/components/totals-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { budgetYearQuery, fallYearQuery } from '@/data/queries'
 import { formatCount, formatDollars, formatFte } from '@/lib/format'
-import { buildCensusOverview, type CensusOverview } from '@/lib/overview'
-
-const SPEND_METHOD =
-  'salary spend is the published annual salary rate x FTE, summed over jobs; jobs on unpaid leave count as zero and classified temporaries are left out. It estimates annual pay; it is not payroll.'
+import {
+  buildCensusOverview,
+  type CensusOverview,
+  SPEND_METHOD,
+} from '@/lib/overview'
 
 function Figure({ label, value }: { label: string; value: string }) {
   return (

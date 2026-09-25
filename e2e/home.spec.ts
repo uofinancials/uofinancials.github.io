@@ -7,7 +7,7 @@ test('home page loads', async ({ page }) => {
   await expect(page).toHaveTitle(/^UO Financials \| An independent look/)
 })
 
-for (const path of ['/', '/sources', '/no-such-page']) {
+for (const path of ['/', '/trends', '/sources', '/no-such-page']) {
   test(`${path} states it is not affiliated with UO`, async ({ page }) => {
     await page.goto(path)
     await expect(
@@ -94,6 +94,62 @@ test('the overview does not scroll sideways at 360px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 })
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+})
+
+test('trends show every census by group, and a group opens into its published categories', async ({
+  page,
+}) => {
+  await page.goto('/trends')
+  const main = page.getByRole('main')
+  await expect(
+    page.getByRole('heading', {
+      name: 'Salary spend by group, Fall 2014-2025',
+    }),
+  ).toBeVisible()
+  await expect(main).toContainText('$295,679,251')
+  await expect(main).toContainText('$504,812,068')
+  await expect(
+    page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', { name: 'Classified temporaries' }),
+  ).toHaveCount(0)
+  await page.getByRole('radio', { name: 'FTE' }).check()
+  await expect(page).toHaveURL(/metric=fte/)
+  await expect(
+    page.getByRole('columnheader', { name: 'Classified temporaries' }),
+  ).toBeVisible()
+  await page
+    .getByRole('combobox', { name: 'Group' })
+    .selectOption('Admins and professionals')
+  await expect(
+    page.getByRole('columnheader', { name: 'Senior Administrators' }),
+  ).toBeVisible()
+  await page.getByRole('combobox', { name: 'From' }).selectOption('2018')
+  await expect(
+    page.getByRole('columnheader', { name: 'Exec/Admin/Mgr' }),
+  ).toHaveCount(0)
+  await page.reload()
+  await expect(
+    page.getByRole('heading', {
+      name: 'FTE by EEO category in Admins and professionals, Fall 2018-2025',
+    }),
+  ).toBeVisible()
+})
+
+test('trends lines can be hidden and the page does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/trends')
+  const lines = page
+    .getByRole('figure', { name: /Salary spend by group/ })
+    .locator('.recharts-line')
+  await expect(lines).toHaveCount(6)
+  await page.getByRole('checkbox', { name: 'Faculty' }).uncheck()
+  await expect(lines).toHaveCount(5)
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })

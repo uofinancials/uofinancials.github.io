@@ -71,3 +71,16 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   census's fiscal year. Where UO does not publish a pay department's area, the
   site assigns it from the department's name, or by hand for 26 Fall 2025
   departments, and the page says how many jobs each way covers.
+- A Trends page (`/trends`) showing salary spend, FTE, and median salary rate
+  (the median published rate of primary jobs) for every Fall census from 2014 to
+  2025, as a line chart with a year-by-year table. UO's EEO categories,
+  restructured in 2018, 2019, and 2021, are mapped to seven groups that mean the
+  same jobs in every year, and the page shows the mapping. Classified
+  temporaries appear in FTE only; dollars are as published, not adjusted for
+  inflation.
+- The Trends view is set from the page and kept in its link: the measure, one
+  group opened into its categories as UO publishes them, classified or
+  unclassified staff, the range of years, and which lines are hidden. One source
+  caption cites the census reports for the years shown.
+- Fall 2015 classified temporaries, which the 2015 report publishes without a
+  position class, are recognised as temporaries.

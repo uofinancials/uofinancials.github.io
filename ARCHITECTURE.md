@@ -59,14 +59,15 @@ flowchart LR
   loading, error, and not-found pages.
 - `src/pages` - one component per route.
 - `src/components` - the shared layout with the independence notice and error
-  report link, the source citation caption, the loading and error states, and
-  the totals chart and table.
+  report link, the source citation caption, the loading and error states, the
+  totals chart and table, and the trends chart, table, and controls.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
-- `src/lib` - census totals by group, college or VP area assignment, source
-  citations, number formatting, and the person links between consecutive Fall
-  years.
+- `src/lib` - census totals by group, college or VP area assignment, the
+  cross-year employee groups and their trends, the trends page's URL state,
+  source citations, number formatting, and the person links between consecutive
+  Fall years.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -102,14 +103,17 @@ flowchart LR
 
 ### End-to-end tests (`e2e/`)
 
-- `e2e/home.spec.ts` - the built site's routes, notice, sources page, and
-  `404.html`.
+- `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
+  sources page, and `404.html`.
 
 ## Pages
 
 - `/` - the overview: people, FTE, and salary spend for the latest Fall census,
   by EEO category and by college or VP area; driven by `src/lib` totals and area
   assignment over one Fall year and one budget year.
+- `/trends` - salary spend, FTE, and median salary rate by employee group for
+  every Fall census, with the view held in the URL; driven by `src/lib` groups
+  and trends over every Fall year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.

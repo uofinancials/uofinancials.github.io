@@ -15,6 +15,15 @@ export function SiteLayout() {
             <ul className="flex gap-4 text-sm">
               <li>
                 <Link
+                  to="/trends"
+                  className="text-muted-foreground hover:text-foreground"
+                  activeProps={{ className: 'text-foreground' }}
+                >
+                  Trends
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/sources"
                   className="text-muted-foreground hover:text-foreground"
                   activeProps={{ className: 'text-foreground' }}
