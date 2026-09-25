@@ -73,7 +73,8 @@ flowchart LR
   distribution, each page's URL state, source citations, number formatting, the
   person links between consecutive Fall years, the person lookup (name index,
   name matching, linked runs, and a record's published fields), and a person's
-  computed figures, rates by job, and job history.
+  computed figures, rates by job, job history, and the class or rank medians
+  beside them.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)

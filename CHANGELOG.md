@@ -128,7 +128,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     primary job, the primary job's rate change and its average yearly change
     (leaving out years whose appointment or term changed);
   - a chart and table of each job's published annual salary rate by census, a
-    job being its job type and pay department;
+    job being its job type and pay department, beside the computed median rate
+    of the primary job's position class or rank in the same census and term
+    (class number whatever its letter prefix, rank, or for unranked jobs the OA
+    salary grade; primary jobs, temporaries left out, three jobs or more);
   - census tabs, each with every field the report publishes for that year's
     jobs, its citation, and links to the pay department's page and salary
     distribution and to the salary distribution of each job's position class or
