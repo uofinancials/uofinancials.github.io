@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { staffKindSchema } from '../data/fall.ts'
-import { type JobFilter, TERMS } from './salary-distribution.ts'
+import { orgCode } from '../data/budget.ts'
+import { type FallRecord, staffKindSchema } from '../data/fall.ts'
+import { type DepartmentCensus, departmentYears } from './department-jobs.ts'
+import { filterJobs, type JobFilter, TERMS } from './salary-distribution.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
-
-const ORG_CODE = /^[0-9A-Z]{6}$/
 
 /** The salaries page's URL search params; a malformed value falls back to its default. */
 export const salariesSearchSchema = z.object({
@@ -14,7 +14,13 @@ export const salariesSearchSchema = z.object({
     .union([z.literal(TERMS[0]), z.literal(TERMS[1])])
     .optional()
     .catch(undefined),
-  dept: z.string().regex(ORG_CODE).optional().catch(undefined),
+  dept: z
+    .preprocess(
+      (value) => (typeof value === 'number' ? String(value) : value),
+      orgCode,
+    )
+    .optional()
+    .catch(undefined),
 })
 
 export type SalariesSearch = z.infer<typeof salariesSearchSchema>
@@ -37,4 +43,16 @@ export function resolveSalariesView(
     term: search.term ?? null,
     dept: search.dept ?? null,
   }
+}
+
+/** The census's jobs in the view: the department's or area's when one is chosen, then filtered. */
+export function jobsInView(
+  census: DepartmentCensus,
+  view: SalariesView,
+): FallRecord[] {
+  const records =
+    view.dept === null
+      ? census.records
+      : (departmentYears(view.dept, [census]).years[0]?.records ?? [])
+  return filterJobs(records, view, census.year)
 }

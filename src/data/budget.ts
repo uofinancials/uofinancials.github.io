@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const orgCode = z.string().regex(/^[0-9A-Z]{6}$/)
+export const orgCode = z.string().regex(/^[0-9A-Z]{6}$/)
 export const twoDigitCode = z.string().regex(/^\d{2}$/)
 const nonBlank = z.string().min(1)
 const cents = z.number().int()

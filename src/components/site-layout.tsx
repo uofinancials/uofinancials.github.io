@@ -33,6 +33,15 @@ export function SiteLayout() {
               </li>
               <li>
                 <Link
+                  to="/salaries"
+                  className="text-muted-foreground hover:text-foreground"
+                  activeProps={{ className: 'text-foreground' }}
+                >
+                  Salaries
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/sources"
                   className="text-muted-foreground hover:text-foreground"
                   activeProps={{ className: 'text-foreground' }}

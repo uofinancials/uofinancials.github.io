@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
+  binLabel,
+  binRange,
   buildDistribution,
   filterJobs,
   jobKindOf,
@@ -89,4 +91,16 @@ test('jobs filter by group, staff kind, and term', () => {
   expect(
     filterJobs(records, { ...all, group: 'Classified temporaries' }, 2025),
   ).toEqual([temp])
+})
+
+test('bins are labelled by their floor, and the top bin is open', () => {
+  const [first, ...rest] = buildDistribution([]).bins
+  const top = rest.at(-1)
+  if (!first || !top) throw new Error('no bins')
+  expect([binLabel(first), binRange(first)]).toEqual(['$0', '$0 to $9,999'])
+  expect([binLabel(top), binRange(top)]).toEqual([
+    '$250K+',
+    '$250,000 and over',
+  ])
+  expect(rest[4] && binLabel(rest[4])).toBe('$50K')
 })

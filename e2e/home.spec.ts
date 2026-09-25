@@ -12,6 +12,7 @@ for (const path of [
   '/trends',
   '/departments',
   '/departments/223100',
+  '/salaries',
   '/sources',
   '/no-such-page',
 ]) {
@@ -258,4 +259,73 @@ test('a code no source publishes is not found', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Page not found' }),
   ).toBeVisible()
+})
+
+test('salary rates show the latest census by job kind, and each filter is held in the link', async ({
+  page,
+}) => {
+  await page.goto('/salaries')
+  const main = page.getByRole('main')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Salary rates, Fall 2025' }),
+  ).toBeVisible()
+  await expect(main).toContainText('$75,787')
+  await expect(main).toContainText('$9,400,000')
+  await expect(
+    page.getByRole('rowheader', { name: '$250,000 and over' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Fall 2025 Census salary reports' }),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole('figure', { name: /jobs by salary rate/ })
+      .locator('.recharts-bar-rectangle'),
+  ).not.toHaveCount(0)
+  await page.getByRole('combobox', { name: 'Term' }).selectOption('9')
+  await expect(page).toHaveURL(/term=9/)
+  await page.getByRole('combobox', { name: 'Group' }).selectOption('Faculty')
+  await page
+    .getByRole('combobox', { name: 'College or VP area' })
+    .selectOption({ label: 'Arts & Sciences, College of' })
+  await page.getByRole('combobox', { name: 'Fall census' }).selectOption('2014')
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Salary rates, Fall 2014' }),
+  ).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Group' })).toHaveValue(
+    'Faculty',
+  )
+  await expect(
+    page.getByRole('combobox', { name: 'College or VP area' }),
+  ).toHaveValue('222000')
+})
+
+test('a department page links to its salary distribution, and the department filter can be removed', async ({
+  page,
+}) => {
+  await page.goto('/departments/223100?year=2020')
+  await page
+    .getByRole('link', { name: 'Salary distribution, Fall 2020' })
+    .click()
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Salary rates, Fall 2020' }),
+  ).toBeVisible()
+  const main = page.getByRole('main')
+  await expect(main).toContainText('Department: CAS Biology (223100)')
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(main).not.toContainText('Department: CAS Biology')
+  await page.goto('/salaries?dept=000000')
+  await expect(main).toContainText('No jobs for code 000000 in Fall 2025')
+  await expect(main).toContainText('0 jobs match')
+})
+
+test('the salaries page does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/salaries')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
 })

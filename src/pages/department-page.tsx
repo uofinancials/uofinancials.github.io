@@ -140,6 +140,7 @@ export function DepartmentPage() {
       )}
       {hasJobs ? (
         <DepartmentJobsSection
+          code={code}
           trends={trends}
           classRows={classRows}
           placements={jobs.placements}
