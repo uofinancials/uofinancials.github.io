@@ -107,24 +107,38 @@ export function fiscalYearOf(isoDate: string): number {
 }
 
 /**
- * The latest census and the budget year to name its areas with: the fiscal
- * year containing the census, or the latest listed budget before it.
+ * The budget year to name a census's areas with: the fiscal year containing
+ * it, or the latest listed before it, or else the earliest listed.
  */
+export function fiscalYearForCensus(
+  manifest: Manifest,
+  censusDate: string,
+): number {
+  const containing = fiscalYearOf(censusDate)
+  const listed = manifest.budget
+    .map((entry) => entry.fiscalYear)
+    .sort((a, b) => a - b)
+  const fiscalYear =
+    listed.filter((year) => year <= containing).at(-1) ?? listed[0]
+  if (fiscalYear === undefined) {
+    throw new Error(
+      `The manifest lists no budget for the census of ${censusDate}`,
+    )
+  }
+  return fiscalYear
+}
+
+/** The latest census and the budget year to name its areas with. */
 export function selectOverviewSources(manifest: Manifest): {
   census: FallEntry
   fiscalYear: number
 } {
   const [census] = [...manifest.fall].sort((a, b) => b.year - a.year)
   if (!census) throw new Error('The manifest lists no Fall census')
-  const containing = fiscalYearOf(census.censusDate)
-  const [fiscalYear] = manifest.budget
-    .map((entry) => entry.fiscalYear)
-    .filter((year) => year <= containing)
-    .sort((a, b) => b - a)
-  if (fiscalYear === undefined) {
-    throw new Error(`The manifest lists no budget for Fall ${census.year}`)
+  return {
+    census,
+    fiscalYear: fiscalYearForCensus(manifest, census.censusDate),
   }
-  return { census, fiscalYear }
 }
 
 export type CensusOverview = Overview & {

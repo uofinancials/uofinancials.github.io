@@ -136,8 +136,9 @@ test('the overview uses the latest census and the budget of its fiscal year, or 
   expect(() => selected([], [2026])).toThrow(
     'The manifest lists no Fall census',
   )
-  expect(() => selected([2020], [2026])).toThrow(
-    'The manifest lists no budget for Fall 2020',
+  expect(selected([2020], [2027, 2026])).toEqual([2020, 2026])
+  expect(() => selected([2020], [])).toThrow(
+    'The manifest lists no budget for the census of 2020-11-01',
   )
 })
 
