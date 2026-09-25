@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-router'
 import { peopleIndexQuery } from '@/components/people-index-query'
 import { PersonView } from '@/components/person-view'
+import { SourceCitation } from '@/components/source-citation'
 import { yearsOf } from '@/lib/person-lookup'
 import { resolveCensusYear } from '@/lib/salaries-search'
 
@@ -43,11 +44,20 @@ export function PersonPage() {
       <meta name="robots" content="noindex" />
       <BackButton />
       {person ? (
-        <PersonView
-          person={person}
-          medians={data.medians}
-          year={resolveCensusYear(year, yearsOf(person))}
-        />
+        <>
+          <PersonView
+            person={person}
+            medians={data.medians}
+            year={resolveCensusYear(year, yearsOf(person))}
+          />
+          <SourceCitation
+            source={{
+              kind: 'fall-range',
+              from: Math.min(...yearsOf(person)),
+              to: Math.max(...yearsOf(person)),
+            }}
+          />
+        </>
       ) : (
         <p>No Fall record is published under the name {name}.</p>
       )}

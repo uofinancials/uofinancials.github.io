@@ -421,6 +421,11 @@ test('a person’s computed figures, rate chart, and class median are labelled, 
   ).toBeVisible()
   await expect(main).toContainText('Groups used: ')
   await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
+  await expect(
+    page.getByRole('link', {
+      name: /^Fall \d{4}-\d{4} Census salary reports$/,
+    }),
+  ).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })
