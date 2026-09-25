@@ -1,14 +1,15 @@
 /// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
 
-test('pay changes show each census pair’s median by group, the change counts, and one pair’s distribution held in the link', async ({
+test('the change measure shows each census pair’s median by group, the change counts, and one pair’s distribution held in the link', async ({
   page,
 }) => {
-  await page.goto('/pay-changes')
+  await page.goto('/trends')
   const main = page.getByRole('main')
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Pay changes' }),
-  ).toBeVisible()
+  await page
+    .getByRole('radio', { name: 'Median change in salary rate' })
+    .check()
+  await expect(page).toHaveURL(/metric=change/)
   const lines = page.getByRole('table', {
     name: /^Median change in salary rate/,
   })
@@ -35,11 +36,26 @@ test('pay changes show each census pair’s median by group, the change counts, 
   await expect(
     page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
   ).toBeVisible()
-  await page.goto('/pay-changes?dept=000000')
+  await page.goto('/trends?metric=change&dept=000000')
+  await expect(main).toContainText('Pay department: 000000')
   await expect(main).toContainText('0 continuing jobs match')
 })
 
-test('a person links to pay changes for their class or rank, the filter can be removed, and the page does not scroll sideways at 360px', async ({
+test('an opened group’s change lines are its categories, and a filter narrows the other measures too', async ({
+  page,
+}) => {
+  await page.goto('/trends?metric=change&group=Admins+and+professionals')
+  await expect(
+    page.getByRole('columnheader', { name: 'Senior Administrators' }),
+  ).toBeVisible()
+  await page.goto('/trends?dept=000000')
+  await expect(page.getByRole('main')).toContainText('Pay department: 000000')
+  await expect(page.getByRole('columnheader', { name: 'Faculty' })).toHaveCount(
+    0,
+  )
+})
+
+test('a person links to the pay changes of their class or rank, the filter can be removed, and the page does not scroll sideways at 360px', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
@@ -49,7 +65,7 @@ test('a person links to pay changes for their class or rank, the filter can be r
     .getByRole('link', { name: /^Pay changes, / })
     .last()
     .click()
-  await expect(page).toHaveURL(/\/pay-changes\?.*position=/)
+  await expect(page).toHaveURL(/\/trends\?.*position=/)
   const main = page.getByRole('main')
   await expect(main).toContainText('Class or rank: ')
   const width = await page.evaluate(() => document.documentElement.scrollWidth)

@@ -98,6 +98,8 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const { series, total } = buildTrends(years, {
       kind: 'all',
       group: null,
+      dept: null,
+      position: null,
       from: 2014,
       to: 2025,
     })
@@ -147,6 +149,8 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const opened = buildTrends(years, {
       kind: 'all',
       group: 'Unclassified staff',
+      dept: null,
+      position: null,
       from: 2014,
       to: 2025,
     }).series
@@ -501,7 +505,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ),
     )
     const pairs = continuingPairs(years)
-    const [all] = payChangeTrends(pairs, [2024])
+    const [all] = payChangeTrends(pairs, [2024], null)
     expect(all?.points[0]?.pairs).toBe(4_865)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)
     expect(changeCounts(pairs, [2024])[0]).toMatchObject({

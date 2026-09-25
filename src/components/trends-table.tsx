@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table'
 import { formatOrBlank } from '@/lib/format'
 import type { TrendPoint, TrendSeries } from '@/lib/trends'
-import { METRIC_INFO, type TrendMetric } from '@/lib/trends-search'
+import { type CensusMetric, METRIC_INFO } from '@/lib/trends-search'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 
@@ -20,7 +20,7 @@ export function TrendsTable({
 }: {
   series: TrendSeries[]
   total: TrendPoint[]
-  metric: TrendMetric
+  metric: CensusMetric
 }) {
   const { pick, format } = METRIC_INFO[metric]
   const cell = (point: TrendPoint | undefined) =>

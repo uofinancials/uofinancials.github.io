@@ -67,6 +67,25 @@ export function openedLineOf(record: FallRecord, group: TrendGroup): string {
   return isByGradeOnly ? EXEC_OTHER_CATEGORY : category
 }
 
+/** A job's line: its group, or its `openedLineOf` line when a group is opened. */
+export function lineOf(
+  record: FallRecord,
+  group: TrendGroup,
+  opened: TrendGroup | null,
+): string {
+  return opened ? openedLineOf(record, opened) : group
+}
+
+const GROUP_ORDER: readonly string[] = TREND_GROUPS
+
+/** Orders lines as `lineOf` names them: categories alphabetically, groups as `TREND_GROUPS` lists them. */
+export function compareLines(opened: TrendGroup | null) {
+  return (a: string, b: string) =>
+    opened
+      ? a.localeCompare(b)
+      : GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b)
+}
+
 export function publishedCategoriesOf(group: TrendGroup): string[] {
   return Object.entries(UNCLASSIFIED_CATEGORY_GROUPS)
     .filter(([, mapped]) => mapped === group)

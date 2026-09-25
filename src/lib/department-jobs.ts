@@ -141,6 +141,8 @@ export function departmentTrends(
   return buildTrends(years, {
     kind,
     group: null,
+    dept: null,
+    position: null,
     from: yearsWithJobs[0] ?? 0,
     to: yearsWithJobs.at(-1) ?? 0,
   })

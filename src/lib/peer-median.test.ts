@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { peerGroupOf, peerMedianFor, peerMedians } from './peer-median'
+import { peerGroupOf } from './peer-group'
+import { peerMedianFor, peerMedians } from './peer-median'
 
 const analyst = (code: string, annualSalaryRateCents: number) =>
   classifiedJob({

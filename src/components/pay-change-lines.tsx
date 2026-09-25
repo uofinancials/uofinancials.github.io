@@ -16,10 +16,12 @@ const NUMBER_CELL = 'text-right tabular-nums'
 export function PayChangeLines({
   series,
   fromYears,
+  hidden,
   label,
 }: {
   series: ChangeSeries[]
   fromYears: number[]
+  hidden: string[]
   label: string
 }) {
   return (
@@ -30,6 +32,7 @@ export function PayChangeLines({
           key,
           values: points.map(({ median }) => median),
         }))}
+        hidden={hidden}
         format={formatChange}
         formatAxis={formatChange}
         label={label}

@@ -6,7 +6,6 @@ const ISSUES_URL =
 const NAV_LINKS = [
   ['/trends', 'Trends'],
   ['/departments', 'Departments'],
-  ['/pay-changes', 'Pay changes'],
   ['/people', 'People'],
   ['/sources', 'Sources'],
 ] as const
