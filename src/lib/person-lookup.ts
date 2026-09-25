@@ -105,6 +105,18 @@ export function yearsOf(person: Person): number[] {
   return personYearsOf(person).map(({ year }) => year)
 }
 
+/** The query's words, lower-cased with commas dropped; empty for a blank query. */
+export function queryWords(query: string): string[] {
+  const normalized = normalize(query)
+  return normalized === '' ? [] : normalized.split(' ')
+}
+
+/** Whether the text holds every word, ignoring case and commas. */
+export function hasEveryWord(text: string, words: string[]): boolean {
+  const key = normalize(text)
+  return words.every((word) => key.includes(word))
+}
+
 /** People whose name holds every word of the query, or `null` for a query too short to search. */
 export function matchPeople(
   people: Person[],

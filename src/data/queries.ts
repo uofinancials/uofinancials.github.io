@@ -1,5 +1,7 @@
-import { queryOptions } from '@tanstack/react-query'
+import { type QueryClient, queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
+import { peerMedians } from '../lib/peer-median.ts'
+import { indexPeople } from '../lib/person-lookup.ts'
 import { budgetYearSchema, fiscalYearLabel } from './budget.ts'
 import { fallYearSchema } from './fall.ts'
 import { manifestSchema } from './manifest.ts'
@@ -47,4 +49,22 @@ export function budgetYearQuery(fiscalYear: number) {
     `budget/${fiscalYearLabel(fiscalYear)}.json`,
     budgetYearSchema,
   )
+}
+
+/** Every name across the Fall censuses, and the class and rank medians, built once from the cached Fall files. */
+export function peopleIndexQuery(queryClient: QueryClient) {
+  return queryOptions({
+    queryKey: ['derived', 'people-index'],
+    queryFn: async () => {
+      const manifest = await queryClient.ensureQueryData(manifestQuery)
+      const years = await Promise.all(
+        manifest.fall.map(({ year }) =>
+          queryClient.ensureQueryData(fallYearQuery(year)),
+        ),
+      )
+      return { people: indexPeople(years), medians: peerMedians(years) }
+    },
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
+  })
 }
