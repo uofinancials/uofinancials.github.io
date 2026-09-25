@@ -103,3 +103,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   than three jobs are shown together.
 - The department page's view is kept in its link: the budget breakdown, the
   measure, classified or unclassified staff, and the census of the class table.
+- A Salaries page (`/salaries`) showing how many jobs fall in each $10,000 range
+  of published annual salary rate, up to a "$250,000 and over" range, for one
+  Fall census, as a bar chart split by the Trends page's employee groups and a
+  table of the same counts. Beside it are each group's job count, the 10th to
+  90th percentile rates of primary jobs (temporaries left out), and the highest
+  rate.
+- The Salaries view is set from the page and kept in its link: the census, one
+  group, classified or unclassified staff, 9- or 12-month terms, and a college
+  or VP area. Each department page links to its own distribution, shown as a
+  filter that can be removed. A filter matching fewer than three jobs shows only
+  the count, and percentiles need three primary jobs.

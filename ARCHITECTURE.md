@@ -61,15 +61,16 @@ flowchart LR
 - `src/components` - the shared layout with the independence notice and error
   report link, the source citation caption, the loading and error states, the
   select and radio fields, the totals chart and table, the line chart, the
-  trends table and controls, and the department budget and jobs sections.
+  stacked bar chart, the trends table and controls, the department budget and
+  jobs sections, and the salaries controls.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
   cross-year employee groups and their trends, budget account groups, a
-  department's budget and jobs, the department index, each page's URL state,
-  source citations, number formatting, and the person links between consecutive
-  Fall years.
+  department's budget and jobs, the department index, the salary rate
+  distribution, each page's URL state, source citations, number formatting, and
+  the person links between consecutive Fall years.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -106,7 +107,7 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  departments, sources page, and `404.html`.
+  departments, salaries, sources page, and `404.html`.
 
 ## Pages
 
@@ -124,6 +125,10 @@ flowchart LR
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, and for an area how its jobs were placed;
   driven by the `src/lib` department modules over every Fall and budget year.
+- `/salaries` - the number of jobs in each salary rate range for one Fall
+  census, by employee group, with primary-job percentiles, filtered by group,
+  staff kind, term, and college or VP area or department; driven by the
+  `src/lib` distribution over one Fall year and its budget year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.
