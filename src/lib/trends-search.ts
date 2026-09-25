@@ -4,6 +4,12 @@ import { formatCompactDollars, formatDollars, formatFte } from './format.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 import type { TrendFilter, TrendPoint, TrendSeries } from './trends.ts'
 
+export const STAFF_KIND_OPTIONS: [string, string][] = [
+  ['all', 'Classified and unclassified'],
+  ['classified', 'Classified'],
+  ['unclassified', 'Unclassified'],
+]
+
 export const TREND_METRICS = ['spend', 'fte', 'median'] as const
 export type TrendMetric = (typeof TREND_METRICS)[number]
 
@@ -78,4 +84,17 @@ export function resolveTrendView(
     from,
     to,
   }
+}
+
+export const METRIC_OPTIONS = TREND_METRICS.map(
+  (metric) => [metric, METRIC_INFO[metric].label] as const,
+)
+
+/** Each series' metric value per census, `null` where it has none. */
+export function metricValues(
+  series: TrendSeries[],
+  metric: TrendMetric,
+): { key: string; values: (number | null)[] }[] {
+  const { pick } = METRIC_INFO[metric]
+  return series.map(({ key, points }) => ({ key, values: points.map(pick) }))
 }

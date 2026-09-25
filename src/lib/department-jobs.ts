@@ -2,7 +2,12 @@ import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { type AreaAssignment, createAreaAssigner } from './areas.ts'
 import { isClassifiedTemp, summarize } from './overview.ts'
-import { medianRateCents, type TrendPoint, type Trends } from './trends.ts'
+import {
+  buildTrends,
+  medianRateCents,
+  type TrendPoint,
+  type Trends,
+} from './trends.ts'
 
 const ORG_LEVEL_AREA = 3
 
@@ -27,6 +32,8 @@ export type AreaPlacement = {
 
 export type DepartmentYears = {
   years: { year: number; records: FallRecord[] }[]
+  /** The censuses with at least one job, oldest first. */
+  yearsWithJobs: number[]
   /** `null` unless the code is an area. */
   placements: AreaPlacement[] | null
 }
@@ -62,22 +69,50 @@ export function departmentYears(
   censuses: DepartmentCensus[],
 ): DepartmentYears {
   const sorted = [...censuses].sort((a, b) => a.year - b.year)
-  if (!isAreaCode(code, sorted)) {
-    return {
-      years: sorted.map(({ year, records }) => ({
-        year,
-        records: records.filter((record) => record.payDepartment.code === code),
-      })),
-      placements: null,
-    }
-  }
-  const placed = sorted.map((census) => ({
-    year: census.year,
-    ...placeInArea(code, census),
+  const isArea = isAreaCode(code, sorted)
+  const placed = sorted.map((census) =>
+    isArea
+      ? placeInArea(code, census)
+      : {
+          records: census.records.filter(
+            (record) => record.payDepartment.code === code,
+          ),
+          placement: null,
+        },
+  )
+  const years = sorted.map(({ year }, index) => ({
+    year,
+    records: placed[index]?.records ?? [],
   }))
+  const placements = placed.flatMap(({ placement }) =>
+    placement ? [placement] : [],
+  )
   return {
-    years: placed.map(({ year, records }) => ({ year, records })),
-    placements: placed.map(({ placement }) => placement),
+    years,
+    yearsWithJobs: years
+      .filter(({ records }) => records.length > 0)
+      .map(({ year }) => year),
+    placements: isArea ? placements : null,
+  }
+}
+
+/** The department's jobs over its censuses with jobs, small points withheld, and its classes in one census. */
+export function departmentJobFigures(
+  { years, yearsWithJobs }: DepartmentYears,
+  { kind, year }: { kind: StaffKind | 'all'; year: number | null },
+): { trends: Trends; classRows: ClassRow[] } {
+  const trends = buildTrends(years, {
+    kind,
+    group: null,
+    from: yearsWithJobs[0] ?? 0,
+    to: yearsWithJobs.at(-1) ?? 0,
+  })
+  const records = years.find((census) => census.year === year)?.records ?? []
+  return {
+    trends: withholdSmallPoints(trends),
+    classRows: classTotals(
+      records.filter((record) => kind === 'all' || record.kind === kind),
+    ),
   }
 }
 

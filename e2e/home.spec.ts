@@ -7,7 +7,14 @@ test('home page loads', async ({ page }) => {
   await expect(page).toHaveTitle(/^UO Financials \| An independent look/)
 })
 
-for (const path of ['/', '/trends', '/sources', '/no-such-page']) {
+for (const path of [
+  '/',
+  '/trends',
+  '/departments',
+  '/departments/223100',
+  '/sources',
+  '/no-such-page',
+]) {
   test(`${path} states it is not affiliated with UO`, async ({ page }) => {
     await page.goto(path)
     await expect(
@@ -152,4 +159,103 @@ test('trends lines can be hidden and the page does not scroll sideways at 360px'
   await expect(lines).toHaveCount(5)
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+})
+
+test('the departments index lists areas with their units, and the filter narrows it', async ({
+  page,
+}) => {
+  await page.goto('/departments')
+  await expect(
+    page.getByRole('link', { name: 'Arts & Sciences, College of' }),
+  ).toBeVisible()
+  await page
+    .getByRole('searchbox', { name: 'Filter by name or code' })
+    .fill('music')
+  await expect(page).toHaveURL(/q=music/)
+  await expect(
+    page.getByRole('link', { name: 'SOMD Music', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Arts & Sciences, College of' }),
+  ).toHaveCount(0)
+  await page.getByRole('link', { name: 'SOMD Music', exact: true }).click()
+  await expect(page).toHaveURL(/\/departments\/229100$/)
+  const main = page.getByRole('main')
+  await expect(main).toContainText(
+    'UO’s budget publishes no unit or area with code 229100',
+  )
+  await expect(main).toContainText('$7,826,769')
+  await expect(
+    page.getByRole('link', { name: 'Music and Dance, School of' }),
+  ).toBeVisible()
+})
+
+test('a unit shows its budget and its jobs, and its views are held in the link', async ({
+  page,
+}) => {
+  await page.goto('/departments/223100')
+  const main = page.getByRole('main')
+  await expect(
+    page.getByRole('heading', { level: 1, name: /CAS Biology/ }),
+  ).toBeVisible()
+  await expect(main).toContainText('$9,880,235')
+  await expect(
+    page.getByRole('columnheader', { name: 'FY26 (period 12)' }),
+  ).toBeVisible()
+  await expect(main).toContainText('excludes sponsored research funds')
+  await expect(
+    page.getByRole('link', {
+      name: 'FY21-FY27 operational expenditure budgets',
+    }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
+  ).toBeVisible()
+  await page.getByRole('radio', { name: 'Fund type' }).check()
+  await expect(page).toHaveURL(/budget=fund/)
+  await expect(
+    page.getByRole('rowheader', { name: 'Budgeted Operations' }),
+  ).toBeVisible()
+  await page
+    .getByRole('combobox', { name: 'Classes in Fall' })
+    .selectOption('2020')
+  await expect(page).toHaveURL(/year=2020/)
+  await expect(
+    page.getByRole('rowheader', {
+      name: 'Other ranks (fewer than 3 jobs each)',
+    }),
+  ).toBeVisible()
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { name: 'Budget by fund type' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('combobox', { name: 'Classes in Fall' }),
+  ).toHaveValue('2020')
+})
+
+test('an area states how its jobs were placed, and the page does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/departments/222000')
+  await expect(
+    page.getByRole('heading', { level: 1, name: /Arts & Sciences/ }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'How the area’s jobs were placed' }),
+  ).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+})
+
+test('a code no source publishes is not found', async ({ page }) => {
+  await page.goto('/departments/000000')
+  await expect(
+    page.getByRole('heading', { name: 'Page not found' }),
+  ).toBeVisible()
+  await page.goto('/departments/nope')
+  await expect(
+    page.getByRole('heading', { name: 'Page not found' }),
+  ).toBeVisible()
 })

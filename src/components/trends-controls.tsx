@@ -1,8 +1,10 @@
+import { RadioField } from '@/components/radio-field'
+import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/trend-groups'
 import {
-  METRIC_INFO,
-  TREND_METRICS,
+  METRIC_OPTIONS,
+  STAFF_KIND_OPTIONS,
   type TrendsSearch,
   type TrendView,
 } from '@/lib/trends-search'
@@ -12,40 +14,6 @@ const GROUP_OPTIONS: [string, string][] = [
   [ALL_GROUPS, 'All groups'],
   ...TREND_GROUPS.map((group): [string, string] => [group, group]),
 ]
-const KIND_OPTIONS: [string, string][] = [
-  ['all', 'Classified and unclassified'],
-  ['classified', 'Classified'],
-  ['unclassified', 'Unclassified'],
-]
-
-function SelectField({
-  label,
-  value,
-  options,
-  onSelect,
-}: {
-  label: string
-  value: string
-  options: [string, string][]
-  onSelect: (value: string) => void
-}) {
-  return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <select
-        className="rounded-md border bg-background px-2 py-1"
-        value={value}
-        onChange={(event) => onSelect(event.target.value)}
-      >
-        {options.map(([option, text]) => (
-          <option key={option} value={option}>
-            {text}
-          </option>
-        ))}
-      </select>
-    </label>
-  )
-}
 
 function LineToggles({
   lines,
@@ -97,20 +65,13 @@ export function TrendsControls({
   ])
   return (
     <div className="space-y-4">
-      <fieldset className="flex flex-wrap gap-4 text-sm">
-        <legend className="mb-1 text-muted-foreground">Measure</legend>
-        {TREND_METRICS.map((metric) => (
-          <label key={metric} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="metric"
-              checked={view.metric === metric}
-              onChange={() => onChange({ metric })}
-            />
-            {METRIC_INFO[metric].label}
-          </label>
-        ))}
-      </fieldset>
+      <RadioField
+        legend="Measure"
+        name="metric"
+        value={view.metric}
+        options={METRIC_OPTIONS}
+        onSelect={(metric) => onChange({ metric })}
+      />
       <div className="flex flex-wrap gap-4">
         <SelectField
           label="Group"
@@ -126,7 +87,7 @@ export function TrendsControls({
         <SelectField
           label="Staff"
           value={view.kind}
-          options={KIND_OPTIONS}
+          options={STAFF_KIND_OPTIONS}
           onSelect={(value) =>
             onChange({
               kind: staffKindSchema.safeParse(value).data,

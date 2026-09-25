@@ -4,6 +4,7 @@ import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
   classTotals,
   type DepartmentCensus,
+  departmentJobFigures,
   departmentYears,
   withholdSmallPoints,
 } from './department-jobs'
@@ -137,4 +138,24 @@ test('trend points under three jobs lose spend and median, keeping FTE', () => {
     medianRateCents: null,
   })
   expect(trends.total[0]).toMatchObject({ jobs: 3, spendCents: 15_000_000 })
+})
+
+test('job figures span the censuses with jobs, and the kind filter applies to both views', () => {
+  const jobs = departmentYears('223500', [
+    ...CENSUSES,
+    census(2023, [unclassifiedJob({ payDepartment: elsewhere })]),
+  ])
+  const all = departmentJobFigures(jobs, { kind: 'all', year: 2025 })
+  expect(all.trends.total.map(({ year }) => year)).toEqual([2024, 2025])
+  expect(all.classRows.map(({ label, jobs }) => [label, jobs])).toEqual([
+    ['Other ranks (fewer than 3 jobs each)', 1],
+  ])
+  const classified = departmentJobFigures(jobs, {
+    kind: 'classified',
+    year: 2025,
+  })
+  expect(classified.classRows).toEqual([])
+  expect(classified.trends.total.map(({ jobs: count }) => count)).toEqual([
+    0, 0,
+  ])
 })
