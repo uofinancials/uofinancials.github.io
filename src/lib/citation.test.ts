@@ -71,6 +71,36 @@ const MANIFEST: Manifest = {
   },
 }
 
+test('a range of Fall years cites their shared reports page and the latest retrieval', () => {
+  const earlier = {
+    ...MANIFEST.fall[0],
+    year: 2024,
+    censusDate: '2024-11-01',
+    sourcePage: 'https://example.org/salary-reports',
+    files: [],
+  }
+  const manifest = { ...MANIFEST, fall: [earlier, ...MANIFEST.fall] }
+  expect(
+    citeSource(manifest, { kind: 'fall-range', from: 2024, to: 2025 }),
+  ).toEqual({
+    dataset: 'Fall 2024-2025 Census salary reports',
+    publisher: 'UO Office of Data Enablement',
+    href: 'https://example.org/salary-reports',
+    retrievedOn: '2026-09-24',
+    anchor: 'fall-2024',
+  })
+  const moved = {
+    ...manifest,
+    fall: [
+      { ...earlier, sourcePage: 'https://example.org/old' },
+      ...MANIFEST.fall,
+    ],
+  }
+  expect(() =>
+    citeSource(moved, { kind: 'fall-range', from: 2024, to: 2025 }),
+  ).toThrow('Fall 2024-2025 needs one shared source page; the manifest lists 2')
+})
+
 test('a Fall year cites its reports page and the latest retrieval', () => {
   expect(citeSource(MANIFEST, { kind: 'fall', year: 2025 })).toEqual({
     dataset: 'Fall 2025 Census salary reports',
