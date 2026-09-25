@@ -1,4 +1,3 @@
-/** A fieldset of native radios over `[value, text]` options. */
 export function RadioField<T extends string>({
   legend,
   name,

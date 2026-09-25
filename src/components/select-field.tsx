@@ -1,4 +1,3 @@
-/** A labelled native select over `[value, text]` options. */
 export function SelectField({
   label,
   value,

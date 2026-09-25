@@ -26,7 +26,6 @@ function census(
   return { year, records, fiscalYear: 2026, orgs: ORGS, assign }
 }
 
-/** The class rows of one census's jobs, all paid under one code. */
 function classRows(records: DepartmentCensus['records']) {
   const jobs = departmentYears('111111', [census(2025, records)])
   return departmentClasses(jobs, { kind: 'all', year: 2025 })

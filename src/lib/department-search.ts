@@ -6,7 +6,6 @@ import { TREND_METRICS, type TrendMetric } from './trends-search.ts'
 
 const YEAR_END_PERIOD = '14'
 
-/** The departments index's URL search params. */
 export const departmentsSearchSchema = z.object({
   q: z.string().optional().catch(undefined),
 })

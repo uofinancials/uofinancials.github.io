@@ -7,7 +7,6 @@ import {
   type TrendMetric,
 } from '@/lib/trends-search'
 
-/** A trends chart over the censuses with its table of the same numbers. */
 export function TrendsFigure({
   trends,
   metric,
