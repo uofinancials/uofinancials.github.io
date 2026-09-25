@@ -1,10 +1,12 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
-import { budgetYearSchema } from './budget.ts'
+import { budgetYearSchema, fiscalYearLabel } from './budget.ts'
 import { fallYearSchema } from './fall.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { raiseTermsSchema } from './raises.ts'
+
+const NETWORK_RETRIES = 2
 
 async function fetchData<T>(file: string, schema: z.ZodType<T>): Promise<T> {
   const url = `${import.meta.env.BASE_URL}data/${file}`
@@ -26,6 +28,9 @@ function dataQuery<T>(file: string, schema: z.ZodType<T>) {
     queryKey: ['data', file],
     queryFn: () => fetchData(file, schema),
     staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
+    retry: (failures: number, error: Error) =>
+      error instanceof TypeError && failures < NETWORK_RETRIES,
   })
 }
 
@@ -39,7 +44,7 @@ export function fallYearQuery(year: number) {
 
 export function budgetYearQuery(fiscalYear: number) {
   return dataQuery(
-    `budget/FY${String(fiscalYear).slice(2)}.json`,
+    `budget/${fiscalYearLabel(fiscalYear)}.json`,
     budgetYearSchema,
   )
 }

@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
+import { fiscalYearLabel } from '../../src/data/budget.ts'
 
 export const FALL_SOURCE_DIR = path.resolve(
   import.meta.dirname,
@@ -33,7 +34,7 @@ export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
 export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')
 
 export function budgetDataPath(fiscalYear: number): string {
-  return path.join(DATA_DIR, 'budget', `FY${String(fiscalYear).slice(2)}.json`)
+  return path.join(DATA_DIR, 'budget', `${fiscalYearLabel(fiscalYear)}.json`)
 }
 
 export async function listPdfs(dir: string): Promise<string[]> {

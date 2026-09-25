@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createMemoryHistory } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { App } from './app'
 import { createAppRouter } from './router'
 
@@ -35,10 +35,6 @@ test('an unknown path renders the not-found page inside the layout', async () =>
   expect(screen.getByRole('contentinfo')).toHaveTextContent(
     'not affiliated with',
   )
-})
-
-afterEach(() => {
-  vi.unstubAllGlobals()
 })
 
 test('a page whose data fails to load says which file and offers a retry', async () => {

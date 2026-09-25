@@ -1,13 +1,22 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { fiscalYearLabel } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import { manifestQuery, raiseTermsQuery } from '@/data/queries'
-import { fiscalYearLabel, listCitedDocuments } from '@/lib/citation'
+import { listCitedDocuments, sourceAnchor } from '@/lib/citation'
 import { formatCount, formatDollars } from '@/lib/format'
 
-const NUMBER_CELL = 'px-2 py-1 text-right tabular-nums'
-const TEXT_CELL = 'px-2 py-1'
-const HASH_CELL = 'px-2 py-1 font-mono text-xs break-all'
+const NUMBER_CELL = 'text-right tabular-nums'
+const HASH_CELL = 'font-mono text-xs'
+const NOT_STATED = 'not stated'
 
 function Section({
   id,
@@ -26,28 +35,32 @@ function Section({
   )
 }
 
-function Table({ head, children }: { head: string[]; children: ReactNode }) {
+function SourceTable({
+  head,
+  children,
+}: {
+  head: string[]
+  children: ReactNode
+}) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[48rem] text-sm">
-        <thead>
-          <tr className="border-b text-left">
-            {head.map((label) => (
-              <th key={label} scope="col" className="px-2 py-1 font-medium">
-                {label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        {children}
-      </table>
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {head.map((label) => (
+            <TableHead key={label} scope="col">
+              {label}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      {children}
+    </Table>
   )
 }
 
 function FallSources({ fall }: { fall: Manifest['fall'] }) {
   return (
-    <Table
+    <SourceTable
       head={[
         'Census',
         'Report',
@@ -61,31 +74,38 @@ function FallSources({ fall }: { fall: Manifest['fall'] }) {
       ]}
     >
       {fall.map((entry) => (
-        <tbody key={entry.year} id={`fall-${entry.year}`} className="border-b">
+        <TableBody
+          key={entry.year}
+          id={sourceAnchor({ kind: 'fall', year: entry.year })}
+        >
           {entry.files.map((file) => (
-            <tr key={file.sha256}>
-              <td className={TEXT_CELL}>{entry.censusDate}</td>
-              <td className={TEXT_CELL}>{file.kind}</td>
-              <td className={TEXT_CELL}>{file.fileName}</td>
-              <td className={NUMBER_CELL}>{formatCount(file.pages)}</td>
-              <td className={TEXT_CELL}>{file.extractDate}</td>
-              <td className={TEXT_CELL}>{file.retrievedOn}</td>
-              <td className={NUMBER_CELL}>{formatCount(file.records)}</td>
-              <td className={NUMBER_CELL}>
+            <TableRow key={file.sha256}>
+              <TableCell>{entry.censusDate}</TableCell>
+              <TableCell>{file.kind}</TableCell>
+              <TableCell>{file.fileName}</TableCell>
+              <TableCell className={NUMBER_CELL}>
+                {formatCount(file.pages)}
+              </TableCell>
+              <TableCell>{file.extractDate}</TableCell>
+              <TableCell>{file.retrievedOn}</TableCell>
+              <TableCell className={NUMBER_CELL}>
+                {formatCount(file.records)}
+              </TableCell>
+              <TableCell className={NUMBER_CELL}>
                 {formatCount(file.possibleStudents)}
-              </td>
-              <td className={HASH_CELL}>{file.sha256}</td>
-            </tr>
+              </TableCell>
+              <TableCell className={HASH_CELL}>{file.sha256}</TableCell>
+            </TableRow>
           ))}
-        </tbody>
+        </TableBody>
       ))}
-    </Table>
+    </SourceTable>
   )
 }
 
 function BudgetSources({ budget }: { budget: Manifest['budget'] }) {
   return (
-    <Table
+    <SourceTable
       head={[
         'Year',
         'Period',
@@ -97,32 +117,38 @@ function BudgetSources({ budget }: { budget: Manifest['budget'] }) {
         'SHA-256',
       ]}
     >
-      <tbody>
+      <TableBody>
         {budget.map((entry) => {
           const label = fiscalYearLabel(entry.fiscalYear)
           return (
-            <tr key={entry.fiscalYear} id={`budget-${label.toLowerCase()}`}>
-              <td className={TEXT_CELL}>{label}</td>
-              <td className={TEXT_CELL}>{entry.period}</td>
-              <td className={TEXT_CELL}>
+            <TableRow
+              key={entry.fiscalYear}
+              id={sourceAnchor({
+                kind: 'budget',
+                fiscalYear: entry.fiscalYear,
+              })}
+            >
+              <TableCell>{label}</TableCell>
+              <TableCell>{entry.period}</TableCell>
+              <TableCell>
                 <a className="underline" href={entry.url}>
                   {entry.fileName}
                 </a>
-              </td>
-              <td className={TEXT_CELL}>
-                {entry.lastModified ?? 'not stated'}
-              </td>
-              <td className={TEXT_CELL}>{entry.retrievedOn}</td>
-              <td className={NUMBER_CELL}>{formatCount(entry.rows)}</td>
-              <td className={NUMBER_CELL}>
+              </TableCell>
+              <TableCell>{entry.lastModified ?? NOT_STATED}</TableCell>
+              <TableCell>{entry.retrievedOn}</TableCell>
+              <TableCell className={NUMBER_CELL}>
+                {formatCount(entry.rows)}
+              </TableCell>
+              <TableCell className={NUMBER_CELL}>
                 {formatDollars(entry.totalExpenditureBudgetCents)}
-              </td>
-              <td className={HASH_CELL}>{entry.sha256}</td>
-            </tr>
+              </TableCell>
+              <TableCell className={HASH_CELL}>{entry.sha256}</TableCell>
+            </TableRow>
           )
         })}
-      </tbody>
-    </Table>
+      </TableBody>
+    </SourceTable>
   )
 }
 
@@ -135,22 +161,22 @@ function RateSources({ rates }: { rates: NonNullable<Manifest['rates']> }) {
         leave rates, and {formatCount(rates.persRepayment)} PERS repayment
         rates.
       </p>
-      <Table head={['Page', 'Last modified', 'Retrieved', 'SHA-256']}>
-        <tbody>
+      <SourceTable head={['Page', 'Last modified', 'Retrieved', 'SHA-256']}>
+        <TableBody>
           {rates.pages.map((page) => (
-            <tr key={page.url}>
-              <td className={TEXT_CELL}>
+            <TableRow key={page.url}>
+              <TableCell>
                 <a className="underline" href={page.url}>
                   {page.url}
                 </a>
-              </td>
-              <td className={TEXT_CELL}>{page.lastModified ?? 'not stated'}</td>
-              <td className={TEXT_CELL}>{page.retrievedOn}</td>
-              <td className={HASH_CELL}>{page.sha256}</td>
-            </tr>
+              </TableCell>
+              <TableCell>{page.lastModified ?? NOT_STATED}</TableCell>
+              <TableCell>{page.retrievedOn}</TableCell>
+              <TableCell className={HASH_CELL}>{page.sha256}</TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </Table>
+        </TableBody>
+      </SourceTable>
     </>
   )
 }
@@ -158,21 +184,23 @@ function RateSources({ rates }: { rates: NonNullable<Manifest['rates']> }) {
 function RaiseSources() {
   const { data } = useSuspenseQuery(raiseTermsQuery)
   return (
-    <Table head={['Document', 'Terms', 'Retrieved']}>
-      <tbody>
+    <SourceTable head={['Document', 'Terms', 'Retrieved']}>
+      <TableBody>
         {listCitedDocuments(data.terms).map((document) => (
-          <tr key={document.url}>
-            <td className={TEXT_CELL}>
+          <TableRow key={document.url}>
+            <TableCell>
               <a className="underline" href={document.url}>
                 {document.document}
               </a>
-            </td>
-            <td className={NUMBER_CELL}>{formatCount(document.terms)}</td>
-            <td className={TEXT_CELL}>{document.retrievedOn}</td>
-          </tr>
+            </TableCell>
+            <TableCell className={NUMBER_CELL}>
+              {formatCount(document.terms)}
+            </TableCell>
+            <TableCell>{document.retrievedOn}</TableCell>
+          </TableRow>
         ))}
-      </tbody>
-    </Table>
+      </TableBody>
+    </SourceTable>
   )
 }
 
@@ -216,7 +244,7 @@ export function SourcesPage() {
         <BudgetSources budget={manifest.budget} />
       </Section>
       {manifest.rates && (
-        <Section id="rates" title="Blended OPE rates">
+        <Section id={sourceAnchor({ kind: 'rates' })} title="Blended OPE rates">
           <RateSources rates={manifest.rates} />
         </Section>
       )}

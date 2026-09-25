@@ -49,3 +49,7 @@ export const budgetYearSchema = z.strictObject({
 
 export type BudgetRow = z.infer<typeof budgetRowSchema>
 export type BudgetYear = z.infer<typeof budgetYearSchema>
+
+export function fiscalYearLabel(fiscalYear: number): string {
+  return `FY${String(fiscalYear).slice(2)}`
+}

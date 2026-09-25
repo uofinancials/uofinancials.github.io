@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { budgetYearQuery, manifestQuery } from './queries'
 
 const EMPTY_MANIFEST = { fall: [], budget: [], rates: null }
@@ -13,10 +13,6 @@ function serve(status: number, body: unknown) {
 function testClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
-
-afterEach(() => {
-  vi.unstubAllGlobals()
-})
 
 test('a data file is fetched from the base path and parsed', async () => {
   const fetchMock = serve(200, EMPTY_MANIFEST)

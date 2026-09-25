@@ -15,6 +15,7 @@ export default defineConfig({
         test: {
           name: 'site',
           environment: 'jsdom',
+          unstubGlobals: true,
           setupFiles: ['./src/test-setup.ts'],
           include: ['src/**/*.test.{ts,tsx}'],
         },

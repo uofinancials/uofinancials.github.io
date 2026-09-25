@@ -1,3 +1,4 @@
+import { fiscalYearLabel } from '../data/budget.ts'
 import type { Manifest } from '../data/manifest.ts'
 import type { RaiseTerm } from '../data/raises.ts'
 
@@ -11,7 +12,6 @@ export type Citation = {
   publisher: string
   href: string
   retrievedOn: string
-  /** The dataset's element id on the sources page. */
   anchor: string
 }
 
@@ -24,8 +24,16 @@ function latest(dates: string[]): string {
   return last
 }
 
-export function fiscalYearLabel(fiscalYear: number): string {
-  return `FY${String(fiscalYear).slice(2)}`
+/** The dataset's element id on the sources page. */
+export function sourceAnchor(source: SourceRef): string {
+  switch (source.kind) {
+    case 'fall':
+      return `fall-${source.year}`
+    case 'budget':
+      return `budget-${fiscalYearLabel(source.fiscalYear).toLowerCase()}`
+    case 'rates':
+      return 'rates'
+  }
 }
 
 export function citeSource(manifest: Manifest, source: SourceRef): Citation {
@@ -38,7 +46,7 @@ export function citeSource(manifest: Manifest, source: SourceRef): Citation {
         publisher: DATA_ENABLEMENT,
         href: entry.sourcePage,
         retrievedOn: latest(entry.files.map((file) => file.retrievedOn)),
-        anchor: `fall-${source.year}`,
+        anchor: sourceAnchor(source),
       }
     }
     case 'budget': {
@@ -52,7 +60,7 @@ export function citeSource(manifest: Manifest, source: SourceRef): Citation {
         publisher: BUDGET_AND_RESOURCE_PLANNING,
         href: entry.sourcePage,
         retrievedOn: entry.retrievedOn,
-        anchor: `budget-${label.toLowerCase()}`,
+        anchor: sourceAnchor(source),
       }
     }
     case 'rates': {
@@ -65,7 +73,7 @@ export function citeSource(manifest: Manifest, source: SourceRef): Citation {
         publisher: BUDGET_AND_RESOURCE_PLANNING,
         href: page.url,
         retrievedOn: latest(manifest.rates.pages.map((p) => p.retrievedOn)),
-        anchor: 'rates',
+        anchor: sourceAnchor(source),
       }
     }
   }
@@ -86,7 +94,10 @@ export function listCitedDocuments(terms: RaiseTerm[]): CitedDocument[] {
     documents.set(source.url, {
       url: source.url,
       document: source.document,
-      retrievedOn: latest([source.retrievedOn, cited?.retrievedOn ?? '']),
+      retrievedOn:
+        cited && cited.retrievedOn > source.retrievedOn
+          ? cited.retrievedOn
+          : source.retrievedOn,
       terms: (cited?.terms ?? 0) + 1,
     })
   }
