@@ -4,8 +4,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { lineColor } from './line-color'
 
-const LINE_COLORS = 8
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
@@ -15,7 +15,7 @@ type ChartSeries = { key: string; values: (number | null)[] }
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
 function lineStyle(index: number) {
   return {
-    stroke: `var(--line-${(index % LINE_COLORS) + 1})`,
+    stroke: lineColor(index),
     strokeDasharray: LINE_DASHES[index % LINE_DASHES.length],
   }
 }

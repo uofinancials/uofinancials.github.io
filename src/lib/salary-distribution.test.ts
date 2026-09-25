@@ -5,10 +5,9 @@ import {
   binRange,
   buildDistribution,
   filterJobs,
-  percentileCents,
   stackedCounts,
 } from './salary-distribution'
-import { medianRateCents } from './trends'
+import { medianRateCents, percentileCents } from './trends'
 
 const temp = classifiedJob({ positionClass: { code: 'TS401', title: null } })
 const at = (annualSalaryRateCents: number) =>

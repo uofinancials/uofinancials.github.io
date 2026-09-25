@@ -1,6 +1,6 @@
 import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
-import { createAreaAssigner, ORG_LEVEL_AREA } from './areas.ts'
+import { createAreaAssigner, listAreas, ORG_LEVEL_AREA } from './areas.ts'
 import { sumBy } from './department-budget.ts'
 import { type DepartmentCensus, isAreaCode } from './department-jobs.ts'
 import { UNASSIGNED_AREA } from './overview.ts'
@@ -65,9 +65,7 @@ export function departmentIndex(
     entries.set(code, { ...entry, jobs: entry.jobs + 1 })
   }
   const areaCodes = [
-    ...Object.entries(budget.orgs)
-      .filter(([, org]) => org.level === ORG_LEVEL_AREA)
-      .map(([code]) => code),
+    ...listAreas(budget.orgs).map(({ code }) => code),
     ...(areaJobs.has(null) ? [null] : []),
   ]
   return areaCodes

@@ -21,10 +21,7 @@ import {
   departmentsSearchSchema,
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
-import {
-  resolveSalariesView,
-  salariesSearchSchema,
-} from '@/lib/salaries-search'
+import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
@@ -117,7 +114,7 @@ const salariesRoute = createRoute({
   loader: async ({ context: { queryClient }, deps }) => {
     const manifest = await queryClient.ensureQueryData(manifestQuery)
     const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-    const { year } = resolveSalariesView(deps, years)
+    const year = resolveCensusYear(deps.year, years)
     const census = manifest.fall.find((entry) => entry.year === year)
     if (!census) throw notFound()
     const fiscalYear = fiscalYearForCensus(manifest, census.censusDate)

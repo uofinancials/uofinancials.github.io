@@ -5,6 +5,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { formatCount } from '@/lib/format'
+import { lineColor } from './line-color'
 
 const STACK = 'stack'
 const AXIS_WIDTH_PX = 48
@@ -59,7 +60,7 @@ export function StackedBarChart({
               name={key}
               dataKey={stackKey(index)}
               stackId={STACK}
-              fill={`var(--line-${position + 1})`}
+              fill={lineColor(position)}
             />
           ))}
         </BarChart>

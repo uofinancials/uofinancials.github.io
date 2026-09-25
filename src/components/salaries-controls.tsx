@@ -1,15 +1,15 @@
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
-import type { SalariesSearch, SalariesView } from '@/lib/salaries-search'
+import type { Place, SalariesSearch, SalariesView } from '@/lib/salaries-search'
 import { TERMS } from '@/lib/salary-distribution'
 import { TREND_GROUPS } from '@/lib/trend-groups'
-import { STAFF_KIND_OPTIONS } from '@/lib/trends-search'
+import {
+  ALL_GROUPS,
+  GROUP_OPTIONS,
+  STAFF_KIND_OPTIONS,
+} from '@/lib/trends-search'
 
 const ALL = 'all'
-const GROUP_OPTIONS: [string, string][] = [
-  [ALL, 'All groups'],
-  ...TREND_GROUPS.map((group): [string, string] => [group, group]),
-]
 const TERM_OPTIONS: [string, string][] = [
   [ALL, '9 and 12 months'],
   ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
@@ -20,17 +20,15 @@ export function SalariesControls({
   view,
   years,
   areas,
-  department,
+  place,
   onChange,
 }: {
   view: SalariesView
   years: number[]
   areas: { code: string; name: string }[]
-  /** The chosen department when it is not one of `areas`. */
-  department: { code: string; name: string } | null
+  place: Place
   onChange: (search: SalariesSearch) => void
 }) {
-  const isArea = areas.some(({ code }) => code === view.dept)
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4">
@@ -42,7 +40,7 @@ export function SalariesControls({
         />
         <SelectField
           label="Group"
-          value={view.group ?? ALL}
+          value={view.group ?? ALL_GROUPS}
           options={GROUP_OPTIONS}
           onSelect={(value) =>
             onChange({ group: TREND_GROUPS.find((group) => group === value) })
@@ -66,9 +64,14 @@ export function SalariesControls({
         />
         <SelectField
           label="College or VP area"
-          value={isArea && view.dept ? view.dept : ALL}
+          value={place.scope === 'area' ? place.code : ALL}
           options={[
-            [ALL, department ? 'The department below' : 'All of UO'],
+            [
+              ALL,
+              place.scope === 'department'
+                ? 'The department below'
+                : 'All of UO',
+            ],
             ...areas.map(({ code, name }): [string, string] => [code, name]),
           ]}
           onSelect={(value) =>
@@ -76,9 +79,9 @@ export function SalariesControls({
           }
         />
       </div>
-      {department && (
+      {place.scope === 'department' && (
         <p className="flex flex-wrap items-center gap-2 text-sm">
-          Department: {department.name} ({department.code})
+          Department: {place.name} ({place.code})
           <button
             type="button"
             className="rounded-md border px-2 py-0.5"

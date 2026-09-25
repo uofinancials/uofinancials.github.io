@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/table'
 import { budgetYearQuery, fallYearQuery } from '@/data/queries'
 import { listAreas } from '@/lib/areas'
-import { describeCode } from '@/lib/department-index'
 import { MIN_JOBS_SHOWN, toDepartmentCensus } from '@/lib/department-jobs'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import {
-  jobsInView,
+  describePlace,
+  placeJobs,
   resolveSalariesView,
   type SalariesSearch,
 } from '@/lib/salaries-search'
@@ -27,6 +27,7 @@ import {
   binRange,
   buildDistribution,
   type Distribution,
+  filterJobs,
   PERCENTILES,
   stackedCounts,
 } from '@/lib/salary-distribution'
@@ -114,40 +115,44 @@ function Summary({
   )
 }
 
-function useSalariesData() {
+function useSalaries() {
   const { years, year, fiscalYear } = useLoaderData({ from: '/salaries' })
+  const search = useSearch({ from: '/salaries' })
   const { data: fall } = useSuspenseQuery(fallYearQuery(year))
   const { data: budget } = useSuspenseQuery(budgetYearQuery(fiscalYear))
   const census = useMemo(
     () => toDepartmentCensus({ year, records: fall.records }, budget),
     [year, fall, budget],
   )
-  return { years, census, budget }
+  const view = useMemo(
+    () => resolveSalariesView(search, years),
+    [search, years],
+  )
+  const areas = useMemo(() => listAreas(budget.orgs), [budget])
+  const place = useMemo(
+    () => describePlace(view.dept, census, budget),
+    [view.dept, census, budget],
+  )
+  const placed = useMemo(
+    () => placeJobs(census, view.dept),
+    [census, view.dept],
+  )
+  const jobs = useMemo(
+    () => filterJobs(placed, view, view.year),
+    [placed, view],
+  )
+  const distribution = useMemo(
+    () => buildDistribution(jobs, view.year),
+    [jobs, view.year],
+  )
+  return { years, view, areas, place, jobs, distribution }
 }
 
 export function SalariesPage() {
-  const search = useSearch({ from: '/salaries' })
   const navigate = useNavigate({ from: '/salaries' })
-  const { years, census, budget } = useSalariesData()
-  const view = resolveSalariesView(search, years)
-  const areas = useMemo(() => listAreas(budget.orgs), [budget])
-  const { year, dept, group, kind, term } = view
-  const jobs = useMemo(
-    () => jobsInView(census, { year, dept, group, kind, term }),
-    [census, year, dept, group, kind, term],
-  )
-  const distribution = useMemo(
-    () => buildDistribution(jobs, year),
-    [jobs, year],
-  )
+  const { years, view, areas, place, jobs, distribution } = useSalaries()
   const stacks = stackedCounts(distribution)
   const groups = stacks.map(({ key }) => key)
-  const profile =
-    view.dept === null ? null : describeCode(view.dept, [census], [budget])
-  const department =
-    profile && !profile.isArea
-      ? { code: profile.code, name: profile.name }
-      : null
   const title = `Salary rates, Fall ${view.year}`
   const handleChange = (patch: SalariesSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
@@ -159,12 +164,12 @@ export function SalariesPage() {
         view={view}
         years={years}
         areas={areas}
-        department={department}
+        place={place}
         onChange={handleChange}
       />
-      {view.dept !== null && !profile && (
+      {place.scope === 'unknown' && (
         <p>
-          No jobs for code {view.dept} in Fall {view.year}.
+          No jobs for code {place.code} in Fall {view.year}.
         </p>
       )}
       {jobs.length < MIN_JOBS_SHOWN ? (

@@ -3,10 +3,12 @@ import type { BudgetYear } from '@/data/budget'
 import { unclassifiedJob } from '@/test/fall-records'
 import { toDepartmentCensus } from './department-jobs'
 import {
-  jobsInView,
+  describePlace,
+  placeJobs,
   resolveSalariesView,
   salariesSearchSchema,
 } from './salaries-search'
+import { filterJobs } from './salary-distribution'
 
 test('a malformed search falls back to the defaults', () => {
   const search = salariesSearchSchema.parse({
@@ -36,7 +38,7 @@ test('a census not listed falls back to the latest', () => {
   ).toMatchObject({ year: 2025, term: 12, dept: '222000' })
 })
 
-test('a view narrows the census to a department or area before filtering', () => {
+test('a view narrows the census to a department or area, and names what the code is', () => {
   const budget: BudgetYear = {
     fiscalYear: 2026,
     period: '12',
@@ -62,10 +64,24 @@ test('a view narrows the census to a department or area before filtering', () =>
     budget,
   )
   const view = resolveSalariesView({}, [2025])
-  expect(jobsInView(census, view)).toHaveLength(3)
-  expect(jobsInView(census, { ...view, dept: '222000' })).toHaveLength(2)
+  expect(placeJobs(census, null)).toHaveLength(3)
+  expect(placeJobs(census, '222000')).toHaveLength(2)
   expect(
-    jobsInView(census, { ...view, dept: '223100', term: 12 }),
+    filterJobs(placeJobs(census, '223100'), { ...view, term: 12 }, 2025),
   ).toHaveLength(1)
-  expect(jobsInView(census, { ...view, dept: '000000' })).toEqual([])
+  expect(placeJobs(census, '000000')).toEqual([])
+  expect(describePlace(null, census, budget)).toEqual({ scope: 'all' })
+  expect(describePlace('222000', census, budget)).toEqual({
+    scope: 'area',
+    code: '222000',
+    name: 'Arts & Sciences, College of',
+  })
+  expect(describePlace('223100', census, budget)).toMatchObject({
+    scope: 'department',
+    name: 'CAS Biology',
+  })
+  expect(describePlace('000000', census, budget)).toEqual({
+    scope: 'unknown',
+    code: '000000',
+  })
 })

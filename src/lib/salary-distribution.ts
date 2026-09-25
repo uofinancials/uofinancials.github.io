@@ -3,10 +3,10 @@ import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
 import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
+import { percentileCents } from './trends.ts'
 
-export const SALARY_BIN_CENTS = 1_000_000
-export const TOP_BIN_FLOOR_CENTS = 25_000_000
-const PERCENT = 100
+const SALARY_BIN_CENTS = 1_000_000
+const TOP_BIN_FLOOR_CENTS = 25_000_000
 const CENTS_PER_DOLLAR = 100
 const CENTS_PER_THOUSAND_DOLLARS = 100_000
 
@@ -15,15 +15,6 @@ export type Percentile = (typeof PERCENTILES)[number]
 
 export const TERMS = [9, 12] as const
 export type Term = (typeof TERMS)[number]
-
-/** The `p`th percentile of ascending cents, interpolated between ranks and rounded to the cent. */
-export function percentileCents(sorted: number[], p: number): number | null {
-  const rank = ((sorted.length - 1) * p) / PERCENT
-  const lower = sorted[Math.floor(rank)]
-  const upper = sorted[Math.ceil(rank)]
-  if (lower === undefined || upper === undefined) return null
-  return Math.round(lower + (upper - lower) * (rank - Math.floor(rank)))
-}
 
 export type SalaryBin = {
   floorCents: number
