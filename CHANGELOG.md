@@ -17,9 +17,9 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   extract date, retrieval date, and record count.
 - Records whose job title suggests a student or graduate employee are marked
   `possibleStudent`.
-- `pnpm scrape [fall|budget]`, which rebuilds the data. The Fall step reads Fall
-  Census PDFs downloaded into `.cache/sources/fall/`, and refuses to write a
-  year with any unreadable record or a missing or duplicate report.
+- `pnpm scrape [fall|budget|rates]`, which rebuilds the data. The Fall step
+  reads Fall Census PDFs downloaded into `.cache/sources/fall/`, and refuses to
+  write a year with any unreadable record or a missing or duplicate report.
 - University of Oregon operational expenditure budgets for FY21-FY27 - 67,935
   budget rows by department, fund, account type, and posting period, from the
   Budget and Resource Planning office's Budget Reports page, retrieved
@@ -31,4 +31,16 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   workbook only when it has changed. A fiscal year is not written if any row
   fails to read or its published totals do not add up.
 - Manifest entries for each budget workbook: URL, posting period, SHA-256,
-  last-modified date, retrieval date, row count, and total.
+  last-modified date (null where the server does not state one), retrieval date,
+  row count, and total.
+- Blended OPE (fringe benefit) rates from the Budget and Resource Planning
+  office, retrieved 2026-09-24, in `public/data/ope.json`: OPE rates for nine
+  employee rate groups for FY20-FY27, FY27 average leave adjustable rates, PERS
+  side-account repayment rates by fund type for FY24-FY27, and each group's
+  EClass codes. Percentages are stored as integer basis points.
+- Raise terms in `public/data/raises.json`: 59 across-the-board, merit-pool,
+  equity-pool, step, longevity, and one-time terms for United Academics faculty,
+  SEIU 503 and Teamsters 206 classified staff, UO police, and officers of
+  administration, 2013-2026, each citing its agreement or UO page, section, and
+  page, with percentages as published. Ten years-and-groups with no public
+  source are listed as gaps.

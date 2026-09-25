@@ -4,9 +4,11 @@
 
 UO Financials is a static single-page site built with Vite and React. GitHub
 Pages serves it from the `uofinancials.github.io` repository. An import script
-turns the University of Oregon's Fall Census salary report PDFs and its
-operational expenditure budget workbooks into JSON files committed under
-`public/data/`. The site reads nothing but its bundle and those files.
+turns the University of Oregon's Fall Census salary report PDFs, its operational
+expenditure budget workbooks, and its blended OPE rate pages into JSON files
+committed under `public/data/`. Raise terms from collective bargaining
+agreements are entered by hand. The site reads nothing but its bundle and those
+files.
 
 ## Data
 
@@ -16,11 +18,20 @@ operational expenditure budget workbooks into JSON files committed under
 - Operational expenditure budgets - one XLSX workbook per fiscal year, linked
   from the Budget and Resource Planning office's Budget Reports page and
   downloaded by `scripts/scrape` into the gitignored `.cache/sources/budget/`.
+- Blended OPE rate pages - three Budget and Resource Planning pages (current
+  rates, rate history, rate-group matrix), downloaded by `scripts/scrape` into
+  the gitignored `.cache/sources/rates/`.
+- Collective bargaining agreements and UO salary announcements - read by hand
+  for `public/data/raises.json`.
 - `public/data/fall/<year>.json` - one census year's job records; written by
   `scripts/scrape`.
 - `public/data/budget/FY<yy>.json` - one fiscal year's budget rows by
   department, fund, account type, and posting period, with that year's names;
   written by `scripts/scrape`.
+- `public/data/ope.json` - OPE, leave, and PERS repayment rates by rate group
+  and year, and the rate groups; written by `scripts/scrape`.
+- `public/data/raises.json` - raise terms by employee group, each with its
+  citation, and the recorded gaps; edited by hand.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
   dates, and counts; written by `scripts/scrape`.
 
@@ -30,6 +41,9 @@ operational expenditure budget workbooks into JSON files committed under
 flowchart LR
   pdfs[Fall Census PDFs] --> scrape[scripts/scrape]
   xlsx[Budget workbooks] --> scrape
+  html[OPE rate pages] --> scrape
+  cba[Agreements] --> hand[Hand entry]
+  hand --> json[public/data]
   scrape --> json[public/data]
   json --> site[src]
   site --> reader[Reader]
@@ -53,6 +67,8 @@ flowchart LR
   writes the year files.
 - `scripts/scrape/budget.ts` - the budget step: downloads the workbooks and
   writes the year files.
+- `scripts/scrape/rates.ts` - the rates step: downloads the OPE pages and writes
+  the rates file.
 - `scripts/scrape/fetch.ts` - network access: robots.txt, identification,
   request spacing, and the conditional download cache.
 - `scripts/scrape/robots.ts` - robots.txt rules.
@@ -69,6 +85,7 @@ flowchart LR
 - `scripts/scrape/budget-links.ts` - the workbook links on the Budget Reports
   page.
 - `scripts/scrape/budget-file.ts` - one budget workbook as a typed budget year.
+- `scripts/scrape/ope-pages.ts` - the OPE rate pages as typed rates.
 - `scripts/scrape/cache.ts` - the source and data locations.
 - `scripts/committed-data.test.ts` - schema and total checks of every committed
   data file.
