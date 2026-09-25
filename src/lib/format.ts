@@ -6,7 +6,19 @@ const DOLLARS = new Intl.NumberFormat('en-US', {
 
 const COUNT = new Intl.NumberFormat('en-US')
 
+const FTE = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
+const SHARE = new Intl.NumberFormat('en-US', {
+  style: 'percent',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
 const CENTS_PER_DOLLAR = 100
+const HUNDREDTHS = 100
 
 /** Formats integer cents as whole dollars, e.g. `$1,916,052,234`. */
 export function formatDollars(cents: number): string {
@@ -15,4 +27,13 @@ export function formatDollars(cents: number): string {
 
 export function formatCount(count: number): string {
   return COUNT.format(count)
+}
+
+/** Formats FTE held as integer hundredths, e.g. `6,099.4`. */
+export function formatFte(hundredths: number): string {
+  return FTE.format(hundredths / HUNDREDTHS)
+}
+
+export function formatShare(part: number, whole: number): string {
+  return SHARE.format(whole === 0 ? 0 : part / whole)
 }

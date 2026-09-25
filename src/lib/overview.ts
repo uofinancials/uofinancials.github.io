@@ -1,4 +1,7 @@
+import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
+import type { FallEntry, Manifest } from '../data/manifest.ts'
+import { type AreaAssignment, createAreaAssigner } from './areas.ts'
 
 /** FTE is held as integer hundredths (the sum of appointment percents). */
 export type Totals = {
@@ -24,6 +27,7 @@ const TEMP_POSITION_CLASS = /^TS/
 const PERCENT = 100
 const NO_CATEGORY = 'No category'
 const FISCAL_YEAR_START_MONTH = 7
+export const UNASSIGNED_AREA = 'Area not assigned'
 
 export function isClassifiedTemp(record: FallRecord): boolean {
   return (
@@ -92,4 +96,35 @@ export function fiscalYearOf(isoDate: string): number {
   const year = Number(isoDate.slice(0, 4))
   const month = Number(isoDate.slice(5, 7))
   return month >= FISCAL_YEAR_START_MONTH ? year + 1 : year
+}
+
+export function latestCensus(manifest: Manifest): FallEntry {
+  const latest = manifest.fall.reduce<FallEntry | undefined>(
+    (best, entry) => (!best || entry.year > best.year ? entry : best),
+    undefined,
+  )
+  if (!latest) throw new Error('The manifest lists no Fall census')
+  return latest
+}
+
+export type CensusOverview = Overview & {
+  /** Jobs in the area table by how their area was assigned. */
+  areaBases: Record<AreaAssignment['basis'], number>
+}
+
+/** The overview of one census, with areas named from its fiscal year's budget. */
+export function buildCensusOverview(
+  records: FallRecord[],
+  orgs: BudgetYear['orgs'],
+): CensusOverview {
+  const assign = createAreaAssigner(records, orgs)
+  const areaBases = { published: 0, name: 0, hand: 0, unassigned: 0 }
+  for (const record of records) {
+    if (!isClassifiedTemp(record)) areaBases[assign(record).basis] += 1
+  }
+  const areaName = (record: FallRecord) => {
+    const { area } = assign(record)
+    return area === null ? UNASSIGNED_AREA : (orgs[area]?.name ?? area)
+  }
+  return { ...buildOverview(records, areaName), areaBases }
 }

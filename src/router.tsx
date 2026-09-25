@@ -8,9 +8,15 @@ import {
 import { PageError } from '@/components/page-error'
 import { PageLoading } from '@/components/page-loading'
 import { SiteLayout } from '@/components/site-layout'
-import { manifestQuery, raiseTermsQuery } from '@/data/queries'
-import { HomePage } from '@/pages/home-page'
+import {
+  budgetYearQuery,
+  fallYearQuery,
+  manifestQuery,
+  raiseTermsQuery,
+} from '@/data/queries'
+import { fiscalYearOf, latestCensus } from '@/lib/overview'
 import { NotFoundPage } from '@/pages/not-found-page'
+import { OverviewPage } from '@/pages/overview-page'
 import { SourcesPage } from '@/pages/sources-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -21,7 +27,18 @@ const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: HomePage,
+  loader: async ({ context: { queryClient } }) => {
+    const census = latestCensus(
+      await queryClient.ensureQueryData(manifestQuery),
+    )
+    const fiscalYear = fiscalYearOf(census.censusDate)
+    await Promise.all([
+      queryClient.ensureQueryData(fallYearQuery(census.year)),
+      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+    ])
+    return { year: census.year, fiscalYear }
+  },
+  component: OverviewPage,
 })
 
 const sourcesRoute = createRoute({

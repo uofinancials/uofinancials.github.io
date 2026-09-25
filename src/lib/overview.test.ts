@@ -1,11 +1,14 @@
 import { expect, test } from 'vitest'
 import type { FallClassified, FallRecord } from '@/data/fall'
 import {
+  buildCensusOverview,
   buildOverview,
   fiscalYearOf,
   groupTotals,
   jobSpendCents,
+  latestCensus,
   summarize,
+  UNASSIGNED_AREA,
 } from './overview'
 
 function job(overrides: Partial<FallClassified>): FallRecord {
@@ -119,4 +122,55 @@ test('a census date falls in the fiscal year ending the next June', () => {
   expect(fiscalYearOf('2025-11-01')).toBe(2026)
   expect(fiscalYearOf('2014-10-31')).toBe(2015)
   expect(fiscalYearOf('2026-06-30')).toBe(2026)
+})
+
+test('the latest census is the manifest entry with the highest year', () => {
+  const entry = (year: number) => ({
+    year,
+    censusDate: `${year}-11-01`,
+    sourcePage: 'https://example.org',
+    files: [],
+  })
+  expect(
+    latestCensus({
+      fall: [entry(2024), entry(2025), entry(2014)],
+      budget: [],
+      rates: null,
+    }).year,
+  ).toBe(2025)
+  expect(() => latestCensus({ fall: [], budget: [], rates: null })).toThrow(
+    'The manifest lists no Fall census',
+  )
+})
+
+test('the census overview names areas and counts how each was assigned', () => {
+  const overview = buildCensusOverview(
+    [
+      job({ payDepartment: { code: '222120', name: 'CAS Theatre Arts' } }),
+      job({
+        name: 'Roe, Bo',
+        payDepartment: { code: '223500', name: 'CAS Math' },
+      }),
+      job({
+        name: 'Poe, Cy',
+        payDepartment: { code: '999999', name: 'Zed Ops' },
+      }),
+    ],
+    {
+      '222000': { name: 'Arts & Sciences, College of', level: 3, parent: null },
+      '222120': { name: 'CAS Theatre Arts', level: 5, parent: '222000' },
+    },
+  )
+  expect(
+    overview.byArea.map((group) => [group.key, group.totals.jobs]),
+  ).toEqual([
+    ['Arts & Sciences, College of', 2],
+    [UNASSIGNED_AREA, 1],
+  ])
+  expect(overview.areaBases).toEqual({
+    published: 1,
+    name: 1,
+    hand: 0,
+    unassigned: 1,
+  })
 })

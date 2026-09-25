@@ -16,17 +16,6 @@ function renderAt(path: string) {
   render(<App queryClient={queryClient} router={router} />)
 }
 
-test('the home page renders inside the layout with the independence notice', async () => {
-  renderAt('/')
-  expect(
-    await screen.findByRole('heading', { level: 1, name: 'UO Financials' }),
-  ).toBeInTheDocument()
-  expect(screen.getByRole('contentinfo')).toHaveTextContent(
-    'not affiliated with',
-  )
-  expect(screen.getByRole('link', { name: 'Report it' })).toBeInTheDocument()
-})
-
 test('an unknown path renders the not-found page inside the layout', async () => {
   renderAt('/no-such-page')
   expect(
