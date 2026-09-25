@@ -22,6 +22,7 @@ import {
 
 const SAME_NAME_NOTE =
   'UO publishes no person identifier. Records are grouped by the name exactly as published, so one name may be more than one person, and one person may appear under more than one name.'
+const MATCH_NOTE = `a name matches when every word typed appears in it, ignoring case and commas. Its years are the censuses that list the name, and its department is the pay department of its primary job in the latest of them (or its first listed job, with no primary job). The same name may be more than one person.`
 const LINK_NOTE =
   'linked year to year on the exact name and the same pay department of a single primary job. Computed by this site; not published by UO.'
 
@@ -97,13 +98,15 @@ export function PeoplePage() {
     combine: toPeople,
   })
   const person = people.find((entry) => entry.name === name)
+  const firstYear = Math.min(...years)
+  const lastYear = Math.max(...years)
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
       <h1 className="text-2xl font-semibold">People</h1>
       <p className="text-sm text-muted-foreground">
-        Every job the Fall {years[0]}-{years.at(-1)} Census salary reports
-        publish under a name, as published.
+        Every job the Fall {firstYear}-{lastYear} Census salary reports publish
+        under a name, as published.
       </p>
       <SearchField
         label="Search by name"
@@ -119,6 +122,10 @@ export function PeoplePage() {
           <p>No Fall record is published under the name {name}.</p>
         ))}
       <Matches people={people} q={q} />
+      <SourceCitation
+        source={{ kind: 'fall-range', from: firstYear, to: lastYear }}
+        computed={MATCH_NOTE}
+      />
     </div>
   )
 }

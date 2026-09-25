@@ -48,6 +48,16 @@ test('a year with two primary jobs is not linked, and keeps both records', () =>
   ).toEqual([2, 1])
 })
 
+test('the latest pay department is the latest census’s primary job’s', () => {
+  const [ann] = indexPeople([
+    census(2025, [
+      classifiedJob({ jobType: 'Secondary', payDepartment: physics }),
+      classifiedJob(),
+    ]),
+  ])
+  expect(ann?.latestPayDepartment).toBe('Dept')
+})
+
 const people = indexPeople([
   census(2025, [
     classifiedJob({ name: 'Smith, John' }),

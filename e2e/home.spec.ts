@@ -377,6 +377,10 @@ test('a linked run is labelled as computed, and the people page does not scroll 
   )
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+  await page.goto('/people?q=smith')
+  await expect(
+    page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
+  ).toBeVisible()
   await page.goto('/people?q=zzzz')
   await expect(page.getByRole('main')).toContainText('No name matches.')
 })

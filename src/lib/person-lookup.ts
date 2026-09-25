@@ -64,6 +64,13 @@ function recordsByNameAndYear(
   return byName
 }
 
+function latestPayDepartment(years: PersonYear[]): string {
+  const records = years.at(-1)?.records ?? []
+  const job =
+    records.find((record) => record.jobType === 'Primary') ?? records[0]
+  return job?.payDepartment.name ?? ''
+}
+
 /** One entry per name exactly as published, sorted by name. */
 export function indexPeople(years: FallYear[]): Person[] {
   const linked = linkedYearsByName(years)
@@ -80,8 +87,7 @@ export function indexPeople(years: FallYear[]): Person[] {
         runs: chain(personYears, ({ year }) => linkedFrom.has(year - 1)).map(
           (run) => ({ years: run, isLinked: run.length > 1 }),
         ),
-        latestPayDepartment:
-          personYears.at(-1)?.records[0]?.payDepartment.name ?? '',
+        latestPayDepartment: latestPayDepartment(personYears),
       }
     })
     .sort((a, b) => a.name.localeCompare(b.name, 'en'))
