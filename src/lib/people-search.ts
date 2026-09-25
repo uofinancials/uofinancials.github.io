@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { salariesSearchSchema } from './salaries-search.ts'
+import { censusSearchSchema } from './census-search.ts'
 
 export const PEOPLE_SORTS = [
   'name',
@@ -53,8 +53,8 @@ export type PeopleChart = (typeof PEOPLE_CHARTS)[number]
 const text = z.string().min(1).optional().catch(undefined)
 const wholeDollars = z.number().int().nonnegative().optional().catch(undefined)
 
-/** The people list's URL search params: the salaries filters, plus name, title, category, rate range, sort, page, chart, and shown columns; `name` is only read to redirect an old person link. */
-export const peopleSearchSchema = salariesSearchSchema.extend({
+/** The people list's URL search params: the census job filters, plus name, title, category, rate range, sort, page, chart, and shown columns; `name` is only read to redirect an old person link. */
+export const peopleSearchSchema = censusSearchSchema.extend({
   q: text,
   title: text,
   category: text,

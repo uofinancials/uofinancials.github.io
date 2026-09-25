@@ -1,4 +1,5 @@
 import type { FallRecord } from '../data/fall.ts'
+import { type CensusView, resolveCensusView } from './census-search.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from './format.ts'
 import {
   DEFAULT_COLUMNS,
@@ -10,7 +11,6 @@ import {
 } from './people-search.ts'
 import { titleOf } from './person-fields.ts'
 import { hasEveryWord, queryWords } from './person-lookup.ts'
-import { resolveSalariesView, type SalariesView } from './salaries-search.ts'
 import {
   type Distribution,
   filterJobs,
@@ -22,7 +22,7 @@ import { measureJobs } from './trends.ts'
 
 export const PAGE_SIZE = 50
 
-export type PeopleView = SalariesView & {
+export type PeopleView = CensusView & {
   q: string
   title: string
   category: string | null
@@ -43,7 +43,7 @@ export function resolvePeopleView(
   years: number[],
 ): PeopleView {
   return {
-    ...resolveSalariesView(search, years),
+    ...resolveCensusView(search, years),
     q: search.q ?? '',
     title: search.title ?? '',
     category: search.category ?? null,

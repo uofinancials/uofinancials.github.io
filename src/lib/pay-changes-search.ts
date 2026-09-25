@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { orgCodeParam } from '../data/budget.ts'
 import { staffKindSchema } from '../data/fall.ts'
+import { resolveCensusYear } from './census-search.ts'
 import type { PayChangeFilter } from './pay-changes.ts'
-import { resolveCensusYear } from './salaries-search.ts'
 
 /** The pay changes page's URL search params; `pair` is the earlier census of the pair shown. A malformed value falls back to its default. */
 export const payChangesSearchSchema = z.object({

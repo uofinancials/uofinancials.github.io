@@ -1,7 +1,7 @@
 import { RemovableFilter } from '@/components/removable-filter'
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
-import type { Place, SalariesSearch, SalariesView } from '@/lib/salaries-search'
+import type { CensusSearch, CensusView, Place } from '@/lib/census-search'
 import { TERMS } from '@/lib/salary-distribution'
 import { TREND_GROUPS } from '@/lib/trend-groups'
 import {
@@ -16,8 +16,33 @@ const TERM_OPTIONS: [string, string][] = [
   ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
 ]
 
-/** The salaries view's controls; each change is a new URL search. */
-export function SalariesControls({
+function PlaceFilter({
+  place,
+  year,
+  onChange,
+}: {
+  place: Place
+  year: number
+  onChange: (search: CensusSearch) => void
+}) {
+  if (place.scope === 'unknown') {
+    return (
+      <p>
+        No jobs for code {place.code} in Fall {year}.
+      </p>
+    )
+  }
+  if (place.scope !== 'department') return null
+  return (
+    <RemovableFilter
+      text={`Department: ${place.name} (${place.code})`}
+      onRemove={() => onChange({ dept: undefined })}
+    />
+  )
+}
+
+/** The census job filters' controls; each change is a new URL search. */
+export function CensusControls({
   view,
   years,
   areas,
@@ -25,12 +50,12 @@ export function SalariesControls({
   positionName,
   onChange,
 }: {
-  view: SalariesView
+  view: CensusView
   years: number[]
   areas: { code: string; name: string }[]
   place: Place
   positionName: string | null
-  onChange: (search: SalariesSearch) => void
+  onChange: (search: CensusSearch) => void
 }) {
   return (
     <div className="space-y-4">
@@ -82,12 +107,7 @@ export function SalariesControls({
           }
         />
       </div>
-      {place.scope === 'department' && (
-        <RemovableFilter
-          text={`Department: ${place.name} (${place.code})`}
-          onRemove={() => onChange({ dept: undefined })}
-        />
-      )}
+      <PlaceFilter place={place} year={view.year} onChange={onChange} />
       {positionName !== null && (
         <RemovableFilter
           text={`Class or rank: ${positionName}`}

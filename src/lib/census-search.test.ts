@@ -1,17 +1,17 @@
 import { expect, test } from 'vitest'
 import type { BudgetYear } from '@/data/budget'
 import { unclassifiedJob } from '@/test/fall-records'
-import { toDepartmentCensus } from './department-jobs'
 import {
+  censusSearchSchema,
   describePlace,
   placeJobs,
-  resolveSalariesView,
-  salariesSearchSchema,
-} from './salaries-search'
+  resolveCensusView,
+} from './census-search'
+import { toDepartmentCensus } from './department-jobs'
 import { filterJobs } from './salary-distribution'
 
 test('a malformed search falls back to the defaults', () => {
-  const search = salariesSearchSchema.parse({
+  const search = censusSearchSchema.parse({
     year: 2019,
     group: 'Nope',
     kind: 'classified',
@@ -19,7 +19,7 @@ test('a malformed search falls back to the defaults', () => {
     dept: '12',
     position: 7,
   })
-  expect(resolveSalariesView(search, [2019, 2025])).toEqual({
+  expect(resolveCensusView(search, [2019, 2025])).toEqual({
     year: 2019,
     group: null,
     kind: 'classified',
@@ -30,13 +30,13 @@ test('a malformed search falls back to the defaults', () => {
 })
 
 test('a code the URL parser read as a number is still a code', () => {
-  expect(salariesSearchSchema.parse({ dept: 223100 }).dept).toBe('223100')
-  expect(salariesSearchSchema.parse({ dept: 22310 }).dept).toBeUndefined()
+  expect(censusSearchSchema.parse({ dept: 223100 }).dept).toBe('223100')
+  expect(censusSearchSchema.parse({ dept: 22310 }).dept).toBeUndefined()
 })
 
 test('a census not listed falls back to the latest', () => {
   expect(
-    resolveSalariesView({ year: 2013, term: 12, dept: '222000' }, [2014, 2025]),
+    resolveCensusView({ year: 2013, term: 12, dept: '222000' }, [2014, 2025]),
   ).toMatchObject({ year: 2025, term: 12, dept: '222000' })
 })
 
@@ -65,7 +65,7 @@ test('a view narrows the census to a department or area, and names what the code
     },
     budget,
   )
-  const view = resolveSalariesView({}, [2025])
+  const view = resolveCensusView({}, [2025])
   expect(placeJobs(census, null)).toHaveLength(3)
   expect(placeJobs(census, '222000')).toHaveLength(2)
   expect(

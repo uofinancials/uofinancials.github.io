@@ -2,8 +2,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { budgetYearQuery, fallYearQuery } from '@/data/queries'
 import { listAreas } from '@/lib/areas'
+import { describePlace, placeJobs } from '@/lib/census-search'
 import { toDepartmentCensus } from '@/lib/department-jobs'
-import { describePlace, placeJobs } from '@/lib/salaries-search'
 import { positionLabel } from '@/lib/salary-distribution'
 
 /** One census's jobs placed in the chosen department or area, with the areas to choose from and the chosen class or rank's name. */

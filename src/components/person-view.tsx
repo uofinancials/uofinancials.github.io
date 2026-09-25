@@ -59,13 +59,6 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
           <Link
             className="underline"
-            to="/salaries"
-            search={{ dept: code, year: entry.year }}
-          >
-            Salary distribution, {department}, Fall {entry.year}
-          </Link>
-          <Link
-            className="underline"
             to="/pay-changes"
             search={{ dept: code, pair: entry.year }}
           >
@@ -82,13 +75,6 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
       ))}
       {positionsOf(entry.records).map(({ position, label }) => (
         <p key={position} className="flex flex-wrap gap-x-4 text-sm">
-          <Link
-            className="underline"
-            to="/salaries"
-            search={{ position, year: entry.year }}
-          >
-            Salary distribution, {label}, Fall {entry.year}
-          </Link>
           <Link
             className="underline"
             to="/people"

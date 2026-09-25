@@ -26,7 +26,7 @@ function BinTable({
 }: {
   distribution: Distribution
   groups: TrendGroup[]
-  onSelectBin?: (bin: SalaryBin) => void
+  onSelectBin: (bin: SalaryBin) => void
 }) {
   return (
     <Table>
@@ -47,17 +47,13 @@ function BinTable({
         {distribution.bins.map((bin) => (
           <TableRow key={bin.floorCents}>
             <TableHead scope="row" className="font-normal">
-              {onSelectBin ? (
-                <button
-                  type="button"
-                  className="underline"
-                  onClick={() => onSelectBin(bin)}
-                >
-                  {binRange(bin)}
-                </button>
-              ) : (
-                binRange(bin)
-              )}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => onSelectBin(bin)}
+              >
+                {binRange(bin)}
+              </button>
             </TableHead>
             {groups.map((group) => (
               <TableCell key={group} className={NUMBER_CELL}>
@@ -108,54 +104,40 @@ function Summary({
   )
 }
 
-/** Jobs by salary rate range, stacked by group, with the count, percentiles, and the table behind the chart; `onSelectBin` makes each range choosable, and `isCollapsed` puts the numbers behind a toggle. */
+/** Jobs by salary rate range, stacked by group, with the count, percentiles, and the table behind a toggle; each range is choosable through `onSelectBin`. */
 export function SalaryDistributionFigure({
   distribution,
   label,
   onSelectBin,
-  isCollapsed = false,
 }: {
   distribution: Distribution
   label: string
-  onSelectBin?: (bin: SalaryBin) => void
-  isCollapsed?: boolean
+  onSelectBin: (bin: SalaryBin) => void
 }) {
   const stacks = stackedCounts(distribution)
   const groups = stacks.map(({ key }) => key)
-  const numbers = (
-    <>
-      <Summary distribution={distribution} groups={groups} />
-      <BinTable
-        distribution={distribution}
-        groups={groups}
-        onSelectBin={onSelectBin}
-      />
-    </>
-  )
   return (
     <section className="space-y-4">
       <StackedBarChart
         labels={distribution.bins.map(binLabel)}
         series={stacks}
         label={label}
-        onSelect={
-          onSelectBin &&
-          ((index) => {
-            const bin = distribution.bins[index]
-            if (bin) onSelectBin(bin)
-          })
-        }
+        onSelect={(index) => {
+          const bin = distribution.bins[index]
+          if (bin) onSelectBin(bin)
+        }}
       />
-      {isCollapsed ? (
-        <details className="space-y-4">
-          <summary className="cursor-pointer text-sm">
-            The chart’s numbers
-          </summary>
-          {numbers}
-        </details>
-      ) : (
-        numbers
-      )}
+      <details className="space-y-4">
+        <summary className="cursor-pointer text-sm">
+          The chart’s numbers
+        </summary>
+        <Summary distribution={distribution} groups={groups} />
+        <BinTable
+          distribution={distribution}
+          groups={groups}
+          onSelectBin={onSelectBin}
+        />
+      </details>
     </section>
   )
 }

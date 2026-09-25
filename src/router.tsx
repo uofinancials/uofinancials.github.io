@@ -18,6 +18,7 @@ import {
   manifestQuery,
   raiseTermsQuery,
 } from '@/data/queries'
+import { resolveCensusYear } from '@/lib/census-search'
 import {
   departmentSearchSchema,
   departmentsSearchSchema,
@@ -25,7 +26,6 @@ import {
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
 import { payChangesSearchSchema } from '@/lib/pay-changes-search'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
-import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
@@ -34,7 +34,6 @@ import { OverviewPage } from '@/pages/overview-page'
 import { PayChangesPage } from '@/pages/pay-changes-page'
 import { PeoplePage } from '@/pages/people-page'
 import { PersonPage } from '@/pages/person-page'
-import { SalariesPage } from '@/pages/salaries-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
 
@@ -140,15 +139,6 @@ async function loadCensus({
   return { years, year, fiscalYear }
 }
 
-const salariesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/salaries',
-  validateSearch: salariesSearchSchema,
-  loaderDeps: ({ search }) => ({ year: search.year }),
-  loader: loadCensus,
-  component: SalariesPage,
-})
-
 const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people',
@@ -201,7 +191,6 @@ const routeTree = rootRoute.addChildren([
   trendsRoute,
   departmentsRoute,
   departmentRoute,
-  salariesRoute,
   peopleRoute,
   personRoute,
   payChangesRoute,

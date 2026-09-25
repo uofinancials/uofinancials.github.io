@@ -194,13 +194,6 @@ export function DepartmentJobsSection({
           <p className="flex flex-wrap gap-x-4 text-sm">
             <Link
               className="underline"
-              to="/salaries"
-              search={{ dept: code, year: view.year }}
-            >
-              Salary distribution, Fall {view.year}
-            </Link>
-            <Link
-              className="underline"
               to="/people"
               search={{ dept: code, year: view.year }}
             >

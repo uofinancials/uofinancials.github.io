@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { CensusControls } from '@/components/census-controls'
 import { ColumnPicker } from '@/components/column-picker'
 import { GroupJobsFigure } from '@/components/group-jobs-figure'
 import { PeopleControls } from '@/components/people-controls'
 import { peopleIndexQuery } from '@/components/people-index-query'
 import { PeopleTable } from '@/components/people-table'
-import { SalariesControls } from '@/components/salaries-controls'
 import { SalaryDistributionFigure } from '@/components/salary-distribution-figure'
 import { SortControls } from '@/components/sort-controls'
 import { SourceCitation } from '@/components/source-citation'
@@ -30,7 +30,7 @@ const CHART_LABELS: Record<PeopleChart, string> = {
   rates: 'Salary rates',
   groups: 'By group',
 }
-const COMPUTED = `the list shows each job as published, in the order chosen, ties by name. A name or title matches when it holds every word typed, ignoring case and commas, and the rate range includes both ends. The charts count each job once, in the $10,000 range its published rate falls in or in its group as on the Trends page. Percentiles and medians are over primary jobs, temporaries left out, and need ${MIN_JOBS_SHOWN} of them. Charts over fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
+const COMPUTED = `the list shows each job as published, in the order chosen, ties by name. A name or title matches when it holds every word typed, ignoring case and commas, and the rate range includes both ends. The charts count each job once, in the $10,000 range its published rate falls in, with lower bounds included, or in its group as on the Trends page. Percentiles and medians are over primary jobs, temporaries left out, interpolated between ranks, and need ${MIN_JOBS_SHOWN} of them. Charts over fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
 
 function ChartTabs({ chart }: { chart: PeopleChart }) {
   return (
@@ -78,7 +78,6 @@ function SummaryChart({
           distribution={matching.distribution}
           label={`Matching jobs by salary rate, Fall ${view.year}`}
           onSelectBin={onSelectBin}
-          isCollapsed
         />
       ) : (
         <GroupJobsFigure
@@ -171,36 +170,9 @@ function JobsSection({
   )
 }
 
-function SalariesLink({
-  search,
-  year,
-}: {
-  search: PeopleSearch
-  year: number
-}) {
-  return (
-    <p className="text-sm">
-      <Link
-        className="underline"
-        to="/salaries"
-        search={{
-          year: search.year,
-          group: search.group,
-          kind: search.kind,
-          term: search.term,
-          dept: search.dept,
-          position: search.position,
-        }}
-      >
-        Salary distribution without names, Fall {year}
-      </Link>
-    </p>
-  )
-}
-
 export function PeoplePage() {
   const navigate = useNavigate({ from: '/people' })
-  const { search, years, view, census, matching } = usePeople()
+  const { years, view, census, matching } = usePeople()
   const change = (patch: PeopleSearch, replace = false) =>
     navigate({
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
@@ -223,7 +195,7 @@ export function PeoplePage() {
         onChange={(patch) => change(patch)}
         onType={(patch) => change(patch, true)}
       />
-      <SalariesControls
+      <CensusControls
         view={view}
         years={years}
         areas={census.areas}
@@ -246,7 +218,6 @@ export function PeoplePage() {
       {matching.jobs.length > 0 && (
         <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
       )}
-      <SalariesLink search={search} year={view.year} />
       <SourceCitation
         source={{ kind: 'fall', year: view.year }}
         computed={COMPUTED}
