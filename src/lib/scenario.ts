@@ -1,15 +1,28 @@
 import type { FallRecord } from '../data/fall.ts'
 import type { OpeRates } from '../data/ope.ts'
-import { placeJobs } from './census-search.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
-import { egShareOf } from './eg-share.ts'
-import { type OpeGroupRef, opeGroupOf } from './ope-groups.ts'
-import { isClassifiedTemp, jobSpendCents } from './overview.ts'
-import { filterJobs, type JobFilter } from './salary-distribution.ts'
-import { trendGroupOf } from './trend-groups.ts'
+import {
+  type FreezeRule,
+  type FreezeSavings,
+  freezeSavings,
+} from './scenario-freeze.ts'
+import {
+  addCost,
+  BASIS,
+  costOf,
+  emptySavings,
+  type Job,
+  latestLeaveYear,
+  type Rates,
+  ratesFor,
+  type Savings,
+  type ScenarioScope,
+  scopeJobs,
+  toJobs,
+} from './scenario-jobs.ts'
 
-/** Which jobs a rule reaches: the /people filters. */
-export type ScenarioScope = JobFilter & { dept: string | null }
+export type { FreezeRule, FreezeSavings } from './scenario-freeze.ts'
+export type { Savings, ScenarioScope } from './scenario-jobs.ts'
 
 export type Rule =
   | {
@@ -20,23 +33,18 @@ export type Rule =
     }
   | { kind: 'remove'; scope: ScenarioScope }
   | { kind: 'cut'; scope: ScenarioScope; cutBasisPoints: number }
+  | FreezeRule
 
-export type Savings = {
-  jobs: number
-  salaryCents: number
-  /** `null` when no OPE rate is published for the fiscal year used. */
-  fullCostCents: number | null
-  /** Full cost, or salary where it is `null`, weighted by each job's E&G share. */
-  egCents: number
-}
+type CensusRule = Exclude<Rule, FreezeRule>
 
 export type ScenarioResult = {
   /** The census's jobs a scenario can change, and what they cost. */
   base: Savings
-  /** One per rule, in order: the jobs it changed and what it saved. */
+  /** One per rule, in order: the jobs it changed and what it saved; zero for a freeze, whose savings are in `freezes`. */
   rules: Savings[]
-  /** The sum of `rules`: the base less what remains. */
+  /** The sum of `rules`: the base less what remains after every rule but the freezes. */
   total: Savings
+  freezes: FreezeSavings[]
   /** Classified temporaries left out of the base. */
   temporaries: number
   /** `null` when no OPE rate is published for the requested fiscal year. */
@@ -44,121 +52,15 @@ export type ScenarioResult = {
   leaveFiscalYear: number
 }
 
-const BASIS = 10_000
-const BASIS_BIG = 10_000n
-
 export const SCENARIO_METHOD =
   'A scenario is an estimate over one Fall census, not a prediction. Its base is every job except classified temporaries, whose annualised hourly rates overstate pay. Rules apply in order, each to what the rules before it left: a removed job drops out of every later rule, and a cut rate is the rate later rules see, so no job is counted twice. A threshold compares the published full-time annual rate with the threshold and cuts only the part above it. Savings are gross: no revenue a change would lose is counted.'
-
-export const FULL_COST_METHOD =
-  "Full cost is salary x (1 - leave rate) x (1 + OPE rate), following BRP's rate guidance, with each job's OPE rate group estimated by this site. It uses the OPE rate for the fiscal year stated and the latest published leave rate. The PERS side-account charge is left out, because the census does not say which fund pays a job. Overloads are costed at salary, with no OPE."
-
-type Job = {
-  record: FallRecord
-  rateCents: number
-  isRemoved: boolean
-  group: OpeGroupRef | null
-  shareBasisPoints: number
-}
-
-type JobCost = {
-  salaryCents: number
-  fullCostCents: number | null
-  egCents: number
-}
-
-type Rates = { ope: Map<string, number>; leave: Map<string, number> } | null
-
-function divideHalfUp(numerator: bigint, denominator: bigint): bigint {
-  return (numerator * 2n + denominator) / (denominator * 2n)
-}
-
-function leaveKey(group: string, appliesTo: string | null): string {
-  return `${group}|${appliesTo ?? ''}`
-}
-
-function latestLeaveYear(rates: OpeRates): number {
-  return Math.max(...rates.leaveRates.map((rate) => rate.fiscalYear))
-}
-
-function ratesFor(rates: OpeRates, opeFiscalYear: number): Rates {
-  const ope = rates.opeRates.filter((rate) => rate.fiscalYear === opeFiscalYear)
-  if (ope.length === 0) return null
-  const leaveYear = latestLeaveYear(rates)
-  return {
-    ope: new Map(ope.map((rate) => [rate.group, rate.basisPoints])),
-    leave: new Map(
-      rates.leaveRates
-        .filter((rate) => rate.fiscalYear === leaveYear)
-        .map((rate) => [
-          leaveKey(rate.group, rate.appliesTo),
-          rate.basisPoints,
-        ]),
-    ),
-  }
-}
-
-function fullCostOf(
-  salaryCents: number,
-  group: OpeGroupRef | null,
-  rates: Rates,
-) {
-  if (!rates) return null
-  if (!group) return salaryCents
-  const ope = rates.ope.get(group.group)
-  const leave = rates.leave.get(leaveKey(group.group, group.leave))
-  if (ope === undefined || leave === undefined) {
-    throw new Error(
-      `No OPE or leave rate for ${group.group} ${group.leave ?? ''}`.trim(),
-    )
-  }
-  const product =
-    BigInt(salaryCents) *
-    (BASIS_BIG - BigInt(leave)) *
-    (BASIS_BIG + BigInt(ope))
-  return Number(divideHalfUp(product, BASIS_BIG * BASIS_BIG))
-}
-
-function costOf(job: Job, rateCents: number, rates: Rates): JobCost {
-  if (job.isRemoved)
-    return { salaryCents: 0, fullCostCents: rates ? 0 : null, egCents: 0 }
-  const salaryCents = jobSpendCents({
-    ...job.record,
-    annualSalaryRateCents: rateCents,
-  })
-  const fullCostCents = fullCostOf(salaryCents, job.group, rates)
-  const egCents = Number(
-    divideHalfUp(
-      BigInt(fullCostCents ?? salaryCents) * BigInt(job.shareBasisPoints),
-      BASIS_BIG,
-    ),
-  )
-  return { salaryCents, fullCostCents, egCents }
-}
-
-function emptySavings(rates: Rates): Savings {
-  return {
-    jobs: 0,
-    salaryCents: 0,
-    fullCostCents: rates ? 0 : null,
-    egCents: 0,
-  }
-}
-
-function addCost(savings: Savings, cost: JobCost, sign: 1 | -1): void {
-  savings.salaryCents += sign * cost.salaryCents
-  savings.egCents += sign * cost.egCents
-  if (savings.fullCostCents !== null && cost.fullCostCents !== null) {
-    savings.fullCostCents += sign * cost.fullCostCents
-  }
-}
 
 function scaleRate(rateCents: number, keepBasisPoints: number): number {
   return Math.round((rateCents * keepBasisPoints) / BASIS)
 }
 
 /** The rate a job has after a rule, or `null` when the rule removes it. */
-function rateAfter(rule: Rule, rateCents: number): number | null {
+function rateAfter(rule: CensusRule, rateCents: number): number | null {
   switch (rule.kind) {
     case 'remove':
       return null
@@ -172,15 +74,8 @@ function rateAfter(rule: Rule, rateCents: number): number | null {
   }
 }
 
-export function scopeJobs(
-  census: DepartmentCensus,
-  scope: ScenarioScope,
-): Set<FallRecord> {
-  return new Set(filterJobs(placeJobs(census, scope.dept), scope, census.year))
-}
-
 function applyRule(
-  rule: Rule,
+  rule: CensusRule,
   jobs: Job[],
   inScope: Set<FallRecord>,
   rates: Rates,
@@ -200,18 +95,6 @@ function applyRule(
   return savings
 }
 
-function toJobs(census: DepartmentCensus, shares: Map<string, number>): Job[] {
-  return census.records
-    .filter((record) => !isClassifiedTemp(record))
-    .map((record) => ({
-      record,
-      rateCents: record.annualSalaryRateCents,
-      isRemoved: false,
-      group: opeGroupOf(record, trendGroupOf(record, census.year), census.year),
-      shareBasisPoints: egShareOf(record, census, shares),
-    }))
-}
-
 function sumSavings(parts: Savings[], rates: Rates): Savings {
   const total = emptySavings(rates)
   for (const part of parts) {
@@ -221,13 +104,19 @@ function sumSavings(parts: Savings[], rates: Rates): Savings {
   return total
 }
 
-/** Runs the rules in order over one census; `opeFiscalYear` picks the OPE rates, usually the fiscal year the census falls in. */
+/**
+ * Runs the rules in order over one census. `opeFiscalYear` picks the OPE
+ * rates, usually the fiscal year the census falls in; freezes take their rates
+ * from `history` and lay their savings over `projectedYears`.
+ */
 export function runScenario(options: {
   census: DepartmentCensus
   rules: Rule[]
   rates: OpeRates
   egShares: Map<string, number>
   opeFiscalYear: number
+  history?: DepartmentCensus[]
+  projectedYears?: number
 }): ScenarioResult {
   const { census, rules, rates, egShares, opeFiscalYear } = options
   const yearRates = ratesFor(rates, opeFiscalYear)
@@ -237,12 +126,25 @@ export function runScenario(options: {
     addCost(base, costOf(job, job.rateCents, yearRates), 1)
   base.jobs = jobs.length
   const ruleSavings = rules.map((rule) =>
-    applyRule(rule, jobs, scopeJobs(census, rule.scope), yearRates),
+    rule.kind === 'freeze'
+      ? emptySavings(yearRates)
+      : applyRule(rule, jobs, scopeJobs(census, rule.scope), yearRates),
   )
+  const freezes = freezeSavings({
+    census,
+    history: options.history ?? [],
+    jobs,
+    freezes: rules.flatMap((freeze, rule) =>
+      freeze.kind === 'freeze' ? [{ rule, freeze }] : [],
+    ),
+    rates: yearRates,
+    projectedYears: options.projectedYears ?? 0,
+  })
   return {
     base,
     rules: ruleSavings,
     total: sumSavings(ruleSavings, yearRates),
+    freezes,
     temporaries: census.records.length - jobs.length,
     opeFiscalYear: yearRates ? opeFiscalYear : null,
     leaveFiscalYear: latestLeaveYear(rates),
