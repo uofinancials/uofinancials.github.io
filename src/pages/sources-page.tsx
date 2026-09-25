@@ -69,7 +69,6 @@ function FallSources({ fall }: { fall: Manifest['fall'] }) {
         'Extracted',
         'Retrieved',
         'Records',
-        'Possible students',
         'SHA-256',
       ]}
     >
@@ -90,9 +89,6 @@ function FallSources({ fall }: { fall: Manifest['fall'] }) {
               <TableCell>{file.retrievedOn}</TableCell>
               <TableCell className={NUMBER_CELL}>
                 {formatCount(file.records)}
-              </TableCell>
-              <TableCell className={NUMBER_CELL}>
-                {formatCount(file.possibleStudents)}
               </TableCell>
               <TableCell className={HASH_CELL}>{file.sha256}</TableCell>
             </TableRow>
@@ -214,9 +210,9 @@ export function SourcesPage() {
         <h1 className="text-2xl font-semibold">Sources</h1>
         <p>
           Every figure on this site comes from reports the University of Oregon
-          publishes without a login. The site extracts the figures into its own
-          files and links to the originals; it does not rehost them. Figures the
-          site computes are labelled as computed.
+          publishes for public consumption. The site extracts the figures into
+          its own files and links to the originals; it does not rehost them.
+          Figures the site computes are labelled as computed.
         </p>
       </div>
       <Section title="Fall Census salary reports">

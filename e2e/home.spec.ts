@@ -41,6 +41,9 @@ test('the sources page lists every committed dataset', async ({ page }) => {
   }
   await expect(page.locator('#rates')).toContainText('Blended-OPE-Rate-History')
   await expect(
+    page.getByRole('columnheader', { name: 'Possible students' }),
+  ).toHaveCount(0)
+  await expect(
     page.getByRole('link', { name: 'United Academics CBA 2025-2027' }),
   ).toBeVisible()
 })
