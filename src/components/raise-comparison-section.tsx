@@ -46,7 +46,7 @@ function TermsTable({ terms }: { terms: AcrossTheBoardTerm[] }) {
       <TableBody>
         {terms.map((term) => (
           <TableRow
-            key={`${term.source.url} ${term.source.location} ${term.appliesTo}`}
+            key={`${term.source.url} ${term.source.location} ${term.appliesTo} ${term.effective.from} ${term.percent}`}
           >
             <TableCell>{term.employeeGroup}</TableCell>
             <TableCell>

@@ -182,9 +182,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     compounded, and the difference in points labelled as other than
     across-the-board (merit, steps, equity, promotions), an estimate for the
     group and never a person (2024-25: SEIU 503 10.8% against 6.6%, United
-    Academics tenure-related 7.9% against 7.9%, from the reports retrieved
-    2026-09-24). The terms used are listed with their citations, and the groups'
-    recorded gaps show as "No term recorded".
+    Academics tenure-related 7.9% against 7.9%, from the census reports and the
+    cited agreements and UO pages, retrieved 2026-09-24). The terms used are
+    listed with their citations, and the groups' recorded gaps show as "No term
+    recorded".
 - Each continuing job is counted in the group, category, department, and class
   or rank of the earlier census. The chosen pair is kept in the link with the
   rest of the Trends view. A figure covering fewer than three jobs is not shown.
