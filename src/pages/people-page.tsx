@@ -30,7 +30,7 @@ const CHART_LABELS: Record<PeopleChart, string> = {
   rates: 'Salary rates',
   groups: 'By group',
 }
-const COMPUTED = `the list shows each job as published, in the order chosen, ties by name. A name or title matches when it holds every word typed, ignoring case and commas, and the rate range includes both ends. The charts count each job once, in the $10,000 range its published rate falls in or in its group as on the Trends page. Percentiles and medians are over primary jobs, temporaries left out, and need ${MIN_JOBS_SHOWN} of them. Charts over fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
+const COMPUTED = `the list shows each job as published, in the order chosen, ties by name. A name or title matches when it holds every word typed, ignoring case and commas, and the rate range includes both ends. The charts count each job once, in the $10,000 range its published rate falls in, with lower bounds included, or in its group as on the Trends page. Percentiles and medians are over primary jobs, temporaries left out, interpolated between ranks, and need ${MIN_JOBS_SHOWN} of them. Charts over fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
 
 function ChartTabs({ chart }: { chart: PeopleChart }) {
   return (
