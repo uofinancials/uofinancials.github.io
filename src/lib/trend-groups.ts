@@ -67,6 +67,25 @@ export function openedLineOf(record: FallRecord, group: TrendGroup): string {
   return isByGradeOnly ? EXEC_OTHER_CATEGORY : category
 }
 
+/** A job's line: its group, or its `openedLineOf` line when a group is opened. */
+export function lineOf(
+  record: FallRecord,
+  group: TrendGroup,
+  opened: TrendGroup | null,
+): string {
+  return opened ? openedLineOf(record, opened) : group
+}
+
+const GROUP_ORDER: readonly string[] = TREND_GROUPS
+
+/** Orders lines as `lineOf` names them: categories alphabetically, groups as `TREND_GROUPS` lists them. */
+export function compareLines(opened: TrendGroup | null) {
+  return (a: string, b: string) =>
+    opened
+      ? a.localeCompare(b)
+      : GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b)
+}
+
 export function publishedCategoriesOf(group: TrendGroup): string[] {
   return Object.entries(UNCLASSIFIED_CATEGORY_GROUPS)
     .filter(([, mapped]) => mapped === group)
@@ -104,28 +123,4 @@ export function stackedCounts(distribution: {
           },
         ],
   )
-}
-
-const NO_RANK = 'No Rank'
-const OA_GRADE = /^(OA\d{2}|EXEC|CCH\d)$/
-
-/** The jobs a person's rate is shown beside: one position class number, one rank, or one OA salary grade. */
-export type PeerGroup = { key: string; label: string }
-
-/** A classified job's class number (any letter prefix), an unclassified job's rank, or for no rank its OA salary grade; `null` for temporaries and jobs with none published. */
-export function peerGroupOf(record: FallRecord): PeerGroup | null {
-  if (record.kind === 'classified') {
-    if (!record.positionClass || isClassifiedTemp(record)) return null
-    const number = record.positionClass.code.slice(1)
-    const title = record.positionClass.title ?? 'Position class'
-    return { key: `class ${number}`, label: `${title} (class ${number})` }
-  }
-  if (record.rank === null) return null
-  if (record.rank !== NO_RANK) {
-    return { key: `rank ${record.rank}`, label: record.rank }
-  }
-  const grade = record.oaSalaryGrade
-  return grade !== null && OA_GRADE.test(grade)
-    ? { key: `grade ${grade}`, label: `OA salary grade ${grade}` }
-    : null
 }

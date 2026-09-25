@@ -1,7 +1,12 @@
 import { expect, test } from 'vitest'
-import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { EXEC_OTHER_CATEGORY } from './trend-groups'
-import { buildTrends, medianRateCents, type TrendFilter } from './trends'
+import {
+  buildTrends,
+  filterNames,
+  medianRateCents,
+  type TrendFilter,
+} from './trends'
 
 const ALL: TrendFilter = {
   kind: 'all',
@@ -184,4 +189,22 @@ test('the pay department and class or rank filters keep only matching jobs, in e
     fteHundredths: 200,
   })
   expect(both.series.map(({ key }) => key)).toEqual(['Faculty'])
+})
+
+test('a filter names its department and class or rank from the first job with them, or keeps the code', () => {
+  const years = [
+    census(2025, [
+      unclassifiedJob({
+        rank: 'Professor',
+        payDepartment: { code: '222222', name: 'Physics' },
+      }),
+    ]),
+  ]
+  expect(
+    filterNames(years, { dept: '222222', position: 'rank Professor' }),
+  ).toEqual({ dept: 'Physics (222222)', position: 'Professor' })
+  expect(filterNames(years, { dept: '000000', position: null })).toEqual({
+    dept: '000000',
+    position: null,
+  })
 })

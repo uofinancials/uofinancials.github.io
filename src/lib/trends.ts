@@ -1,9 +1,10 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { isClassifiedTemp, summarize } from './overview.ts'
+import { type PeerGroup, peerGroupOf } from './peer-group.ts'
+import { department } from './person-fields.ts'
 import {
-  openedLineOf,
-  peerGroupOf,
-  TREND_GROUPS,
+  compareLines,
+  lineOf,
   type TrendGroup,
   trendGroupOf,
 } from './trend-groups.ts'
@@ -33,18 +34,56 @@ export type TrendFilter = {
   to: number
 }
 
-/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, and class or rank; the years are not checked. */
+/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, and class or rank; the years are not checked. `peer` is the job's `peerGroupOf`, found here when not given. */
 export function matchesJob(
   record: FallRecord,
   group: TrendGroup,
   filter: TrendFilter,
+  peer?: PeerGroup | null,
 ): boolean {
   return (
     (filter.kind === 'all' || record.kind === filter.kind) &&
     (filter.group === null || group === filter.group) &&
     (filter.dept === null || record.payDepartment.code === filter.dept) &&
-    (filter.position === null || peerGroupOf(record)?.key === filter.position)
+    (filter.position === null ||
+      (peer === undefined ? peerGroupOf(record) : peer)?.key ===
+        filter.position)
   )
+}
+
+/** The earlier census of each consecutive pair of listed censuses with both in the range. */
+export function pairYears(years: number[], from: number, to: number): number[] {
+  return years.filter(
+    (year) => year >= from && year + 1 <= to && years.includes(year + 1),
+  )
+}
+
+/** How the filter's department and class or rank read, from the first job with them; the code or key itself when no job has it, `null` for one not set. */
+export function filterNames(
+  years: { records: FallRecord[] }[],
+  { dept, position }: Pick<TrendFilter, 'dept' | 'position'>,
+): { dept: string | null; position: string | null } {
+  let deptName: string | undefined
+  let positionName: string | undefined
+  for (const { records } of years) {
+    for (const record of records) {
+      if (
+        dept !== null &&
+        deptName === undefined &&
+        record.payDepartment.code === dept
+      ) {
+        deptName = department(record.payDepartment)
+      }
+      if (position !== null && positionName === undefined) {
+        const peer = peerGroupOf(record)
+        if (peer?.key === position) positionName = peer.label
+      }
+    }
+  }
+  return {
+    dept: dept === null ? null : (deptName ?? dept),
+    position: position === null ? null : (positionName ?? position),
+  }
 }
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
@@ -104,8 +143,6 @@ function measure(year: number, records: FallRecord[]): TrendPoint {
   return { year, ...measureJobs(records) }
 }
 
-const GROUP_ORDER: readonly string[] = TREND_GROUPS
-
 /** One series per group (or per published category of an opened group), and their total, per census in range. */
 export function buildTrends(
   years: { year: number; records: FallRecord[] }[],
@@ -122,7 +159,7 @@ export function buildTrends(
       const group = trendGroupOf(record, year)
       if (!matchesJob(record, group, filter)) continue
       shown.push(record)
-      const key = filter.group ? openedLineOf(record, filter.group) : group
+      const key = lineOf(record, group, filter.group)
       const byYear = lines.get(key) ?? new Map<number, FallRecord[]>()
       const members = byYear.get(year) ?? []
       members.push(record)
@@ -132,11 +169,7 @@ export function buildTrends(
     total.push(measure(year, shown))
   }
   const series = [...lines.keys()]
-    .sort((a, b) =>
-      filter.group
-        ? a.localeCompare(b)
-        : GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b),
-    )
+    .sort(compareLines(filter.group))
     .map((key) => ({
       key,
       points: inRange.map(({ year }) =>

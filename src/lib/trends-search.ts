@@ -1,10 +1,16 @@
 import { z } from 'zod'
 import { orgCodeParam } from '../data/budget.ts'
 import { staffKindSchema } from '../data/fall.ts'
+import { resolveCensusYear } from './census-search.ts'
 import { formatCompactDollars, formatDollars, formatFte } from './format.ts'
-import { pairYears } from './pay-changes.ts'
+import type { TrendGroup } from './trend-groups.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
-import type { TrendFilter, TrendPoint, TrendSeries } from './trends.ts'
+import {
+  pairYears,
+  type TrendFilter,
+  type TrendPoint,
+  type TrendSeries,
+} from './trends.ts'
 
 export const ALL_GROUPS = 'all'
 
@@ -88,7 +94,14 @@ export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 export type TrendView = TrendFilter & {
   metric: TrendMetric
   hide: string[]
+  /** The earlier census of each pair in the range. */
+  fromYears: number[]
   pair: number
+}
+
+/** What a figure's lines are, for its title. */
+export function linesLabel(group: TrendGroup | null): string {
+  return group ? `EEO category in ${group}` : 'group'
 }
 
 /** The view a search asks for, with the census years clamped to those listed and a pair not in the range falling back to its latest. */
@@ -100,8 +113,7 @@ export function resolveTrendView(
   const last = Math.max(...years)
   const from = Math.min(Math.max(search.from ?? first, first), last)
   const to = Math.min(Math.max(search.to ?? last, from), last)
-  const pairs = pairYears(years, from, to)
-  const { pair } = search
+  const fromYears = pairYears(years, from, to)
   return {
     metric: search.metric ?? 'spend',
     group: search.group ?? null,
@@ -111,10 +123,9 @@ export function resolveTrendView(
     position: search.position ?? null,
     from,
     to,
+    fromYears,
     pair:
-      pair !== undefined && pairs.includes(pair)
-        ? pair
-        : (pairs.at(-1) ?? from),
+      fromYears.length > 0 ? resolveCensusYear(search.pair, fromYears) : from,
   }
 }
 

@@ -18,6 +18,7 @@ test('an empty search is every listed census, by group, in spend', () => {
     position: null,
     from: 2014,
     to: 2025,
+    fromYears: [2014],
     pair: 2014,
   })
 })

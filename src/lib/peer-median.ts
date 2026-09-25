@@ -1,5 +1,5 @@
 import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
-import { type PeerGroup, peerGroupOf } from './trend-groups.ts'
+import { type PeerGroup, peerGroupOf } from './peer-group.ts'
 import { MIN_JOBS_SHOWN, medianRateCents } from './trends.ts'
 
 function medianKey(year: number, group: PeerGroup, term: number): string {

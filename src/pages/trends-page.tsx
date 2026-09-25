@@ -17,7 +17,6 @@ import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
 import { SPEND_METHOD } from '@/lib/overview'
-import { filterNames } from '@/lib/pay-changes'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,
@@ -25,10 +24,16 @@ import {
   TREND_GROUPS,
   type TrendGroup,
 } from '@/lib/trend-groups'
-import { buildTrends, MIN_JOBS_SHOWN, type Trends } from '@/lib/trends'
+import {
+  buildTrends,
+  filterNames,
+  MIN_JOBS_SHOWN,
+  type Trends,
+} from '@/lib/trends'
 import {
   type CensusMetric,
   CHANGE_METRIC,
+  linesLabel,
   METRIC_INFO,
   resolveTrendView,
   seriesWithMetric,
@@ -96,15 +101,19 @@ function useTrends() {
   )
   const view = resolveTrendView(search, years)
   const { kind, group, dept, position, from, to } = view
+  const isChange = view.metric === CHANGE_METRIC
   const trends = useMemo(
-    () => buildTrends(censuses, { kind, group, dept, position, from, to }),
-    [censuses, kind, group, dept, position, from, to],
+    () =>
+      isChange
+        ? null
+        : buildTrends(censuses, { kind, group, dept, position, from, to }),
+    [censuses, isChange, kind, group, dept, position, from, to],
   )
   const names = useMemo(
     () => filterNames(censuses, { dept, position }),
     [censuses, dept, position],
   )
-  const changes = usePayChanges(fallYears, years, view)
+  const changes = usePayChanges(fallYears, view)
   return { years, view, trends, names, changes }
 }
 
@@ -117,7 +126,7 @@ function CensusSection({
   view: TrendView
   metric: CensusMetric
 }) {
-  const title = `${METRIC_INFO[metric].label} by ${view.group ? `EEO category in ${view.group}` : 'group'}, Fall ${view.from}-${view.to}`
+  const title = `${METRIC_INFO[metric].label} by ${linesLabel(view.group)}, Fall ${view.from}-${view.to}`
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">{title}</h2>
@@ -139,8 +148,17 @@ export function TrendsPage() {
   const navigate = useNavigate({ from: '/trends' })
   const { years, view, trends, names, changes } = useTrends()
   const { metric } = view
-  const series =
-    metric === CHANGE_METRIC ? [] : seriesWithMetric(trends.series, metric)
+  const census =
+    trends && metric !== CHANGE_METRIC
+      ? {
+          metric,
+          trends: {
+            series: seriesWithMetric(trends.series, metric),
+            total: trends.total,
+          },
+        }
+      : null
+  const lines = changes?.series ?? census?.trends.series ?? []
   const handleChange = (patch: TrendsSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
@@ -151,25 +169,18 @@ export function TrendsPage() {
       <TrendsControls
         view={view}
         years={years}
-        lines={(changes?.series ?? series).map(({ key }) => key)}
+        lines={lines.map(({ key }) => key)}
         names={names}
         onChange={handleChange}
       />
-      {metric === CHANGE_METRIC ? (
-        changes && (
-          <PayChangesSection
-            changes={changes}
-            view={view}
-            onChange={handleChange}
-          />
-        )
-      ) : (
-        <CensusSection
-          trends={{ series, total: trends.total }}
+      {changes && (
+        <PayChangesSection
+          changes={changes}
           view={view}
-          metric={metric}
+          onChange={handleChange}
         />
       )}
+      {census && <CensusSection {...census} view={view} />}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Groups</h2>
         <p className="text-sm text-muted-foreground">

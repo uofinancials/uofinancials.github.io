@@ -6,7 +6,6 @@ import {
   changeBinLabel,
   changeCounts,
   continuingPairs,
-  filterNames,
   filterPairs,
   payChangeDistribution,
   payChangeTrends,
@@ -250,22 +249,4 @@ test('an opened group’s lines are its earlier jobs’ published categories', (
     ['Other Professionals', 3, 0.02],
     ['Senior Administrators', 1, null],
   ])
-})
-
-test('a filter names its department and class or rank from the first job with them, or keeps the code', () => {
-  const years = [
-    census(2025, [
-      unclassifiedJob({
-        rank: 'Professor',
-        payDepartment: { code: '222222', name: 'Physics' },
-      }),
-    ]),
-  ]
-  expect(
-    filterNames(years, { dept: '222222', position: 'rank Professor' }),
-  ).toEqual({ dept: 'Physics (222222)', position: 'Professor' })
-  expect(filterNames(years, { dept: '000000', position: null })).toEqual({
-    dept: '000000',
-    position: null,
-  })
 })

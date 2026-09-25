@@ -12,10 +12,11 @@ import {
 } from '@/components/ui/table'
 import type { PayChanges } from '@/components/use-pay-changes'
 import { RANK_RENAMES, TITLE_ABBREVIATIONS } from '@/lib/pay-change-labels'
-import { pairLabel, payChangeDistribution } from '@/lib/pay-changes'
+import { pairLabel } from '@/lib/pay-changes'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 import {
   CHANGE_LABEL,
+  linesLabel,
   type TrendsSearch,
   type TrendView,
 } from '@/lib/trends-search'
@@ -79,7 +80,7 @@ function LabelTables() {
 
 /** The change measure's lines, counts, one pair's distribution, citation, and label tables; the pairs are those in the view's range. */
 export function PayChangesSection({
-  changes: { fromYears, shown, series, counts },
+  changes: { fromYears, series, counts, distribution },
   view,
   onChange,
 }: {
@@ -93,7 +94,7 @@ export function PayChangesSection({
     return <p>{NO_PAIRS}</p>
   }
   const span = `Fall ${pairLabel(first)} to ${pairLabel(last)}`
-  const title = `${CHANGE_LABEL}, continuing jobs, by ${view.group ? `EEO category in ${view.group}` : 'group'}, ${span}`
+  const title = `${CHANGE_LABEL}, continuing jobs, by ${linesLabel(view.group)}, ${span}`
   return (
     <>
       <section className="space-y-4">
@@ -112,9 +113,7 @@ export function PayChangesSection({
         />
       </section>
       <PayChangeDistribution
-        distribution={payChangeDistribution(
-          shown.filter(({ fromYear }) => fromYear === view.pair),
-        )}
+        distribution={distribution}
         pair={view.pair}
         fromYears={fromYears}
         onPair={(pair) => onChange({ pair })}

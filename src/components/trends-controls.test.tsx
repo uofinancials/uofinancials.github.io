@@ -12,6 +12,7 @@ const VIEW = {
   position: null,
   from: 2014,
   to: 2025,
+  fromYears: [2014],
   pair: 2024,
 } as const
 
@@ -19,7 +20,7 @@ test('each control asks for a new search, and opening a group shows every line a
   const handleChange = vi.fn()
   render(
     <TrendsControls
-      view={{ ...VIEW, hide: [...VIEW.hide] }}
+      view={{ ...VIEW, hide: [...VIEW.hide], fromYears: [...VIEW.fromYears] }}
       years={[2014, 2025]}
       lines={['Faculty', 'Overloads']}
       names={{ dept: null, position: null }}

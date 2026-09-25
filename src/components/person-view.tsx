@@ -5,6 +5,7 @@ import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
 import { tabLinkClass } from '@/components/tab-link-class'
+import { peerGroupOf } from '@/lib/peer-group'
 import type { PeerMedians } from '@/lib/peer-median'
 import {
   type Person,
@@ -13,7 +14,6 @@ import {
   primaryJobOf,
 } from '@/lib/person-lookup'
 import { payDepartmentsOf, positionsOf, runOf } from '@/lib/person-summary'
-import { peerGroupOf } from '@/lib/trend-groups'
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =
