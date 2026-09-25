@@ -6,6 +6,7 @@ import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
+import { findPersonLinks } from '../src/lib/person-links.ts'
 import {
   identityProblems,
   totalExpenditureCents,
@@ -101,5 +102,18 @@ test.skipIf(!existsSync(RAISES_DATA_PATH))(
           !term.source.location || !term.source.url.startsWith('https://'),
       ),
     ).toEqual([])
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'the committed Fall years yield the researched number of person links',
+  () => {
+    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+    const years = manifest.fall.map((entry) =>
+      fallYearSchema.parse(
+        readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
+      ),
+    )
+    expect(findPersonLinks(years)).toHaveLength(52_880)
   },
 )
