@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { readFileSync } from 'node:fs'
-import { expect, test } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 test('home page loads', async ({ page }) => {
   await page.goto('/')
@@ -13,6 +13,7 @@ for (const path of [
   '/departments',
   '/departments/223100',
   '/salaries',
+  '/people',
   '/sources',
   '/no-such-page',
 ]) {
@@ -328,4 +329,102 @@ test('the salaries page does not scroll sideways at 360px', async ({
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+})
+
+test('people search by every word of a name, and a chosen name shows its records with its sources', async ({
+  page,
+}) => {
+  await page.goto('/people')
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    'content',
+    'noindex',
+  )
+  await page.getByRole('searchbox', { name: 'Search by name' }).fill('smith j')
+  await expect(page).toHaveURL(/q=smith/)
+  const matches = page.getByRole('list', { name: 'Matching names' })
+  const first = matches.getByRole('link').first()
+  const name = await first.textContent()
+  expect(name).toMatch(/smith.* j/i)
+  await first.click()
+  await expect(page).toHaveURL(/name=/)
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { level: 2, name: name ?? '' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('rowheader', { name: 'Annual salary rate' }).first(),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole('link', { name: /^Fall \d{4} Census salary reports$/ })
+      .first(),
+  ).toBeVisible()
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
+})
+
+async function openLinkedPerson(page: Page) {
+  await page.goto('/people?q=smith+j')
+  const matches = page.getByRole('list', { name: 'Matching names' })
+  await matches.getByRole('link').nth(1).click()
+  await expect(page.getByRole('heading', { level: 2 })).toBeVisible()
+}
+
+test('a person’s computed figures, rate chart, and class median are labelled, and the view does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await openLinkedPerson(page)
+  const main = page.getByRole('main')
+  await expect(main).toContainText(
+    'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the exact name and the same pay department of a single primary job.',
+  )
+  await expect(
+    page.getByRole('figure', { name: /annual salary rate by job/ }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', { name: /^Primary · / }).first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', {
+      name: 'Median rate, primary job’s class or rank',
+    }),
+  ).toBeVisible()
+  await expect(main).toContainText('Groups used: ')
+  await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+})
+
+test('census tabs are held in the link and lead to the class distribution, and the search view cites its sources', async ({
+  page,
+}) => {
+  await openLinkedPerson(page)
+  await expect(
+    page.getByRole('heading', { name: 'Fall 2023 records' }),
+  ).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Census year' })
+    .getByRole('link', { name: '2021', exact: true })
+    .click()
+  await expect(page).toHaveURL(/year=2021/)
+  await expect(
+    page.getByRole('heading', { name: 'Fall 2021 records' }),
+  ).toBeVisible()
+  const distributions = page.getByRole('link', {
+    name: /^Salary distribution, .+, Fall 2021$/,
+  })
+  await expect(distributions.first()).toBeVisible()
+  await distributions.last().click()
+  await expect(page).toHaveURL(/\/salaries\?.*position=/)
+  await expect(page.getByRole('main')).toContainText('Class or rank: ')
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(page).not.toHaveURL(/position=/)
+  await page.goto('/people?q=smith')
+  await expect(
+    page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
+  ).toBeVisible()
+  await page.goto('/people?q=zzzz')
+  await expect(page.getByRole('main')).toContainText('No name matches.')
 })

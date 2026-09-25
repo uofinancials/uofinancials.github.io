@@ -110,7 +110,32 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   90th percentile rates of primary jobs (temporaries left out), and the highest
   rate.
 - The Salaries view is set from the page and kept in its link: the census, one
-  group, classified or unclassified staff, 9- or 12-month terms, and a college
-  or VP area. Each department page links to its own distribution, shown as a
-  filter that can be removed. A filter matching fewer than three jobs shows only
-  the count, and percentiles need three primary jobs.
+  group, classified or unclassified staff, 9- or 12-month terms, a college or VP
+  area, and a position class or rank. Each department page links to its own
+  distribution, shown as a filter that can be removed. A filter matching fewer
+  than three jobs shows only the count, and percentiles need three primary jobs.
+- A People page (`/people`) that searches every Fall census from 2014 to 2025 by
+  name: each word typed must appear in the name, and up to 50 matching names are
+  listed with the years they appear in and the pay department of their latest
+  primary job, with the source reports cited beneath. The search, the chosen
+  name, and its census year are kept in the link, and the page asks search
+  engines not to index it. Records marked `possibleStudent` are shown as
+  published.
+- A chosen name shows, from top to bottom:
+  - figures computed by this site from that name's own records, each with its
+    method and caveats: years since the earliest published job start, and, over
+    years linked on the exact name and the same pay department of a single
+    primary job, the primary job's rate change and its average yearly change
+    (leaving out years whose appointment or term changed);
+  - a chart and table of each job's published annual salary rate by census, a
+    job being its job type and pay department, beside the computed median rate
+    of the primary job's position class or rank in the same census and term
+    (class number whatever its letter prefix, rank, or for unranked jobs the OA
+    salary grade; primary jobs, temporaries left out, three jobs or more);
+  - census tabs, each with every field the report publishes for that year's
+    jobs, its citation, and links to the pay department's page and salary
+    distribution and to the salary distribution of each job's position class or
+    rank;
+  - a job history of title, class or rank, pay department, job type,
+    appointment, and term for every census.
+- A People link in the navigation, which now wraps on narrow screens.

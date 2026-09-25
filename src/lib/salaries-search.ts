@@ -13,6 +13,7 @@ export const salariesSearchSchema = z.object({
   kind: staffKindSchema.optional().catch(undefined),
   term: z.literal(TERMS).optional().catch(undefined),
   dept: orgCodeParam.optional().catch(undefined),
+  position: z.string().min(1).optional().catch(undefined),
 })
 
 export type SalariesSearch = z.infer<typeof salariesSearchSchema>
@@ -38,6 +39,7 @@ export function resolveSalariesView(
     kind: search.kind ?? 'all',
     term: search.term ?? null,
     dept: search.dept ?? null,
+    position: search.position ?? null,
   }
 }
 

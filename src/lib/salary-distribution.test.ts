@@ -5,6 +5,7 @@ import {
   binRange,
   buildDistribution,
   filterJobs,
+  positionLabel,
   stackedCounts,
 } from './salary-distribution'
 import { medianRateCents, percentileCents } from './trends'
@@ -79,14 +80,14 @@ test('percentiles cover primary jobs without temporaries, and need three of them
   expect(buildDistribution([], 2025).maxRateCents).toBeNull()
 })
 
-test('jobs filter by group, staff kind, and term', () => {
+test('jobs filter by group, staff kind, term, and position class or rank', () => {
   const records = [
     unclassifiedJob(),
     unclassifiedJob({ termOfServiceMonths: 12 }),
     classifiedJob(),
     temp,
   ]
-  const all = { group: null, kind: 'all', term: null } as const
+  const all = { group: null, kind: 'all', term: null, position: null } as const
   expect(filterJobs(records, all, 2025)).toHaveLength(4)
   expect(filterJobs(records, { ...all, term: 9 }, 2025)).toHaveLength(1)
   expect(
@@ -95,6 +96,18 @@ test('jobs filter by group, staff kind, and term', () => {
   expect(
     filterJobs(records, { ...all, group: 'Classified temporaries' }, 2025),
   ).toEqual([temp])
+  expect(filterJobs(records, { ...all, position: 'E0104' }, 2025)).toEqual([
+    records[2],
+  ])
+  expect(
+    filterJobs(records, { ...all, position: 'Instructor' }, 2025),
+  ).toHaveLength(2)
+})
+
+test('a position reads as its class title and code, or as the rank', () => {
+  const records = [classifiedJob(), unclassifiedJob()]
+  expect(positionLabel(records, 'E0104')).toBe('Office Specialist 2 (E0104)')
+  expect(positionLabel(records, 'Instructor')).toBe('Instructor')
 })
 
 test('bins are labelled by their floor, and the top bin is open', () => {

@@ -1,0 +1,175 @@
+import { expect, test } from 'vitest'
+import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { formatChange, formatYears } from './format'
+import { peerMedians } from './peer-median'
+import { indexPeople } from './person-lookup'
+import {
+  jobHistory,
+  MEDIAN_SERIES,
+  payDepartmentsOf,
+  personRates,
+  positionsOf,
+  runCards,
+  runOf,
+} from './person-summary'
+
+const physics = { code: '222222', name: 'Physics' }
+
+function ann() {
+  const [person] = indexPeople([
+    census(2020, [
+      classifiedJob({
+        annualSalaryRateCents: 5_000_000,
+        jobStartDate: '2018-11-01',
+      }),
+    ]),
+    census(2021, [classifiedJob({ annualSalaryRateCents: 5_500_000 })]),
+    census(2022, [
+      classifiedJob({ annualSalaryRateCents: 6_600_000, apptPercent: 50 }),
+    ]),
+    census(2023, [
+      classifiedJob({ annualSalaryRateCents: 6_600_000, apptPercent: 50 }),
+      unclassifiedJob({
+        jobType: 'Overload',
+        payDepartment: physics,
+        annualSalaryRateCents: 1_000_000,
+        apptPercent: 10,
+      }),
+    ]),
+    census(2025, [classifiedJob({ annualSalaryRateCents: 7_000_000 })]),
+  ])
+  if (!person) throw new Error('no person indexed')
+  return person
+}
+
+test('a linked run’s cards: time since the earliest start, the run’s change, and the mean over comparable pairs', () => {
+  const run = runOf(ann(), 2021)
+  expect(run?.years.map(({ year }) => year)).toEqual([2020, 2021, 2022, 2023])
+  const cards = run && runCards(run)
+  expect(cards?.yearsSinceStart).toBeCloseTo(5, 2)
+  expect(cards?.runChange).toMatchObject({
+    fromYear: 2020,
+    toYear: 2023,
+    fromCents: 5_000_000,
+    toCents: 6_600_000,
+    ratio: 0.32,
+  })
+  expect(cards).toMatchObject({ firstYear: 2020, lastYear: 2023, pairs: 3 })
+  expect(cards?.averageChange?.pairsUsed).toBe(2)
+  expect(cards?.averageChange?.ratio).toBeCloseTo((0.1 + 0) / 2, 10)
+})
+
+test('an unlinked year has only the start-date card', () => {
+  const run = runOf(ann(), 2025)
+  const cards = run && runCards(run)
+  expect(cards?.runChange).toBeNull()
+  expect(cards?.averageChange).toBeNull()
+  expect(cards?.yearsSinceStart).toBeCloseTo(5.8, 1)
+})
+
+test('each job type and pay department is a line of published rates, gapped where absent', () => {
+  const { years, series } = personRates(ann(), new Map())
+  expect(years).toEqual([2020, 2021, 2022, 2023, 2025])
+  expect(series).toEqual([
+    {
+      key: 'Primary · Dept',
+      values: [5_000_000, 5_500_000, 6_600_000, 6_600_000, 7_000_000],
+    },
+    {
+      key: 'Overload · Physics',
+      values: [null, null, null, 1_000_000, null],
+    },
+  ])
+})
+
+test('two jobs of one type in one department and year stay separate lines', () => {
+  const [person] = indexPeople([
+    census(2025, [
+      classifiedJob({ jobType: 'Secondary', annualSalaryRateCents: 100 }),
+      classifiedJob({ jobType: 'Secondary', annualSalaryRateCents: 200 }),
+    ]),
+  ])
+  expect(
+    person && personRates(person, new Map()).series.map(({ key }) => key),
+  ).toEqual(['Secondary · Dept', 'Secondary · Dept (2)'])
+})
+
+test('the job history lists every job as published, with its run’s link', () => {
+  const rows = jobHistory(ann())
+  expect(rows).toHaveLength(6)
+  expect(rows[4]).toMatchObject({
+    year: 2023,
+    isLinked: true,
+    values: [
+      'Instructor',
+      'Instructor',
+      'Physics (222222)',
+      'Overload',
+      '10%',
+      '9 months',
+    ],
+  })
+  expect(rows[5]).toMatchObject({ year: 2025, isLinked: false })
+})
+
+test('a year’s pay departments are listed once each, by code', () => {
+  expect([
+    ...payDepartmentsOf([
+      classifiedJob(),
+      classifiedJob({ jobType: 'Secondary' }),
+      unclassifiedJob({ payDepartment: { code: null, name: 'None' } }),
+    ]),
+  ]).toEqual([['111111', 'Dept']])
+})
+
+test('changes and years format with a sign and one decimal', () => {
+  expect(formatChange(0.141)).toBe('+14.1%')
+  expect(formatChange(-0.05)).toBe('-5.0%')
+  expect(formatChange(0)).toBe('0.0%')
+  expect(formatYears(9.24)).toBe('9.2 years')
+})
+
+test('a year’s positions are listed once each with how they read', () => {
+  expect(
+    positionsOf([
+      classifiedJob(),
+      classifiedJob({ jobType: 'Secondary' }),
+      unclassifiedJob(),
+      classifiedJob({ positionClass: null }),
+    ]),
+  ).toEqual([
+    { position: 'E0104', label: 'Office Specialist 2 (E0104)' },
+    { position: 'Instructor', label: 'Instructor' },
+  ])
+})
+
+test('the median line follows the primary job’s group, gapped where it has no median', () => {
+  const peers = (year: number) =>
+    census(
+      year,
+      [1, 2, 3].map((index) =>
+        classifiedJob({
+          name: `Peer ${index}`,
+          annualSalaryRateCents: index * 1_000_000,
+        }),
+      ),
+    )
+  const years = [
+    census(2020, [classifiedJob({ annualSalaryRateCents: 5_000_000 })]),
+    census(2021, [classifiedJob({ annualSalaryRateCents: 5_500_000 })]),
+  ]
+  const [ann] = indexPeople(years)
+  const medians = peerMedians([
+    {
+      ...peers(2020),
+      records: [...peers(2020).records, ...(years[0]?.records ?? [])],
+    },
+    years[1] ?? census(2021, []),
+  ])
+  const rates = ann && personRates(ann, medians)
+  expect(rates?.series.at(-1)).toEqual({
+    key: MEDIAN_SERIES,
+    values: [2_500_000, null],
+  })
+  expect(rates?.medianGroups).toEqual(['Office Specialist 2 (class 0104)'])
+})

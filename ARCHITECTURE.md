@@ -60,17 +60,21 @@ flowchart LR
 - `src/pages` - one component per route.
 - `src/components` - the shared layout with the independence notice and error
   report link, the source citation caption, the loading and error states, the
-  select and radio fields, the totals chart and table, the line chart, the
-  stacked bar chart, the trends table and controls, the department budget and
-  jobs sections, and the salaries controls.
+  select, radio, and search fields, the totals chart and table, the line chart,
+  the stacked bar chart, the trends table and controls, the department budget
+  and jobs sections, the salaries controls, and the person view with its
+  computed figures, rate chart, records table, and job history.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
   cross-year employee groups and their trends, budget account groups, a
   department's budget and jobs, the department index, the salary rate
-  distribution, each page's URL state, source citations, number formatting, and
-  the person links between consecutive Fall years.
+  distribution, each page's URL state, source citations, number formatting, the
+  person links between consecutive Fall years, the person lookup (name index,
+  name matching, linked runs, and a record's published fields), and a person's
+  computed figures, rates by job, job history, and the class or rank medians
+  beside them.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -107,7 +111,7 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  departments, salaries, sources page, and `404.html`.
+  departments, salaries, people, sources page, and `404.html`.
 
 ## Pages
 
@@ -127,8 +131,13 @@ flowchart LR
   driven by the `src/lib` department modules over every Fall and budget year.
 - `/salaries` - the number of jobs in each salary rate range for one Fall
   census, by employee group, with primary-job percentiles, filtered by group,
-  staff kind, term, and college or VP area or department; driven by the
-  `src/lib` distribution over one Fall year and its budget year.
+  staff kind, term, college or VP area or department, and position class or
+  rank; driven by the `src/lib` distribution over one Fall year and its budget
+  year.
+- `/people` - names across every Fall census matching a search, and for a chosen
+  name its computed figures, its rates by job over time, its records for one
+  census at a time, and its job history; not indexed by search engines; driven
+  by the `src/lib` person lookup and summary over every Fall year.
 - `/sources` - every source file in the manifest and every document the raise
   terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
   `src/lib`.

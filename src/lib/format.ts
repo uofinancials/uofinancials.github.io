@@ -17,6 +17,18 @@ const SHARE = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
+const CHANGE = new Intl.NumberFormat('en-US', {
+  style: 'percent',
+  signDisplay: 'exceptZero',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
+const YEARS = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
 const COMPACT_DOLLARS = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -48,6 +60,15 @@ export function formatFte(hundredths: number): string {
 
 export function formatShare(part: number, whole: number): string {
   return SHARE.format(whole === 0 ? 0 : part / whole)
+}
+
+/** Formats a change given as a fraction, e.g. `+14.1%`. */
+export function formatChange(ratio: number): string {
+  return CHANGE.format(ratio)
+}
+
+export function formatYears(years: number): string {
+  return `${YEARS.format(years)} years`
 }
 
 export const NO_VALUE = '–'

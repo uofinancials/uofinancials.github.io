@@ -17,7 +17,10 @@ import {
   isClassifiedTemp,
   summarize,
 } from '../src/lib/overview.ts'
+import { peerMedianFor, peerMedians } from '../src/lib/peer-median.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
+import { indexPeople } from '../src/lib/person-lookup.ts'
+import { runCards } from '../src/lib/person-summary.ts'
 import { buildDistribution } from '../src/lib/salary-distribution.ts'
 import { buildTrends } from '../src/lib/trends.ts'
 import {
@@ -37,7 +40,7 @@ function readJson(file: string): unknown {
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links',
+  'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links and runs',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const years = manifest.fall.map((entry) => {
@@ -50,6 +53,13 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       return year
     })
     expect(findPersonLinks(years)).toHaveLength(52_880)
+    const people = indexPeople(years)
+    const runs = people.flatMap((person) => person.runs)
+    expect(people).toHaveLength(15_916)
+    expect(runs).toHaveLength(19_593)
+    const linked = runs.filter(({ isLinked }) => isLinked)
+    expect(linked).toHaveLength(13_189)
+    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(13_189)
   },
 )
 
@@ -371,5 +381,37 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Classified temporaries': 2,
     })
     expect(maxRateCents).toBe(940_000_000)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'Fall 2025 class and rank medians match an independent computation',
+  () => {
+    const { censusDate, records } = fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+    )
+    const medians = peerMedians([{ censusDate, records }])
+    const analyst = records.find(
+      (record) =>
+        record.kind === 'classified' &&
+        record.positionClass?.code === 'C1464' &&
+        record.jobType === 'Primary' &&
+        record.termOfServiceMonths === 12,
+    )
+    const professor = records.find(
+      (record) =>
+        record.kind === 'unclassified' &&
+        record.rank === 'Professor' &&
+        record.jobType === 'Primary' &&
+        record.termOfServiceMonths === 9,
+    )
+    expect(analyst && peerMedianFor(medians, 2025, analyst)).toMatchObject({
+      medianCents: 11_367_000,
+      jobs: 81,
+    })
+    expect(professor && peerMedianFor(medians, 2025, professor)).toMatchObject({
+      medianCents: 15_440_700,
+      jobs: 363,
+    })
   },
 )

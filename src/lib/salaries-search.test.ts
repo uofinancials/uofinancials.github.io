@@ -17,6 +17,7 @@ test('a malformed search falls back to the defaults', () => {
     kind: 'classified',
     term: 10,
     dept: '12',
+    position: 7,
   })
   expect(resolveSalariesView(search, [2019, 2025])).toEqual({
     year: 2019,
@@ -24,6 +25,7 @@ test('a malformed search falls back to the defaults', () => {
     kind: 'classified',
     term: null,
     dept: null,
+    position: null,
   })
 })
 
