@@ -55,7 +55,6 @@ export const RAISE_ROWS = [
   OA,
 ]
 
-/** Position class numbers of the UOPA unit: sworn police officers, campus dispatchers, community service officers. */
 const UOPA_CLASS_ROWS: Record<string, RaiseRow> = {
   '5901': UOPA_OFFICERS,
   '0312': UOPA_DISPATCHERS,
