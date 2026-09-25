@@ -14,7 +14,6 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import { type StaffKind, staffKindSchema } from '@/data/fall'
 import type { AreaPlacement, ClassRow } from '@/lib/department-jobs'
-import { MIN_JOBS_SHOWN } from '@/lib/department-jobs'
 import type { DepartmentSearch, DepartmentView } from '@/lib/department-search'
 import {
   formatCount,
@@ -24,6 +23,7 @@ import {
 } from '@/lib/format'
 import { SPEND_METHOD } from '@/lib/overview'
 import type { Trends } from '@/lib/trends'
+import { MIN_JOBS_SHOWN } from '@/lib/trends'
 import {
   METRIC_INFO,
   METRIC_OPTIONS,

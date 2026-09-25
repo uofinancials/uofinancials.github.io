@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table'
 import { budgetYearQuery, fallYearQuery } from '@/data/queries'
 import { listAreas } from '@/lib/areas'
-import { MIN_JOBS_SHOWN, toDepartmentCensus } from '@/lib/department-jobs'
+import { toDepartmentCensus } from '@/lib/department-jobs'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import {
   describePlace,
@@ -32,6 +32,7 @@ import {
   positionLabel,
 } from '@/lib/salary-distribution'
 import { stackedCounts, type TrendGroup } from '@/lib/trend-groups'
+import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const RATE_NOTE =

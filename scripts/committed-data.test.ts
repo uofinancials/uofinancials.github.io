@@ -123,6 +123,39 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 )
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
+  'an opened group leaves spend and median blank on a point under three jobs',
+  () => {
+    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+    const years = manifest.fall.map(({ year }) => ({
+      year,
+      records: fallYearSchema.parse(
+        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
+      ).records,
+    }))
+    const opened = buildTrends(years, {
+      kind: 'all',
+      group: 'Unclassified staff',
+      from: 2014,
+      to: 2025,
+    }).series
+    const pointOf = (key: string, year: number) =>
+      opened
+        .find((line) => line.key === key)
+        ?.points.find((point) => point.year === year)
+    expect(pointOf('Other', 2017)).toMatchObject({
+      jobs: 1,
+      spendCents: null,
+      medianRateCents: null,
+    })
+    expect(pointOf('Service/Maint - Protective', 2023)).toMatchObject({
+      jobs: 1,
+      spendCents: null,
+      medianRateCents: null,
+    })
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
   'every committed budget year matches its schema, identities, and manifest entry',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))

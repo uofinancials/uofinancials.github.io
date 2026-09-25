@@ -25,6 +25,9 @@ export type TrendFilter = {
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
 
+/** Rows and points with fewer jobs show no spend or median, so none gives one job's pay. */
+export const MIN_JOBS_SHOWN = 3
+
 const PERCENT = 100
 
 /** The `p`th percentile of ascending values, interpolated between ranks. */
@@ -56,19 +59,23 @@ export function medianRateCents(rates: number[]): number | null {
   return median === null ? null : Math.round(median)
 }
 
-/** Jobs, spend and FTE, and the median rate of a set of jobs; each figure `null` when no job it applies to is in the set. */
+/** Jobs, spend and FTE, and the median rate of a set of jobs; each figure `null` when no job it applies to is in the set, and spend and median `null` under `MIN_JOBS_SHOWN` jobs. */
 export function measureJobs(records: FallRecord[]): Omit<TrendPoint, 'year'> {
   const paid = records.filter((record) => !isClassifiedTemp(record))
+  const isShown = records.length >= MIN_JOBS_SHOWN
   return {
     jobs: records.length,
-    spendCents: paid.length === 0 ? null : summarize(paid).spendCents,
+    spendCents:
+      !isShown || paid.length === 0 ? null : summarize(paid).spendCents,
     fteHundredths:
       records.length === 0 ? null : summarize(records).fteHundredths,
-    medianRateCents: medianRateCents(
-      paid
-        .filter((record) => record.jobType === 'Primary')
-        .map((record) => record.annualSalaryRateCents),
-    ),
+    medianRateCents: isShown
+      ? medianRateCents(
+          paid
+            .filter((record) => record.jobType === 'Primary')
+            .map((record) => record.annualSalaryRateCents),
+        )
+      : null,
   }
 }
 

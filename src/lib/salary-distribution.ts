@@ -1,5 +1,4 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
-import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
 import {
@@ -8,7 +7,7 @@ import {
   type TrendGroup,
   trendGroupOf,
 } from './trend-groups.ts'
-import { percentileCents } from './trends.ts'
+import { MIN_JOBS_SHOWN, percentileCents } from './trends.ts'
 
 const SALARY_BIN_CENTS = 1_000_000
 const TOP_BIN_FLOOR_CENTS = 25_000_000

@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/table'
 import type { FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
-import { MIN_JOBS_SHOWN } from '@/lib/department-jobs'
 import { RANK_RENAMES, TITLE_ABBREVIATIONS } from '@/lib/pay-change-labels'
 import {
   changeCounts,
@@ -31,6 +30,7 @@ import {
   type PayChangesSearch,
   resolvePayChangesView,
 } from '@/lib/pay-changes-search'
+import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const RATE_NOTE =
   'A change is between the annual salary rates UO publishes for one job in two consecutive Fall censuses. It includes every increase that took effect between the two census dates, so an increase effective before a census counts in the pair ending there. Rates are not pay, and dollars are as published, not adjusted for inflation.'

@@ -20,7 +20,7 @@ import {
   TREND_GROUPS,
   type TrendGroup,
 } from '@/lib/trend-groups'
-import { buildTrends } from '@/lib/trends'
+import { buildTrends, MIN_JOBS_SHOWN } from '@/lib/trends'
 import {
   METRIC_INFO,
   resolveTrendView,
@@ -28,7 +28,7 @@ import {
   type TrendsSearch,
 } from '@/lib/trends-search'
 
-const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Groups are this site’s mapping of UO’s EEO categories, below.`
+const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend and median are left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
 
 const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
   'Classified temporaries':

@@ -14,13 +14,11 @@ import {
 import { fiscalYearForCensus } from './overview.ts'
 import {
   buildTrends,
+  MIN_JOBS_SHOWN,
   measureJobs,
   type TrendPoint,
   type Trends,
 } from './trends.ts'
-
-/** Rows and points with fewer jobs show no spend or median, so none gives one job's pay. */
-export const MIN_JOBS_SHOWN = 3
 
 /** One census with the budget hierarchy that names its areas, and the area assigner built from them. */
 export type DepartmentCensus = {
@@ -135,29 +133,17 @@ export function departmentYears(
   }
 }
 
-function withhold<T extends Omit<TrendPoint, 'year'>>(figures: T): T {
-  if (figures.jobs >= MIN_JOBS_SHOWN) return figures
-  return { ...figures, spendCents: null, medianRateCents: null }
-}
-
-/** The department's jobs over its censuses with jobs, spend and median withheld under `MIN_JOBS_SHOWN` jobs. */
+/** The department's jobs over its censuses with jobs. */
 export function departmentTrends(
   { years, yearsWithJobs }: DepartmentYears,
   kind: StaffKind | 'all',
 ): Trends {
-  const trends = buildTrends(years, {
+  return buildTrends(years, {
     kind,
     group: null,
     from: yearsWithJobs[0] ?? 0,
     to: yearsWithJobs.at(-1) ?? 0,
   })
-  return {
-    series: trends.series.map(({ key, points }) => ({
-      key,
-      points: points.map(withhold),
-    })),
-    total: trends.total.map(withhold),
-  }
 }
 
 /** A position class or rank row; spend and median are `null` when withheld or not applicable. */
@@ -176,7 +162,7 @@ function classLabelOf(record: FallRecord): string {
 }
 
 function classRow(label: string, records: FallRecord[]): ClassRow {
-  return { label, ...withhold(measureJobs(records)) }
+  return { label, ...measureJobs(records) }
 }
 
 function kindRows(kind: StaffKind, records: FallRecord[]): ClassRow[] {

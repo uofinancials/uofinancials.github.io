@@ -7,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { MIN_JOBS_SHOWN } from '@/lib/department-jobs'
 import {
   formatCompactDollars,
   formatDollars,
@@ -16,6 +15,7 @@ import {
 import type { PeerMedians } from '@/lib/peer-median'
 import type { Person } from '@/lib/person-lookup'
 import { MEDIAN_SERIES, personRates } from '@/lib/person-summary'
+import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 
