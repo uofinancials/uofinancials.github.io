@@ -16,7 +16,7 @@ export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 md:px-6">
+        <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 md:px-6">
           <Link to="/" className="font-semibold">
             UO Financials
           </Link>
@@ -37,7 +37,7 @@ export function SiteLayout() {
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 p-4 md:p-6">
+      <main className="mx-auto w-full max-w-[75rem] flex-1 p-4 md:p-6">
         <Outlet />
       </main>
       <footer className="border-t p-6 text-center text-sm text-muted-foreground">

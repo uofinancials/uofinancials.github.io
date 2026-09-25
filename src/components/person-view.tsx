@@ -4,6 +4,7 @@ import { PersonHistoryTable } from '@/components/person-history-table'
 import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
+import { tabLinkClass } from '@/components/tab-link-class'
 import { type PeerMedians, peerGroupOf } from '@/lib/peer-median'
 import {
   type Person,
@@ -24,15 +25,11 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
         {personYearsOf(person).map((entry) => (
           <li key={entry.year}>
             <Link
-              to="/people"
-              search={(previous) => ({ ...previous, year: entry.year })}
+              to="/people/$name"
+              params={{ name: person.name }}
+              search={{ year: entry.year }}
               aria-current={entry.year === year ? 'page' : undefined}
-              className={cn(
-                'block rounded-t-md px-3 py-1 text-sm tabular-nums',
-                entry.year === year
-                  ? 'border border-b-0 bg-background font-semibold'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
+              className={cn(tabLinkClass(entry.year === year), 'tabular-nums')}
             >
               {entry.year}
             </Link>
@@ -49,7 +46,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
   const group = primary && peerGroupOf(primary)
   return (
     <section className="space-y-2">
-      <h3 className="font-semibold">Fall {entry.year} records</h3>
+      <h2 className="font-semibold">Fall {entry.year} records</h2>
       <PersonRecordsTable
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
@@ -74,16 +71,30 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           >
             Pay changes, {department}
           </Link>
+          <Link
+            className="underline"
+            to="/people"
+            search={{ dept: code, year: entry.year }}
+          >
+            People, {department}, Fall {entry.year}
+          </Link>
         </p>
       ))}
       {positionsOf(entry.records).map(({ position, label }) => (
-        <p key={position} className="text-sm">
+        <p key={position} className="flex flex-wrap gap-x-4 text-sm">
           <Link
             className="underline"
             to="/salaries"
             search={{ position, year: entry.year }}
           >
             Salary distribution, {label}, Fall {entry.year}
+          </Link>
+          <Link
+            className="underline"
+            to="/people"
+            search={{ position, year: entry.year }}
+          >
+            People, {label}, Fall {entry.year}
           </Link>
         </p>
       ))}
@@ -116,7 +127,7 @@ export function PersonView({
   const entry = run?.years.find((candidate) => candidate.year === year)
   return (
     <section className="space-y-6">
-      <h2 className="text-xl font-semibold">{person.name}</h2>
+      <h1 className="text-2xl font-semibold">{person.name}</h1>
       <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />

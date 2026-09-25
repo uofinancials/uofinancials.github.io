@@ -5,9 +5,11 @@ import {
   createRouter,
   notFound,
   type RouterHistory,
+  redirect,
 } from '@tanstack/react-router'
 import { PageError } from '@/components/page-error'
 import { PageLoading } from '@/components/page-loading'
+import { peopleIndexQuery } from '@/components/people-index-query'
 import { SiteLayout } from '@/components/site-layout'
 import { orgCode } from '@/data/budget'
 import {
@@ -22,7 +24,7 @@ import {
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
 import { payChangesSearchSchema } from '@/lib/pay-changes-search'
-import { peopleSearchSchema } from '@/lib/people-search'
+import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
 import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
@@ -31,6 +33,7 @@ import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
 import { PayChangesPage } from '@/pages/pay-changes-page'
 import { PeoplePage } from '@/pages/people-page'
+import { PersonPage } from '@/pages/person-page'
 import { SalariesPage } from '@/pages/salaries-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
@@ -116,24 +119,33 @@ const departmentRoute = createRoute({
   component: DepartmentPage,
 })
 
+/** The census a search asks for, or the latest, with the budget year that names its areas. */
+async function loadCensus({
+  context: { queryClient },
+  deps,
+}: {
+  context: { queryClient: QueryClient }
+  deps: { year: number | undefined }
+}) {
+  const manifest = await queryClient.ensureQueryData(manifestQuery)
+  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+  const year = resolveCensusYear(deps.year, years)
+  const census = manifest.fall.find((entry) => entry.year === year)
+  if (!census) throw notFound()
+  const fiscalYear = fiscalYearForCensus(manifest, census.censusDate)
+  await Promise.all([
+    queryClient.ensureQueryData(fallYearQuery(year)),
+    queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+  ])
+  return { years, year, fiscalYear }
+}
+
 const salariesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/salaries',
   validateSearch: salariesSearchSchema,
   loaderDeps: ({ search }) => ({ year: search.year }),
-  loader: async ({ context: { queryClient }, deps }) => {
-    const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-    const year = resolveCensusYear(deps.year, years)
-    const census = manifest.fall.find((entry) => entry.year === year)
-    if (!census) throw notFound()
-    const fiscalYear = fiscalYearForCensus(manifest, census.censusDate)
-    await Promise.all([
-      queryClient.ensureQueryData(fallYearQuery(year)),
-      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
-    ])
-    return { years, year, fiscalYear }
-  },
+  loader: loadCensus,
   component: SalariesPage,
 })
 
@@ -141,8 +153,28 @@ const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people',
   validateSearch: peopleSearchSchema,
-  loader: loadFallYears,
+  beforeLoad: ({ search: { name, year } }) => {
+    if (name !== undefined) {
+      throw redirect({
+        to: '/people/$name',
+        params: { name },
+        search: { year },
+        replace: true,
+      })
+    }
+  },
+  loaderDeps: ({ search }) => ({ year: search.year }),
+  loader: loadCensus,
   component: PeoplePage,
+})
+
+const personRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/people/$name',
+  validateSearch: personSearchSchema,
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(peopleIndexQuery),
+  component: PersonPage,
 })
 
 const payChangesRoute = createRoute({
@@ -171,6 +203,7 @@ const routeTree = rootRoute.addChildren([
   departmentRoute,
   salariesRoute,
   peopleRoute,
+  personRoute,
   payChangesRoute,
   sourcesRoute,
 ])

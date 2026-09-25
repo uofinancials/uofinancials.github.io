@@ -23,6 +23,13 @@ import {
   payChangeTrends,
 } from '../src/lib/pay-changes.ts'
 import { peerMedianFor, peerMedians } from '../src/lib/peer-median.ts'
+import {
+  countNames,
+  filterPeopleJobs,
+  pageOf,
+  resolvePeopleView,
+  sortJobs,
+} from '../src/lib/people-list.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import { indexPeople } from '../src/lib/person-lookup.ts'
 import { runCards } from '../src/lib/person-summary.ts'
@@ -427,6 +434,29 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Classified temporaries': 2,
     })
     expect(maxRateCents).toBe(940_000_000)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'the Fall 2025 people list matches an independent computation',
+  () => {
+    const fall2025 = loadFallCensuses().find(({ year }) => year === 2025)
+    if (!fall2025) throw new Error('No Fall 2025 census')
+    const { records } = fall2025
+    const all = filterPeopleJobs(records, resolvePeopleView({}, [2025]))
+    expect([all.length, countNames(all), pageOf(all, 1).pageCount]).toEqual([
+      6_840, 6_268, 137,
+    ])
+    const top = resolvePeopleView(
+      { min: 250_000, sort: 'rate', dir: 'desc' },
+      [2025],
+    )
+    const high = filterPeopleJobs(records, top)
+    expect([high.length, countNames(high)]).toEqual([129, 124])
+    expect(sortJobs(high, top)[0]?.annualSalaryRateCents).toBe(940_000_000)
+    expect(
+      filterPeopleJobs(records, { ...top, category: 'Faculty' }),
+    ).toHaveLength(50)
   },
 )
 

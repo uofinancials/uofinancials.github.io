@@ -48,10 +48,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   same name in the next year when each year lists exactly one primary job for it
   and both are in the same pay department. The links are computed, not published
   by UO; the committed 2014-2025 data (retrieved 2026-09-24) yields 52,880.
-- Pages share one layout: a header with the site name and navigation, and the
-  footer with the independence notice and the error report link. Paths the site
-  does not have show a not-found page inside that layout, and every path loads
-  directly on GitHub Pages.
+- Pages share one layout, up to 1,200 pixels wide: a header with the site name
+  and navigation, and the footer with the independence notice and the error
+  report link. Paths the site does not have show a not-found page inside that
+  layout, and every path loads directly on GitHub Pages.
 - A Sources page (`/sources`) listing each Fall Census report, budget workbook,
   and OPE rate page the site uses - with its retrieval date, SHA-256, and
   counts - and every document the raise terms cite.
@@ -124,14 +124,30 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   area, and a position class or rank. Each department page links to its own
   distribution, shown as a filter that can be removed. A filter matching fewer
   than three jobs shows only the count, and percentiles need three primary jobs.
-- A People page (`/people`) that searches every Fall census from 2014 to 2025 by
-  name: each word typed must appear in the name, and up to 50 matching names are
-  listed with the years they appear in and the pay department of their latest
-  primary job, with the source reports cited beneath. The search, the chosen
-  name, and its census year are kept in the link, and the page asks search
-  engines not to index it. Records marked `possibleStudent` are shown as
-  published.
-- A chosen name shows, from top to bottom:
+- A People page (`/people`) listing one Fall census's jobs by name, the latest
+  by default, 50 to a page, with every published job field in a table (Fall
+  2025: 6,840 jobs, 6,268 names, from the reports retrieved 2026-09-24):
+  - filters by name and by title (each word typed must appear, with the census's
+    titles suggested), EEO category, a published rate range in whole dollars
+    with both ends included, and the Salaries page's census, group, staff, term,
+    college or VP area or department, and position class or rank, each typed
+    filter shown as a chip that removes it;
+  - the number of matching jobs and names, and above the table two charts of the
+    matching jobs: their salary rate ranges as on the Salaries page, where
+    choosing a range sets the rate filter, and their count and median rate by
+    group;
+  - sorting by name, title, class or rank, pay department, rate, appointment,
+    EEO category, or group, either way, ties by name;
+  - a column selector, with class or rank, term, job type, and EEO category
+    hidden by default;
+  - a name with no job in the census listed with the censuses it appears in.
+- The list is kept in its link, and the page asks search engines not to index
+  it. Records marked `possibleStudent` are shown as published. The Salaries and
+  department pages link to it with their filters, and it links back to the
+  Salaries page.
+- Each name has its own page (`/people/<name>`), also not indexed, with a back
+  button to the list. Old `/people?name=` links lead to it. It shows, from top
+  to bottom:
   - figures computed by this site from that name's own records, each with its
     method and caveats: years since the earliest published job start, and, over
     years linked on the exact name and the same pay department of a single
@@ -145,8 +161,8 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - census tabs, each with every field the report publishes for that year's
     jobs, its citation, and links to the pay department's page and salary
     distribution and to the salary distribution of each job's position class or
-    rank, and to the pay changes of that department and of the primary job's
-    class or rank;
+    rank, to the People list of that department and class or rank, and to the
+    pay changes of that department and of the primary job's class or rank;
   - a job history of title, class or rank, pay department, job type,
     appointment, and term for every census.
 - A Pay changes page (`/pay-changes`) for continuing jobs, which are person

@@ -1,5 +1,6 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { formatDollars, NO_VALUE } from './format.ts'
+import type { ListColumn, PeopleSort } from './people-search.ts'
 
 type Field = {
   label: string
@@ -47,6 +48,15 @@ const CLASS_OR_RANK: Field = {
     record.kind === 'classified' ? positionClassOf(record) : record.rank,
 }
 
+const EEO_CATEGORY: Field = {
+  label: 'EEO category',
+  value: (record) => record.eeoCategory,
+}
+const RATE: Field = {
+  label: 'Annual salary rate',
+  value: (record) => formatDollars(record.annualSalaryRateCents),
+}
+
 function unclassifiedField(
   label: string,
   key: 'rank' | 'rankDate' | 'apptStatus' | 'primaryActivity' | 'oaSalaryGrade',
@@ -71,7 +81,7 @@ const FIELDS: Field[] = [
   unclassifiedField('Appointment status', 'apptStatus'),
   unclassifiedField('Primary activity', 'primaryActivity'),
   unclassifiedField('OA salary grade', 'oaSalaryGrade'),
-  { label: 'EEO category', value: (record) => record.eeoCategory },
+  EEO_CATEGORY,
   JOB_TYPE,
   { label: 'Job status', value: (record) => record.jobStatus },
   {
@@ -79,10 +89,7 @@ const FIELDS: Field[] = [
     value: (record) => department(record.homeDepartment),
   },
   PAY_DEPARTMENT,
-  {
-    label: 'Annual salary rate',
-    value: (record) => formatDollars(record.annualSalaryRateCents),
-  },
+  RATE,
   APPOINTMENT,
   TERM,
   { label: 'Job start', value: (record) => record.jobStartDate },
@@ -118,3 +125,19 @@ export const HISTORY_LABELS = HISTORY_FIELDS.map(({ label }) => label)
 export function historyValues(record: FallRecord): string[] {
   return HISTORY_FIELDS.map(({ value }) => value(record) ?? NO_VALUE)
 }
+
+/** The people list's columns after the name: each field, the sort it offers if any, and whether it is a number. */
+export const LIST_FIELDS: (Field & {
+  column: ListColumn
+  sort: PeopleSort | null
+  isNumber: boolean
+})[] = [
+  { ...TITLE, column: 'title', sort: 'title', isNumber: false },
+  { ...CLASS_OR_RANK, column: 'position', sort: 'position', isNumber: false },
+  { ...PAY_DEPARTMENT, column: 'dept', sort: 'dept', isNumber: false },
+  { ...RATE, column: 'rate', sort: 'rate', isNumber: true },
+  { ...APPOINTMENT, column: 'appt', sort: 'appt', isNumber: true },
+  { ...TERM, column: 'term', sort: null, isNumber: false },
+  { ...JOB_TYPE, column: 'type', sort: null, isNumber: false },
+  { ...EEO_CATEGORY, column: 'category', sort: 'category', isNumber: false },
+]

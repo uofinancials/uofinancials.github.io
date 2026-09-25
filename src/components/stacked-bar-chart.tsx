@@ -20,11 +20,14 @@ export function StackedBarChart({
   labels,
   series,
   label,
+  onSelect,
 }: {
   labels: string[]
   /** `position` fixes a series' color, so filtering one out does not recolor the rest. */
   series: { key: string; values: number[]; position: number }[]
   label: string
+  /** Called with a clicked column's index. */
+  onSelect?: (index: number) => void
 }) {
   const data = labels.map((x, index) => ({
     x,
@@ -35,7 +38,15 @@ export function StackedBarChart({
   return (
     <figure aria-label={label}>
       <ChartContainer config={{}} className="aspect-auto h-96 w-full">
-        <BarChart data={data} accessibilityLayer>
+        <BarChart
+          data={data}
+          accessibilityLayer
+          className={onSelect && 'cursor-pointer'}
+          onClick={({ activeTooltipIndex }) => {
+            const index = Number(activeTooltipIndex)
+            if (onSelect && Number.isInteger(index)) onSelect(index)
+          }}
+        >
           <CartesianGrid vertical={false} />
           <XAxis dataKey="x" tickLine={false} interval="preserveStartEnd" />
           <YAxis

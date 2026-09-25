@@ -43,12 +43,8 @@ test('a person links to pay changes for their class or rank, the filter can be r
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
-  await page.goto('/people?q=smith+j')
-  await page
-    .getByRole('list', { name: 'Matching names' })
-    .getByRole('link')
-    .nth(1)
-    .click()
+  await page.goto('/people?q=smith+benjamin+j&year=2023')
+  await page.getByRole('table').getByRole('link').first().click()
   await page
     .getByRole('link', { name: /^Pay changes, / })
     .last()
