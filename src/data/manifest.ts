@@ -33,17 +33,34 @@ const budgetEntrySchema = z.strictObject({
   url: z.url(),
   fileName: z.string().min(1),
   sha256,
-  lastModified: z.string().min(1),
+  lastModified: z.string().min(1).nullable(),
   retrievedOn: isoDate,
   rows: z.number().int().nonnegative(),
   totalExpenditureBudgetCents: z.number().int(),
 })
 
+const ratesEntrySchema = z.strictObject({
+  pages: z.array(
+    z.strictObject({
+      url: z.url(),
+      sha256,
+      lastModified: z.string().min(1).nullable(),
+      retrievedOn: isoDate,
+    }),
+  ),
+  groups: z.number().int().nonnegative(),
+  opeRates: z.number().int().nonnegative(),
+  leaveRates: z.number().int().nonnegative(),
+  persRepayment: z.number().int().nonnegative(),
+})
+
 export const manifestSchema = z.strictObject({
   fall: z.array(fallEntrySchema),
   budget: z.array(budgetEntrySchema),
+  rates: ratesEntrySchema.nullable(),
 })
 
 export type FallEntry = z.infer<typeof fallEntrySchema>
 export type BudgetEntry = z.infer<typeof budgetEntrySchema>
+export type RatesEntry = z.infer<typeof ratesEntrySchema>
 export type Manifest = z.infer<typeof manifestSchema>

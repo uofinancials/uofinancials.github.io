@@ -16,8 +16,17 @@ export const BUDGET_SOURCE_DIR = path.resolve(
 
 export const hasBudgetSources = existsSync(BUDGET_SOURCE_DIR)
 
+export const RATES_SOURCE_DIR = path.resolve(
+  import.meta.dirname,
+  '../../.cache/sources/rates',
+)
+
+export const hasRatesSources = existsSync(RATES_SOURCE_DIR)
+
 export const DATA_DIR = path.resolve(import.meta.dirname, '../../public/data')
 export const MANIFEST_PATH = path.join(DATA_DIR, 'manifest.json')
+export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
+export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')
 
 export function budgetDataPath(fiscalYear: number): string {
   return path.join(DATA_DIR, 'budget', `FY${String(fiscalYear).slice(2)}.json`)

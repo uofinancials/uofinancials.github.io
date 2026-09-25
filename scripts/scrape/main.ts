@@ -6,10 +6,12 @@ import {
   type StepResult,
   writeManifest,
 } from './manifest-file.ts'
+import { runRates } from './rates.ts'
 
 const STEPS: Record<string, (manifest: Manifest) => Promise<StepResult>> = {
   fall: runFall,
   budget: runBudget,
+  rates: runRates,
 }
 
 async function main(requested: string[]): Promise<void> {

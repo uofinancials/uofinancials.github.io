@@ -410,5 +410,31 @@
       "rows": 6337,
       "totalExpenditureBudgetCents": 191605223400
     }
-  ]
+  ],
+  "rates": {
+    "pages": [
+      {
+        "url": "https://brp.uoregon.edu/content/Blended-OPE",
+        "sha256": "d374f00c9ef36ebedd7d993d0cb3317b07288398bcd6a508cb0b4a376e91c2e4",
+        "lastModified": null,
+        "retrievedOn": "2026-09-24"
+      },
+      {
+        "url": "https://brp.uoregon.edu/content/Blended-OPE-Rate-History",
+        "sha256": "4c254e768bc003f9051df0d5672e9a6a020c6ad32114c62963ee1b09056c0ac8",
+        "lastModified": null,
+        "retrievedOn": "2026-09-24"
+      },
+      {
+        "url": "https://brp.uoregon.edu/content/Employee-Rate-Group-Matrix",
+        "sha256": "07f5a697e755fd2705cd936028c032a5ea908ac63cdeb52bc09b3c65c441fa72",
+        "lastModified": null,
+        "retrievedOn": "2026-09-24"
+      }
+    ],
+    "groups": 9,
+    "opeRates": 72,
+    "leaveRates": 10,
+    "persRepayment": 30
+  }
 }

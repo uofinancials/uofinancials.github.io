@@ -7,7 +7,7 @@ import { MANIFEST_PATH } from './cache.ts'
 export type StepResult = { manifest: Manifest; problems: string[] }
 
 export async function readManifest(): Promise<Manifest> {
-  if (!existsSync(MANIFEST_PATH)) return { fall: [], budget: [] }
+  if (!existsSync(MANIFEST_PATH)) return { fall: [], budget: [], rates: null }
   return manifestSchema.parse(JSON.parse(await readFile(MANIFEST_PATH, 'utf8')))
 }
 
