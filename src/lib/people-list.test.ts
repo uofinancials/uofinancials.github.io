@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
+  binsInRange,
   countNames,
   distinctValues,
   filterPeopleJobs,
@@ -10,6 +11,7 @@ import {
   resolvePeopleView,
   sortJobs,
 } from './people-list'
+import { buildDistribution } from './salary-distribution'
 
 const YEARS = [2024, 2025]
 const view = (search: Parameters<typeof resolvePeopleView>[0] = {}) =>
@@ -127,4 +129,15 @@ test('each group with a job gives its count, and its median from three primary j
     { group: 'Faculty', jobs: 3, medianRateCents: 200 },
     { group: 'Classified staff', jobs: 2, medianRateCents: null },
   ])
+})
+
+test('the chart keeps the bins that overlap the rate range', () => {
+  const floors = (search: Parameters<typeof resolvePeopleView>[0]) =>
+    binsInRange(buildDistribution([], 2025), view(search)).bins.map(
+      ({ floorCents }) => floorCents / 100_000,
+    )
+  expect(floors({ min: 45_000, max: 60_000 })).toEqual([40, 50, 60])
+  expect(floors({ min: 250_000 })).toEqual([250])
+  expect(floors({ max: 9_999 })).toEqual([0])
+  expect(floors({})).toHaveLength(26)
 })

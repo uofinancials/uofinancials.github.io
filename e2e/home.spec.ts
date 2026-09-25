@@ -356,14 +356,13 @@ test('people search by every word of a name, and a chosen name shows its records
     'content',
     'noindex',
   )
-  await page.getByRole('searchbox', { name: 'Search by name' }).fill('smith j')
+  await page.getByRole('searchbox', { name: 'Name' }).fill('smith j')
   await expect(page).toHaveURL(/q=smith/)
-  const matches = page.getByRole('list', { name: 'Matching names' })
-  const first = matches.getByRole('link').first()
+  const first = page.getByRole('table').getByRole('link').first()
   const name = await first.textContent()
   expect(name).toMatch(/smith.* j/i)
   await first.click()
-  await expect(page).toHaveURL(/\/people\/[^?]+$/)
+  await expect(page).toHaveURL(/\/people\/[^?]+\?year=2025$/)
   await page.reload()
   await expect(
     page.getByRole('heading', { level: 1, name: name ?? '' }),
@@ -395,9 +394,8 @@ test('people search by every word of a name, and a chosen name shows its records
 })
 
 async function openLinkedPerson(page: Page) {
-  await page.goto('/people?q=smith+j')
-  const matches = page.getByRole('list', { name: 'Matching names' })
-  await matches.getByRole('link').nth(1).click()
+  await page.goto('/people?q=smith+benjamin+j&year=2023')
+  await page.getByRole('table').getByRole('link').first().click()
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 }
 
@@ -453,8 +451,62 @@ test('census tabs are held in the link and lead to the class distribution, and t
   await expect(page).not.toHaveURL(/position=/)
   await page.goto('/people?q=smith')
   await expect(
-    page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
+    page.getByRole('link', { name: 'Fall 2025 Census salary reports' }),
   ).toBeVisible()
   await page.goto('/people?q=zzzz')
-  await expect(page.getByRole('main')).toContainText('No name matches.')
+  await expect(page.getByRole('main')).toContainText('No name matches “zzzz”.')
+  await page.goto('/people?q=smith+benjamin+j')
+  await page
+    .getByRole('list', { name: 'Matching names' })
+    .getByRole('link')
+    .first()
+    .click()
+  await expect(page).toHaveURL(/\/people\/[^?]+$/)
+})
+
+test('the people list filters, sorts, and pages one census, and its chart sets the rate range', async ({
+  page,
+}) => {
+  await page.goto('/people')
+  const main = page.getByRole('main')
+  await expect(main).toContainText('6,840 jobs, 6,268 names match')
+  await expect(main.getByText('Page 1 of 137')).toBeVisible()
+  await page.getByRole('link', { name: 'Next' }).click()
+  await expect(page).toHaveURL(/page=2/)
+  await page.getByRole('spinbutton', { name: 'Rate from ($)' }).fill('250000')
+  await expect(page).toHaveURL(/min=250000/)
+  await expect(page).not.toHaveURL(/page=/)
+  await expect(main).toContainText('129 jobs, 124 names match')
+  const rate = page.getByRole('button', { name: 'Annual salary rate' })
+  await rate.click()
+  await rate.click()
+  await expect(page).toHaveURL(/sort=rate&dir=desc/)
+  await expect(
+    page.getByRole('columnheader', { name: /Annual salary rate/ }),
+  ).toHaveAttribute('aria-sort', 'descending')
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(page).not.toHaveURL(/min=/)
+  await page.getByText('The chart’s numbers').click()
+  await page.getByRole('button', { name: '$50,000 to $59,999' }).click()
+  await expect(page).toHaveURL(/min=50000&max=59999/)
+  await expect(main).toContainText('Rate to $59,999')
+  await page.getByRole('link', { name: 'By group' }).click()
+  await expect(page).toHaveURL(/chart=groups/)
+  await expect(
+    page.getByRole('columnheader', { name: 'Median rate, primary jobs' }),
+  ).toBeVisible()
+  await page
+    .getByRole('link', { name: /^Salary distribution without names/ })
+    .click()
+  await expect(page).toHaveURL(/\/salaries/)
+  await page.getByRole('link', { name: /^The jobs by name/ }).click()
+  await expect(page).toHaveURL(/\/people/)
+})
+
+test('the people list does not scroll sideways at 360px', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/people?dept=223100')
+  await expect(page.getByRole('table').first()).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
 })

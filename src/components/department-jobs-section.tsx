@@ -191,13 +191,20 @@ export function DepartmentJobsSection({
             options={yearsWithJobs.map((year) => [String(year), String(year)])}
             onSelect={(value) => onChange({ year: Number(value) })}
           />
-          <p className="text-sm">
+          <p className="flex flex-wrap gap-x-4 text-sm">
             <Link
               className="underline"
               to="/salaries"
               search={{ dept: code, year: view.year }}
             >
               Salary distribution, Fall {view.year}
+            </Link>
+            <Link
+              className="underline"
+              to="/people"
+              search={{ dept: code, year: view.year }}
+            >
+              Jobs by name, Fall {view.year}
             </Link>
           </p>
           {STAFF_KINDS.map((kind) => {

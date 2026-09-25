@@ -14,6 +14,9 @@ const TOP_BIN_FLOOR_CENTS = 25_000_000
 const CENTS_PER_DOLLAR = 100
 const CENTS_PER_THOUSAND_DOLLARS = 100_000
 
+export const RATE_NOTE =
+  'Rates are the annual salary rates UO publishes, not pay: a 9-month rate is the 9-month salary, a part-time job’s rate is its full-time rate, and classified temporaries’ rates are annualised hourly rates. Dollars are as published, not adjusted for inflation.'
+
 export const PERCENTILES = [10, 25, 50, 75, 90] as const
 export type Percentile = (typeof PERCENTILES)[number]
 

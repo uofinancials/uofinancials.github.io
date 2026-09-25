@@ -13,6 +13,17 @@ export const PEOPLE_SORTS = [
 ] as const
 export type PeopleSort = (typeof PEOPLE_SORTS)[number]
 
+export const SORT_LABELS: Record<PeopleSort, string> = {
+  name: 'Name',
+  dept: 'Pay department',
+  appt: 'Appointment',
+  rate: 'Annual salary rate',
+  title: 'Title',
+  position: 'Class or rank',
+  group: 'Group',
+  category: 'EEO category',
+}
+
 export const SORT_DIRECTIONS = ['asc', 'desc'] as const
 export type SortDirection = (typeof SORT_DIRECTIONS)[number]
 

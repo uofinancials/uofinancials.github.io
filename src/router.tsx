@@ -119,24 +119,33 @@ const departmentRoute = createRoute({
   component: DepartmentPage,
 })
 
+/** The census a search asks for, or the latest, with the budget year that names its areas. */
+async function loadCensus({
+  context: { queryClient },
+  deps,
+}: {
+  context: { queryClient: QueryClient }
+  deps: { year: number | undefined }
+}) {
+  const manifest = await queryClient.ensureQueryData(manifestQuery)
+  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+  const year = resolveCensusYear(deps.year, years)
+  const census = manifest.fall.find((entry) => entry.year === year)
+  if (!census) throw notFound()
+  const fiscalYear = fiscalYearForCensus(manifest, census.censusDate)
+  await Promise.all([
+    queryClient.ensureQueryData(fallYearQuery(year)),
+    queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+  ])
+  return { years, year, fiscalYear }
+}
+
 const salariesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/salaries',
   validateSearch: salariesSearchSchema,
   loaderDeps: ({ search }) => ({ year: search.year }),
-  loader: async ({ context: { queryClient }, deps }) => {
-    const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-    const year = resolveCensusYear(deps.year, years)
-    const census = manifest.fall.find((entry) => entry.year === year)
-    if (!census) throw notFound()
-    const fiscalYear = fiscalYearForCensus(manifest, census.censusDate)
-    await Promise.all([
-      queryClient.ensureQueryData(fallYearQuery(year)),
-      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
-    ])
-    return { years, year, fiscalYear }
-  },
+  loader: loadCensus,
   component: SalariesPage,
 })
 
@@ -162,7 +171,8 @@ const peopleRoute = createRoute({
       })
     }
   },
-  loader: loadPeopleIndex,
+  loaderDeps: ({ search }) => ({ year: search.year }),
+  loader: loadCensus,
   component: PeoplePage,
 })
 

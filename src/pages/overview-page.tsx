@@ -10,8 +10,13 @@ import { formatCount, formatDollars, formatFte } from '@/lib/format'
 import {
   buildCensusOverview,
   type CensusOverview,
+  type GroupTotals,
   SPEND_METHOD,
 } from '@/lib/overview'
+
+function spendBars(groups: GroupTotals[]) {
+  return groups.map(({ key, totals }) => ({ key, value: totals.spendCents }))
+}
 
 function Figure({ label, value }: { label: string; value: string }) {
   return (
@@ -79,7 +84,9 @@ export function OverviewPage() {
       </div>
       <Section title="By EEO category">
         <TotalsChart
-          groups={overview.byCategory}
+          bars={spendBars(overview.byCategory)}
+          valueLabel="Salary spend"
+          format={formatDollars}
           label="Salary spend by EEO category"
         />
         <TotalsTable
@@ -95,7 +102,9 @@ export function OverviewPage() {
       </Section>
       <Section title="By college or VP area">
         <TotalsChart
-          groups={overview.byArea}
+          bars={spendBars(overview.byArea)}
+          valueLabel="Salary spend"
+          format={formatDollars}
           label="Salary spend by college or VP area"
         />
         <TotalsTable

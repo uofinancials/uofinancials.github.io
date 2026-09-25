@@ -8,7 +8,11 @@ import type {
 import { titleOf } from './person-fields.ts'
 import { hasEveryWord, queryWords } from './person-lookup.ts'
 import { resolveSalariesView, type SalariesView } from './salaries-search.ts'
-import { filterJobs, positionOf } from './salary-distribution.ts'
+import {
+  type Distribution,
+  filterJobs,
+  positionOf,
+} from './salary-distribution.ts'
 import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 import { measureJobs } from './trends.ts'
 
@@ -163,4 +167,33 @@ export function groupSummary(records: FallRecord[], year: number): GroupRow[] {
     const { jobs, medianRateCents } = measureJobs(members)
     return { group, jobs, medianRateCents }
   }).filter(({ jobs }) => jobs > 0)
+}
+
+const recordIds = new WeakMap<FallRecord, number>()
+let nextRecordId = 0
+
+/** A stable key for a record object; UO publishes no job id, and two published jobs can match in every field. */
+export function recordKey(record: FallRecord): number {
+  const known = recordIds.get(record)
+  if (known !== undefined) return known
+  nextRecordId += 1
+  recordIds.set(record, nextRecordId)
+  return nextRecordId
+}
+
+/** The distribution with only the bins that overlap the view's rate range. */
+export function binsInRange(
+  distribution: Distribution,
+  { minCents, ceilingCents }: Pick<PeopleView, 'minCents' | 'ceilingCents'>,
+): Distribution {
+  return {
+    ...distribution,
+    bins: distribution.bins.filter(
+      (bin) =>
+        (minCents === null ||
+          bin.ceilingCents === null ||
+          bin.ceilingCents > minCents) &&
+        (ceilingCents === null || bin.floorCents < ceilingCents),
+    ),
+  }
 }

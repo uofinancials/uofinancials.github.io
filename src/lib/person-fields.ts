@@ -1,5 +1,6 @@
 import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { formatDollars, NO_VALUE } from './format.ts'
+import type { PeopleSort } from './people-search.ts'
 
 type Field = {
   label: string
@@ -47,6 +48,15 @@ const CLASS_OR_RANK: Field = {
     record.kind === 'classified' ? positionClassOf(record) : record.rank,
 }
 
+const EEO_CATEGORY: Field = {
+  label: 'EEO category',
+  value: (record) => record.eeoCategory,
+}
+const RATE: Field = {
+  label: 'Annual salary rate',
+  value: (record) => formatDollars(record.annualSalaryRateCents),
+}
+
 function unclassifiedField(
   label: string,
   key: 'rank' | 'rankDate' | 'apptStatus' | 'primaryActivity' | 'oaSalaryGrade',
@@ -71,7 +81,7 @@ const FIELDS: Field[] = [
   unclassifiedField('Appointment status', 'apptStatus'),
   unclassifiedField('Primary activity', 'primaryActivity'),
   unclassifiedField('OA salary grade', 'oaSalaryGrade'),
-  { label: 'EEO category', value: (record) => record.eeoCategory },
+  EEO_CATEGORY,
   JOB_TYPE,
   { label: 'Job status', value: (record) => record.jobStatus },
   {
@@ -79,10 +89,7 @@ const FIELDS: Field[] = [
     value: (record) => department(record.homeDepartment),
   },
   PAY_DEPARTMENT,
-  {
-    label: 'Annual salary rate',
-    value: (record) => formatDollars(record.annualSalaryRateCents),
-  },
+  RATE,
   APPOINTMENT,
   TERM,
   { label: 'Job start', value: (record) => record.jobStartDate },
@@ -117,4 +124,26 @@ export const HISTORY_LABELS = HISTORY_FIELDS.map(({ label }) => label)
 /** The job history's published fields of one job, in `HISTORY_LABELS` order. */
 export function historyValues(record: FallRecord): string[] {
   return HISTORY_FIELDS.map(({ value }) => value(record) ?? NO_VALUE)
+}
+
+const LIST_FIELDS: (Field & { sort: PeopleSort | null })[] = [
+  { ...TITLE, sort: 'title' },
+  { ...CLASS_OR_RANK, sort: 'position' },
+  { ...PAY_DEPARTMENT, sort: 'dept' },
+  { ...RATE, sort: 'rate' },
+  { ...APPOINTMENT, sort: 'appt' },
+  { ...TERM, sort: null },
+  { ...JOB_TYPE, sort: null },
+  { ...EEO_CATEGORY, sort: 'category' },
+]
+
+/** The people list's columns after the name, each with the sort it offers, if any. */
+export const LIST_COLUMNS = LIST_FIELDS.map(({ label, sort }) => ({
+  label,
+  sort,
+}))
+
+/** One job's published fields in `LIST_COLUMNS` order. */
+export function listValues(record: FallRecord): string[] {
+  return LIST_FIELDS.map(({ value }) => value(record) ?? NO_VALUE)
 }
