@@ -1,37 +1,17 @@
 import { expect, test } from 'vitest'
-import type { FallClassified, FallRecord } from '@/data/fall'
+import { classifiedJob } from '@/test/fall-records'
 import {
   buildCensusOverview,
   buildOverview,
   fiscalYearOf,
   groupTotals,
   jobSpendCents,
-  latestCensus,
+  selectOverviewSources,
   summarize,
   UNASSIGNED_AREA,
 } from './overview'
 
-function job(overrides: Partial<FallClassified>): FallRecord {
-  return {
-    kind: 'classified',
-    name: 'Doe, Ann',
-    jobType: 'Primary',
-    jobStatus: 'Active',
-    jobStartDate: '2020-01-01',
-    jobEndDate: null,
-    homeDepartment: { code: null, name: 'Home' },
-    payDepartment: { code: '111111', name: 'Dept' },
-    annualSalaryRateCents: 5_000_000,
-    apptPercent: 100,
-    termOfServiceMonths: 12,
-    eeoCategory: 'Secy/Clerical',
-    sourcePage: 1,
-    possibleStudent: false,
-    jobTitle: 'Office Specialist 2',
-    positionClass: { code: 'E0104', title: 'Office Specialist 2' },
-    ...overrides,
-  }
-}
+const job = classifiedJob
 
 test('job spend is rate x FTE, rounded to the cent, and zero when unpaid', () => {
   expect(
@@ -124,38 +104,59 @@ test('a census date falls in the fiscal year ending the next June', () => {
   expect(fiscalYearOf('2026-06-30')).toBe(2026)
 })
 
-test('the latest census is the manifest entry with the highest year', () => {
-  const entry = (year: number) => ({
+test('the overview uses the latest census and the budget of its fiscal year, or the latest before it', () => {
+  const census = (year: number) => ({
     year,
     censusDate: `${year}-11-01`,
     sourcePage: 'https://example.org',
     files: [],
   })
-  expect(
-    latestCensus({
-      fall: [entry(2024), entry(2025), entry(2014)],
-      budget: [],
+  const budget = (fiscalYear: number) => ({
+    fiscalYear,
+    period: '14',
+    sourcePage: 'https://example.org',
+    fileName: 'f.xlsx',
+    url: 'https://example.org/f.xlsx',
+    sha256: 'a'.repeat(64),
+    lastModified: null,
+    retrievedOn: '2026-09-24',
+    rows: 0,
+    totalExpenditureBudgetCents: 0,
+  })
+  const selected = (fall: number[], budgets: number[]) => {
+    const { census: entry, fiscalYear } = selectOverviewSources({
+      fall: fall.map(census),
+      budget: budgets.map(budget),
       rates: null,
-    }).year,
-  ).toBe(2025)
-  expect(() => latestCensus({ fall: [], budget: [], rates: null })).toThrow(
+    })
+    return [entry.year, fiscalYear]
+  }
+  expect(selected([2024, 2025, 2014], [2026, 2027, 2025])).toEqual([2025, 2026])
+  expect(selected([2025, 2026], [2026])).toEqual([2026, 2026])
+  expect(() => selected([], [2026])).toThrow(
     'The manifest lists no Fall census',
+  )
+  expect(() => selected([2020], [2026])).toThrow(
+    'The manifest lists no budget for Fall 2020',
   )
 })
 
 test('the census overview names areas and counts how each was assigned', () => {
   const overview = buildCensusOverview(
-    [
-      job({ payDepartment: { code: '222120', name: 'CAS Theatre Arts' } }),
-      job({
-        name: 'Roe, Bo',
-        payDepartment: { code: '223500', name: 'CAS Math' },
-      }),
-      job({
-        name: 'Poe, Cy',
-        payDepartment: { code: '999999', name: 'Zed Ops' },
-      }),
-    ],
+    {
+      year: 2025,
+      records: [
+        job({ payDepartment: { code: '222120', name: 'CAS Theatre Arts' } }),
+        job({
+          name: 'Roe, Bo',
+          payDepartment: { code: '223500', name: 'CAS Math' },
+        }),
+        job({
+          name: 'Poe, Cy',
+          payDepartment: { code: '999999', name: 'Zed Ops' },
+        }),
+      ],
+    },
     {
       '222000': { name: 'Arts & Sciences, College of', level: 3, parent: null },
       '222120': { name: 'CAS Theatre Arts', level: 5, parent: '222000' },

@@ -61,7 +61,9 @@ export function groupTotals(
   const groups = new Map<string, FallRecord[]>()
   for (const record of records) {
     const key = keyOf(record)
-    groups.set(key, [...(groups.get(key) ?? []), record])
+    const members = groups.get(key) ?? []
+    members.push(record)
+    groups.set(key, members)
   }
   return [...groups]
     .map(([key, members]) => ({ key, totals: summarize(members) }))
@@ -98,13 +100,25 @@ export function fiscalYearOf(isoDate: string): number {
   return month >= FISCAL_YEAR_START_MONTH ? year + 1 : year
 }
 
-export function latestCensus(manifest: Manifest): FallEntry {
-  const latest = manifest.fall.reduce<FallEntry | undefined>(
-    (best, entry) => (!best || entry.year > best.year ? entry : best),
-    undefined,
-  )
-  if (!latest) throw new Error('The manifest lists no Fall census')
-  return latest
+/**
+ * The latest census and the budget year to name its areas with: the fiscal
+ * year containing the census, or the latest listed budget before it.
+ */
+export function selectOverviewSources(manifest: Manifest): {
+  census: FallEntry
+  fiscalYear: number
+} {
+  const [census] = [...manifest.fall].sort((a, b) => b.year - a.year)
+  if (!census) throw new Error('The manifest lists no Fall census')
+  const containing = fiscalYearOf(census.censusDate)
+  const [fiscalYear] = manifest.budget
+    .map((entry) => entry.fiscalYear)
+    .filter((year) => year <= containing)
+    .sort((a, b) => b - a)
+  if (fiscalYear === undefined) {
+    throw new Error(`The manifest lists no budget for Fall ${census.year}`)
+  }
+  return { census, fiscalYear }
 }
 
 export type CensusOverview = Overview & {
@@ -114,17 +128,22 @@ export type CensusOverview = Overview & {
 
 /** The overview of one census, with areas named from its fiscal year's budget. */
 export function buildCensusOverview(
-  records: FallRecord[],
+  census: { year: number; records: FallRecord[] },
   orgs: BudgetYear['orgs'],
 ): CensusOverview {
-  const assign = createAreaAssigner(records, orgs)
+  const assign = createAreaAssigner(census.records, orgs, census.year)
   const areaBases = { published: 0, name: 0, hand: 0, unassigned: 0 }
-  for (const record of records) {
-    if (!isClassifiedTemp(record)) areaBases[assign(record).basis] += 1
+  const areaNames = new Map<FallRecord, string>()
+  for (const record of census.records) {
+    if (isClassifiedTemp(record)) continue
+    const { area, basis } = assign(record)
+    areaBases[basis] += 1
+    areaNames.set(
+      record,
+      area === null ? UNASSIGNED_AREA : (orgs[area]?.name ?? area),
+    )
   }
-  const areaName = (record: FallRecord) => {
-    const { area } = assign(record)
-    return area === null ? UNASSIGNED_AREA : (orgs[area]?.name ?? area)
-  }
-  return { ...buildOverview(records, areaName), areaBases }
+  const areaOf = (record: FallRecord) =>
+    areaNames.get(record) ?? UNASSIGNED_AREA
+  return { ...buildOverview(census.records, areaOf), areaBases }
 }

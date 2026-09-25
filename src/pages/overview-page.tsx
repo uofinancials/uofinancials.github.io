@@ -52,7 +52,10 @@ export function OverviewPage() {
   const { year, fiscalYear } = useLoaderData({ from: '/' })
   const { data: census } = useSuspenseQuery(fallYearQuery(year))
   const { data: budget } = useSuspenseQuery(budgetYearQuery(fiscalYear))
-  const overview = buildCensusOverview(census.records, budget.orgs)
+  const overview = buildCensusOverview(
+    { year, records: census.records },
+    budget.orgs,
+  )
   const fall = { kind: 'fall', year } as const
   return (
     <div className="space-y-10">

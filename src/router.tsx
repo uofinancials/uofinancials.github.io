@@ -14,7 +14,7 @@ import {
   manifestQuery,
   raiseTermsQuery,
 } from '@/data/queries'
-import { fiscalYearOf, latestCensus } from '@/lib/overview'
+import { selectOverviewSources } from '@/lib/overview'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
 import { SourcesPage } from '@/pages/sources-page'
@@ -28,10 +28,9 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   loader: async ({ context: { queryClient } }) => {
-    const census = latestCensus(
+    const { census, fiscalYear } = selectOverviewSources(
       await queryClient.ensureQueryData(manifestQuery),
     )
-    const fiscalYear = fiscalYearOf(census.censusDate)
     await Promise.all([
       queryClient.ensureQueryData(fallYearQuery(census.year)),
       queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),

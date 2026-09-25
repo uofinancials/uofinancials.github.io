@@ -7,7 +7,11 @@ import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
 import { createAreaAssigner, HAND_AREAS } from '../src/lib/areas.ts'
-import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
+import {
+  buildCensusOverview,
+  isClassifiedTemp,
+  summarize,
+} from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import {
   identityProblems,
@@ -127,33 +131,24 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 )
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every Fall 2025 pay department has a college or VP area, each hand row used',
+  'every Fall 2025 job in the area table has an area, and every hand row is used',
   () => {
     const { records } = fallYearSchema.parse(
       readJson(path.join(DATA_DIR, 'fall', '2025.json')),
     )
     const { orgs } = budgetYearSchema.parse(readJson(budgetDataPath(2026)))
-    const assign = createAreaAssigner(records, orgs)
-    const assignments = records.map(assign)
-    const basisCounts = Object.fromEntries(
-      ['published', 'name', 'hand', 'unassigned'].map((basis) => [
-        basis,
-        assignments.filter((assignment) => assignment.basis === basis).length,
-      ]),
-    )
-    expect(basisCounts).toEqual({
-      published: 4_896,
-      name: 1_746,
-      hand: 198,
-      unassigned: 0,
-    })
+    expect(
+      buildCensusOverview({ year: 2025, records }, orgs).areaBases,
+    ).toEqual({ published: 4_463, name: 1_645, hand: 183, unassigned: 0 })
+    const assign = createAreaAssigner(records, orgs, 2025)
     const handCodes = new Set(
       records
-        .filter((_, index) => assignments[index]?.basis === 'hand')
+        .filter((record) => assign(record).basis === 'hand')
         .map((record) => record.payDepartment.code),
     )
-    expect([...handCodes].sort()).toEqual(Object.keys(HAND_AREAS).sort())
-    for (const area of Object.values(HAND_AREAS)) {
+    const handAreas = HAND_AREAS[2025] ?? {}
+    expect([...handCodes].sort()).toEqual(Object.keys(handAreas).sort())
+    for (const area of Object.values(handAreas)) {
       expect(orgs[area]?.level, area).toBe(3)
     }
   },

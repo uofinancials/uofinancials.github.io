@@ -52,12 +52,7 @@ export function TotalsChart({
               />
             }
           />
-          <Bar
-            dataKey="spendCents"
-            fill="var(--color-spendCents)"
-            radius={4}
-            isAnimationActive={false}
-          />
+          <Bar dataKey="spendCents" fill="var(--color-spendCents)" radius={4} />
         </BarChart>
       </ChartContainer>
     </figure>

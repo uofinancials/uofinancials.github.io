@@ -18,6 +18,20 @@ import type { GroupTotals, Totals } from '@/lib/overview'
 const NUMBER_CELL = 'text-right tabular-nums'
 const NUMBER_HEADS = ['People', 'Jobs', 'FTE', 'Salary spend', 'Share']
 
+function CountCells({ totals }: { totals: Totals }) {
+  return (
+    <>
+      <TableCell className={NUMBER_CELL}>
+        {formatCount(totals.people)}
+      </TableCell>
+      <TableCell className={NUMBER_CELL}>{formatCount(totals.jobs)}</TableCell>
+      <TableCell className={NUMBER_CELL}>
+        {formatFte(totals.fteHundredths)}
+      </TableCell>
+    </>
+  )
+}
+
 /** Totals per group, with classified temporaries as a separate row outside the spend. */
 export function TotalsTable({
   groupLabel,
@@ -48,15 +62,7 @@ export function TotalsTable({
             <TableHead scope="row" className="font-normal">
               {key}
             </TableHead>
-            <TableCell className={NUMBER_CELL}>
-              {formatCount(totals.people)}
-            </TableCell>
-            <TableCell className={NUMBER_CELL}>
-              {formatCount(totals.jobs)}
-            </TableCell>
-            <TableCell className={NUMBER_CELL}>
-              {formatFte(totals.fteHundredths)}
-            </TableCell>
+            <CountCells totals={totals} />
             <TableCell className={NUMBER_CELL}>
               {formatDollars(totals.spendCents)}
             </TableCell>
