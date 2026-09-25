@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
-import type { FallClassified, FallYear } from '@/data/fall'
-import { classifiedJob } from '@/test/fall-records'
+import type { FallClassified } from '@/data/fall'
+import { census, classifiedJob } from '@/test/fall-records'
 import { findPersonLinks } from './person-links'
 
 function job(
@@ -13,10 +13,6 @@ function job(
     jobType,
     payDepartment: { code: payCode, name: `Dept ${payCode}` },
   })
-}
-
-function census(year: number, records: FallClassified[]): FallYear {
-  return { censusDate: `${year}-11-01`, records }
 }
 
 test('links an identical name whose one primary job keeps its pay department', () => {

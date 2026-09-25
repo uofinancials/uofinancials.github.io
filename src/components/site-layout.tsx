@@ -3,6 +3,14 @@ import { Link, Outlet } from '@tanstack/react-router'
 const ISSUES_URL =
   'https://github.com/uofinancials/uofinancials.github.io/issues'
 
+const NAV_LINKS = [
+  ['/trends', 'Trends'],
+  ['/departments', 'Departments'],
+  ['/salaries', 'Salaries'],
+  ['/people', 'People'],
+  ['/sources', 'Sources'],
+] as const
+
 export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
@@ -13,51 +21,17 @@ export function SiteLayout() {
           </Link>
           <nav aria-label="Main">
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <li>
-                <Link
-                  to="/trends"
-                  className="text-muted-foreground hover:text-foreground"
-                  activeProps={{ className: 'text-foreground' }}
-                >
-                  Trends
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/departments"
-                  className="text-muted-foreground hover:text-foreground"
-                  activeProps={{ className: 'text-foreground' }}
-                >
-                  Departments
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/salaries"
-                  className="text-muted-foreground hover:text-foreground"
-                  activeProps={{ className: 'text-foreground' }}
-                >
-                  Salaries
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/people"
-                  className="text-muted-foreground hover:text-foreground"
-                  activeProps={{ className: 'text-foreground' }}
-                >
-                  People
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/sources"
-                  className="text-muted-foreground hover:text-foreground"
-                  activeProps={{ className: 'text-foreground' }}
-                >
-                  Sources
-                </Link>
-              </li>
+              {NAV_LINKS.map(([to, label]) => (
+                <li key={to}>
+                  <Link
+                    to={to}
+                    className="text-muted-foreground hover:text-foreground"
+                    activeProps={{ className: 'text-foreground' }}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

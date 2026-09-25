@@ -21,7 +21,7 @@ import {
   departmentsSearchSchema,
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
-import { peopleSearchSchema } from '@/lib/person-lookup'
+import { peopleSearchSchema } from '@/lib/people-search'
 import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'

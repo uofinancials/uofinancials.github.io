@@ -1,4 +1,4 @@
-import type { FallClassified, FallUnclassified } from '@/data/fall'
+import type { FallClassified, FallUnclassified, FallYear } from '@/data/fall'
 
 const COMMON = {
   name: 'Doe, Ann',
@@ -46,4 +46,9 @@ export function unclassifiedJob(
     termOfServiceMonths: 9,
     ...overrides,
   }
+}
+
+/** A Fall census of the given year, for tests. */
+export function census(year: number, records: FallYear['records']): FallYear {
+  return { censusDate: `${year}-11-01`, records }
 }

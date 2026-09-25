@@ -6,6 +6,7 @@ import {
   useSearch,
 } from '@tanstack/react-router'
 import { useMemo } from 'react'
+import { SearchField } from '@/components/search-field'
 import { SourceCitation } from '@/components/source-citation'
 import { fiscalYearLabel } from '@/data/budget'
 import { budgetYearQuery, fallYearQuery } from '@/data/queries'
@@ -62,20 +63,11 @@ export function DepartmentsPage() {
         by year; a pay department’s shows its jobs; a code both publish shows
         both.
       </p>
-      <label className="flex max-w-sm flex-col gap-1 text-sm">
-        <span className="text-muted-foreground">Filter by name or code</span>
-        <input
-          type="search"
-          className="rounded-md border bg-background px-2 py-1"
-          value={q}
-          onChange={(event) =>
-            navigate({
-              search: { q: event.target.value || undefined },
-              replace: true,
-            })
-          }
-        />
-      </label>
+      <SearchField
+        label="Filter by name or code"
+        value={q}
+        onSearch={(value) => navigate({ search: { q: value }, replace: true })}
+      />
       {areas.length === 0 && <p>No area, unit, or department matches.</p>}
       {areas.map((area) => (
         <section key={area.code ?? 'unassigned'} className="space-y-2">

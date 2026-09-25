@@ -6,6 +6,7 @@ import {
   useSearch,
 } from '@tanstack/react-router'
 import { PersonRecordsTable } from '@/components/person-records-table'
+import { SearchField } from '@/components/search-field'
 import { SourceCitation } from '@/components/source-citation'
 import type { FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
@@ -16,6 +17,7 @@ import {
   MIN_QUERY_CHARS,
   matchPeople,
   type Person,
+  yearsOf,
 } from '@/lib/person-lookup'
 
 const SAME_NAME_NOTE =
@@ -44,7 +46,7 @@ function Matches({ people, q }: { people: Person[]; q: string }) {
               {person.name}
             </Link>
             <span className="text-sm text-muted-foreground">
-              Fall {formatYearRanges(person.years.map(({ year }) => year))} ·{' '}
+              Fall {formatYearRanges(yearsOf(person))} ·{' '}
               {person.latestPayDepartment}
             </span>
           </li>
@@ -58,25 +60,23 @@ function Matches({ people, q }: { people: Person[]; q: string }) {
 }
 
 function PersonRecords({ person }: { person: Person }) {
-  const recordsByYear = new Map(
-    person.years.map(({ year, records }) => [year, records]),
-  )
   return (
     <section className="space-y-6">
       <h2 className="text-xl font-semibold">{person.name}</h2>
       <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
       {person.runs.map((run) => (
-        <div key={run.years[0]} className="space-y-4 border-l pl-4">
+        <div key={run.years[0]?.year} className="space-y-4 border-l pl-4">
           {run.isLinked && (
             <p className="text-sm">
-              Fall {formatYearRanges(run.years)}: {LINK_NOTE}
+              Fall {formatYearRanges(run.years.map(({ year }) => year))}:{' '}
+              {LINK_NOTE}
             </p>
           )}
-          {run.years.map((year) => (
+          {run.years.map(({ year, records }) => (
             <div key={year} className="space-y-2">
               <h3 className="font-semibold">Fall {year}</h3>
               <PersonRecordsTable
-                records={recordsByYear.get(year) ?? []}
+                records={records}
                 caption={`${person.name}, Fall ${year}`}
               />
               <SourceCitation source={{ kind: 'fall', year }} />
@@ -105,20 +105,13 @@ export function PeoplePage() {
         Every job the Fall {years[0]}-{years.at(-1)} Census salary reports
         publish under a name, as published.
       </p>
-      <label className="flex max-w-sm flex-col gap-1 text-sm">
-        <span className="text-muted-foreground">Search by name</span>
-        <input
-          type="search"
-          className="rounded-md border bg-background px-2 py-1"
-          value={q}
-          onChange={(event) =>
-            navigate({
-              search: { q: event.target.value || undefined, name },
-              replace: true,
-            })
-          }
-        />
-      </label>
+      <SearchField
+        label="Search by name"
+        value={q}
+        onSearch={(value) =>
+          navigate({ search: { q: value, name }, replace: true })
+        }
+      />
       {name !== undefined &&
         (person ? (
           <PersonRecords person={person} />

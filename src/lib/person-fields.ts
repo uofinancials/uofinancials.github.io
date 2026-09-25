@@ -11,6 +11,17 @@ function department({ code, name }: { code: string | null; name: string }) {
   return code === null ? name : `${name} (${code})`
 }
 
+function unclassifiedField(
+  label: string,
+  key: 'rank' | 'rankDate' | 'apptStatus' | 'primaryActivity' | 'oaSalaryGrade',
+): Field {
+  return {
+    label,
+    kind: 'unclassified',
+    value: (record) => (record.kind === 'unclassified' ? record[key] : null),
+  }
+}
+
 const FIELDS: Field[] = [
   {
     label: 'Salary report',
@@ -32,35 +43,11 @@ const FIELDS: Field[] = [
             .join(' ')
         : null,
   },
-  {
-    label: 'Rank',
-    kind: 'unclassified',
-    value: (record) => (record.kind === 'unclassified' ? record.rank : null),
-  },
-  {
-    label: 'Rank date',
-    kind: 'unclassified',
-    value: (record) =>
-      record.kind === 'unclassified' ? record.rankDate : null,
-  },
-  {
-    label: 'Appointment status',
-    kind: 'unclassified',
-    value: (record) =>
-      record.kind === 'unclassified' ? record.apptStatus : null,
-  },
-  {
-    label: 'Primary activity',
-    kind: 'unclassified',
-    value: (record) =>
-      record.kind === 'unclassified' ? record.primaryActivity : null,
-  },
-  {
-    label: 'OA salary grade',
-    kind: 'unclassified',
-    value: (record) =>
-      record.kind === 'unclassified' ? record.oaSalaryGrade : null,
-  },
+  unclassifiedField('Rank', 'rank'),
+  unclassifiedField('Rank date', 'rankDate'),
+  unclassifiedField('Appointment status', 'apptStatus'),
+  unclassifiedField('Primary activity', 'primaryActivity'),
+  unclassifiedField('OA salary grade', 'oaSalaryGrade'),
   { label: 'EEO category', value: (record) => record.eeoCategory },
   { label: 'Job type', value: (record) => record.jobType },
   { label: 'Job status', value: (record) => record.jobStatus },

@@ -1,10 +1,18 @@
 import { expect, test } from 'vitest'
-import type { FallYear } from '@/data/fall'
-import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { formatYearRanges, indexPeople, matchPeople } from './person-lookup'
+import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import {
+  formatYearRanges,
+  indexPeople,
+  matchPeople,
+  type Person,
+  yearsOf,
+} from './person-lookup'
 
-function census(year: number, records: FallYear['records']): FallYear {
-  return { censusDate: `${year}-11-01`, records }
+function runYears(person: Person | undefined) {
+  return person?.runs.map((run) => [
+    run.years.map(({ year }) => year),
+    run.isLinked,
+  ])
 }
 
 const physics = { code: '222222', name: 'Physics' }
@@ -17,12 +25,13 @@ test('a name’s years split into runs where no link joins them', () => {
     census(2018, [classifiedJob({ payDepartment: physics })]),
     census(2019, [classifiedJob({ payDepartment: physics })]),
   ])
-  expect(ann?.runs).toEqual([
-    { years: [2014, 2015], isLinked: true },
-    { years: [2016], isLinked: false },
-    { years: [2018, 2019], isLinked: true },
+  expect(runYears(ann)).toEqual([
+    [[2014, 2015], true],
+    [[2016], false],
+    [[2018, 2019], true],
   ])
   expect(ann?.latestPayDepartment).toBe('Physics')
+  expect(ann && yearsOf(ann)).toEqual([2014, 2015, 2016, 2018, 2019])
 })
 
 test('a year with two primary jobs is not linked, and keeps both records', () => {
@@ -30,16 +39,13 @@ test('a year with two primary jobs is not linked, and keeps both records', () =>
     census(2015, [classifiedJob()]),
     census(2014, [classifiedJob(), unclassifiedJob()]),
   ])
-  expect(ann?.runs).toEqual([
-    { years: [2014], isLinked: false },
-    { years: [2015], isLinked: false },
+  expect(runYears(ann)).toEqual([
+    [[2014], false],
+    [[2015], false],
   ])
-  expect(ann?.years.map(({ year, records }) => [year, records.length])).toEqual(
-    [
-      [2014, 2],
-      [2015, 1],
-    ],
-  )
+  expect(
+    ann?.runs.flatMap((run) => run.years.map(({ records }) => records.length)),
+  ).toEqual([2, 1])
 })
 
 const people = indexPeople([
