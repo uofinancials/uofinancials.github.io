@@ -204,3 +204,18 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   change department or name), and that a changed label is not necessarily a
   promotion.
 - A People link in the navigation, which now wraps on narrow screens.
+- A budget page (`/budget`, "Budget" in the nav) with the E&G fund projection
+  from the Board of Trustees meeting materials of June 1-2, 2026, retrieved
+  2026-09-25, in `public/data/outlook.json`:
+  - the run rate (annual gap) and ending fund balance for FY26-FY31, as a chart
+    and a table: -$22,770,593 in FY27, growing to -$73,143,868 in FY31;
+  - every published revenue and expense line, and the five alternative cases;
+  - the $65 million reduction estimate beside the run rate's present value;
+  - the FY27 all-funds budget, which shows that the deficit is in the E&G fund;
+  - the stated assumptions and the budget actions UO has announced;
+  - the unaudited FY26 actual reported since.
+
+  Every figure is entered by hand as published and cited to its page. A test
+  checks the packet's own arithmetic: lines sum to totals, revenue less expenses
+  is the run rate, and balances roll forward. The sources page lists the
+  documents cited.

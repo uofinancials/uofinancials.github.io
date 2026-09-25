@@ -7,8 +7,8 @@ Pages serves it from the `uofinancials.github.io` repository. An import script
 turns the University of Oregon's Fall Census salary report PDFs, its operational
 expenditure budget workbooks, and its blended OPE rate pages into JSON files
 committed under `public/data/`. Raise terms from collective bargaining
-agreements are entered by hand. The site reads nothing but its bundle and those
-files.
+agreements and the E&G fund projection from Board of Trustees materials are
+entered by hand. The site reads nothing but its bundle and those files.
 
 ## Data
 
@@ -23,6 +23,8 @@ files.
   the gitignored `.cache/sources/rates/`.
 - Collective bargaining agreements and UO salary announcements - read by hand
   for `public/data/raises.json`.
+- Board of Trustees meeting materials and president's office budget pages - read
+  by hand for `public/data/outlook.json`.
 - `public/data/fall/<year>.json` - one census year's job records; written by
   `scripts/scrape`.
 - `public/data/budget/FY<yy>.json` - one fiscal year's budget rows by
@@ -33,6 +35,10 @@ files.
 - `public/data/raises.json` - raise terms by employee group, each with its
   citation and, for across-the-board terms, the populations it applies to, and
   the recorded gaps; edited by hand.
+- `public/data/outlook.json` - the E&G fund projection by fiscal year with every
+  published line, its alternative cases and assumptions, run rates reported
+  since, the all-funds budget, and announced budget actions, each with its
+  citation; edited by hand.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
   dates, and counts; written by `scripts/scrape`.
 
@@ -44,6 +50,7 @@ flowchart LR
   xlsx[Budget workbooks] --> scrape
   html[OPE rate pages] --> scrape
   cba[Agreements] --> hand[Hand entry]
+  board[Board materials] --> hand
   hand --> json[public/data]
   scrape --> json[public/data]
   json --> site[src]
@@ -67,9 +74,10 @@ flowchart LR
   the removable filter, the pay changes section with its lines, counts table,
   distribution, and raise comparison, the people list's controls, table, sort
   controls, column picker, and group figure, the person view with its computed
-  figures, rate chart, records table, and job history, and the hooks and query
-  that load one census's placed jobs, the people list's matching jobs, the pay
-  changes of a Trends view, and the name index.
+  figures, rate chart, records table, and job history, the budget outlook's
+  lines and cases tables, and the hooks and query that load one census's placed
+  jobs, the people list's matching jobs, the pay changes of a Trends view, and
+  the name index.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -83,7 +91,8 @@ flowchart LR
   computed figures, rates by job, job history, a job's class or rank and the
   medians beside it, continuing jobs' pay changes with the rank renames and
   title abbreviations they use, a job's estimated raise group, and each raise
-  group's median change beside its compounded across-the-board terms.
+  group's median change beside its compounded across-the-board terms, and the
+  budget outlook's gap by year, chart series, and cited sources.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -116,11 +125,15 @@ flowchart LR
 - `scripts/scrape/cache.ts` - the source and data locations.
 - `scripts/committed-data.test.ts` - schema and total checks of every committed
   data file.
+- `scripts/committed-outlook.test.ts` - the budget outlook's published
+  arithmetic: lines to totals, run rates, and fund balances.
 
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
   departments, the people list and person page, sources page, and `404.html`.
+- `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, and
+  sources.
 - `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, its
   raise comparison, and its link from the person page.
 
@@ -154,9 +167,14 @@ flowchart LR
   records for one census at a time, and its job history, with a back button; not
   indexed by search engines; driven by the `src/lib` person lookup and summary
   over every Fall year.
+- `/budget` - the E&G fund projection: the gap and fund balance by fiscal year
+  as a chart and table, every published line, the alternative cases, the
+  reduction estimate, the all-funds budget, the stated assumptions, and the
+  announced budget actions, each cited; driven by the `src/lib` budget outlook
+  over the outlook file.
 - `/sources` - every source file in the manifest and every document the raise
-  terms cite, with retrieval dates, hashes, and counts; driven by `src/data` and
-  `src/lib`.
+  terms and the budget outlook cite, with retrieval dates, hashes, and counts;
+  driven by `src/data` and `src/lib`.
 - Any other path - the not-found page, inside the shared layout.
 
 ## Deployment
