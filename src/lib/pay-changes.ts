@@ -2,13 +2,17 @@ import type { FallRecord, FallYear, StaffKind } from '../data/fall.ts'
 import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { isClassifiedTemp } from './overview.ts'
 import { isRankRename, normalizeTitle } from './pay-change-labels.ts'
-import { peerGroupOf } from './peer-median.ts'
-import { findPersonLinks } from './person-links.ts'
-import { emptyCounts } from './salary-distribution.ts'
-import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
-import { percentileOf } from './trends.ts'
-
-const MEDIAN = 50
+import { type PeerGroup, peerGroupOf } from './peer-median.ts'
+import { department, titleOf } from './person-fields.ts'
+import { findPersonLinks, type PersonLink } from './person-links.ts'
+import {
+  emptyCounts,
+  type GroupCounts,
+  TREND_GROUPS,
+  type TrendGroup,
+  trendGroupOf,
+} from './trend-groups.ts'
+import { medianOf } from './trends.ts'
 
 /** A census pair's label, e.g. `2024-25`. */
 export function pairLabel(fromYear: number): string {
@@ -21,29 +25,61 @@ export type ContinuingPair = {
   from: FallRecord
   to: FallRecord
   group: TrendGroup
+  /** The earlier job's class number, rank, or OA grade. */
+  peer: PeerGroup | null
   /** The change in published annual salary rate as a fraction of the earlier rate. */
   ratio: number
+  /** `null` for a pair of unclassified jobs. */
+  isClassChanged: boolean | null
+  /** `null` for a pair of classified jobs. */
+  rank: 'same' | 'renamed' | 'changed' | 'unpublished' | null
+  /** Compared by `normalizeTitle`; a rank rename's title change is not counted. */
+  isTitleChanged: boolean
+}
+
+function rankChange({
+  fromYear,
+  from,
+  to,
+}: PersonLink): ContinuingPair['rank'] {
+  if (from.kind !== 'unclassified' || to.kind !== 'unclassified') return null
+  if (from.rank === null || to.rank === null) return 'unpublished'
+  if (from.rank === to.rank) return 'same'
+  return isRankRename(from.rank, to.rank, fromYear + 1) ? 'renamed' : 'changed'
+}
+
+function toPair(link: PersonLink): ContinuingPair {
+  const { fromYear, from, to } = link
+  const rank = rankChange(link)
+  const peer = peerGroupOf(from)
+  return {
+    fromYear,
+    from,
+    to,
+    group: trendGroupOf(from, fromYear),
+    peer,
+    ratio:
+      (to.annualSalaryRateCents - from.annualSalaryRateCents) /
+      from.annualSalaryRateCents,
+    isClassChanged:
+      from.kind === 'classified' ? peer?.key !== peerGroupOf(to)?.key : null,
+    rank,
+    isTitleChanged:
+      rank !== 'renamed' &&
+      normalizeTitle(titleOf(from)) !== normalizeTitle(titleOf(to)),
+  }
 }
 
 export function continuingPairs(years: FallYear[]): ContinuingPair[] {
-  return findPersonLinks(years).flatMap(({ fromYear, from, to }) =>
-    from.kind !== to.kind ||
-    isClassifiedTemp(from) ||
-    isClassifiedTemp(to) ||
-    from.termOfServiceMonths !== to.termOfServiceMonths
+  return findPersonLinks(years).flatMap((link) => {
+    const { from, to } = link
+    return from.kind !== to.kind ||
+      isClassifiedTemp(from) ||
+      isClassifiedTemp(to) ||
+      from.termOfServiceMonths !== to.termOfServiceMonths
       ? []
-      : [
-          {
-            fromYear,
-            from,
-            to,
-            group: trendGroupOf(from, fromYear),
-            ratio:
-              (to.annualSalaryRateCents - from.annualSalaryRateCents) /
-              from.annualSalaryRateCents,
-          },
-        ],
-  )
+      : [toPair(link)]
+  })
 }
 
 /** Narrows pairs by the earlier job: its staff kind, pay department code, and `peerGroupOf` key. */
@@ -58,10 +94,10 @@ export function filterPairs(
   { kind, dept, position }: PayChangeFilter,
 ): ContinuingPair[] {
   return pairs.filter(
-    ({ from }) =>
+    ({ from, peer }) =>
       (kind === 'all' || from.kind === kind) &&
       (dept === null || from.payDepartment.code === dept) &&
-      (position === null || peerGroupOf(from)?.key === position),
+      (position === null || peer?.key === position),
   )
 }
 
@@ -76,13 +112,11 @@ export type ChangeSeries = { key: string; points: ChangePoint[] }
 
 export const ALL_PAIRS = 'All continuing jobs'
 
-function measure(fromYear: number, ratios: number[]): ChangePoint {
-  const sorted = [...ratios].sort((a, b) => a - b)
+function measure(fromYear: number, ratios: number[] = []): ChangePoint {
   return {
     fromYear,
-    pairs: sorted.length,
-    median:
-      sorted.length >= MIN_JOBS_SHOWN ? percentileOf(sorted, MEDIAN) : null,
+    pairs: ratios.length,
+    median: ratios.length >= MIN_JOBS_SHOWN ? medianOf(ratios) : null,
   }
 }
 
@@ -91,24 +125,28 @@ export function payChangeTrends(
   pairs: ContinuingPair[],
   fromYears: number[],
 ): ChangeSeries[] {
-  const lineOf = (key: string, inLine: (pair: ContinuingPair) => boolean) => ({
+  const ratios = new Map<string, number[]>()
+  const add = (key: string, ratio: number) => {
+    const bucket = ratios.get(key)
+    if (bucket) bucket.push(ratio)
+    else ratios.set(key, [ratio])
+  }
+  for (const { fromYear, group, ratio } of pairs) {
+    add(`${ALL_PAIRS}|${fromYear}`, ratio)
+    add(`${group}|${fromYear}`, ratio)
+  }
+  const lines = [
+    ALL_PAIRS,
+    ...TREND_GROUPS.filter((group) =>
+      fromYears.some((fromYear) => ratios.has(`${group}|${fromYear}`)),
+    ),
+  ]
+  return lines.map((key) => ({
     key,
     points: fromYears.map((fromYear) =>
-      measure(
-        fromYear,
-        pairs
-          .filter((pair) => pair.fromYear === fromYear && inLine(pair))
-          .map(({ ratio }) => ratio),
-      ),
+      measure(fromYear, ratios.get(`${key}|${fromYear}`)),
     ),
-  })
-  const groups = TREND_GROUPS.filter((group) =>
-    pairs.some((pair) => pair.group === group),
-  )
-  return [
-    lineOf(ALL_PAIRS, () => true),
-    ...groups.map((group) => lineOf(group, (pair) => pair.group === group)),
-  ]
+  }))
 }
 
 const BIN_FLOOR_POINTS = -5
@@ -119,13 +157,14 @@ const PERCENT = 100
 export type ChangeBin = {
   floor: number | null
   ceiling: number | null
-  counts: Record<TrendGroup, number>
+  counts: GroupCounts
   total: number
 }
 
 export type ChangeDistribution = {
   bins: ChangeBin[]
-  counts: Record<TrendGroup, number>
+  counts: GroupCounts
+  total: number
 }
 
 function emptyBins(): ChangeBin[] {
@@ -168,7 +207,7 @@ export function payChangeDistribution(
     }
     counts[pair.group] += 1
   }
-  return { bins, counts }
+  return { bins, counts, total: pairs.length }
 }
 
 /** A bin's axis label, e.g. `7%`, `<-5%`, or `20%+`. */
@@ -197,51 +236,19 @@ export type ChangeCounts = {
   titleChanged: number
 }
 
-function titleOf(record: FallRecord): string {
-  return record.kind === 'classified' ? record.jobTitle : record.academicTitle
-}
-
-function isRenamed({ fromYear, from, to }: ContinuingPair): boolean {
-  return (
-    from.kind === 'unclassified' &&
-    to.kind === 'unclassified' &&
-    from.rank !== null &&
-    to.rank !== null &&
-    isRankRename(from.rank, to.rank, fromYear + 1)
-  )
-}
-
 function countYear(fromYear: number, pairs: ContinuingPair[]): ChangeCounts {
-  const counts: ChangeCounts = {
+  const count = (isCounted: (pair: ContinuingPair) => boolean) =>
+    pairs.filter(isCounted).length
+  return {
     fromYear,
     pairs: pairs.length,
-    classified: 0,
-    classChanged: 0,
-    unclassified: 0,
-    rankChanged: 0,
-    rankUnpublished: 0,
-    titleChanged: 0,
+    classified: count(({ isClassChanged }) => isClassChanged !== null),
+    classChanged: count(({ isClassChanged }) => isClassChanged === true),
+    unclassified: count(({ rank }) => rank !== null),
+    rankChanged: count(({ rank }) => rank === 'changed'),
+    rankUnpublished: count(({ rank }) => rank === 'unpublished'),
+    titleChanged: count(({ isTitleChanged }) => isTitleChanged),
   }
-  for (const pair of pairs) {
-    const { from, to } = pair
-    const isRename = isRenamed(pair)
-    if (
-      !isRename &&
-      normalizeTitle(titleOf(from)) !== normalizeTitle(titleOf(to))
-    ) {
-      counts.titleChanged += 1
-    }
-    if (from.kind === 'classified' && to.kind === 'classified') {
-      counts.classified += 1
-      if (from.positionClass?.code.slice(1) !== to.positionClass?.code.slice(1))
-        counts.classChanged += 1
-    } else if (from.kind === 'unclassified' && to.kind === 'unclassified') {
-      counts.unclassified += 1
-      if (from.rank === null || to.rank === null) counts.rankUnpublished += 1
-      else if (from.rank !== to.rank && !isRename) counts.rankChanged += 1
-    }
-  }
-  return counts
 }
 
 export function changeCounts(
@@ -261,24 +268,17 @@ export function filterNames(
   pairs: ContinuingPair[],
   { dept, position }: Pick<PayChangeFilter, 'dept' | 'position'>,
 ): { dept: string | null; position: string | null } {
-  const inDept =
+  const payDepartment =
     dept === null
-      ? undefined
-      : pairs.find(({ from }) => from.payDepartment.code === dept)
-  const inPosition =
+      ? null
+      : pairs.find(({ from }) => from.payDepartment.code === dept)?.from
+          .payDepartment
+  const peer =
     position === null
-      ? undefined
-      : pairs.find(({ from }) => peerGroupOf(from)?.key === position)
+      ? null
+      : pairs.find(({ peer }) => peer?.key === position)?.peer
   return {
-    dept:
-      dept === null
-        ? null
-        : inDept
-          ? `${inDept.from.payDepartment.name} (${dept})`
-          : dept,
-    position:
-      position === null
-        ? null
-        : ((inPosition && peerGroupOf(inPosition.from)?.label) ?? position),
+    dept: payDepartment ? department(payDepartment) : dept,
+    position: peer?.label ?? position,
   }
 }

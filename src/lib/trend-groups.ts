@@ -56,3 +56,35 @@ export function publishedCategoriesOf(group: TrendGroup): string[] {
     .filter(([, mapped]) => mapped === group)
     .map(([category]) => category)
 }
+
+export type GroupCounts = Record<TrendGroup, number>
+
+export function emptyCounts(): GroupCounts {
+  return {
+    Faculty: 0,
+    'Admins and professionals': 0,
+    'Unclassified staff': 0,
+    'Classified staff': 0,
+    Overloads: 0,
+    'Category not published': 0,
+    'Classified temporaries': 0,
+  }
+}
+
+/** Each group's count per bin, for the groups with a job, with each group's place in `TREND_GROUPS`. */
+export function stackedCounts(distribution: {
+  counts: GroupCounts
+  bins: { counts: GroupCounts }[]
+}): { key: TrendGroup; values: number[]; position: number }[] {
+  return TREND_GROUPS.flatMap((group, position) =>
+    distribution.counts[group] === 0
+      ? []
+      : [
+          {
+            key: group,
+            values: distribution.bins.map((bin) => bin.counts[group]),
+            position,
+          },
+        ],
+  )
+}

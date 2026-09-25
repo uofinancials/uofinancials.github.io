@@ -2,7 +2,12 @@ import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
-import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
+import {
+  emptyCounts,
+  type GroupCounts,
+  type TrendGroup,
+  trendGroupOf,
+} from './trend-groups.ts'
 import { percentileCents } from './trends.ts'
 
 const SALARY_BIN_CENTS = 1_000_000
@@ -20,28 +25,16 @@ export type SalaryBin = {
   floorCents: number
   /** Exclusive; `null` for the open top bin. */
   ceilingCents: number | null
-  counts: Record<TrendGroup, number>
+  counts: GroupCounts
   total: number
 }
 
 export type Distribution = {
   bins: SalaryBin[]
-  counts: Record<TrendGroup, number>
+  counts: GroupCounts
   maxRateCents: number | null
   /** Over primary jobs, temporaries left out; `null` when fewer than `MIN_JOBS_SHOWN`. */
   percentiles: Record<Percentile, number> | null
-}
-
-export function emptyCounts(): Record<TrendGroup, number> {
-  return {
-    Faculty: 0,
-    'Admins and professionals': 0,
-    'Unclassified staff': 0,
-    'Classified staff': 0,
-    Overloads: 0,
-    'Category not published': 0,
-    'Classified temporaries': 0,
-  }
 }
 
 function primaryPercentiles(
@@ -150,23 +143,4 @@ export function binRange({ floorCents, ceilingCents }: SalaryBin): string {
   return ceilingCents === null
     ? `${floor} and over`
     : `${floor} to ${formatDollars(ceilingCents - CENTS_PER_DOLLAR)}`
-}
-
-/** Each group's count per bin, for the groups with a job, with each group's place in `TREND_GROUPS`. */
-export function stackedCounts(
-  distribution: Pick<Distribution, 'counts'> & {
-    bins: { counts: Record<TrendGroup, number> }[]
-  },
-): { key: TrendGroup; values: number[]; position: number }[] {
-  return TREND_GROUPS.flatMap((group, position) =>
-    distribution.counts[group] === 0
-      ? []
-      : [
-          {
-            key: group,
-            values: distribution.bins.map((bin) => bin.counts[group]),
-            position,
-          },
-        ],
-  )
 }

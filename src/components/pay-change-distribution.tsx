@@ -16,7 +16,7 @@ import {
   changeBinRange,
   pairLabel,
 } from '@/lib/pay-changes'
-import { stackedCounts } from '@/lib/salary-distribution'
+import { stackedCounts } from '@/lib/trend-groups'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 
@@ -33,7 +33,6 @@ export function PayChangeDistribution({
   onPair: (fromYear: number) => void
 }) {
   const stacks = stackedCounts(distribution)
-  const total = Object.values(distribution.counts).reduce((a, b) => a + b, 0)
   const label = `Continuing jobs by change in salary rate, Fall ${pairLabel(pair)}`
   return (
     <section className="space-y-4">
@@ -47,10 +46,10 @@ export function PayChangeDistribution({
         ])}
         onSelect={(value) => onPair(Number(value))}
       />
-      {total < MIN_JOBS_SHOWN ? (
+      {distribution.total < MIN_JOBS_SHOWN ? (
         <p>
-          {formatCount(total)} continuing jobs match. The distribution is shown
-          for {MIN_JOBS_SHOWN} or more.
+          {formatCount(distribution.total)} continuing jobs match. The
+          distribution is shown for {MIN_JOBS_SHOWN} or more.
         </p>
       ) : (
         <>

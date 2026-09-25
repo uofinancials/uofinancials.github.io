@@ -42,11 +42,18 @@ export function percentileCents(sorted: number[], p: number): number | null {
   return value === null ? null : Math.round(value)
 }
 
-export function medianRateCents(rates: number[]): number | null {
-  return percentileCents(
-    [...rates].sort((a, b) => a - b),
-    50,
+const MEDIAN = 50
+
+export function medianOf(values: number[]): number | null {
+  return percentileOf(
+    [...values].sort((a, b) => a - b),
+    MEDIAN,
   )
+}
+
+export function medianRateCents(rates: number[]): number | null {
+  const median = medianOf(rates)
+  return median === null ? null : Math.round(median)
 }
 
 /** Jobs, spend and FTE, and the median rate of a set of jobs; each figure `null` when no job it applies to is in the set. */

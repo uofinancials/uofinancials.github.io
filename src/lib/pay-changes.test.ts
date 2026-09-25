@@ -18,16 +18,16 @@ function linkedYears(fromYear: number, jobs: [FallRecord, FallRecord][]) {
     return [
       { ...from, name },
       { ...to, name },
-    ]
+    ] as const
   })
   return [
     census(
       fromYear,
-      named.map(([from]) => from).filter((job) => job !== undefined),
+      named.map(([from]) => from),
     ),
     census(
       fromYear + 1,
-      named.map(([, to]) => to).filter((job) => job !== undefined),
+      named.map(([, to]) => to),
     ),
   ]
 }

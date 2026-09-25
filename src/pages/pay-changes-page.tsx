@@ -97,23 +97,31 @@ function usePayChanges() {
     queries: years.map(fallYearQuery),
     combine: toPairs,
   })
-  const fromYears = years.filter((year) => years.includes(year + 1))
+  const fromYears = useMemo(
+    () => years.filter((year) => years.includes(year + 1)),
+    [years],
+  )
   const view = resolvePayChangesView(search, fromYears)
   const { kind, dept, position } = view
   const shown = useMemo(
     () => filterPairs(pairs, { kind, dept, position }),
     [pairs, kind, dept, position],
   )
-  const names = useMemo(
-    () => filterNames(pairs, { dept, position }),
-    [pairs, dept, position],
+  const series = useMemo(
+    () => payChangeTrends(shown, fromYears),
+    [shown, fromYears],
   )
-  return { fromYears, view, shown, names }
+  const counts = useMemo(
+    () => changeCounts(shown, fromYears),
+    [shown, fromYears],
+  )
+  const names = filterNames(pairs, view)
+  return { fromYears, view, shown, series, counts, names }
 }
 
 export function PayChangesPage() {
   const navigate = useNavigate({ from: '/pay-changes' })
-  const { fromYears, view, shown, names } = usePayChanges()
+  const { fromYears, view, shown, series, counts, names } = usePayChanges()
   const first = fromYears[0] ?? view.pair
   const last = fromYears.at(-1) ?? view.pair
   const span = `Fall ${pairLabel(first)} to ${pairLabel(last)}`
@@ -127,14 +135,10 @@ export function PayChangesPage() {
       <PayChangesControls view={view} names={names} onChange={handleChange} />
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">{title}</h2>
-        <PayChangeLines
-          series={payChangeTrends(shown, fromYears)}
-          fromYears={fromYears}
-          label={title}
-        />
+        <PayChangeLines series={series} fromYears={fromYears} label={title} />
         <h3 className="font-medium">Changed class, rank, and title</h3>
         <PayChangeCountsTable
-          rows={changeCounts(shown, fromYears)}
+          rows={counts}
           caption={`Continuing jobs with a changed class, rank, or title, ${span}`}
         />
       </section>

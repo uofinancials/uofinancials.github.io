@@ -7,11 +7,17 @@ type Field = {
   value: (record: FallRecord) => string | null
 }
 
-function department({ code, name }: { code: string | null; name: string }) {
+export function department({
+  code,
+  name,
+}: {
+  code: string | null
+  name: string
+}) {
   return code === null ? name : `${name} (${code})`
 }
 
-function titleOf(record: FallRecord): string {
+export function titleOf(record: FallRecord): string {
   return record.kind === 'classified' ? record.jobTitle : record.academicTitle
 }
 
