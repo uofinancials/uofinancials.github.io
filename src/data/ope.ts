@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { twoDigitCode } from './budget.ts'
 
 const nonBlank = z.string().min(1)
 const fiscalYear = z.number().int().min(2000)
@@ -31,7 +32,7 @@ export const opeRatesSchema = z.strictObject({
   ),
   persRepayment: z.array(
     z.strictObject({
-      fundType: z.string().regex(/^\d{2}$/),
+      fundType: twoDigitCode,
       description: nonBlank,
       fiscalYears: z.array(fiscalYear).min(1),
       basisPoints,

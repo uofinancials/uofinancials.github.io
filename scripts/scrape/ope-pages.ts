@@ -1,16 +1,15 @@
 import * as cheerio from 'cheerio'
 import type { OpeRates } from '../../src/data/ope.ts'
 
-type Table = string[][]
+type Row = string[]
 const CENTURY = 2000
 const PERCENT = /^(\d*)(?:\.(\d{1,2}))?%$/
 const BASIS_POINTS_PER_PERCENT = 100
-const HUNDREDTHS_PER_TENTH = 10
 const TO_BE_DETERMINED = /\bTBD\b/
 
-export function readTables(html: string): Table[] {
+function readTable(html: string, firstHeader: string, page: string): Row[] {
   const $ = cheerio.load(html)
-  return $('table')
+  const tables = $('table')
     .map((_, table) => [
       $(table)
         .find('tr')
@@ -21,61 +20,55 @@ export function readTables(html: string): Table[] {
             .get(),
         ])
         .get()
-        .filter((cells: string[]) => cells.some((cell) => cell !== '')),
+        .filter((cells: Row) => cells.some((cell) => cell !== '')),
     ])
     .get()
-}
-
-export function toBasisPoints(text: string): number {
-  const match = PERCENT.exec(text.replace(/\s+/g, ''))
-  if (!match || (match[1] === '' && match[2] === undefined)) {
-    throw new Error(`not a percentage: "${text}"`)
-  }
-  const [, whole = '', fraction = ''] = match
-  const hundredths =
-    fraction.length === 1
-      ? Number(fraction) * HUNDREDTHS_PER_TENTH
-      : Number(fraction || 0)
-  return Number(whole || 0) * BASIS_POINTS_PER_PERCENT + hundredths
-}
-
-function findTable(tables: Table[], firstHeader: string, page: string): Table {
-  const table = tables.find((rows) => rows[0]?.[0] === firstHeader)
+  const table = tables.find((rows: Row[]) => rows[0]?.[0] === firstHeader)
   if (!table) throw new Error(`${page}: no table headed "${firstHeader}"`)
   return table
 }
 
+export function toBasisPoints(text: string): number {
+  const match = PERCENT.exec(text.trim())
+  if (!match || (match[1] === '' && match[2] === undefined)) {
+    throw new Error(`not a percentage: "${text}"`)
+  }
+  const [, whole = '', fraction = ''] = match
+  return (
+    Number(whole || 0) * BASIS_POINTS_PER_PERCENT +
+    Number(fraction.padEnd(2, '0'))
+  )
+}
+
 function expectHeader(
-  header: string[] | undefined,
+  header: Row | undefined,
   patterns: RegExp[],
   page: string,
-): RegExpExecArray[] {
-  const matches = patterns.map((pattern, index) =>
-    pattern.exec(header?.[index] ?? ''),
-  )
-  if (header?.length !== patterns.length || matches.some((match) => !match)) {
+): void {
+  const matches =
+    header?.length === patterns.length &&
+    patterns.every((pattern, index) => pattern.test(header[index] ?? ''))
+  if (!matches)
     throw new Error(`${page}: unexpected header ${JSON.stringify(header)}`)
-  }
-  return matches.filter((match): match is RegExpExecArray => match !== null)
 }
 
 export function readCurrentRates(
   html: string,
 ): Pick<OpeRates, 'opeRates' | 'leaveRates'> {
   const page = 'Blended OPE'
-  const [header, ...rows] = findTable(readTables(html), 'Employee Group', page)
-  const [, , rateYear] = expectHeader(
+  const [header, ...rows] = readTable(html, 'Employee Group', page)
+  expectHeader(
     header,
     [
       /^Employee Group$/,
       /^Avg Leave Adjustable Rate$/,
-      /^Fiscal Year (\d{4})$/,
+      /^Fiscal Year \d{4}$/,
       /^Avg Leave Adjustable Rate$/,
       /^Estimated Fiscal Year \d{4}$/,
     ],
     page,
   )
-  const fiscalYear = Number(rateYear?.[1])
+  const fiscalYear = Number(header?.[2]?.slice(-4))
   return {
     opeRates: rows.map(([group = '', , rate = '']) => ({
       fiscalYear,
@@ -96,12 +89,9 @@ function readLeaveCell(
 ): OpeRates['leaveRates'] {
   if (TO_BE_DETERMINED.test(cell)) return []
   return cell.split(';').map((part) => {
-    const labelled = /^(.*?)\s*(\d*\.?\d+%)$/.exec(part.trim())
-    if (!labelled)
-      throw new Error(
-        `Blended OPE: unreadable leave rate "${cell}" for ${group}`,
-      )
-    const [, label = '', rate = ''] = labelled
+    const words = part.trim().split(' ')
+    const rate = words.pop() ?? ''
+    const label = words.join(' ')
     return {
       fiscalYear,
       group,
@@ -113,8 +103,11 @@ function readLeaveCell(
 
 export function readPersRepayment(html: string): OpeRates['persRepayment'] {
   const page = 'Blended OPE'
-  const [header, ...rows] = findTable(readTables(html), 'Fund Type', page)
-  const yearColumns = (header ?? []).slice(2).map((label) => {
+  const [header, ...rows] = readTable(html, 'Fund Type', page)
+  if (header?.[1] !== 'Description') {
+    throw new Error(`${page}: unexpected PERS header ${JSON.stringify(header)}`)
+  }
+  const yearColumns = header.slice(2).map((label) => {
     const years = [...label.matchAll(/FY(\d{2})/g)].map(
       (match) => CENTURY + Number(match[1]),
     )
@@ -122,9 +115,6 @@ export function readPersRepayment(html: string): OpeRates['persRepayment'] {
       throw new Error(`${page}: unexpected PERS column "${label}"`)
     return years
   })
-  if (header?.[0] !== 'Fund Type' || header[1] !== 'Description') {
-    throw new Error(`${page}: unexpected PERS header ${JSON.stringify(header)}`)
-  }
   return rows.flatMap(([fund = '', description = '', ...rates]) => {
     const fundType = /^FT (\d{2})$/.exec(fund)?.[1]
     if (!fundType) throw new Error(`${page}: unexpected fund type "${fund}"`)
@@ -139,7 +129,7 @@ export function readPersRepayment(html: string): OpeRates['persRepayment'] {
 
 export function readRateHistory(html: string): OpeRates['opeRates'] {
   const page = 'Blended OPE Rate History'
-  const [header, ...rows] = findTable(readTables(html), 'Employee Type', page)
+  const [header, ...rows] = readTable(html, 'Employee Type', page)
   const yearColumns = (header ?? []).slice(1).map((label) => {
     const match = /^Fiscal Year (\d{4})(?: & (\d{4}))?$/.exec(label)
     if (!match) throw new Error(`${page}: unexpected column "${label}"`)
@@ -159,7 +149,7 @@ export function readRateHistory(html: string): OpeRates['opeRates'] {
 
 export function readRateGroups(html: string): OpeRates['groups'] {
   const page = 'Employee Rate Group Matrix'
-  const [header, ...rows] = findTable(readTables(html), 'Employee Group', page)
+  const [header, ...rows] = readTable(html, 'Employee Group', page)
   expectHeader(
     header,
     [/^Employee Group$/, /^EClass Code$/, /^Account Code$/, /^Description$/],
@@ -193,13 +183,13 @@ export function combineOpePages(pages: {
     persRepayment: readPersRepayment(pages.current),
   }
   const names = new Set(rates.groups.map((group) => group.name))
-  const unknown = [...rates.opeRates, ...rates.leaveRates].filter(
-    (rate) => !names.has(rate.group),
-  )
+  const unknown = [
+    ...new Set(
+      [...rates.opeRates, ...rates.leaveRates].map((rate) => rate.group),
+    ),
+  ].filter((group) => !names.has(group))
   if (unknown.length > 0) {
-    throw new Error(
-      `rate groups not in the matrix: ${[...new Set(unknown.map((rate) => rate.group))].join(', ')}`,
-    )
+    throw new Error(`rate groups not in the matrix: ${unknown.join(', ')}`)
   }
   return rates
 }

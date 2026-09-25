@@ -1,7 +1,6 @@
 import { readFile } from 'node:fs/promises'
-import path from 'node:path'
 import { expect, test } from 'vitest'
-import { hasRatesSources, RATES_SOURCE_DIR } from './cache.ts'
+import { hasRatesSources, ratesSourcePath } from './cache.ts'
 import { combineOpePages } from './ope-pages.ts'
 
 // Values read from the BRP pages during research on 2026-09-24.
@@ -22,8 +21,7 @@ const HISTORY_CLASSIFIED_SERVICE = [
 ]
 
 async function readCachedPages() {
-  const read = (name: string) =>
-    readFile(path.join(RATES_SOURCE_DIR, `${name}.html`), 'utf8')
+  const read = (name: string) => readFile(ratesSourcePath(name), 'utf8')
   return combineOpePages({
     current: await read('current'),
     history: await read('history'),

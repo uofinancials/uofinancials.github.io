@@ -29,7 +29,10 @@ async function main(requested: string[]): Promise<void> {
     ([name]) => requested.length === 0 || requested.includes(name),
   )
   for (const [name, step] of selected) {
-    const result = await step(manifest)
+    const result = await step(manifest).catch((error: unknown) => ({
+      manifest,
+      problems: [String(error)],
+    }))
     manifest = result.manifest
     problems.push(...result.problems.map((problem) => `${name}: ${problem}`))
   }

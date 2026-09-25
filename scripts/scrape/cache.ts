@@ -23,6 +23,10 @@ export const RATES_SOURCE_DIR = path.resolve(
 
 export const hasRatesSources = existsSync(RATES_SOURCE_DIR)
 
+export function ratesSourcePath(page: string): string {
+  return path.join(RATES_SOURCE_DIR, `${page}.html`)
+}
+
 export const DATA_DIR = path.resolve(import.meta.dirname, '../../public/data')
 export const MANIFEST_PATH = path.join(DATA_DIR, 'manifest.json')
 export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
