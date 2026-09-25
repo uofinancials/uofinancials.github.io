@@ -3,10 +3,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Bargaining unit faculty hired on or before June 30, 2012",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "1.5",
       "amountCents": null,
       "effectiveDate": "2013-01-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
@@ -18,10 +22,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Bargaining unit faculty hired on or before December 31, 2012",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "1.5",
       "amountCents": null,
       "effectiveDate": "2013-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
@@ -33,10 +41,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Bargaining unit faculty hired on or before December 31, 2013",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "1.5",
       "amountCents": null,
       "effectiveDate": "2014-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2022/09/UAUO_CBA_final.pdf",
@@ -123,10 +135,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Eligible faculty",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "0.75",
       "amountCents": null,
       "effectiveDate": "2018-01-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://news.uoregon.edu/content/university-announces-salary-increases-faculty-and-oas",
@@ -153,10 +169,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured faculty with an appointment on December 31, 2018",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "across-the-board",
       "percent": "1.25",
       "amountCents": null,
       "effectiveDate": "2019-01-01",
+      "effectiveBetween": null,
       "note": "Part of a 2.0% pool with up to 0.75% for diversity equity raises.",
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
@@ -183,10 +203,15 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career non-tenure-track faculty with an appointment on December 31, 2018",
+      "populations": [
+        "career-instructional",
+        "career-research"
+      ],
       "kind": "across-the-board",
       "percent": "2.0",
       "amountCents": null,
       "effectiveDate": "2019-01-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2021/03/CBA-2021.pdf",
@@ -243,10 +268,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Eligible faculty with an appointment as of October 31, 2021",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "5",
       "amountCents": null,
       "effectiveDate": "2022-01-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2021/12/2021-2024-UA-UO-Salary-MOU-120820210830.pdf",
@@ -258,10 +287,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Eligible faculty with an appointment as of October 31, 2022",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "2",
       "amountCents": null,
       "effectiveDate": "2022-10-01",
+      "effectiveBetween": null,
       "note": "The agreement set January 1, 2023; UO moved it to October 1, 2022 (UO news, 2022-10-04, https://news.uoregon.edu/content/faculty-and-oas-receive-salary-increase-early).",
       "source": {
         "url": "https://www.uauoregon.org/wp-content/uploads/2021/12/2021-2024-UA-UO-Salary-MOU-120820210830.pdf",
@@ -288,10 +321,17 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "All bargaining unit faculty except postdoctoral scholars",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "4.5",
       "amountCents": null,
       "effectiveDate": null,
+      "effectiveBetween": {
+        "from": "2025-04-01",
+        "to": "2025-05-01"
+      },
       "note": "Applied from the 1st of the ratification month if ratified by the 15th, otherwise the 1st of the next month; the agreement was ratified in April 2025.",
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -318,10 +358,16 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track, tenured, and Career faculty who held an FY25 appointment",
+      "populations": [
+        "tenure-related",
+        "career-instructional",
+        "career-research"
+      ],
       "kind": "across-the-board",
       "percent": "3.25",
       "amountCents": null,
       "effectiveDate": "2025-09-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -348,10 +394,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career research faculty",
+      "populations": [
+        "career-research"
+      ],
       "kind": "across-the-board",
       "percent": "1.0",
       "amountCents": null,
       "effectiveDate": "2025-09-01",
+      "effectiveBetween": null,
       "note": "In addition to the 3.25% across-the-board increase.",
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -363,10 +413,15 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career faculty who held an FY26 appointment",
+      "populations": [
+        "career-instructional",
+        "career-research"
+      ],
       "kind": "across-the-board",
       "percent": "3.0",
       "amountCents": null,
       "effectiveDate": "2026-09-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -378,10 +433,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career instructional faculty",
+      "populations": [
+        "career-instructional"
+      ],
       "kind": "across-the-board",
       "percent": "1.62",
       "amountCents": null,
       "effectiveDate": "2026-09-01",
+      "effectiveBetween": null,
       "note": "Remaining equity pool funds added to the FY27 Career across-the-board increase.",
       "source": {
         "url": "https://hr.uoregon.edu/annual-salary-increases-process-and-procedures",
@@ -393,10 +452,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured faculty who held an FY26 appointment",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "across-the-board",
       "percent": "2.0",
       "amountCents": null,
       "effectiveDate": "2026-09-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -423,10 +486,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Pro tem, visiting, and retired faculty",
+      "populations": [
+        "pro-tem"
+      ],
       "kind": "across-the-board",
       "percent": "2.0",
       "amountCents": null,
       "effectiveDate": "2025-09-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -438,10 +505,14 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Pro tem, visiting, and retired faculty",
+      "populations": [
+        "pro-tem"
+      ],
       "kind": "across-the-board",
       "percent": "2.0",
       "amountCents": null,
       "effectiveDate": "2026-09-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UA_UO_CBA_2025-27.pdf",
@@ -453,10 +524,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "Classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "1",
       "amountCents": null,
       "effectiveDate": "2017-10-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://news.uoregon.edu/content/seiu-members-ratify-new-economic-terms-current-contract",
@@ -468,10 +543,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "Classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "1",
       "amountCents": null,
       "effectiveDate": "2018-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://news.uoregon.edu/content/seiu-members-ratify-new-economic-terms-current-contract",
@@ -498,10 +577,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "All classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3",
       "amountCents": null,
       "effectiveDate": "2019-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://news.uoregon.edu/content/seiu-members-ratify-contract",
@@ -513,10 +596,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "All classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "2.1",
       "amountCents": null,
       "effectiveDate": "2020-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://news.uoregon.edu/content/seiu-members-ratify-contract",
@@ -558,10 +645,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "All classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "6.50",
       "amountCents": null,
       "effectiveDate": "2024-04-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
@@ -588,10 +679,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "All classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "2.00",
       "amountCents": null,
       "effectiveDate": "2024-11-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
@@ -603,10 +698,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "All classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3.50",
       "amountCents": null,
       "effectiveDate": "2025-06-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
@@ -618,10 +717,14 @@
     {
       "employeeGroup": "SEIU 503",
       "appliesTo": "All classified employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3.00",
       "amountCents": null,
       "effectiveDate": "2025-11-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2022-26_SEIU_CBA_with_reopener.pdf",
@@ -663,10 +766,14 @@
     {
       "employeeGroup": "Teamsters 206",
       "appliesTo": "Bargaining unit employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "6.5",
       "amountCents": null,
       "effectiveDate": "2024-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
@@ -693,10 +800,14 @@
     {
       "employeeGroup": "Teamsters 206",
       "appliesTo": "Bargaining unit employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "5.5",
       "amountCents": null,
       "effectiveDate": "2025-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
@@ -708,10 +819,14 @@
     {
       "employeeGroup": "Teamsters 206",
       "appliesTo": "Bargaining unit employees",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3.0",
       "amountCents": null,
       "effectiveDate": "2026-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/Teamsters%20CBA%202024%20-%202027.pdf",
@@ -738,10 +853,14 @@
     {
       "employeeGroup": "UOPA",
       "appliesTo": "Community service officers",
+      "populations": [
+        "community-service-officers"
+      ],
       "kind": "across-the-board",
       "percent": "10",
       "amountCents": null,
       "effectiveDate": "2023-07-01",
+      "effectiveBetween": null,
       "note": "Retroactive to July 1, 2023.",
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
@@ -753,10 +872,14 @@
     {
       "employeeGroup": "UOPA",
       "appliesTo": "Police officers",
+      "populations": [
+        "police-officers"
+      ],
       "kind": "across-the-board",
       "percent": "3",
       "amountCents": null,
       "effectiveDate": "2023-07-01",
+      "effectiveBetween": null,
       "note": "Retroactive to July 1, 2023.",
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
@@ -768,10 +891,14 @@
     {
       "employeeGroup": "UOPA",
       "appliesTo": "All bargaining unit members",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3.8",
       "amountCents": null,
       "effectiveDate": "2024-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
@@ -783,10 +910,14 @@
     {
       "employeeGroup": "UOPA",
       "appliesTo": "All bargaining unit members",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3.8",
       "amountCents": null,
       "effectiveDate": "2025-07-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/sites/default/files/2025-04/UOPA%20CBA%202024%20-%202026%20signed.pdf",
@@ -798,10 +929,14 @@
     {
       "employeeGroup": "Officers of Administration",
       "appliesTo": "Eligible officers of administration",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "0.75",
       "amountCents": null,
       "effectiveDate": "2018-01-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://news.uoregon.edu/content/university-announces-salary-increases-faculty-and-oas",
@@ -828,10 +963,17 @@
     {
       "employeeGroup": "Officers of Administration",
       "appliesTo": "Officers of administration eligible in January 2022",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "4",
       "amountCents": null,
       "effectiveDate": null,
+      "effectiveBetween": {
+        "from": "2022-01-01",
+        "to": "2022-01-31"
+      },
       "note": "Effective in January 2022; the day is not stated.",
       "source": {
         "url": "https://news.uoregon.edu/content/multiyear-pay-increases-announced-uo-employees",
@@ -843,10 +985,14 @@
     {
       "employeeGroup": "Officers of Administration",
       "appliesTo": "Eligible officers of administration",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "4",
       "amountCents": null,
       "effectiveDate": "2024-10-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/salary-increase-information",
@@ -858,10 +1004,14 @@
     {
       "employeeGroup": "Officers of Administration",
       "appliesTo": "Eligible officers of administration",
+      "populations": [
+        "all"
+      ],
       "kind": "across-the-board",
       "percent": "3",
       "amountCents": null,
       "effectiveDate": "2025-09-01",
+      "effectiveBetween": null,
       "note": null,
       "source": {
         "url": "https://hr.uoregon.edu/salary-increase-information",

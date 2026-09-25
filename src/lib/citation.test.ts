@@ -163,7 +163,7 @@ test('a source missing from the manifest fails with its name', () => {
 
 function term(url: string, retrievedOn: string): RaiseTerm {
   return {
-    kind: 'across-the-board',
+    kind: 'merit-pool',
     employeeGroup: 'SEIU 503',
     appliesTo: 'all',
     effectiveDate: '2024-04-01',
