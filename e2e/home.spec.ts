@@ -14,6 +14,7 @@ for (const path of [
   '/departments/223100',
   '/salaries',
   '/people',
+  '/people/No such name',
   '/pay-changes',
   '/sources',
   '/no-such-page',
@@ -362,10 +363,10 @@ test('people search by every word of a name, and a chosen name shows its records
   const name = await first.textContent()
   expect(name).toMatch(/smith.* j/i)
   await first.click()
-  await expect(page).toHaveURL(/name=/)
+  await expect(page).toHaveURL(/\/people\/[^?]+$/)
   await page.reload()
   await expect(
-    page.getByRole('heading', { level: 2, name: name ?? '' }),
+    page.getByRole('heading', { level: 1, name: name ?? '' }),
   ).toBeVisible()
   await expect(
     page.getByRole('rowheader', { name: 'Annual salary rate' }).first(),
@@ -375,6 +376,19 @@ test('people search by every word of a name, and a chosen name shows its records
       .getByRole('link', { name: /^Fall \d{4} Census salary reports$/ })
       .first(),
   ).toBeVisible()
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    'content',
+    'noindex',
+  )
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page).toHaveURL(/\/people\?q=smith/)
+  await page.goto(`/people?name=${encodeURIComponent(name ?? '')}&year=2099`)
+  await expect(page).toHaveURL(/\/people\/[^?]+\?year=2099$/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: name ?? '' }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: 'Back to people' }).click()
+  await expect(page).toHaveURL(/\/people$/)
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(page.locator('meta[name="robots"]')).toHaveCount(0)
@@ -384,7 +398,7 @@ async function openLinkedPerson(page: Page) {
   await page.goto('/people?q=smith+j')
   const matches = page.getByRole('list', { name: 'Matching names' })
   await matches.getByRole('link').nth(1).click()
-  await expect(page.getByRole('heading', { level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 }
 
 test('a person’s computed figures, rate chart, and class median are labelled, and the view does not scroll sideways at 360px', async ({

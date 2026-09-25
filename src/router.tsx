@@ -5,6 +5,7 @@ import {
   createRouter,
   notFound,
   type RouterHistory,
+  redirect,
 } from '@tanstack/react-router'
 import { PageError } from '@/components/page-error'
 import { PageLoading } from '@/components/page-loading'
@@ -14,6 +15,7 @@ import {
   budgetYearQuery,
   fallYearQuery,
   manifestQuery,
+  peopleIndexQuery,
   raiseTermsQuery,
 } from '@/data/queries'
 import {
@@ -22,7 +24,7 @@ import {
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
 import { payChangesSearchSchema } from '@/lib/pay-changes-search'
-import { peopleSearchSchema } from '@/lib/people-search'
+import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
 import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
@@ -31,6 +33,7 @@ import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
 import { PayChangesPage } from '@/pages/pay-changes-page'
 import { PeoplePage } from '@/pages/people-page'
+import { PersonPage } from '@/pages/person-page'
 import { SalariesPage } from '@/pages/salaries-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
@@ -137,12 +140,38 @@ const salariesRoute = createRoute({
   component: SalariesPage,
 })
 
+async function loadPeopleIndex({
+  context: { queryClient },
+}: {
+  context: { queryClient: QueryClient }
+}) {
+  await queryClient.ensureQueryData(peopleIndexQuery(queryClient))
+}
+
 const peopleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people',
   validateSearch: peopleSearchSchema,
-  loader: loadFallYears,
+  beforeLoad: ({ search: { name, year } }) => {
+    if (name !== undefined) {
+      throw redirect({
+        to: '/people/$name',
+        params: { name },
+        search: { year },
+        replace: true,
+      })
+    }
+  },
+  loader: loadPeopleIndex,
   component: PeoplePage,
+})
+
+const personRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/people/$name',
+  validateSearch: personSearchSchema,
+  loader: loadPeopleIndex,
+  component: PersonPage,
 })
 
 const payChangesRoute = createRoute({
@@ -171,6 +200,7 @@ const routeTree = rootRoute.addChildren([
   departmentRoute,
   salariesRoute,
   peopleRoute,
+  personRoute,
   payChangesRoute,
   sourcesRoute,
 ])

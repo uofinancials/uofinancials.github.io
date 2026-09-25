@@ -1,35 +1,21 @@
-import { useSuspenseQueries } from '@tanstack/react-query'
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useSearch,
-} from '@tanstack/react-router'
-import { PersonView } from '@/components/person-view'
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { SearchField } from '@/components/search-field'
 import { SourceCitation } from '@/components/source-citation'
-import type { FallYear } from '@/data/fall'
-import { fallYearQuery } from '@/data/queries'
+import { peopleIndexQuery } from '@/data/queries'
 import { formatCount } from '@/lib/format'
-import { type PeerMedians, peerMedians } from '@/lib/peer-median'
 import {
   formatYearRanges,
-  indexPeople,
   MIN_QUERY_CHARS,
   matchPeople,
   type Person,
   yearsOf,
 } from '@/lib/person-lookup'
-import { resolveCensusYear } from '@/lib/salaries-search'
 
 const MATCH_NOTE = `a name matches when every word typed appears in it, ignoring case and commas. Its years are the censuses that list the name, and its department is the pay department of its primary job in the latest of them (or its first listed job, with no primary job). The same name may be more than one person.`
 
-function toLookup(results: { data: FallYear }[]): {
-  people: Person[]
-  medians: PeerMedians
-} {
-  const years = results.map(({ data }) => data)
-  return { people: indexPeople(years), medians: peerMedians(years) }
+function yearsOfIndex(people: Person[]): number[] {
+  return [...new Set(people.flatMap(yearsOf))]
 }
 
 function Matches({ people, q }: { people: Person[]; q: string }) {
@@ -43,8 +29,8 @@ function Matches({ people, q }: { people: Person[]; q: string }) {
           <li key={person.name} className="flex flex-wrap gap-x-2">
             <Link
               className="underline"
-              to="/people"
-              search={{ q, name: person.name }}
+              to="/people/$name"
+              params={{ name: person.name }}
             >
               {person.name}
             </Link>
@@ -63,14 +49,10 @@ function Matches({ people, q }: { people: Person[]; q: string }) {
 }
 
 export function PeoplePage() {
-  const { years } = useLoaderData({ from: '/people' })
-  const { q = '', name, year } = useSearch({ from: '/people' })
+  const { q = '' } = useSearch({ from: '/people' })
   const navigate = useNavigate({ from: '/people' })
-  const { people, medians } = useSuspenseQueries({
-    queries: years.map(fallYearQuery),
-    combine: toLookup,
-  })
-  const person = people.find((entry) => entry.name === name)
+  const { data } = useSuspenseQuery(peopleIndexQuery(useQueryClient()))
+  const years = yearsOfIndex(data.people)
   const firstYear = Math.min(...years)
   const lastYear = Math.max(...years)
   return (
@@ -85,21 +67,9 @@ export function PeoplePage() {
       <SearchField
         label="Search by name"
         value={q}
-        onSearch={(value) =>
-          navigate({ search: { q: value, name }, replace: true })
-        }
+        onSearch={(value) => navigate({ search: { q: value }, replace: true })}
       />
-      {name !== undefined &&
-        (person ? (
-          <PersonView
-            person={person}
-            medians={medians}
-            year={resolveCensusYear(year, yearsOf(person))}
-          />
-        ) : (
-          <p>No Fall record is published under the name {name}.</p>
-        ))}
-      <Matches people={people} q={q} />
+      <Matches people={data.people} q={q} />
       <SourceCitation
         source={{ kind: 'fall-range', from: firstYear, to: lastYear }}
         computed={MATCH_NOTE}

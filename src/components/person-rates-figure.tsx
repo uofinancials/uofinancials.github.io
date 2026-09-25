@@ -31,7 +31,7 @@ export function PersonRatesFigure({
   const label = `${person.name}: annual salary rate by job, Fall ${years[0]}-${years.at(-1)}`
   return (
     <section className="space-y-4">
-      <h3 className="font-semibold">Salary rate by job</h3>
+      <h2 className="font-semibold">Salary rate by job</h2>
       <SeriesChart
         labels={years.map(String)}
         series={series}

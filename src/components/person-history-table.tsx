@@ -14,7 +14,7 @@ import { jobHistory } from '@/lib/person-summary'
 export function PersonHistoryTable({ person }: { person: Person }) {
   return (
     <section className="space-y-2">
-      <h3 className="font-semibold">Job history</h3>
+      <h2 className="font-semibold">Job history</h2>
       <p className="text-xs text-muted-foreground">
         As published. Censuses marked “linked” are in a run joined on the exact
         name and the same pay department of a single primary job, computed by
