@@ -1,11 +1,8 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import {
-  outlookSchema,
-  type Projection,
-  type ProjectionLine,
-} from '../src/data/outlook.ts'
+import { outlookSchema, type ProjectionLine } from '../src/data/outlook.ts'
+import { sectionTotal } from '../src/lib/budget-outlook.ts'
 import { DATA_DIR } from './scrape/cache.ts'
 
 /** The published tables round each figure to the dollar, so their sums can be a dollar off. */
@@ -37,19 +34,11 @@ function expectSectionSums(lines: ProjectionLine[], year: number) {
   }
 }
 
-function totalOf(projection: Projection, section: ProjectionLine['section']) {
-  const line = projection.lines.find(
-    (candidate) => candidate.section === section && candidate.kind === 'total',
-  )
-  if (!line) throw new Error(`${projection.id} has no ${section} total`)
-  return line.cents
-}
-
 test.each(outlook.projections)(
   'projection $id: lines sum to their totals, revenue less expenses is the run rate, and balances roll forward',
   (projection) => {
-    const revenue = totalOf(projection, 'revenue')
-    const expenses = totalOf(projection, 'expense')
+    const revenue = sectionTotal(projection, 'revenue')
+    const expenses = sectionTotal(projection, 'expense')
     projection.fiscalYears.forEach((_, year) => {
       for (const section of ['revenue', 'expense'] as const) {
         expectSectionSums(

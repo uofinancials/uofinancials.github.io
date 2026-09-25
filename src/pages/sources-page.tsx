@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
-import { manifestQuery, raiseTermsQuery } from '@/data/queries'
+import { manifestQuery, outlookQuery, raiseTermsQuery } from '@/data/queries'
+import { listOutlookDocuments } from '@/lib/budget-outlook'
 import { listCitedDocuments, sourceAnchor } from '@/lib/citation'
 import { formatCount, formatDollars } from '@/lib/format'
 
@@ -200,6 +201,26 @@ function RaiseSources() {
   )
 }
 
+function OutlookSources() {
+  const { data } = useSuspenseQuery(outlookQuery)
+  return (
+    <SourceTable head={['Document', 'Retrieved']}>
+      <TableBody>
+        {listOutlookDocuments(data).map((document) => (
+          <TableRow key={document.url}>
+            <TableCell>
+              <a className="underline" href={document.url}>
+                {document.document}
+              </a>
+            </TableCell>
+            <TableCell>{document.retrievedOn}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </SourceTable>
+  )
+}
+
 export function SourcesPage() {
   const { data: manifest } = useSuspenseQuery(manifestQuery)
   const [firstFall] = manifest.fall
@@ -250,6 +271,14 @@ export function SourcesPage() {
           hand from these documents, each term citing its section and page.
         </p>
         <RaiseSources />
+      </Section>
+      <Section title="Budget outlook">
+        <p>
+          The E&G fund projection, the budget figures, and the announced budget
+          actions on the budget page, entered by hand from these documents, each
+          figure citing its page.
+        </p>
+        <OutlookSources />
       </Section>
     </div>
   )
