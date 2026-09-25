@@ -9,6 +9,7 @@ import { useMemo } from 'react'
 import { PeopleControls } from '@/components/people-controls'
 import { PeopleTable } from '@/components/people-table'
 import { SalaryDistributionFigure } from '@/components/salary-distribution-figure'
+import { SortControls } from '@/components/sort-controls'
 import { SourceCitation } from '@/components/source-citation'
 import { TotalsChart } from '@/components/totals-chart'
 import {
@@ -38,6 +39,8 @@ import {
   PEOPLE_CHARTS,
   type PeopleChart,
   type PeopleSearch,
+  type PeopleSort,
+  type SortDirection,
 } from '@/lib/people-search'
 import { titleOf } from '@/lib/person-fields'
 import { formatYearRanges, matchPeople, yearsOf } from '@/lib/person-lookup'
@@ -261,6 +264,8 @@ export function PeoplePage() {
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
       replace,
     })
+  const handleSort = (sort: PeopleSort, dir: SortDirection) =>
+    change({ sort, dir })
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
@@ -289,11 +294,8 @@ export function PeoplePage() {
       )}
       {jobs.length > 0 && (
         <section className="space-y-3">
-          <PeopleTable
-            rows={shown.rows}
-            view={view}
-            onSort={(sort, dir) => change({ sort, dir })}
-          />
+          <SortControls view={view} onSort={handleSort} />
+          <PeopleTable rows={shown.rows} view={view} onSort={handleSort} />
           <Pager page={shown.page} pageCount={shown.pageCount} />
         </section>
       )}

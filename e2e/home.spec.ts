@@ -484,6 +484,8 @@ test('the people list filters, sorts, and pages one census, and its chart sets t
   await expect(
     page.getByRole('columnheader', { name: /Annual salary rate/ }),
   ).toHaveAttribute('aria-sort', 'descending')
+  await page.getByRole('combobox', { name: 'Sort by' }).selectOption('group')
+  await expect(page).toHaveURL(/sort=group&dir=desc/)
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(page).not.toHaveURL(/min=/)
   await page.getByText('The chart’s numbers').click()
