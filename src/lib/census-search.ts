@@ -6,8 +6,8 @@ import { type DepartmentCensus, departmentYears } from './department-jobs.ts'
 import { type JobFilter, TERMS } from './salary-distribution.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 
-/** The salaries page's URL search params; a malformed value falls back to its default. */
-export const salariesSearchSchema = z.object({
+/** One census's job filters as URL search params; a malformed value falls back to its default. */
+export const censusSearchSchema = z.object({
   year: z.number().int().optional().catch(undefined),
   group: z.enum(TREND_GROUPS).optional().catch(undefined),
   kind: staffKindSchema.optional().catch(undefined),
@@ -16,9 +16,9 @@ export const salariesSearchSchema = z.object({
   position: z.string().min(1).optional().catch(undefined),
 })
 
-export type SalariesSearch = z.infer<typeof salariesSearchSchema>
+export type CensusSearch = z.infer<typeof censusSearchSchema>
 
-export type SalariesView = JobFilter & { year: number; dept: string | null }
+export type CensusView = JobFilter & { year: number; dept: string | null }
 
 /** The listed census a search asks for, or else the latest. */
 export function resolveCensusYear(
@@ -29,10 +29,10 @@ export function resolveCensusYear(
 }
 
 /** The view a search asks for; a census not listed falls back to the latest. */
-export function resolveSalariesView(
-  search: SalariesSearch,
+export function resolveCensusView(
+  search: CensusSearch,
   years: number[],
-): SalariesView {
+): CensusView {
   return {
     year: resolveCensusYear(search.year, years),
     group: search.group ?? null,

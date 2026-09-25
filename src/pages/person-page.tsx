@@ -9,8 +9,8 @@ import {
 import { peopleIndexQuery } from '@/components/people-index-query'
 import { PersonView } from '@/components/person-view'
 import { SourceCitation } from '@/components/source-citation'
+import { resolveCensusYear } from '@/lib/census-search'
 import { yearsOf } from '@/lib/person-lookup'
-import { resolveCensusYear } from '@/lib/salaries-search'
 
 const BACK_CLASS = 'text-sm underline'
 

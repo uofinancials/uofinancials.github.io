@@ -18,6 +18,7 @@ import {
   manifestQuery,
   raiseTermsQuery,
 } from '@/data/queries'
+import { censusSearchSchema, resolveCensusYear } from '@/lib/census-search'
 import {
   departmentSearchSchema,
   departmentsSearchSchema,
@@ -25,7 +26,6 @@ import {
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
 import { payChangesSearchSchema } from '@/lib/pay-changes-search'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
-import { resolveCensusYear, salariesSearchSchema } from '@/lib/salaries-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { DepartmentPage } from '@/pages/department-page'
 import { DepartmentsPage } from '@/pages/departments-page'
@@ -143,7 +143,7 @@ async function loadCensus({
 const salariesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/salaries',
-  validateSearch: salariesSearchSchema,
+  validateSearch: censusSearchSchema,
   loaderDeps: ({ search }) => ({ year: search.year }),
   loader: loadCensus,
   component: SalariesPage,

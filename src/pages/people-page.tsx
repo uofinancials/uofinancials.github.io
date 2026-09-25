@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { CensusControls } from '@/components/census-controls'
 import { ColumnPicker } from '@/components/column-picker'
 import { GroupJobsFigure } from '@/components/group-jobs-figure'
 import { PeopleControls } from '@/components/people-controls'
 import { peopleIndexQuery } from '@/components/people-index-query'
 import { PeopleTable } from '@/components/people-table'
-import { SalariesControls } from '@/components/salaries-controls'
 import { SalaryDistributionFigure } from '@/components/salary-distribution-figure'
 import { SortControls } from '@/components/sort-controls'
 import { SourceCitation } from '@/components/source-citation'
@@ -223,7 +223,7 @@ export function PeoplePage() {
         onChange={(patch) => change(patch)}
         onType={(patch) => change(patch, true)}
       />
-      <SalariesControls
+      <CensusControls
         view={view}
         years={years}
         areas={census.areas}

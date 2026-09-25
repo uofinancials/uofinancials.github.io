@@ -5,12 +5,12 @@ import {
   useSearch,
 } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { SalariesControls } from '@/components/salaries-controls'
+import { CensusControls } from '@/components/census-controls'
 import { SalaryDistributionFigure } from '@/components/salary-distribution-figure'
 import { SourceCitation } from '@/components/source-citation'
 import { useCensusPlace } from '@/components/use-census-place'
+import { type CensusSearch, resolveCensusView } from '@/lib/census-search'
 import { formatCount } from '@/lib/format'
-import { resolveSalariesView, type SalariesSearch } from '@/lib/salaries-search'
 import {
   buildDistribution,
   filterJobs,
@@ -23,10 +23,7 @@ const COMPUTED = `each job is counted once in the $10,000 range its published ra
 function useSalaries() {
   const { years, year, fiscalYear } = useLoaderData({ from: '/salaries' })
   const search = useSearch({ from: '/salaries' })
-  const view = useMemo(
-    () => resolveSalariesView(search, years),
-    [search, years],
-  )
+  const view = useMemo(() => resolveCensusView(search, years), [search, years])
   const { areas, place, placed, positionName } = useCensusPlace({
     year,
     fiscalYear,
@@ -57,13 +54,13 @@ export function SalariesPage() {
     distribution,
   } = useSalaries()
   const title = `Salary rates, Fall ${view.year}`
-  const handleChange = (patch: SalariesSearch) =>
+  const handleChange = (patch: CensusSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">{title}</h1>
       <p className="text-sm text-muted-foreground">{RATE_NOTE}</p>
-      <SalariesControls
+      <CensusControls
         view={view}
         years={years}
         areas={areas}
