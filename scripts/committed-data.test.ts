@@ -6,6 +6,7 @@ import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
+import { createAreaAssigner, HAND_AREAS } from '../src/lib/areas.ts'
 import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
 import { findPersonLinks } from '../src/lib/person-links.ts'
 import {
@@ -122,5 +123,38 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     })
     expect(summarize(others).spendCents).toBe(50_481_206_840)
     expect(records.length - others.length).toBe(549)
+  },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'every Fall 2025 pay department has a college or VP area, each hand row used',
+  () => {
+    const { records } = fallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+    )
+    const { orgs } = budgetYearSchema.parse(readJson(budgetDataPath(2026)))
+    const assign = createAreaAssigner(records, orgs)
+    const assignments = records.map(assign)
+    const basisCounts = Object.fromEntries(
+      ['published', 'name', 'hand', 'unassigned'].map((basis) => [
+        basis,
+        assignments.filter((assignment) => assignment.basis === basis).length,
+      ]),
+    )
+    expect(basisCounts).toEqual({
+      published: 4_896,
+      name: 1_746,
+      hand: 198,
+      unassigned: 0,
+    })
+    const handCodes = new Set(
+      records
+        .filter((_, index) => assignments[index]?.basis === 'hand')
+        .map((record) => record.payDepartment.code),
+    )
+    expect([...handCodes].sort()).toEqual(Object.keys(HAND_AREAS).sort())
+    for (const area of Object.values(HAND_AREAS)) {
+      expect(orgs[area]?.level, area).toBe(3)
+    }
   },
 )
