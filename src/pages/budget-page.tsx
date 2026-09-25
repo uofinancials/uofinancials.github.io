@@ -12,14 +12,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
-import type { Outlook, OutlookSource } from '@/data/outlook'
+import type { CitedSource } from '@/data/cited-source'
+import type { Outlook, Projection } from '@/data/outlook'
 import { outlookQuery } from '@/data/queries'
-import {
-  type GapRow,
-  gapRows,
-  outlookSeries,
-  PROJECTION_NOTE,
-} from '@/lib/budget-outlook'
+import { type GapRow, gapRows, outlookSeries } from '@/lib/budget-outlook'
 import { formatCompactDollars, formatDollars } from '@/lib/format'
 
 const NUMBER_CELL = 'text-right tabular-nums'
@@ -34,42 +30,46 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-/** A source line; `hasLocation` is false where each item gives its own page. */
+/** A source line; the location is left out where each item gives its own page. */
 function Cited({
-  source,
-  hasLocation = true,
+  source: { url, document, location, retrievedOn },
 }: {
-  source: OutlookSource
-  hasLocation?: boolean
+  source: Omit<CitedSource, 'location'> & { location?: string }
 }) {
   return (
     <p className="text-sm text-muted-foreground">
       Source:{' '}
-      <a className="underline" href={source.url}>
-        {source.document}
+      <a className="underline" href={url}>
+        {document}
       </a>
-      {hasLocation && `, ${source.location}`}, retrieved {source.retrievedOn}.
+      {location && `, ${location}`}, retrieved {retrievedOn}.
     </p>
   )
 }
 
-function ReportedNotes({ rows }: { rows: GapRow[] }) {
-  return rows.flatMap(({ fiscalYear, runRateCents, reported }) =>
-    reported
-      ? [
-          <p key={fiscalYear} className="text-sm">
-            Reported since the projection: the {fiscalYearLabel(fiscalYear)}{' '}
-            {reported.basis} run rate is {formatDollars(reported.runRateCents)},
-            against {formatDollars(runRateCents)} projected. Source:{' '}
-            <a className="underline" href={reported.source.url}>
-              {reported.source.document}
-            </a>
-            , {reported.source.location}, retrieved{' '}
-            {reported.source.retrievedOn}.
-          </p>,
-        ]
-      : [],
-  )
+function ReportedNotes({
+  reported,
+  projection,
+}: {
+  reported: Outlook['reportedRunRates']
+  projection: Projection
+}) {
+  return reported.map(({ fiscalYear, runRateCents, basis, source }) => {
+    const projected =
+      projection.runRateCents[projection.fiscalYears.indexOf(fiscalYear)]
+    return (
+      <div key={fiscalYear} className="space-y-1">
+        <p className="text-sm">
+          Reported since the projection: the {fiscalYearLabel(fiscalYear)}{' '}
+          {basis} run rate is {formatDollars(runRateCents)}
+          {projected !== undefined &&
+            `, against ${formatDollars(projected)} projected`}
+          .
+        </p>
+        <Cited source={source} />
+      </div>
+    )
+  })
 }
 
 function GapTable({ rows }: { rows: GapRow[] }) {
@@ -137,11 +137,8 @@ function Actions({ actions }: { actions: Outlook['actions'] }) {
     <ul className="list-disc space-y-2 pl-6">
       {actions.map(({ date, text, source }) => (
         <li key={`${date} ${source.url}`}>
-          <span className="font-medium">{date}:</span> {text} (
-          <a className="underline" href={source.url}>
-            {source.document}
-          </a>
-          , retrieved {source.retrievedOn})
+          <span className="font-medium">{date}:</span> {text}
+          <Cited source={source} />
         </li>
       ))}
     </ul>
@@ -151,8 +148,7 @@ function Actions({ actions }: { actions: Outlook['actions'] }) {
 export function BudgetPage() {
   const { data: outlook } = useSuspenseQuery(outlookQuery)
   const [projection] = outlook.projections
-  if (!projection) return null
-  const rows = gapRows(projection, outlook.reportedRunRates)
+  const rows = gapRows(projection)
   const { labels, series } = outlookSeries(projection)
   return (
     <div className="space-y-8">
@@ -162,7 +158,12 @@ export function BudgetPage() {
           The E&G fund as projected in “{projection.title}”, in the{' '}
           {projection.source.document}.
         </p>
-        <p className="text-sm text-muted-foreground">{PROJECTION_NOTE}</p>
+        <p className="text-sm text-muted-foreground">
+          These are the projection’s figures as published, not this site’s
+          estimates. They cover the E&G fund only, the part of the budget funded
+          mostly by tuition and state appropriation, and leave out any budget
+          action not yet taken.
+        </p>
       </div>
       <Section title="Projected gap by fiscal year">
         <SeriesChart
@@ -173,7 +174,10 @@ export function BudgetPage() {
           label="Projected E&G run rate and ending fund balance by fiscal year"
         />
         <GapTable rows={rows} />
-        <ReportedNotes rows={rows} />
+        <ReportedNotes
+          reported={outlook.reportedRunRates}
+          projection={projection}
+        />
         <Cited source={projection.source} />
       </Section>
       <Section title="Every published line">
@@ -207,7 +211,13 @@ export function BudgetPage() {
             </li>
           ))}
         </ul>
-        <Cited source={projection.source} hasLocation={false} />
+        <Cited
+          source={{
+            url: projection.source.url,
+            document: projection.source.document,
+            retrievedOn: projection.source.retrievedOn,
+          }}
+        />
       </Section>
       <Section title="Announced budget actions">
         <Actions actions={outlook.actions} />

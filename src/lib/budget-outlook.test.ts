@@ -1,9 +1,8 @@
 import { expect, test } from 'vitest'
-import type { Outlook, Projection } from '@/data/outlook'
+import type { Projection } from '@/data/outlook'
 import {
   FUND_BALANCE_SERIES,
   gapRows,
-  listOutlookDocuments,
   outlookSeries,
   RUN_RATE_SERIES,
 } from './budget-outlook'
@@ -17,7 +16,6 @@ const PACKET = 'https://example.org/packet.pdf'
 const PROJECTION: Projection = {
   id: 'test',
   title: 'Test',
-  fund: 'E&G',
   fiscalYears: [2026, 2027],
   source: source(PACKET),
   lines: [
@@ -37,24 +35,14 @@ const PROJECTION: Projection = {
   assumptions: [],
 }
 
-const REPORTED: Outlook['reportedRunRates'] = [
-  {
-    fiscalYear: 2026,
-    runRateCents: 120,
-    basis: 'unaudited',
-    source: source('https://example.org/later.pdf'),
-  },
-]
-
-test('each projected year has its totals, run rate, balance, and any later reported run rate', () => {
-  expect(gapRows(PROJECTION, REPORTED)).toEqual([
+test('each projected year has its totals, run rate, and ending fund balance', () => {
+  expect(gapRows(PROJECTION)).toEqual([
     {
       fiscalYear: 2026,
       revenueCents: 300,
       expenseCents: 200,
       runRateCents: 100,
       endingFundBalanceCents: 150,
-      reported: REPORTED[0],
     },
     {
       fiscalYear: 2027,
@@ -62,7 +50,6 @@ test('each projected year has its totals, run rate, balance, and any later repor
       expenseCents: 390,
       runRateCents: -100,
       endingFundBalanceCents: 50,
-      reported: null,
     },
   ])
 })
@@ -75,30 +62,4 @@ test('the chart has a run-rate and an ending fund balance line over the fiscal y
       { key: FUND_BALANCE_SERIES, values: [150, 50] },
     ],
   })
-})
-
-test('each cited document is listed once, in first-cited order, with its latest retrieval', () => {
-  const outlook: Outlook = {
-    projections: [PROJECTION],
-    reportedRunRates: REPORTED,
-    allFunds: {
-      fiscalYear: 2027,
-      egExpenseCents: 1,
-      egRevenueCents: 1,
-      otherExpenseCents: 1,
-      otherRevenueCents: 1,
-      totalExpenseCents: 2,
-      totalRevenueCents: 2,
-      source: source(PACKET, '2026-09-26'),
-    },
-    actions: [],
-  }
-  expect(listOutlookDocuments(outlook)).toEqual([
-    { url: PACKET, document: PACKET, retrievedOn: '2026-09-26' },
-    {
-      url: 'https://example.org/later.pdf',
-      document: 'https://example.org/later.pdf',
-      retrievedOn: '2026-09-25',
-    },
-  ])
 })

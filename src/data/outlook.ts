@@ -1,17 +1,11 @@
 import { z } from 'zod'
+import { citedSourceSchema as sourceSchema } from './cited-source.ts'
 
 const nonBlank = z.string().min(1)
 const isoDate = z.iso.date()
 const fiscalYear = z.number().int().min(2000)
 const cents = z.number().int()
 const centsByYear = z.array(cents)
-
-const sourceSchema = z.strictObject({
-  url: z.url(),
-  document: nonBlank,
-  location: nonBlank,
-  retrievedOn: isoDate,
-})
 
 const lineSchema = z.strictObject({
   label: nonBlank,
@@ -33,7 +27,6 @@ const projectionSchema = z
   .strictObject({
     id: nonBlank,
     title: nonBlank,
-    fund: z.literal('E&G'),
     fiscalYears: z.array(fiscalYear).min(1),
     source: sourceSchema,
     lines: z.array(lineSchema).min(1),
@@ -68,9 +61,20 @@ const projectionSchema = z
     },
     { message: 'every yearly series has one value per fiscal year' },
   )
+  .refine(
+    ({ lines }) =>
+      (['revenue', 'expense'] as const).every(
+        (section) =>
+          lines.filter(
+            (line) => line.section === section && line.kind === 'total',
+          ).length === 1,
+      ),
+    { message: 'the revenue and the expense sections each have one total' },
+  )
 
 export const outlookSchema = z.strictObject({
-  projections: z.array(projectionSchema).min(1),
+  /** The current projection first; later Board updates are added beside it. */
+  projections: z.tuple([projectionSchema]).rest(projectionSchema),
   /** Actuals reported after a projection, shown beside it. */
   reportedRunRates: z.array(
     z.strictObject({
@@ -98,4 +102,3 @@ export const outlookSchema = z.strictObject({
 export type Outlook = z.infer<typeof outlookSchema>
 export type Projection = Outlook['projections'][number]
 export type ProjectionLine = Projection['lines'][number]
-export type OutlookSource = z.infer<typeof sourceSchema>

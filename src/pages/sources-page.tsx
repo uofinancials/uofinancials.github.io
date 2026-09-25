@@ -11,7 +11,7 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import { manifestQuery, outlookQuery, raiseTermsQuery } from '@/data/queries'
-import { listOutlookDocuments } from '@/lib/budget-outlook'
+import { outlookSources } from '@/lib/budget-outlook'
 import { listCitedDocuments, sourceAnchor } from '@/lib/citation'
 import { formatCount, formatDollars } from '@/lib/format'
 
@@ -183,19 +183,21 @@ function RaiseSources() {
   return (
     <SourceTable head={['Document', 'Terms', 'Retrieved']}>
       <TableBody>
-        {listCitedDocuments(data.terms).map((document) => (
-          <TableRow key={document.url}>
-            <TableCell>
-              <a className="underline" href={document.url}>
-                {document.document}
-              </a>
-            </TableCell>
-            <TableCell className={NUMBER_CELL}>
-              {formatCount(document.terms)}
-            </TableCell>
-            <TableCell>{document.retrievedOn}</TableCell>
-          </TableRow>
-        ))}
+        {listCitedDocuments(data.terms.map(({ source }) => source)).map(
+          (document) => (
+            <TableRow key={document.url}>
+              <TableCell>
+                <a className="underline" href={document.url}>
+                  {document.document}
+                </a>
+              </TableCell>
+              <TableCell className={NUMBER_CELL}>
+                {formatCount(document.citations)}
+              </TableCell>
+              <TableCell>{document.retrievedOn}</TableCell>
+            </TableRow>
+          ),
+        )}
       </TableBody>
     </SourceTable>
   )
@@ -206,7 +208,7 @@ function OutlookSources() {
   return (
     <SourceTable head={['Document', 'Retrieved']}>
       <TableBody>
-        {listOutlookDocuments(data).map((document) => (
+        {listCitedDocuments(outlookSources(data)).map((document) => (
           <TableRow key={document.url}>
             <TableCell>
               <a className="underline" href={document.url}>

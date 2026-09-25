@@ -176,23 +176,25 @@ function term(url: string, retrievedOn: string): RaiseTerm {
 
 test('cited documents are listed once each with their term counts', () => {
   expect(
-    listCitedDocuments([
-      term('https://example.org/a', '2026-09-20'),
-      term('https://example.org/b', '2026-09-24'),
-      term('https://example.org/a', '2026-09-24'),
-    ]),
+    listCitedDocuments(
+      [
+        term('https://example.org/a', '2026-09-20'),
+        term('https://example.org/b', '2026-09-24'),
+        term('https://example.org/a', '2026-09-24'),
+      ].map(({ source }) => source),
+    ),
   ).toEqual([
     {
       url: 'https://example.org/a',
       document: 'Doc https://example.org/a',
       retrievedOn: '2026-09-24',
-      terms: 2,
+      citations: 2,
     },
     {
       url: 'https://example.org/b',
       document: 'Doc https://example.org/b',
       retrievedOn: '2026-09-24',
-      terms: 1,
+      citations: 1,
     },
   ])
 })

@@ -1,6 +1,6 @@
 import { fiscalYearLabel } from '../data/budget.ts'
+import type { CitedSource } from '../data/cited-source.ts'
 import type { Manifest } from '../data/manifest.ts'
-import type { RaiseTerm } from '../data/raises.ts'
 
 export type SourceRef =
   | { kind: 'fall'; year: number }
@@ -140,13 +140,13 @@ export type CitedDocument = {
   url: string
   document: string
   retrievedOn: string
-  terms: number
+  citations: number
 }
 
-/** Each distinct document the raise terms cite, in first-cited order. */
-export function listCitedDocuments(terms: RaiseTerm[]): CitedDocument[] {
+/** Each distinct document the sources cite, in first-cited order, with its latest retrieval and how many sources cite it. */
+export function listCitedDocuments(sources: CitedSource[]): CitedDocument[] {
   const documents = new Map<string, CitedDocument>()
-  for (const { source } of terms) {
+  for (const source of sources) {
     const cited = documents.get(source.url)
     documents.set(source.url, {
       url: source.url,
@@ -155,7 +155,7 @@ export function listCitedDocuments(terms: RaiseTerm[]): CitedDocument[] {
         cited && cited.retrievedOn > source.retrievedOn
           ? cited.retrievedOn
           : source.retrievedOn,
-      terms: (cited?.terms ?? 0) + 1,
+      citations: (cited?.citations ?? 0) + 1,
     })
   }
   return [...documents.values()]

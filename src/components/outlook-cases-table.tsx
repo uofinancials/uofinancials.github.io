@@ -16,6 +16,10 @@ const NUMBER_CELL = 'text-right tabular-nums'
 export function OutlookCasesTable({ projection }: { projection: Projection }) {
   const years = projection.fiscalYears
   const finalYear = years.at(-1)
+  const finalBalanceHead =
+    finalYear === undefined
+      ? 'Ending fund balance'
+      : `Ending fund balance, ${fiscalYearLabel(finalYear)}`
   return (
     <Table>
       <caption className="sr-only">
@@ -32,11 +36,9 @@ export function OutlookCasesTable({ projection }: { projection: Projection }) {
           <TableHead scope="col" className="text-right">
             Present value
           </TableHead>
-          {finalYear !== undefined && (
-            <TableHead scope="col" className="text-right">
-              Ending fund balance, {fiscalYearLabel(finalYear)}
-            </TableHead>
-          )}
+          <TableHead scope="col" className="text-right">
+            {finalBalanceHead}
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -53,14 +55,12 @@ export function OutlookCasesTable({ projection }: { projection: Projection }) {
             <TableCell className={NUMBER_CELL}>
               {formatDollars(scenario.presentValueCents)}
             </TableCell>
-            {finalYear !== undefined && (
-              <TableCell className={NUMBER_CELL}>
-                {formatOrBlank(
-                  scenario.endingFundBalanceCents.at(-1),
-                  formatDollars,
-                )}
-              </TableCell>
-            )}
+            <TableCell className={NUMBER_CELL}>
+              {formatOrBlank(
+                scenario.endingFundBalanceCents.at(-1),
+                formatDollars,
+              )}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

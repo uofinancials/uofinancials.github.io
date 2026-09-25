@@ -11,7 +11,6 @@ const SOURCE = {
 const PROJECTION = {
   id: 'test',
   title: 'Test projection',
-  fund: 'E&G',
   fiscalYears: [2026, 2027],
   source: SOURCE,
   lines: [
@@ -65,4 +64,12 @@ test('a series with a value missing for a fiscal year is rejected', () => {
 
 test('money is whole cents', () => {
   expect(parse({ ...PROJECTION, presentValueCents: -50.5 }).success).toBe(false)
+})
+
+test('a section without exactly one total is rejected', () => {
+  const [revenue, expenses] = PROJECTION.lines
+  expect(parse({ ...PROJECTION, lines: [revenue] }).success).toBe(false)
+  expect(
+    parse({ ...PROJECTION, lines: [revenue, revenue, expenses] }).success,
+  ).toBe(false)
 })

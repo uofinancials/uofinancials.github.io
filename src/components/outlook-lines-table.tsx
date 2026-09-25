@@ -58,7 +58,7 @@ export function OutlookLinesTable({ projection }: { projection: Projection }) {
       <TableHeader>
         <TableRow>
           <TableHead scope="col">Line</TableHead>
-          {projection.fiscalYears.map((year) => (
+          {years.map((year) => (
             <TableHead key={year} scope="col" className="text-right">
               {fiscalYearLabel(year)}
             </TableHead>

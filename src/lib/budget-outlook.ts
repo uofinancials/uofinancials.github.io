@@ -1,25 +1,17 @@
 import { fiscalYearLabel } from '../data/budget.ts'
-import type {
-  Outlook,
-  OutlookSource,
-  Projection,
-  ProjectionLine,
-} from '../data/outlook.ts'
+import type { CitedSource } from '../data/cited-source.ts'
+import type { Outlook, Projection, ProjectionLine } from '../data/outlook.ts'
 
-/** How the page describes the projection's figures, as stated on it. */
-export const PROJECTION_NOTE =
-  'These are the projection’s figures as published, not this site’s estimates. They cover the E&G fund only, the part of the budget funded mostly by tuition and state appropriation, and leave out any budget action not yet taken.'
-
+/** A section's total line by fiscal year; the schema requires exactly one. */
 export function sectionTotal(
   projection: Projection,
   section: ProjectionLine['section'],
 ): number[] {
-  const line = projection.lines.find(
-    (candidate) => candidate.section === section && candidate.kind === 'total',
+  return (
+    projection.lines.find(
+      (line) => line.section === section && line.kind === 'total',
+    )?.cents ?? []
   )
-  if (!line)
-    throw new Error(`Projection ${projection.id} has no ${section} total`)
-  return line.cents
 }
 
 export type GapRow = {
@@ -28,15 +20,10 @@ export type GapRow = {
   expenseCents: number
   runRateCents: number
   endingFundBalanceCents: number
-  /** A run rate reported after the projection for the year, if any. */
-  reported: Outlook['reportedRunRates'][number] | null
 }
 
-/** One row per projected year: its totals, run rate, and ending fund balance, with any later reported run rate. */
-export function gapRows(
-  projection: Projection,
-  reported: Outlook['reportedRunRates'],
-): GapRow[] {
+/** One row per projected year: its totals, run rate, and ending fund balance. */
+export function gapRows(projection: Projection): GapRow[] {
   const revenue = sectionTotal(projection, 'revenue')
   const expenses = sectionTotal(projection, 'expense')
   return projection.fiscalYears.map((fiscalYear, index) => ({
@@ -45,7 +32,6 @@ export function gapRows(
     expenseCents: expenses[index] ?? 0,
     runRateCents: projection.runRateCents[index] ?? 0,
     endingFundBalanceCents: projection.endingFundBalanceCents[index] ?? 0,
-    reported: reported.find((entry) => entry.fiscalYear === fiscalYear) ?? null,
   }))
 }
 
@@ -66,11 +52,9 @@ export function outlookSeries(projection: Projection): {
   }
 }
 
-/** Each distinct document the outlook cites, in first-cited order, with its latest retrieval date. */
-export function listOutlookDocuments(
-  outlook: Outlook,
-): Omit<OutlookSource, 'location'>[] {
-  const sources = [
+/** Every source the outlook cites, in the order the budget page shows them. */
+export function outlookSources(outlook: Outlook): CitedSource[] {
+  return [
     ...outlook.projections.flatMap((projection) => [
       projection.source,
       projection.reductionTargetSource,
@@ -80,12 +64,4 @@ export function listOutlookDocuments(
     outlook.allFunds.source,
     ...outlook.actions.map(({ source }) => source),
   ]
-  const documents = new Map<string, Omit<OutlookSource, 'location'>>()
-  for (const { url, document, retrievedOn } of sources) {
-    const cited = documents.get(url)
-    if (!cited || cited.retrievedOn < retrievedOn) {
-      documents.set(url, { url, document, retrievedOn })
-    }
-  }
-  return [...documents.values()]
 }
