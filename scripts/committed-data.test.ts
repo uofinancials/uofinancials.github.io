@@ -325,11 +325,26 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const { records } = fallYearSchema.parse(
       readJson(path.join(DATA_DIR, 'fall', '2025.json')),
     )
-    const { bins, counts, maxRateCents, percentiles } =
-      buildDistribution(records)
+    const { bins, counts, maxRateCents, percentiles } = buildDistribution(
+      records,
+      2025,
+    )
+    const none = {
+      Faculty: 0,
+      'Admins and professionals': 0,
+      'Unclassified staff': 0,
+      'Classified staff': 0,
+      Overloads: 0,
+      'Category not published': 0,
+      'Classified temporaries': 0,
+    }
     expect(counts).toEqual({
-      'Primary jobs': 5_739,
-      'Secondary and overload jobs': 552,
+      ...none,
+      Faculty: 2_247,
+      'Admins and professionals': 1_595,
+      'Unclassified staff': 181,
+      'Classified staff': 1_826,
+      Overloads: 442,
       'Classified temporaries': 549,
     })
     expect(percentiles).toEqual({
@@ -340,13 +355,19 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       90: 14_855_160,
     })
     expect(bins.find((bin) => bin.floorCents === 5_000_000)?.counts).toEqual({
-      'Primary jobs': 752,
-      'Secondary and overload jobs': 12,
+      ...none,
+      Faculty: 164,
+      'Admins and professionals': 175,
+      'Unclassified staff': 24,
+      'Classified staff': 399,
+      Overloads: 2,
       'Classified temporaries': 79,
     })
     expect(bins.at(-1)?.counts).toEqual({
-      'Primary jobs': 121,
-      'Secondary and overload jobs': 6,
+      ...none,
+      Faculty: 51,
+      'Admins and professionals': 75,
+      Overloads: 1,
       'Classified temporaries': 2,
     })
     expect(maxRateCents).toBe(940_000_000)

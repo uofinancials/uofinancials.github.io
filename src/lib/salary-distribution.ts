@@ -2,7 +2,7 @@ import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { MIN_JOBS_SHOWN } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
-import { type TrendGroup, trendGroupOf } from './trend-groups.ts'
+import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 
 export const SALARY_BIN_CENTS = 1_000_000
 export const TOP_BIN_FLOOR_CENTS = 25_000_000
@@ -10,25 +10,11 @@ const PERCENT = 100
 const CENTS_PER_DOLLAR = 100
 const CENTS_PER_THOUSAND_DOLLARS = 100_000
 
-export const JOB_KINDS = [
-  'Primary jobs',
-  'Secondary and overload jobs',
-  'Classified temporaries',
-] as const
-export type JobKind = (typeof JOB_KINDS)[number]
-
 export const PERCENTILES = [10, 25, 50, 75, 90] as const
 export type Percentile = (typeof PERCENTILES)[number]
 
 export const TERMS = [9, 12] as const
 export type Term = (typeof TERMS)[number]
-
-export function jobKindOf(record: FallRecord): JobKind {
-  if (isClassifiedTemp(record)) return 'Classified temporaries'
-  return record.jobType === 'Primary'
-    ? 'Primary jobs'
-    : 'Secondary and overload jobs'
-}
 
 /** The `p`th percentile of ascending cents, interpolated between ranks and rounded to the cent. */
 export function percentileCents(sorted: number[], p: number): number | null {
@@ -43,22 +29,26 @@ export type SalaryBin = {
   floorCents: number
   /** Exclusive; `null` for the open top bin. */
   ceilingCents: number | null
-  counts: Record<JobKind, number>
+  counts: Record<TrendGroup, number>
   total: number
 }
 
 export type Distribution = {
   bins: SalaryBin[]
-  counts: Record<JobKind, number>
+  counts: Record<TrendGroup, number>
   maxRateCents: number | null
-  /** Over primary jobs; `null` when fewer than `MIN_JOBS_SHOWN` are primary. */
+  /** Over primary jobs, temporaries left out; `null` when fewer than `MIN_JOBS_SHOWN`. */
   percentiles: Record<Percentile, number> | null
 }
 
-function emptyCounts(): Record<JobKind, number> {
+function emptyCounts(): Record<TrendGroup, number> {
   return {
-    'Primary jobs': 0,
-    'Secondary and overload jobs': 0,
+    Faculty: 0,
+    'Admins and professionals': 0,
+    'Unclassified staff': 0,
+    'Classified staff': 0,
+    Overloads: 0,
+    'Category not published': 0,
     'Classified temporaries': 0,
   }
 }
@@ -67,7 +57,9 @@ function primaryPercentiles(
   records: FallRecord[],
 ): Distribution['percentiles'] {
   const rates = records
-    .filter((record) => jobKindOf(record) === 'Primary jobs')
+    .filter(
+      (record) => record.jobType === 'Primary' && !isClassifiedTemp(record),
+    )
     .map((record) => record.annualSalaryRateCents)
     .sort((a, b) => a - b)
   if (rates.length < MIN_JOBS_SHOWN) return null
@@ -75,8 +67,11 @@ function primaryPercentiles(
   return { 10: at(10), 25: at(25), 50: at(50), 75: at(75), 90: at(90) }
 }
 
-/** Published annual salary rates in $10,000 bins up to an open top bin, stacked by job kind. */
-export function buildDistribution(records: FallRecord[]): Distribution {
+/** Published annual salary rates in $10,000 bins up to an open top bin, stacked by group. */
+export function buildDistribution(
+  records: FallRecord[],
+  censusYear: number,
+): Distribution {
   const binCount = TOP_BIN_FLOOR_CENTS / SALARY_BIN_CENTS + 1
   const bins: SalaryBin[] = Array.from({ length: binCount }, (_, index) => {
     const floorCents = index * SALARY_BIN_CENTS
@@ -94,14 +89,14 @@ export function buildDistribution(records: FallRecord[]): Distribution {
   let maxRateCents: number | null = null
   for (const record of records) {
     const rate = record.annualSalaryRateCents
-    const kind = jobKindOf(record)
+    const group = trendGroupOf(record, censusYear)
     const bin =
       bins[Math.min(Math.floor(rate / SALARY_BIN_CENTS), binCount - 1)]
     if (bin) {
-      bin.counts[kind] += 1
+      bin.counts[group] += 1
       bin.total += 1
     }
-    counts[kind] += 1
+    counts[group] += 1
     maxRateCents = Math.max(maxRateCents ?? rate, rate)
   }
   return {
@@ -146,12 +141,19 @@ export function binRange({ floorCents, ceilingCents }: SalaryBin): string {
     : `${floor} to ${formatDollars(ceilingCents - CENTS_PER_DOLLAR)}`
 }
 
-/** Each job kind's count per bin, in `JOB_KINDS` order. */
+/** Each group's count per bin, for the groups with a job, with each group's place in `TREND_GROUPS`. */
 export function stackedCounts(
   distribution: Distribution,
-): { key: JobKind; values: number[] }[] {
-  return JOB_KINDS.map((kind) => ({
-    key: kind,
-    values: distribution.bins.map((bin) => bin.counts[kind]),
-  }))
+): { key: TrendGroup; values: number[]; position: number }[] {
+  return TREND_GROUPS.flatMap((group, position) =>
+    distribution.counts[group] === 0
+      ? []
+      : [
+          {
+            key: group,
+            values: distribution.bins.map((bin) => bin.counts[group]),
+            position,
+          },
+        ],
+  )
 }

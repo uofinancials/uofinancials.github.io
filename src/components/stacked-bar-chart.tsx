@@ -21,7 +21,8 @@ export function StackedBarChart({
   label,
 }: {
   labels: string[]
-  series: { key: string; values: number[] }[]
+  /** `position` fixes a series' color, so filtering one out does not recolor the rest. */
+  series: { key: string; values: number[]; position: number }[]
   label: string
 }) {
   const data = labels.map((x, index) => ({
@@ -52,13 +53,13 @@ export function StackedBarChart({
             }
           />
           <Legend itemSorter={null} />
-          {series.map(({ key }, index) => (
+          {series.map(({ key, position }, index) => (
             <Bar
               key={key}
               name={key}
               dataKey={stackKey(index)}
               stackId={STACK}
-              fill={`var(--line-${index + 1})`}
+              fill={`var(--line-${position + 1})`}
             />
           ))}
         </BarChart>

@@ -27,25 +27,31 @@ import {
   binRange,
   buildDistribution,
   type Distribution,
-  JOB_KINDS,
   PERCENTILES,
   stackedCounts,
 } from '@/lib/salary-distribution'
+import type { TrendGroup } from '@/lib/trend-groups'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const RATE_NOTE =
   'Rates are the annual salary rates UO publishes, not pay: a 9-month rate is the 9-month salary, a part-time job’s rate is its full-time rate, and classified temporaries’ rates are annualised hourly rates. Dollars are as published, not adjusted for inflation.'
-const COMPUTED = `each job is counted once in the $10,000 range its published rate falls in, with lower bounds included. Percentiles are over primary jobs, temporaries left out, interpolated between ranks. Figures covering fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
+const COMPUTED = `each job is counted once in the $10,000 range its published rate falls in, with lower bounds included, in its group as on the Trends page. Percentiles are over primary jobs, temporaries left out, interpolated between ranks. Figures covering fewer than ${MIN_JOBS_SHOWN} jobs are not shown.`
 
-function BinTable({ distribution }: { distribution: Distribution }) {
+function BinTable({
+  distribution,
+  groups,
+}: {
+  distribution: Distribution
+  groups: TrendGroup[]
+}) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead scope="col">Salary rate</TableHead>
-          {JOB_KINDS.map((kind) => (
-            <TableHead key={kind} scope="col" className="text-right">
-              {kind}
+          {groups.map((group) => (
+            <TableHead key={group} scope="col" className="text-right">
+              {group}
             </TableHead>
           ))}
           <TableHead scope="col" className="text-right">
@@ -59,9 +65,9 @@ function BinTable({ distribution }: { distribution: Distribution }) {
             <TableHead scope="row" className="font-normal">
               {binRange(bin)}
             </TableHead>
-            {JOB_KINDS.map((kind) => (
-              <TableCell key={kind} className={NUMBER_CELL}>
-                {formatCount(bin.counts[kind])}
+            {groups.map((group) => (
+              <TableCell key={group} className={NUMBER_CELL}>
+                {formatCount(bin.counts[group])}
               </TableCell>
             ))}
             <TableCell className={NUMBER_CELL}>
@@ -74,14 +80,20 @@ function BinTable({ distribution }: { distribution: Distribution }) {
   )
 }
 
-function Summary({ distribution }: { distribution: Distribution }) {
+function Summary({
+  distribution,
+  groups,
+}: {
+  distribution: Distribution
+  groups: TrendGroup[]
+}) {
   const { counts, percentiles, maxRateCents } = distribution
   return (
     <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-      {JOB_KINDS.map((kind) => (
-        <div key={kind} className="contents">
-          <dt className="text-muted-foreground">{kind}</dt>
-          <dd className="tabular-nums">{formatCount(counts[kind])}</dd>
+      {groups.map((group) => (
+        <div key={group} className="contents">
+          <dt className="text-muted-foreground">{group}</dt>
+          <dd className="tabular-nums">{formatCount(counts[group])}</dd>
         </div>
       ))}
       {PERCENTILES.map((p) => (
@@ -124,7 +136,12 @@ export function SalariesPage() {
     () => jobsInView(census, { year, dept, group, kind, term }),
     [census, year, dept, group, kind, term],
   )
-  const distribution = useMemo(() => buildDistribution(jobs), [jobs])
+  const distribution = useMemo(
+    () => buildDistribution(jobs, year),
+    [jobs, year],
+  )
+  const stacks = stackedCounts(distribution)
+  const groups = stacks.map(({ key }) => key)
   const profile =
     view.dept === null ? null : describeCode(view.dept, [census], [budget])
   const department =
@@ -159,11 +176,11 @@ export function SalariesPage() {
         <section className="space-y-4">
           <StackedBarChart
             labels={distribution.bins.map(binLabel)}
-            series={stackedCounts(distribution)}
+            series={stacks}
             label={`${title}: jobs by salary rate`}
           />
-          <Summary distribution={distribution} />
-          <BinTable distribution={distribution} />
+          <Summary distribution={distribution} groups={groups} />
+          <BinTable distribution={distribution} groups={groups} />
         </section>
       )}
       <SourceCitation
