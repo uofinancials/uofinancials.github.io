@@ -21,25 +21,17 @@ test('an unknown path renders the not-found page inside the layout', async () =>
   expect(
     await screen.findByRole('heading', { name: 'Page not found' }),
   ).toBeInTheDocument()
-  expect(screen.getByRole('contentinfo')).toHaveTextContent(
-    'not affiliated with',
-  )
-})
-
-test('the footer links to the source and both licenses', async () => {
-  renderAt('/no-such-page')
-  await screen.findByRole('heading', { name: 'Page not found' })
-  const footer = within(screen.getByRole('contentinfo'))
+  const footer = screen.getByRole('contentinfo')
+  expect(footer).toHaveTextContent('not affiliated with')
   const repo = 'https://github.com/uofinancials/uofinancials.github.io'
-  expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+  expect(within(footer).getByRole('link', { name: 'GitHub' })).toHaveAttribute(
     'href',
     repo,
   )
-  expect(footer.getByRole('link', { name: 'MIT licensed' })).toHaveAttribute(
-    'href',
-    `${repo}/blob/main/LICENSE`,
-  )
-  expect(footer.getByRole('link', { name: 'CC0' })).toHaveAttribute(
+  expect(
+    within(footer).getByRole('link', { name: 'MIT licensed' }),
+  ).toHaveAttribute('href', `${repo}/blob/main/LICENSE`)
+  expect(within(footer).getByRole('link', { name: 'CC0' })).toHaveAttribute(
     'href',
     `${repo}/blob/main/public/data/LICENSE`,
   )
