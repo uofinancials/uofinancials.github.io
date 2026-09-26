@@ -20,10 +20,10 @@ import {
   type PeopleChart,
   type PeopleSearch,
   type PeopleSort,
-  type SortDirection,
 } from '@/lib/people-search'
 import { formatYearRanges, matchPeople, yearsOf } from '@/lib/person-lookup'
 import { RATE_NOTE, type SalaryBin } from '@/lib/salary-distribution'
+import type { SortDirection } from '@/lib/sort'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const CHART_LABELS: Record<PeopleChart, string> = {

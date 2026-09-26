@@ -84,7 +84,7 @@ function RulesSection({
 }: {
   scenario: ReturnType<typeof useScenario>
 }) {
-  const { census, budget, eliminationBudget, rules, dropped, result } = scenario
+  const { census, eliminationBudget, rules, dropped, result } = scenario
   const navigate = useNavigate({ from: '/scenarios' })
   return (
     <PageSection title="Rules">
@@ -100,7 +100,6 @@ function RulesSection({
       <ScenarioRuleList
         rules={rules}
         census={census}
-        budget={budget}
         eliminationBudget={eliminationBudget}
         onChange={(changed) =>
           navigate({

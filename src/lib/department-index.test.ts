@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import type { BudgetRow, BudgetYear } from '@/data/budget'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { departmentIndex, describeCode, filterIndex } from './department-index'
+import { departmentIndex, describeCode } from './department-index'
 import { toDepartmentCensus } from './department-jobs'
 
 function row(org: string, cents: number): BudgetRow {
@@ -52,59 +52,34 @@ const RECORDS = [
   classifiedJob({ payDepartment: { code: '777777', name: 'Qq Unplaced' } }),
 ]
 
-const INDEX = departmentIndex({ year: 2025, records: RECORDS }, BUDGET)
+const CENSUS = toDepartmentCensus({ year: 2025, records: RECORDS }, BUDGET)
 
 test('the index lists each area with its units and placed pay departments', () => {
-  expect(INDEX).toEqual([
+  expect(departmentIndex(CENSUS)).toEqual([
     {
       code: '222000',
       name: 'Arts & Sciences, College of',
-      budgetCents: 1_500,
-      jobs: 2,
       entries: [
-        { code: '223100', name: 'CAS Biology', budgetCents: 1_000, jobs: 1 },
-        { code: '222050', name: 'CAS English', budgetCents: 500, jobs: 0 },
+        { code: '223100', name: 'CAS Biology' },
+        { code: '222050', name: 'CAS English' },
         {
           code: '223500',
           name: 'CAS Mathematics Operations',
-          budgetCents: null,
-          jobs: 1,
         },
       ],
     },
     {
       code: '480000',
       name: 'Athletics',
-      budgetCents: 90,
-      jobs: 1,
-      entries: [
-        { code: '480100', name: 'Athletics Ops', budgetCents: 90, jobs: 0 },
-      ],
+      entries: [{ code: '480100', name: 'Athletics Ops' }],
     },
     {
       code: null,
       name: 'Area not assigned',
-      budgetCents: null,
-      jobs: 1,
-      entries: [
-        { code: '777777', name: 'Qq Unplaced', budgetCents: null, jobs: 1 },
-      ],
+      entries: [{ code: '777777', name: 'Qq Unplaced' }],
     },
   ])
 })
-
-test('the filter keeps a matching area whole and narrows the rest to matching entries', () => {
-  expect(filterIndex(INDEX, ' athletics ').map(({ code }) => code)).toEqual([
-    '480000',
-  ])
-  const [arts, ...others] = filterIndex(INDEX, 'math')
-  expect(others).toEqual([])
-  expect(arts?.entries.map(({ code }) => code)).toEqual(['223500'])
-  expect(filterIndex(INDEX, '2231')[0]?.entries).toHaveLength(1)
-  expect(filterIndex(INDEX, '')).toBe(INDEX)
-})
-
-const CENSUS = toDepartmentCensus({ year: 2025, records: RECORDS }, BUDGET)
 
 test('a code is described by what each source publishes under it', () => {
   const renamed = {

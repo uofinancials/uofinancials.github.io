@@ -3,7 +3,7 @@ import { fiscalYearLabel, orgCodeParam } from '../data/budget.ts'
 import { type StaffKind, staffKindSchema } from '../data/fall.ts'
 import { BUDGET_BREAKDOWNS, type BudgetBreakdown } from './department-budget.ts'
 import { DEPARTMENT_SORTS, type DepartmentSort } from './department-table.ts'
-import { SORT_DIRECTIONS, type SortDirection } from './people-search.ts'
+import { SORT_DIRECTIONS, type SortDirection } from './sort.ts'
 import { CENSUS_METRICS, type CensusMetric } from './trends-search.ts'
 
 const YEAR_END_PERIOD = '14'
@@ -28,7 +28,16 @@ export type DepartmentsSearch = z.infer<typeof departmentsSearchSchema>
 
 export type TableSort = { sort: DepartmentSort; dir: SortDirection }
 
-const DEFAULT_SORT: TableSort = { sort: 'budget', dir: 'desc' }
+/** A table's sort, budget largest first unless the search asks otherwise. */
+function resolveSort({
+  sort,
+  dir,
+}: {
+  sort?: DepartmentSort
+  dir?: SortDirection
+}): TableSort {
+  return { sort: sort ?? 'budget', dir: dir ?? 'desc' }
+}
 
 export type DepartmentsView = TableSort & {
   q: string
@@ -44,8 +53,7 @@ export function resolveDepartmentsView(
     q: search.q ?? '',
     level: search.level ?? 'areas',
     area: search.area ?? null,
-    sort: search.sort ?? DEFAULT_SORT.sort,
-    dir: search.dir ?? DEFAULT_SORT.dir,
+    ...resolveSort(search),
   }
 }
 
@@ -82,8 +90,7 @@ export function resolveDepartmentView(
     metric: search.metric ?? 'spend',
     kind: search.kind ?? 'all',
     year,
-    sort: search.sort ?? DEFAULT_SORT.sort,
-    dir: search.dir ?? DEFAULT_SORT.dir,
+    ...resolveSort(search),
   }
 }
 

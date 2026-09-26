@@ -1,8 +1,9 @@
 import type { BudgetRow, BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
 import type { Manifest } from '../data/manifest.ts'
-import { listAreas, ORG_LEVEL_AREA } from './areas.ts'
+import { listAreas } from './areas.ts'
 import { sumBy, unitsOf } from './department-budget.ts'
+import { placeDepartments } from './department-index.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
 import {
@@ -10,14 +11,13 @@ import {
   SPEND_METHOD,
   UNASSIGNED_AREA,
 } from './overview.ts'
-import type { SortDirection } from './people-search.ts'
+import { compareKeys, type SortDirection } from './sort.ts'
 import { MIN_JOBS_SHOWN, measureJobs } from './trends.ts'
 
 /** A census joined to the budget year that names its areas. */
-export type TableYear = { census: DepartmentCensus; budget: BudgetYear }
+type TableYear = { census: DepartmentCensus; budget: BudgetYear }
 
-export const FIGURE_COLUMNS = ['budget', 'jobs', 'spend', 'median'] as const
-export type FigureColumn = (typeof FIGURE_COLUMNS)[number]
+type FigureColumn = 'budget' | 'jobs' | 'spend' | 'median'
 
 type Area = { code: string; name: string }
 
@@ -37,9 +37,9 @@ export type DepartmentRow = {
 }
 
 /** A census change is blank when the earlier census has fewer jobs. */
-export const CHANGE_MIN_JOBS = 10
+const CHANGE_MIN_JOBS = 10
 /** A budget change is blank when the earlier beginning budget is smaller. */
-export const CHANGE_MIN_BUDGET_CENTS = 10_000_000
+const CHANGE_MIN_BUDGET_CENTS = 10_000_000
 
 export const DEPARTMENT_TABLE_METHOD = `The budget is UO’s Total Expenditure Budget as published; an area’s is the sum of its units. Its change compares beginning budgets, set at the start of each year, since the total grows through a year and the later year is not at year-end. Jobs are Fall census jobs paid under the code, or, for an area, placed in it; ${SPEND_METHOD} Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Each change is the percent change from the year before. It is blank when the earlier year has fewer than ${CHANGE_MIN_JOBS} jobs or a beginning budget under ${formatDollars(CHANGE_MIN_BUDGET_CENTS)}, or does not publish the code. An area’s jobs, spend, and median changes are blank, since the site places fewer of the earlier census’s jobs in areas.`
 
@@ -92,7 +92,10 @@ function toRow(
   const { code, name, area } = input
   const figures = measureJobs(input.records)
   const earlier = input.earlier === null ? null : measureJobs(input.earlier)
-  const hasEarlierJobs = earlier !== null && earlier.jobs >= CHANGE_MIN_JOBS
+  const censusChange = (pick: (point: typeof figures) => number | null) =>
+    earlier !== null && earlier.jobs >= CHANGE_MIN_JOBS
+      ? changeOf(pick(earlier), pick(figures))
+      : null
   const budgetBefore = unitSum(code, before.orgs, before.beginningCents)
   return {
     code,
@@ -107,13 +110,9 @@ function toRow(
         budgetBefore !== null && budgetBefore >= CHANGE_MIN_BUDGET_CENTS
           ? changeOf(budgetBefore, unitSum(code, now.orgs, now.beginningCents))
           : null,
-      jobs: hasEarlierJobs ? changeOf(earlier.jobs, figures.jobs) : null,
-      spend: hasEarlierJobs
-        ? changeOf(earlier.spendCents, figures.spendCents)
-        : null,
-      median: hasEarlierJobs
-        ? changeOf(earlier.medianRateCents, figures.medianRateCents)
-        : null,
+      jobs: censusChange((point) => point.jobs),
+      spend: censusChange((point) => point.spendCents),
+      median: censusChange((point) => point.medianRateCents),
     },
   }
 }
@@ -122,76 +121,14 @@ function areaOf(code: string | null, orgs: BudgetYear['orgs']): Area | null {
   return code === null ? null : { code, name: orgs[code]?.name ?? code }
 }
 
-/** The units, then the pay departments no unit publishes; a pay department with an area's code is that area's. */
-function unitInputs({
-  census,
-  budget,
-}: TableYear): Omit<RowInput, 'earlier'>[] {
-  const inputs = new Map<string, Omit<RowInput, 'earlier'>>()
-  for (const [code, org] of Object.entries(budget.orgs)) {
-    if (org.level === ORG_LEVEL_AREA) continue
-    inputs.set(code, {
-      code,
-      name: org.name,
-      area: areaOf(org.parent, budget.orgs),
-      records: [],
-    })
-  }
-  for (const record of census.records) {
-    const { code, name } = record.payDepartment
-    const { area } = census.assign(record)
-    if (code === null || code === area) continue
-    const input = inputs.get(code) ?? {
-      code,
-      name,
-      area: areaOf(area, budget.orgs),
-      records: [],
-    }
-    input.records.push(record)
-    inputs.set(code, input)
-  }
-  return [...inputs.values()]
-}
-
-/** Each area with the jobs placed in it, then the jobs placed in none. */
-function areaInputs({ census, budget }: TableYear): RowInput[] {
-  const placed = new Map<string | null, FallRecord[]>()
-  for (const record of census.records) {
-    const { area } = census.assign(record)
-    const records = placed.get(area) ?? []
-    records.push(record)
-    placed.set(area, records)
-  }
-  const unplaced = placed.get(null)
-  return [
-    ...listAreas(budget.orgs).map(({ code, name }) => ({
-      code,
-      name,
-      area: null,
-      records: placed.get(code) ?? [],
-      earlier: null,
-    })),
-    ...(unplaced
-      ? [
-          {
-            code: null,
-            name: UNASSIGNED_AREA,
-            area: null,
-            records: unplaced,
-            earlier: null,
-          },
-        ]
-      : []),
-  ]
-}
-
-/** The rows of both levels for one census, with changes from the one before. */
+/** The rows of both levels for one census, with changes from the one before; an area's census changes are blank. */
 export function departmentRows(
   now: TableYear,
   before: TableYear,
 ): { areas: DepartmentRow[]; units: DepartmentRow[] } {
   const nowSums = toBudgetSums(now.budget)
   const beforeSums = toBudgetSums(before.budget)
+  const row = (input: RowInput) => toRow(input, nowSums, beforeSums)
   const earlierByCode = new Map<string | null, FallRecord[]>()
   for (const record of before.census.records) {
     const { code } = record.payDepartment
@@ -199,14 +136,29 @@ export function departmentRows(
     records.push(record)
     earlierByCode.set(code, records)
   }
+  const { orgs } = now.census
+  const { units, areaJobs } = placeDepartments(now.census)
+  const unplaced = areaJobs.get(null)
+  const areas = [
+    ...listAreas(orgs),
+    ...(unplaced ? [{ code: null, name: UNASSIGNED_AREA }] : []),
+  ]
   return {
-    areas: areaInputs(now).map((input) => toRow(input, nowSums, beforeSums)),
-    units: unitInputs(now).map((input) =>
-      toRow(
-        { ...input, earlier: earlierByCode.get(input.code) ?? [] },
-        nowSums,
-        beforeSums,
-      ),
+    areas: areas.map(({ code, name }) =>
+      row({
+        code,
+        name,
+        area: null,
+        records: areaJobs.get(code) ?? [],
+        earlier: null,
+      }),
+    ),
+    units: units.map((unit) =>
+      row({
+        ...unit,
+        area: areaOf(unit.area, orgs),
+        earlier: earlierByCode.get(unit.code) ?? [],
+      }),
     ),
   }
 }
@@ -280,12 +232,6 @@ const SORT_VALUES: Record<
   medianChange: (row) => row.changes.median,
 }
 
-function compareValues(a: string | number, b: string | number): number {
-  return typeof a === 'number' && typeof b === 'number'
-    ? a - b
-    : String(a).localeCompare(String(b))
-}
-
 /** The rows in the sort's order, blanks last either way, ties by name. */
 export function sortRows(
   rows: DepartmentRow[],
@@ -300,8 +246,8 @@ export function sortRows(
     const order =
       x === null || y === null
         ? Number(x === null) - Number(y === null)
-        : sign * compareValues(x, y)
-    return order || a.name.localeCompare(b.name)
+        : sign * compareKeys(x, y)
+    return order || compareKeys(a.name, b.name)
   })
 }
 

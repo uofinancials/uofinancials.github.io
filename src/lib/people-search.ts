@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { censusSearchSchema } from './census-search.ts'
+import { SORT_DIRECTIONS } from './sort.ts'
 
 export const PEOPLE_SORTS = [
   'name',
@@ -43,9 +44,6 @@ export const DEFAULT_COLUMNS: readonly ListColumn[] = [
   'rate',
   'appt',
 ]
-
-export const SORT_DIRECTIONS = ['asc', 'desc'] as const
-export type SortDirection = (typeof SORT_DIRECTIONS)[number]
 
 export const PEOPLE_CHARTS = ['rates', 'groups'] as const
 export type PeopleChart = (typeof PEOPLE_CHARTS)[number]

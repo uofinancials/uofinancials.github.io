@@ -114,18 +114,25 @@ function AreaUnitsSection({
 }) {
   const table = useMemo(() => {
     const years = latestTableYears(censuses, budgets)
-    if (!years) return null
-    const units = departmentRows(years.now, years.before).units
-    return { ...years, rows: units.filter((row) => row.area?.code === code) }
-  }, [code, censuses, budgets])
-  if (!table || table.rows.length === 0) return null
+    return (
+      years && {
+        ...years,
+        units: departmentRows(years.now, years.before).units,
+      }
+    )
+  }, [censuses, budgets])
+  const rows = useMemo(
+    () => table?.units.filter((row) => row.area?.code === code) ?? [],
+    [table, code],
+  )
+  if (!table || rows.length === 0) return null
   const { now, before } = table
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">Units in this area</h2>
       <DepartmentTable
         caption={`${fiscalYearLabel(now.budget.fiscalYear)} budget and Fall ${now.census.year} jobs, with changes from ${fiscalYearLabel(before.budget.fiscalYear)} and Fall ${before.census.year}`}
-        rows={sortRows(table.rows, view.sort, view.dir)}
+        rows={sortRows(rows, view.sort, view.dir)}
         showArea={false}
         view={view}
         onSort={(sort, dir) => onChange({ sort, dir })}

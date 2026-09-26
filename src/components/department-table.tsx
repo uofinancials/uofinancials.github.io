@@ -16,7 +16,7 @@ import {
   formatDollars,
   formatOrBlank,
 } from '@/lib/format'
-import type { SortDirection } from '@/lib/people-search'
+import type { SortDirection } from '@/lib/sort'
 
 const FIGURES: {
   label: string

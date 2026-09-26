@@ -11,8 +11,9 @@ import {
 import type { FallRecord } from '@/data/fall'
 import { NO_VALUE } from '@/lib/format'
 import { type PeopleView, recordKey } from '@/lib/people-list'
-import type { PeopleSort, SortDirection } from '@/lib/people-search'
+import type { PeopleSort } from '@/lib/people-search'
 import { LIST_FIELDS } from '@/lib/person-fields'
+import type { SortDirection } from '@/lib/sort'
 
 /** One page of jobs, a row each, named and linked to the person, in the view's columns; each sortable header sorts by its column. */
 export function PeopleTable({

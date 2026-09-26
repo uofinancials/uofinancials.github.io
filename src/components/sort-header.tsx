@@ -1,5 +1,5 @@
 import { TableHead } from '@/components/ui/table'
-import type { SortDirection } from '@/lib/people-search'
+import type { SortDirection } from '@/lib/sort'
 import { cn } from '@/lib/utils'
 
 const ARIA_SORT: Record<SortDirection, 'ascending' | 'descending'> = {
