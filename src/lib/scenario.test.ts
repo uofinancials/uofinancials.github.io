@@ -52,6 +52,7 @@ function run(rules: Rule[], opeFiscalYear = 2026) {
     history: [],
     projectedYears: 0,
     eliminationBudget: BUDGET,
+    raiseRates: [],
   })
 }
 
@@ -183,6 +184,7 @@ test('full cost is exact past 2^53 and rounds half up to the cent', () => {
     history: [],
     projectedYears: 0,
     eliminationBudget: budget,
+    raiseRates: [],
   })
   // 123,456,789 x 8,933 x 17,740 = 19,564,372,661,470,380, over 10^8.
   expect(base.fullCostCents).toBe(195_643_727)

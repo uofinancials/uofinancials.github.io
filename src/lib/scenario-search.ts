@@ -21,15 +21,18 @@ const scopeEntry = z
   .partial()
 
 /** A percent with at most two decimals, as whole basis points. */
-const percentEntry = z
-  .number()
-  .gt(0)
-  .max(100)
-  .transform((percent) => percent * BASIS_POINTS_PER_PERCENT)
-  .refine(
-    (basisPoints) => Math.abs(basisPoints - Math.round(basisPoints)) < 1e-9,
-  )
-  .transform(Math.round)
+function basisPointsEntry(percent: z.ZodNumber) {
+  return percent
+    .max(100)
+    .transform((value) => value * BASIS_POINTS_PER_PERCENT)
+    .refine(
+      (basisPoints) => Math.abs(basisPoints - Math.round(basisPoints)) < 1e-9,
+    )
+    .transform(Math.round)
+}
+
+const percentEntry = basisPointsEntry(z.number().gt(0))
+const capEntry = basisPointsEntry(z.number().min(0))
 
 const dollarsEntry = z.number().int().nonnegative()
 const yearsEntry = z.number().int().min(1).max(MAX_FREEZE_YEARS)
@@ -48,6 +51,12 @@ export function parseDollarsText(text: string): number | null {
 /** A percent typed into a field, as basis points; `null` when it is not a valid cut. */
 export function parsePercentText(text: string): number | null {
   const parsed = percentEntry.safeParse(typedNumber(text))
+  return parsed.success ? parsed.data : null
+}
+
+/** A raise cap typed into a field, as basis points; `null` when it is not 0 to 100 with at most two decimals. */
+export function parseCapText(text: string): number | null {
+  const parsed = capEntry.safeParse(typedNumber(text))
   return parsed.success ? parsed.data : null
 }
 
@@ -77,6 +86,12 @@ const ruleEntry = z.discriminatedUnion('kind', [
     afterFreeze: z.enum(['refill', 'eliminate']),
   }),
   z.strictObject({ kind: z.literal('eliminate'), code: orgCodeParam }),
+  z.strictObject({
+    kind: z.literal('raises'),
+    scope: scopeEntry.default({}),
+    years: yearsEntry,
+    capPercent: capEntry,
+  }),
 ])
 
 type ScopeEntry = z.input<typeof scopeEntry>
@@ -122,6 +137,13 @@ function toRule(entry: z.output<typeof ruleEntry>): Rule {
       return { kind: 'cut', scope, cutBasisPoints: entry.cutPercent }
     case 'freeze':
       return { ...entry, scope }
+    case 'raises':
+      return {
+        kind: 'raises',
+        scope,
+        years: entry.years,
+        capBasisPoints: entry.capPercent,
+      }
   }
 }
 
@@ -174,6 +196,13 @@ function toSearchRule(rule: Rule): z.input<typeof ruleEntry> {
       return { kind: 'cut', scope, cutPercent: toPercent(rule.cutBasisPoints) }
     case 'freeze':
       return { ...rule, scope }
+    case 'raises':
+      return {
+        kind: 'raises',
+        scope,
+        years: rule.years,
+        capPercent: toPercent(rule.capBasisPoints),
+      }
   }
 }
 

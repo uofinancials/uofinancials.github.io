@@ -8,7 +8,12 @@ import {
 } from './budget-outlook.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { type Rule, runScenario, type ScenarioResult } from './scenario.ts'
-import { BASIS_BIG, divideHalfUp } from './scenario-jobs.ts'
+import {
+  BASIS_BIG,
+  divideHalfUp,
+  PROJECTED_RAISE_BASIS_POINTS,
+} from './scenario-jobs.ts'
+import type { RaiseRate } from './scenario-raises.ts'
 
 /** What savings are set against: the projection or one of its published cases. */
 export type Baseline = {
@@ -31,8 +36,6 @@ export type OutlookRow = {
   remainingWeeks: number | null
 }
 
-/** The projection's own assumption for pay in later years. */
-export const SAVINGS_GROWTH_BASIS_POINTS = 300
 const WEEKS_PER_YEAR = 52
 const TENTHS = 10
 
@@ -42,11 +45,11 @@ export const SCENARIO_OUTLOOK_METHOD =
 function grow(cents: number, years: number): number {
   const numerator =
     BigInt(cents) *
-    (BASIS_BIG + BigInt(SAVINGS_GROWTH_BASIS_POINTS)) ** BigInt(years)
+    (BASIS_BIG + BigInt(PROJECTED_RAISE_BASIS_POINTS)) ** BigInt(years)
   return Number(divideHalfUp(numerator, BASIS_BIG ** BigInt(years)))
 }
 
-/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year. */
+/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year, and raise freezes are already in each year's pay. */
 export function yearlySavings(
   result: ScenarioResult,
   options: { years: number; firstFiscalYear: number },
@@ -56,14 +59,16 @@ export function yearlySavings(
     ? Math.max(0, options.firstFiscalYear - eliminated.fiscalYear)
     : 0
   return Array.from({ length: options.years }, (_, index) => {
-    const freezeCents = result.rules.reduce(
-      (sum, rule) =>
-        rule.kind === 'freeze' ? sum + (rule.byYear[index]?.egCents ?? 0) : sum,
-      0,
-    )
+    const yearCents = (kind: 'freeze' | 'raises') =>
+      result.rules.reduce(
+        (sum, rule) =>
+          rule.kind === kind ? sum + (rule.byYear[index]?.egCents ?? 0) : sum,
+        0,
+      )
     return (
-      grow(result.total.egCents + freezeCents, index) +
-      grow(eliminated?.egCents ?? 0, eliminatedFrom + index)
+      grow(result.total.egCents + yearCents('freeze'), index) +
+      grow(eliminated?.egCents ?? 0, eliminatedFrom + index) +
+      yearCents('raises')
     )
   })
 }
@@ -165,6 +170,7 @@ export function projectScenario(options: {
   history: DepartmentCensus[]
   fiscalYears: number[]
   eliminationBudget: BudgetYear
+  raiseRates: RaiseRate[]
 }): ScenarioResult {
   const { fiscalYears, censusFiscalYear } = options
   return runScenario({

@@ -68,6 +68,12 @@ export function describeRule(rule: Rule): string {
       return `A ${rule.years}-year hiring freeze, then positions ${rule.afterFreeze === 'refill' ? 'refilled' : 'eliminated'}`
     case 'eliminate':
       return 'Eliminated'
+    case 'raises': {
+      const years = `${rule.years} ${rule.years === 1 ? 'year' : 'years'}`
+      return rule.capBasisPoints === 0
+        ? `Raises frozen for ${years}`
+        : `Raises capped at ${toPercent(rule.capBasisPoints)}% for ${years}`
+    }
   }
 }
 

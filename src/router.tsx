@@ -190,7 +190,7 @@ const budgetRoute = createRoute({
   component: BudgetPage,
 })
 
-/** The latest census and its budget, the rates and outlook, and the budget eliminations use. */
+/** The latest census and its budget, the rates, raise terms, and outlook, and the budget eliminations use. */
 async function loadScenario({
   context: { queryClient },
 }: {
@@ -213,6 +213,7 @@ async function loadScenario({
     queryClient.ensureQueryData(fallYearQuery(census.year)),
     queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
     queryClient.ensureQueryData(opeRatesQuery),
+    queryClient.ensureQueryData(raiseTermsQuery),
   ])
   return {
     year: census.year,

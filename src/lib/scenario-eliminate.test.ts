@@ -67,6 +67,7 @@ function run(rules: Rule[]) {
     history: [],
     projectedYears: 0,
     eliminationBudget: FY27,
+    raiseRates: [],
   })
 }
 

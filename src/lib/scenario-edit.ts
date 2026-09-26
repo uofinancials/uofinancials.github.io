@@ -5,6 +5,7 @@ export const RULE_KINDS = [
   'remove',
   'cut',
   'freeze',
+  'raises',
   'eliminate',
 ] as const
 export type RuleKind = (typeof RULE_KINDS)[number]
@@ -14,6 +15,7 @@ export const RULE_KIND_LABELS: Record<RuleKind, string> = {
   remove: 'Remove jobs',
   cut: 'Cut pay',
   freeze: 'Hiring freeze',
+  raises: 'Freeze raises',
   eliminate: 'Eliminate a department or area',
 }
 
@@ -33,6 +35,8 @@ export function newRule(kind: RuleKind, firstCode: string): Rule {
       return { kind, scope: ANY_SCOPE, cutBasisPoints: 500 }
     case 'freeze':
       return { kind, scope: ANY_SCOPE, years: 1, afterFreeze: 'refill' }
+    case 'raises':
+      return { kind, scope: ANY_SCOPE, years: 1, capBasisPoints: 0 }
     case 'eliminate':
       return { kind, code: firstCode }
   }

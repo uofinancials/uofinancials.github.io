@@ -48,6 +48,7 @@ function run(rules: Rule[]) {
     history: HISTORY,
     projectedYears: 4,
     eliminationBudget: BUDGET,
+    raiseRates: [],
   })
 }
 
