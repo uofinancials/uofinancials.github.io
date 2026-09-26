@@ -69,18 +69,17 @@ flowchart LR
 - `src/components` - the shared layout with the independence notice and error
   report link, the page section, the source citation caption and cited-source
   line, the loading and error states, the select, radio, search, and draft text
-  fields, the totals chart and table, the line chart,
-  the stacked bar chart, the trends table and controls, the department budget
-  and jobs sections, the census filter controls, the salary distribution figure,
-  the removable filter, the pay changes section with its lines, counts table,
-  distribution, and raise comparison, the people list's controls, table, sort
-  controls, column picker, and group figure, the person view with its computed
-  figures, rate chart, records table, and job history, the budget outlook's
-  lines and cases tables, the scenario rule list, rule editor, scope fields,
-  savings table, and outlook section, and the hooks and query that load one
-  census's placed jobs, the people list's matching jobs, the pay changes of a
-  Trends view, the name index, a scenario and its result, and the censuses a
-  hiring freeze reads.
+  fields, the totals chart and table, the line chart, the stacked bar chart, the
+  trends table and controls, the department budget and jobs sections, the census
+  filter controls, the salary distribution figure, the removable filter, the pay
+  changes section with its lines, counts table, distribution, and raise
+  comparison, the people list's controls, table, sort controls, column picker,
+  and group figure, the person view with its computed figures, rate chart,
+  records table, and job history, the budget outlook's lines and cases tables,
+  the scenario rule list, rule editor, scope fields, savings table, and outlook
+  section, and the hooks and query that load one census's placed jobs, the
+  people list's matching jobs, the pay changes of a Trends view, the name index,
+  a scenario and its result, and the censuses a hiring freeze reads.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
