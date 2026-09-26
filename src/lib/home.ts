@@ -17,6 +17,7 @@ import {
   projectScenario,
   yearlySavings,
 } from './scenario-outlook.ts'
+import type { RaiseRate } from './scenario-raises.ts'
 import { compareKeys } from './sort.ts'
 
 /** The projection's run rate in the first projected year after the census. */
@@ -75,6 +76,8 @@ export function exampleAnswers(options: {
   rates: OpeRates
   projection: Projection
   censusFiscalYear: number
+  /** The first savings year's raise rates. */
+  raiseRates: RaiseRate[]
 }): ExampleAnswer[] {
   const { census, budget, projection, censusFiscalYear } = options
   const shares = egShares(census, budget)
@@ -89,7 +92,7 @@ export function exampleAnswers(options: {
       history: [],
       fiscalYears: projection.fiscalYears,
       eliminationBudget: budget,
-      raiseRates: [],
+      raiseRates: options.raiseRates,
     })
     const [savingsCents = 0] = yearlySavings(result, {
       years: 1,

@@ -52,7 +52,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   ).toContainText('turnover a year')
   const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
   await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
-    '$24,653,062',
+    '$24,717,706',
   )
   await expect(outlook.getByRole('row', { name: /^FY30/ })).toContainText(
     '-1.0',
@@ -65,7 +65,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   })
   await expect(page).toHaveURL(/case=.*State/)
   await expect(outlook.getByRole('row', { name: /^FY31/ })).toContainText(
-    '-$173,156,103',
+    '-$172,812,899',
   )
   await expect(page.getByRole('main')).toContainText(
     'Weeks of expenses are not computed for this case',
@@ -193,7 +193,7 @@ test("a raise freeze saves each group's FY27 raise and shows the rates and sourc
   const row = page.getByRole('row', { name: /^1\. Raises frozen for 1 year/ })
   await expect(row.getByRole('cell').first()).toHaveText('6,291')
   await expect(row.getByRole('cell').last()).toHaveText('$18,121,437')
-  const rates = page.getByRole('table', { name: /Raise rates a raise freeze/ })
+  const rates = page.getByRole('table', { name: /^Raise rates in FY27/ })
   await expect(
     rates.getByRole('row', { name: /^Officers of Administration/ }),
   ).toContainText('3.75%')
@@ -231,7 +231,7 @@ test('the page with a raise freeze does not scroll sideways at 360px', async ({
     .getByRole('link', { name: 'What would a one-year raise freeze save?' })
     .click()
   await expect(
-    page.getByRole('table', { name: /Raise rates a raise freeze/ }),
+    page.getByRole('table', { name: /^Raise rates in FY27/ }),
   ).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)

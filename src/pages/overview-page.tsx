@@ -22,6 +22,7 @@ import {
   manifestQuery,
   opeRatesQuery,
   outlookQuery,
+  raiseTermsQuery,
 } from '@/data/queries'
 import { outlookSeries } from '@/lib/budget-outlook'
 import { toDepartmentCensus } from '@/lib/department-jobs'
@@ -36,6 +37,8 @@ import {
   topPaidJobs,
 } from '@/lib/home'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/overview'
+import { firstSavingsYear } from '@/lib/scenario-outlook'
+import { raiseRates, raiseSources } from '@/lib/scenario-raises'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const TOP_PAID_COUNT = 10
@@ -48,10 +51,15 @@ function useHomeData() {
   const { data: budget } = useSuspenseQuery(budgetYearQuery(fiscalYear))
   const { data: outlook } = useSuspenseQuery(outlookQuery)
   const { data: rates } = useSuspenseQuery(opeRatesQuery)
+  const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
   const [projection] = outlook.projections
   const censusFiscalYear = fiscalYearOf(censusDate)
   return useMemo(() => {
     const census = toDepartmentCensus({ year, records: fall.records }, budget)
+    const firstYearRaises = raiseRates(
+      raiseTerms.terms,
+      firstSavingsYear(projection.fiscalYears, censusFiscalYear),
+    )
     return {
       year,
       censusDate,
@@ -69,7 +77,9 @@ function useHomeData() {
         rates,
         projection,
         censusFiscalYear,
+        raiseRates: firstYearRaises,
       }),
+      raiseSources: raiseSources(firstYearRaises),
       areas: areaFigures(census, budget),
       bases: placementBases(census),
       topPaid: topPaidJobs({ year, records: fall.records }, TOP_PAID_COUNT),
@@ -82,6 +92,7 @@ function useHomeData() {
     budget,
     projection,
     rates,
+    raiseTerms,
     manifest,
     censusFiscalYear,
   ])
@@ -342,6 +353,7 @@ export function OverviewPage() {
         year={year}
         fiscalYear={budget.fiscalYear}
         projection={projection}
+        raiseSources={data.raiseSources}
       />
       <JobsTrend jobsByYear={data.jobsByYear} />
       <DepartmentsPreview data={data} />

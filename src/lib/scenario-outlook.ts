@@ -40,7 +40,7 @@ const WEEKS_PER_YEAR = 52
 const TENTHS = 10
 
 export const SCENARIO_OUTLOOK_METHOD =
-  "Savings against the projection are this site's estimate. Each year's E&G savings start in full in the first fiscal year after the census and grow 3% a year, the projection's own raise assumption for later years; freeze savings follow the freeze year by year. Elimination savings start at their budget year's lines and grow at the same 3% from that year, services and supplies included. Savings use that first year's OPE rates, are gross, and count no revenue lost. The remaining gap is the projected run rate plus savings, and the remaining fund balance is the projected balance plus every year's savings so far. The projection may already count the hiring freeze announced in May 2026; its materials do not say."
+  "Savings against the projection are this site's estimate. Each year's E&G savings start in full in the first fiscal year after the census, in that year's pay: each job's pay rises by its raise group's contract raise for that year, as the raise freeze counts it, then 3% a year, the projection's own raise assumption for later years; freeze savings follow the freeze year by year. Elimination savings start at their budget year's lines and grow at the same 3% from that year, services and supplies included. Savings use that first year's OPE rates, are gross, and count no revenue lost. The remaining gap is the projected run rate plus savings, and the remaining fund balance is the projected balance plus every year's savings so far. The projection may already count the hiring freeze announced in May 2026; its materials do not say."
 
 function grow(cents: number, years: number): number {
   const numerator =
@@ -49,7 +49,7 @@ function grow(cents: number, years: number): number {
   return Number(divideHalfUp(numerator, BASIS_BIG ** BigInt(years)))
 }
 
-/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year, and raise freezes are already in each year's pay. */
+/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year, and census rules and raise freezes are already in each year's pay. */
 export function yearlySavings(
   result: ScenarioResult,
   options: { years: number; firstFiscalYear: number },
@@ -66,7 +66,8 @@ export function yearlySavings(
         0,
       )
     return (
-      grow(result.total.egCents + yearCents('freeze'), index) +
+      (result.censusEgByYear[index] ?? 0) +
+      grow(yearCents('freeze'), index) +
       grow(eliminated?.egCents ?? 0, eliminatedFrom + index) +
       yearCents('raises')
     )

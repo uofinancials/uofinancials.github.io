@@ -3,13 +3,16 @@ import { CitedLine } from '@/components/cited-line'
 import { PageSection } from '@/components/page-section'
 import { SourceCitation } from '@/components/source-citation'
 import { fiscalYearLabel } from '@/data/budget'
+import type { CitedSource } from '@/data/cited-source'
 import type { Projection } from '@/data/outlook'
 import { EG_SHARE_METHOD } from '@/lib/eg-share'
 import { formatDollars, formatShare } from '@/lib/format'
 import type { ExampleAnswer } from '@/lib/home'
 import { OPE_GROUP_METHOD } from '@/lib/ope-groups'
+import { RAISE_ROW_METHOD } from '@/lib/raise-groups'
 import { SCENARIO_METHOD } from '@/lib/scenario'
 import { FULL_COST_METHOD } from '@/lib/scenario-jobs'
+import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario-outlook'
 import { toSearchRules } from '@/lib/scenario-search'
 
 const METHODS = [
@@ -17,6 +20,8 @@ const METHODS = [
   FULL_COST_METHOD,
   OPE_GROUP_METHOD,
   EG_SHARE_METHOD,
+  SCENARIO_OUTLOOK_METHOD,
+  RAISE_ROW_METHOD,
 ]
 
 function Answer({ answer }: { answer: ExampleAnswer }) {
@@ -44,11 +49,14 @@ export function ScenarioAnswers({
   year,
   fiscalYear,
   projection,
+  raiseSources,
 }: {
   answers: ExampleAnswer[]
   year: number
   fiscalYear: number
   projection: Projection
+  /** The raise terms the first year's savings are grown by. */
+  raiseSources: CitedSource[]
 }) {
   return (
     <PageSection title="What could close it?">
@@ -82,6 +90,9 @@ export function ScenarioAnswers({
         <SourceCitation source={{ kind: 'budget', fiscalYear }} />
         <SourceCitation source={{ kind: 'rates' }} />
         <CitedLine source={projection.source} />
+        {raiseSources.map((source) => (
+          <CitedLine key={`${source.url} ${source.location}`} source={source} />
+        ))}
       </div>
     </PageSection>
   )

@@ -128,8 +128,8 @@ function SavingsSection({
   scenario: ReturnType<typeof useScenario>
 }) {
   const { result, resultRows, eliminations, history, firstYear } = scenario
-  const hasRaiseFreeze = scenario.computedRules.some(
-    (rule) => rule.kind === 'raises',
+  const usesRaiseRates = scenario.computedRules.some(
+    (rule) => rule.kind !== 'eliminate' && rule.kind !== 'freeze',
   )
   return (
     <PageSection title="Savings by rule">
@@ -141,7 +141,7 @@ function SavingsSection({
           historyStatus={history.status}
         />
       )}
-      {hasRaiseFreeze && (
+      {usesRaiseRates && (
         <ScenarioRaiseRatesTable
           rates={scenario.raiseRates}
           firstYear={firstYear}
