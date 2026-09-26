@@ -4,11 +4,11 @@ const ISSUES_URL =
   'https://github.com/uofinancials/uofinancials.github.io/issues'
 
 const NAV_LINKS = [
+  ['/budget', 'Budget'],
+  ['/scenarios', 'Scenarios'],
   ['/trends', 'Trends'],
   ['/departments', 'Departments'],
   ['/people', 'People'],
-  ['/budget', 'Budget'],
-  ['/scenarios', 'Scenarios'],
   ['/sources', 'Sources'],
 ] as const
 

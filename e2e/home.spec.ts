@@ -28,11 +28,19 @@ for (const path of [
   })
 }
 
-test('the nav marks the current section apart from the others', async ({
+test('the nav lists the sections in order and marks the current one apart from the others', async ({
   page,
 }) => {
   await page.goto('/departments/223100')
   const nav = page.getByRole('navigation', { name: 'Main' })
+  await expect(nav.getByRole('link')).toHaveText([
+    'Budget',
+    'Scenarios',
+    'Trends',
+    'Departments',
+    'People',
+    'Sources',
+  ])
   const current = nav.getByRole('link', { name: 'Departments' })
   const other = nav.getByRole('link', { name: 'Trends' })
   await expect(current).toHaveAttribute('aria-current', 'page')
