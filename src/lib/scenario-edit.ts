@@ -70,7 +70,6 @@ export function canMoveRule(
   )
 }
 
-/** The items with the one at `index` swapped with the one at `index + offset`. */
 export function swapAt<T>(items: T[], index: number, offset: -1 | 1): T[] {
   const moving = items[index]
   const other = items[index + offset]
