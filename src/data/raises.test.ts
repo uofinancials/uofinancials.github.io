@@ -53,3 +53,23 @@ test("a term names only its own group's populations, and a dateless one its wind
     }).success,
   ).toBe(false)
 })
+
+test('a merit or equity pool names its populations, with basis points when its percent allows', () => {
+  const pool = {
+    ...TERM,
+    kind: 'merit-pool',
+    effectiveBetween: undefined,
+  }
+  const { effectiveBetween: _, ...merit } = pool
+  const read = (percent: string) => {
+    const term = parse({ ...merit, percent }).data?.terms[0]
+    return term?.kind === 'merit-pool' ? term.basisPoints : undefined
+  }
+  expect([read('3.75'), read('3'), read('1.625')]).toEqual([375, 300, null])
+  expect(
+    parse({ ...merit, kind: 'equity-pool', populations: [] }).success,
+  ).toBe(false)
+  expect(parse({ ...merit, populations: ['pro-tem'] }).success).toBe(false)
+  const { populations: __, ...unscoped } = merit
+  expect(parse(unscoped).success).toBe(false)
+})

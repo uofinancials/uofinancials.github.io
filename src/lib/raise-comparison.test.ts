@@ -1,11 +1,7 @@
 import { expect, test } from 'vitest'
 import type { FallRecord } from '@/data/fall'
-import type {
-  AcrossTheBoardTerm,
-  EmployeeGroup,
-  Population,
-} from '@/data/raises'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { acrossTheBoardTerm } from '@/test/raise-terms'
 import { continuingPairs } from './pay-changes'
 import {
   acrossTheBoard,
@@ -15,32 +11,7 @@ import {
 } from './raise-comparison'
 import { RAISE_ROWS } from './raise-groups'
 
-function term(
-  employeeGroup: EmployeeGroup,
-  basisPoints: number,
-  effectiveDate: string,
-  populations: Population[] = ['all'],
-): AcrossTheBoardTerm {
-  return {
-    kind: 'across-the-board',
-    employeeGroup,
-    appliesTo: 'Test',
-    populations,
-    percent: String(basisPoints / 100),
-    basisPoints,
-    amountCents: null,
-    effectiveDate,
-    effectiveBetween: null,
-    effective: { from: effectiveDate, to: effectiveDate },
-    note: null,
-    source: {
-      url: 'https://example.org/cba.pdf',
-      document: 'CBA',
-      location: 'p. 1',
-      retrievedOn: '2026-09-24',
-    },
-  }
-}
+const term = acrossTheBoardTerm
 
 const rowNamed = (label: string) => {
   const row = RAISE_ROWS.find((candidate) => candidate.label === label)

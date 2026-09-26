@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest'
 import type { Manifest } from '@/data/manifest'
-import type { RaiseTerm } from '@/data/raises'
 import { citeSource, listCitedDocuments } from './citation'
 
 const HASH = 'a'.repeat(64)
@@ -161,28 +160,17 @@ test('a source missing from the manifest fails with its name', () => {
   ).toThrow('No manifest entry for the OPE rates')
 })
 
-function term(url: string, retrievedOn: string): RaiseTerm {
-  return {
-    kind: 'merit-pool',
-    employeeGroup: 'SEIU 503',
-    appliesTo: 'all',
-    effectiveDate: '2024-04-01',
-    note: null,
-    percent: '6.5',
-    amountCents: null,
-    source: { url, document: `Doc ${url}`, location: 'p. 1', retrievedOn },
-  }
+function source(url: string, retrievedOn: string) {
+  return { url, document: `Doc ${url}`, location: 'p. 1', retrievedOn }
 }
 
 test('cited documents are listed once each with their term counts', () => {
   expect(
-    listCitedDocuments(
-      [
-        term('https://example.org/a', '2026-09-20'),
-        term('https://example.org/b', '2026-09-24'),
-        term('https://example.org/a', '2026-09-24'),
-      ].map(({ source }) => source),
-    ),
+    listCitedDocuments([
+      source('https://example.org/a', '2026-09-20'),
+      source('https://example.org/b', '2026-09-24'),
+      source('https://example.org/a', '2026-09-24'),
+    ]),
   ).toEqual([
     {
       url: 'https://example.org/a',

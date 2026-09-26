@@ -4,7 +4,8 @@ import { citedSourceSchema } from './cited-source.ts'
 const nonBlank = z.string().min(1)
 const isoDate = z.iso.date()
 const percent = z.string().regex(/^\d+(\.\d+)?$/)
-const basisPointPercent = z.string().regex(/^\d+(\.\d{1,2})?$/)
+const BASIS_POINT_PERCENT = /^\d+(\.\d{1,2})?$/
+const basisPointPercent = z.string().regex(BASIS_POINT_PERCENT)
 
 function basisPointsOf(percent: string): number {
   const [whole = '', fraction = ''] = percent.split('.')
@@ -63,7 +64,14 @@ const raiseTermSchema = z
     }),
     z.strictObject({
       ...termFields,
-      kind: z.enum(['merit-pool', 'equity-pool', 'longevity']),
+      kind: z.enum(['merit-pool', 'equity-pool']),
+      populations: z.array(populationSchema).min(1),
+      percent,
+      amountCents: z.null(),
+    }),
+    z.strictObject({
+      ...termFields,
+      kind: z.literal('longevity'),
       percent,
       amountCents: z.null(),
     }),
@@ -85,7 +93,7 @@ const raiseTermSchema = z
   })
   .refine(
     (term) =>
-      term.kind !== 'across-the-board' ||
+      !('populations' in term) ||
       term.populations.every(
         (population) =>
           population === 'all' ||
@@ -93,10 +101,18 @@ const raiseTermSchema = z
             (known) => known === population,
           ),
       ),
-    { message: "an across-the-board term names only its group's populations" },
+    { message: "a term names only its group's populations" },
   )
   .transform((term, context) => {
-    if (term.kind !== 'across-the-board') return term
+    if (term.kind !== 'across-the-board') {
+      if (!('populations' in term)) return term
+      return {
+        ...term,
+        basisPoints: BASIS_POINT_PERCENT.test(term.percent)
+          ? basisPointsOf(term.percent)
+          : null,
+      }
+    }
     const from = term.effectiveDate ?? term.effectiveBetween?.from
     const to = term.effectiveDate ?? term.effectiveBetween?.to
     if (!from || !to || (term.effectiveDate && term.effectiveBetween)) {
@@ -133,4 +149,9 @@ export type Population = z.infer<typeof populationSchema>
 export type AcrossTheBoardTerm = Extract<
   RaiseTerm,
   { kind: 'across-the-board' }
+>
+/** A merit or equity pool; `basisPoints` is `null` when its percent is finer than a basis point. */
+export type PoolTerm = Extract<
+  RaiseTerm,
+  { kind: 'merit-pool' | 'equity-pool' }
 >
