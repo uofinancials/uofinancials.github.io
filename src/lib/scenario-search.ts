@@ -76,6 +76,7 @@ const ruleEntry = z.discriminatedUnion('kind', [
     years: yearsEntry,
     afterFreeze: z.enum(['refill', 'eliminate']),
   }),
+  z.strictObject({ kind: z.literal('eliminate'), code: orgCodeParam }),
 ])
 
 type ScopeEntry = z.input<typeof scopeEntry>
@@ -105,6 +106,7 @@ function toScope(entry: z.output<typeof scopeEntry>): ScenarioScope {
 }
 
 function toRule(entry: z.output<typeof ruleEntry>): Rule {
+  if (entry.kind === 'eliminate') return entry
   const scope = toScope(entry.scope)
   switch (entry.kind) {
     case 'threshold':
@@ -123,14 +125,20 @@ function toRule(entry: z.output<typeof ruleEntry>): Rule {
   }
 }
 
-/** The rules a search's `rules` array holds, and how many entries were not rules. */
-export function parseRules(entries: unknown[]): {
+/** The rules a search's `rules` array holds, and how many entries were not rules; an elimination must name one of `budgetCodes`. */
+export function parseRules(
+  entries: unknown[],
+  budgetCodes: ReadonlySet<string>,
+): {
   rules: Rule[]
   dropped: number
 } {
   const rules = entries.flatMap((entry) => {
     const parsed = ruleEntry.safeParse(entry)
-    return parsed.success ? [toRule(parsed.data)] : []
+    if (!parsed.success) return []
+    const isListed =
+      parsed.data.kind !== 'eliminate' || budgetCodes.has(parsed.data.code)
+    return isListed ? [toRule(parsed.data)] : []
   })
   return { rules, dropped: entries.length - rules.length }
 }
@@ -150,6 +158,7 @@ export const toPercent = (basisPoints: number) =>
   basisPoints / BASIS_POINTS_PER_PERCENT
 
 function toSearchRule(rule: Rule): z.input<typeof ruleEntry> {
+  if (rule.kind === 'eliminate') return rule
   const scope = toScopeEntry(rule.scope)
   switch (rule.kind) {
     case 'threshold':

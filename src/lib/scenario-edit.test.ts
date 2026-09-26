@@ -4,7 +4,10 @@ import { parseRules, toSearchRules } from './scenario-search'
 
 test('each new rule is one the URL form can hold', () => {
   const rules = RULE_KINDS.map(newRule)
-  expect(parseRules(toSearchRules(rules))).toEqual({ rules, dropped: 0 })
+  expect(parseRules(toSearchRules(rules), new Set())).toEqual({
+    rules,
+    dropped: 0,
+  })
 })
 
 test('a rule moves one place, and not past either end', () => {

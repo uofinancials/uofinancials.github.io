@@ -65,6 +65,8 @@ export function describeRule(rule: Rule): string {
       return `${toPercent(rule.cutBasisPoints)}% off pay`
     case 'freeze':
       return `A ${rule.years}-year hiring freeze, then positions ${rule.afterFreeze === 'refill' ? 'refilled' : 'eliminated'}`
+    case 'eliminate':
+      return 'Eliminated'
   }
 }
 
@@ -96,7 +98,7 @@ export type ResultRow = {
   result: RuleResult
 }
 
-/** Each rule beside its result, in stack order. */
+/** Each rule but eliminations beside its result, in stack order. */
 export function scenarioResultRows(
   rules: Rule[],
   result: ScenarioResult,
@@ -105,7 +107,7 @@ export function scenarioResultRows(
 ): ResultRow[] {
   return rules.flatMap((rule, index) => {
     const ruleResult = result.rules[index]
-    return ruleResult
+    return ruleResult && rule.kind !== 'eliminate'
       ? [
           {
             key: `${index} ${rule.kind}`,

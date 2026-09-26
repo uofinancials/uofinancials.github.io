@@ -80,6 +80,7 @@ function useScenarioResult(
         egShares: shares,
         history,
         fiscalYears: projection.fiscalYears,
+        eliminationBudget: null,
       }),
     [census, censusFiscalYear, rules, rates, shares, history, projection],
   )
@@ -99,7 +100,7 @@ export function useScenario() {
   const search = useSearch({ from: '/scenarios' })
   const data = useScenarioData()
   const { rules, dropped } = useMemo(
-    () => parseRules(search.rules ?? []),
+    () => parseRules(search.rules ?? [], new Set()),
     [search.rules],
   )
   const computedRules = useDeferredValue(rules)

@@ -49,6 +49,7 @@ function ResultCells({
   historyStatus: HistoryStatus
 }) {
   if (result.kind === 'census') return <SavingsCells savings={result.savings} />
+  if (result.kind === 'eliminate') return null
   const [first] = result.byYear
   if (historyStatus !== 'ready' || !first) {
     return (

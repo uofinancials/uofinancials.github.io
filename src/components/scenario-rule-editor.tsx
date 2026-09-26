@@ -151,12 +151,14 @@ export function ScenarioRuleEditor({
       <div className="flex flex-wrap gap-4">
         <AmountFields rule={rule} onChange={onChange} />
       </div>
-      <ScenarioScopeFields
-        scope={rule.scope}
-        areas={areas}
-        positions={positions}
-        onChange={(scope) => onChange({ ...rule, scope })}
-      />
+      {rule.kind !== 'eliminate' && (
+        <ScenarioScopeFields
+          scope={rule.scope}
+          areas={areas}
+          positions={positions}
+          onChange={(scope) => onChange({ ...rule, scope })}
+        />
+      )}
       <div className="flex flex-wrap gap-2">
         <RuleButton
           label={`Move ${name} up`}

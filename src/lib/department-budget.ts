@@ -26,7 +26,10 @@ export type DepartmentBudget = {
 }
 
 /** The level-5 units a code covers in one year: itself, or an area's units. */
-function unitsOf(code: string, orgs: BudgetYear['orgs']): Set<string> | null {
+export function unitsOf(
+  code: string,
+  orgs: BudgetYear['orgs'],
+): Set<string> | null {
   const org = orgs[code]
   if (!org) return null
   if (org.level !== ORG_LEVEL_AREA) return new Set([code])
