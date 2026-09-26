@@ -1,4 +1,4 @@
-import type { CitedSource } from '../data/cited-source.ts'
+import { type CitedSource, sourceKey } from '../data/cited-source.ts'
 import type { FallRecord } from '../data/fall.ts'
 import type { AcrossTheBoardTerm, PoolTerm, RaiseTerm } from '../data/raises.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
@@ -101,7 +101,7 @@ export function raiseRates(
 export function raiseSources(rates: RaiseRate[]): CitedSource[] {
   const sources = new Map<string, CitedSource>()
   for (const source of rates.flatMap((rate) => rate.sources)) {
-    sources.set(`${source.url} ${source.location}`, source)
+    sources.set(sourceKey(source), source)
   }
   return [...sources.values()]
 }
@@ -136,7 +136,7 @@ function firstRaiseOf(
     ) ?? PROJECTED_RAISE_BASIS_POINTS
 }
 
-/** Each projected year's pay over a job's census pay: its first-year raise, then 3% a year, scaled by `BASIS` to the power of the year; jobs with the same first-year raise share one path. */
+/** Each projected year's pay over a job's census pay: its first-year raise, then 3% a year, scaled by `BASIS` to the power of the year; it returns the same array for every job with the same first-year raise, which callers group by. */
 export function payGrowthOf(
   census: DepartmentCensus,
   raiseRates: RaiseRate[],

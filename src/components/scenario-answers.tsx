@@ -3,7 +3,7 @@ import { CitedLine } from '@/components/cited-line'
 import { PageSection } from '@/components/page-section'
 import { SourceCitation } from '@/components/source-citation'
 import { fiscalYearLabel } from '@/data/budget'
-import type { CitedSource } from '@/data/cited-source'
+import { type CitedSource, sourceKey } from '@/data/cited-source'
 import type { Projection } from '@/data/outlook'
 import { EG_SHARE_METHOD } from '@/lib/eg-share'
 import { formatDollars, formatShare } from '@/lib/format'
@@ -91,7 +91,7 @@ export function ScenarioAnswers({
         <SourceCitation source={{ kind: 'rates' }} />
         <CitedLine source={projection.source} />
         {raiseSources.map((source) => (
-          <CitedLine key={`${source.url} ${source.location}`} source={source} />
+          <CitedLine key={sourceKey(source)} source={source} />
         ))}
       </div>
     </PageSection>

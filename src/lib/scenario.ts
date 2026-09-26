@@ -15,10 +15,9 @@ import {
 import {
   addCost,
   BASIS,
-  BASIS_BIG,
   costOf,
-  divideHalfUp,
   emptySavings,
+  growCents,
   type Job,
   latestLeaveYear,
   type Rates,
@@ -116,11 +115,13 @@ function rateAfter(rule: CensusRule, rateCents: number): number | null {
   }
 }
 
+/** Applies one census rule, adding each changed job's E&G saving to `savedEg`. */
 function applyRule(
   rule: CensusRule,
   jobs: Job[],
   inScope: Set<FallRecord>,
   rates: Rates,
+  savedEg: Map<Job, number>,
 ): Savings {
   const savings = emptySavings(rates)
   for (const job of jobs) {
@@ -130,9 +131,11 @@ function applyRule(
     const before = costOf(job, rates)
     if (rateCents === null) job.isRemoved = true
     else job.rateCents = rateCents
+    const after = costOf(job, rates)
     addCost(savings, before, 1)
-    addCost(savings, costOf(job, rates), -1)
+    addCost(savings, after, -1)
     savings.jobs += 1
+    savedEg.set(job, (savedEg.get(job) ?? 0) + before.egCents - after.egCents)
   }
   return savings
 }
@@ -141,6 +144,11 @@ function isCensusRule(rule: Rule): rule is CensusRule {
   return (
     rule.kind === 'threshold' || rule.kind === 'remove' || rule.kind === 'cut'
   )
+}
+
+/** Whether a rule's savings grow by the first-year raise rates: every rule but an elimination, which grows from its budget lines. */
+export function usesRaiseRates(rule: Rule): boolean {
+  return isCensusRule(rule) || rule.kind === 'freeze' || rule.kind === 'raises'
 }
 
 function takeNext<T>(results: T[]): T {
@@ -173,29 +181,21 @@ function sumSavings(parts: Savings[], rates: Rates): Savings {
   return total
 }
 
-/** The E&G each job's census rules saved, grown to each projected year's pay. */
-function censusEgByYear(options: {
-  jobs: Job[]
-  egBefore: number[]
-  rates: Rates
-  payGrowthOf: (record: FallRecord) => bigint[]
-  projectedYears: number
-}): number[] {
-  const { jobs, projectedYears } = options
-  const savedByPath = new Map<bigint[], bigint>()
-  jobs.forEach((job, index) => {
-    const saved =
-      (options.egBefore[index] ?? 0) - costOf(job, options.rates).egCents
-    if (saved === 0) return
-    const path = options.payGrowthOf(job.record)
-    savedByPath.set(path, (savedByPath.get(path) ?? 0n) + BigInt(saved))
-  })
+/** Each job's E&G saving grown to each projected year's pay, summed per growth path and rounded once per path and year. */
+function censusEgByYear(
+  savedEg: Map<Job, number>,
+  payGrowthOf: (record: FallRecord) => bigint[],
+  projectedYears: number,
+): number[] {
+  const savedByPath = new Map<bigint[], number>()
+  for (const [job, saved] of savedEg) {
+    const path = payGrowthOf(job.record)
+    savedByPath.set(path, (savedByPath.get(path) ?? 0) + saved)
+  }
   const years = Array.from({ length: projectedYears }, () => 0)
   for (const [path, saved] of savedByPath) {
     path.forEach((product, index) => {
-      years[index] =
-        (years[index] ?? 0) +
-        Number(divideHalfUp(saved * product, BASIS_BIG ** BigInt(index + 1)))
+      years[index] = (years[index] ?? 0) + growCents(saved, product, index + 1)
     })
   }
   return years
@@ -208,21 +208,21 @@ function applyCensusRules(
   rates: Rates,
   payGrowthOf: (record: FallRecord) => bigint[],
 ): { results: Savings[]; egByYear: number[] } {
-  const egBefore = jobs.map((job) => costOf(job, rates).egCents)
+  const savedEg = new Map<Job, number>()
   const results = options.rules
     .filter(isCensusRule)
     .map((rule) =>
-      applyRule(rule, jobs, scopeJobs(options.census, rule.scope), rates),
+      applyRule(
+        rule,
+        jobs,
+        scopeJobs(options.census, rule.scope),
+        rates,
+        savedEg,
+      ),
     )
   return {
     results,
-    egByYear: censusEgByYear({
-      jobs,
-      egBefore,
-      rates,
-      payGrowthOf,
-      projectedYears: options.projectedYears,
-    }),
+    egByYear: censusEgByYear(savedEg, payGrowthOf, options.projectedYears),
   }
 }
 

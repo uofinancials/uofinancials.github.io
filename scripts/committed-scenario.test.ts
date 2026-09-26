@@ -22,7 +22,13 @@ import {
   type ScenarioResult,
 } from '../src/lib/scenario.ts'
 import { freezeHistoryCensuses } from '../src/lib/scenario-freeze.ts'
-import { costOf, type Job, ratesFor, toJobs } from '../src/lib/scenario-jobs.ts'
+import {
+  costOf,
+  type Job,
+  PROJECTED_RAISE_BASIS_POINTS,
+  ratesFor,
+  toJobs,
+} from '../src/lib/scenario-jobs.ts'
 import {
   baselines,
   outlookRows,
@@ -82,7 +88,7 @@ const FY27_RATES = ratesFor(RATES, 2027)
 /** A Fall 2025 job's FY27 raise, read straight from its raise row. */
 function firstRaiseOf(job: Job): number {
   const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
-  return RATE_OF_ROW.get(row) ?? 300
+  return RATE_OF_ROW.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
 }
 
 function opeGroupCounts(year: number): Record<string, number> {

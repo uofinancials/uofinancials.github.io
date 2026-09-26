@@ -8,6 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
+import { sourceKey } from '@/data/cited-source'
 import type { RaiseRate } from '@/lib/scenario'
 import { toPercent } from '@/lib/scenario-search'
 
@@ -20,7 +21,7 @@ function Sources({ rate }: { rate: RaiseRate }) {
   return (
     <>
       {rate.sources.map((source) => (
-        <span key={`${source.url} ${source.location}`} className="block">
+        <span key={sourceKey(source)} className="block">
           <CitedSourceText source={source} />
         </span>
       ))}

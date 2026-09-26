@@ -13,7 +13,7 @@ import { fiscalYearLabel } from '@/data/budget'
 import { EG_SHARE_METHOD } from '@/lib/eg-share'
 import { formatCount, formatDollars } from '@/lib/format'
 import { OPE_GROUP_METHOD } from '@/lib/ope-groups'
-import { SCENARIO_METHOD } from '@/lib/scenario'
+import { SCENARIO_METHOD, usesRaiseRates } from '@/lib/scenario'
 import { ELIMINATE_METHOD } from '@/lib/scenario-eliminate'
 import { SCENARIO_EXAMPLES } from '@/lib/scenario-examples'
 import { FREEZE_METHOD } from '@/lib/scenario-freeze'
@@ -128,9 +128,7 @@ function SavingsSection({
   scenario: ReturnType<typeof useScenario>
 }) {
   const { result, resultRows, eliminations, history, firstYear } = scenario
-  const usesRaiseRates = scenario.computedRules.some(
-    (rule) => rule.kind !== 'eliminate',
-  )
+  const hasRaiseRates = scenario.computedRules.some(usesRaiseRates)
   return (
     <PageSection title="Savings by rule">
       {resultRows.length > 0 && (
@@ -141,7 +139,7 @@ function SavingsSection({
           historyStatus={history.status}
         />
       )}
-      {usesRaiseRates && (
+      {hasRaiseRates && (
         <ScenarioRaiseRatesTable
           rates={scenario.raiseRates}
           firstYear={firstYear}

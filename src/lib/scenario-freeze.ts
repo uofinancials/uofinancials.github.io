@@ -11,10 +11,9 @@ import {
 import {
   addCost,
   BASIS,
-  BASIS_BIG,
   costOf,
-  divideHalfUp,
   emptySavings,
+  growCents,
   type Job,
   type JobCost,
   type Rates,
@@ -107,15 +106,18 @@ export function freezeShare(
   return Math.round(BASIS * (1 - (1 - rateBasisPoints / BASIS) ** heldYears))
 }
 
-function scaleCost(cost: JobCost, shareBasisPoints: number): JobCost {
-  const scale = (cents: number) =>
-    Math.round((cents * shareBasisPoints) / BASIS)
+function mapCost(cost: JobCost, map: (cents: number) => number): JobCost {
   return {
-    salaryCents: scale(cost.salaryCents),
-    fullCostCents:
-      cost.fullCostCents === null ? null : scale(cost.fullCostCents),
-    egCents: scale(cost.egCents),
+    salaryCents: map(cost.salaryCents),
+    fullCostCents: cost.fullCostCents === null ? null : map(cost.fullCostCents),
+    egCents: map(cost.egCents),
   }
+}
+
+function scaleCost(cost: JobCost, shareBasisPoints: number): JobCost {
+  return mapCost(cost, (cents) =>
+    Math.round((cents * shareBasisPoints) / BASIS),
+  )
 }
 
 function subtractCost(cost: JobCost, part: JobCost): JobCost {
@@ -126,19 +128,6 @@ function subtractCost(cost: JobCost, part: JobCost): JobCost {
         ? null
         : cost.fullCostCents - part.fullCostCents,
     egCents: cost.egCents - part.egCents,
-  }
-}
-
-/** A cost grown by `product`, the growth `years` years out scaled by `BASIS` to that power. */
-function growCost(cost: JobCost, product: bigint, years: number): JobCost {
-  const divisor = BASIS_BIG ** BigInt(years)
-  const grow = (cents: number) =>
-    Number(divideHalfUp(BigInt(cents) * product, divisor))
-  return {
-    salaryCents: grow(cost.salaryCents),
-    fullCostCents:
-      cost.fullCostCents === null ? null : grow(cost.fullCostCents),
-    egCents: grow(cost.egCents),
   }
 }
 
@@ -197,7 +186,9 @@ export function freezeSavings(options: {
     saveJob(
       options
         .payGrowthOf(job.record)
-        .map((product, index) => growCost(cost, product, index + 1)),
+        .map((product, index) =>
+          mapCost(cost, (cents) => growCents(cents, product, index + 1)),
+        ),
       covering,
     )
   }

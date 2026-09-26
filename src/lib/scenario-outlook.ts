@@ -10,7 +10,7 @@ import type { DepartmentCensus } from './department-jobs.ts'
 import { type Rule, runScenario, type ScenarioResult } from './scenario.ts'
 import {
   BASIS_BIG,
-  divideHalfUp,
+  growCents,
   PROJECTED_RAISE_BASIS_POINTS,
 } from './scenario-jobs.ts'
 import type { RaiseRate } from './scenario-raises.ts'
@@ -43,10 +43,11 @@ export const SCENARIO_OUTLOOK_METHOD =
   "Savings against the projection are this site's estimate. Each year's E&G savings start in full in the first fiscal year after the census, in that year's pay: each job's pay rises by its raise group's contract raise for that year, as the raise freeze counts it, then 3% a year, the projection's own raise assumption for later years; freeze savings follow the freeze year by year. Elimination savings start at their budget year's lines and grow at the same 3% from that year, services and supplies included. Savings use that first year's OPE rates, are gross, and count no revenue lost. The remaining gap is the projected run rate plus savings, and the remaining fund balance is the projected balance plus every year's savings so far. The projection may already count the hiring freeze announced in May 2026; its materials do not say."
 
 function grow(cents: number, years: number): number {
-  const numerator =
-    BigInt(cents) *
-    (BASIS_BIG + BigInt(PROJECTED_RAISE_BASIS_POINTS)) ** BigInt(years)
-  return Number(divideHalfUp(numerator, BASIS_BIG ** BigInt(years)))
+  return growCents(
+    cents,
+    (BASIS_BIG + BigInt(PROJECTED_RAISE_BASIS_POINTS)) ** BigInt(years),
+    years,
+  )
 }
 
 /** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year, and every other rule is already in each year's pay. */
@@ -59,14 +60,14 @@ export function yearlySavings(
     ? Math.max(0, options.firstFiscalYear - eliminated.fiscalYear)
     : 0
   return Array.from({ length: options.years }, (_, index) => {
-    const freezeCents = result.rules.reduce(
+    const byYearCents = result.rules.reduce(
       (sum, rule) =>
         'byYear' in rule ? sum + (rule.byYear[index]?.egCents ?? 0) : sum,
       0,
     )
     return (
       (result.censusEgByYear[index] ?? 0) +
-      freezeCents +
+      byYearCents +
       grow(eliminated?.egCents ?? 0, eliminatedFrom + index)
     )
   })
