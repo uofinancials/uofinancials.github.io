@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-/** A page section under its `h2` heading. */
 export function PageSection({
   title,
   children,

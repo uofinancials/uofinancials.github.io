@@ -39,7 +39,6 @@ function PercentField({
   )
 }
 
-/** The fields for what a rule does, by its kind. */
 function AmountFields({
   rule,
   onChange,

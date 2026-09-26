@@ -26,7 +26,6 @@ export const STAFF_KIND_OPTIONS: [string, string][] = [
   ['unclassified', 'Unclassified'],
 ]
 
-/** The term select's options: `all` for both terms, then each term. */
 export const TERM_OPTIONS: [string, string][] = [
   ['all', '9 and 12 months'],
   ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),

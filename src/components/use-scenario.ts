@@ -64,7 +64,6 @@ function useScenarioData() {
 
 type ScenarioData = ReturnType<typeof useScenarioData>
 
-/** The engine's result over the rules, and each rule's row in the savings table. */
 function useScenarioResult(
   data: ScenarioData,
   rules: Rule[],

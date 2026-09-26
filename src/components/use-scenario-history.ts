@@ -16,7 +16,6 @@ export type ScenarioHistory =
 
 const NO_HISTORY: [] = []
 
-/** The queries' data in order, with whether any is still loading or failed. */
 function combineResults<T>(results: QueryObserverResult<T>[]) {
   return {
     data: results.flatMap((result) =>
