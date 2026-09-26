@@ -28,5 +28,5 @@ Pushing to `main` deploys to GitHub Pages.
 
 The code is under the [MIT License](LICENSE). The data under `public/data/` is
 dedicated to the public domain under [CC0 1.0](public/data/LICENSE). If you
-reuse the data, please cite the University of Oregon source reports it was
-extracted from; the site's Sources page lists each one with its retrieval date.
+reuse the data, please cite the source documents it was extracted from; the
+site's Sources page lists each one with its retrieval date.
