@@ -82,8 +82,8 @@ flowchart LR
   raise rates tables, savings total, and outlook section, the home page's
   scenario answers, area breakdown, and top-paid table, and the hooks and query
   that load one census's placed jobs, the people list's matching jobs, the pay
-  changes of a Trends view, the name index, a scenario and its result, and the
-  censuses a hiring freeze reads.
+  changes of a Trends view, the name index, a scenario and its result, the
+  censuses joined to their budget years, and the censuses a hiring freeze reads.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -157,7 +157,8 @@ flowchart LR
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
 - `e2e/departments.spec.ts` - the departments table's sorting, levels, and
-  filters, a unit's and an area's pages, the scenario link, and narrow layout.
+  filters, a unit's and an area's pages, the scenario and pay changes links, and
+  narrow layout.
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, and
   sources.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
@@ -179,10 +180,11 @@ flowchart LR
   every Fall census, or for continuing jobs in each pair of consecutive censuses
   the median change in salary rate, the counts of changed class, rank, and
   title, and one pair's distribution of changes and median change by raise group
-  beside its across-the-board terms; filtered by pay department or class or
-  rank, with the view held in the URL; driven by `src/lib` groups, trends,
-  person links, pay changes, and the raise comparison over every Fall year and
-  the raise terms.
+  beside its across-the-board terms; filtered by pay department, college or VP
+  area, or class or rank, with the view held in the URL; driven by `src/lib`
+  groups, trends, person links, pay changes, and the raise comparison over every
+  Fall year and the raise terms, and the department modules over every budget
+  year when filtered by area.
 - `/departments` - a sortable table of the colleges and VP areas in the latest
   census's budget year, or of their units and pay departments, with budget,
   jobs, spend, and median and each one's change from the year before, filtered
