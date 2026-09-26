@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { ANY_SCOPE } from '@/lib/scenario'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { acrossTheBoardTerm } from '@/test/raise-terms'
 import {
   AREA,
   budgetRow,
@@ -12,6 +13,7 @@ import {
 import { toDepartmentCensus } from './department-jobs'
 import { egShares } from './eg-share'
 import { type Rule, runScenario, type ScenarioScope } from './scenario'
+import { raiseRates } from './scenario-raises'
 
 const PAY = { code: UNIT, name: 'CAS Biology' }
 const CLASSIFIED: ScenarioScope = { ...ANY_SCOPE, kind: 'classified' }
@@ -189,4 +191,33 @@ test('full cost is exact past 2^53 and rounds half up to the cent', () => {
   // 123,456,789 x 8,933 x 17,740 = 19,564,372,661,470,380, over 10^8.
   expect(base.fullCostCents).toBe(195_643_727)
   expect(base.egCents).toBe(0)
+})
+
+test("census rules save each job's pay grown by its raise row's first-year rate, then 3% a year", () => {
+  const options = {
+    census: CENSUS,
+    rules: [{ kind: 'remove' as const, scope: ANY_SCOPE }],
+    rates: RATES,
+    egShares: SHARES,
+    opeFiscalYear: 2026,
+    history: [],
+    projectedYears: 2,
+    eliminationBudget: BUDGET,
+  }
+  const seiuAtFive = runScenario({
+    ...options,
+    raiseRates: raiseRates(
+      [acrossTheBoardTerm('SEIU 503', 500, '2026-11-01')],
+      2027,
+    ),
+  })
+  // E&G at 50%: the two instructors 15,300,000 + 7,425,000 at 3%, the SEIU job 4,275,000 at 5%.
+  // Year 1: 22,725,000 x 1.03 + 4,275,000 x 1.05 = 23,406,750 + 4,488,750.
+  // Year 2: 22,725,000 x 1.0609 + 4,275,000 x 1.0815 = 24,108,952.5 + 4,623,412.5, each rounded up.
+  expect(seiuAtFive.censusEgByYear).toEqual([27_895_500, 28_732_366])
+  expect(seiuAtFive.total.egCents).toBe(27_000_000)
+  // With no terms every row is 3%: 27,000,000 x 1.03 and x 1.0609.
+  expect(runScenario({ ...options, raiseRates: [] }).censusEgByYear).toEqual([
+    27_810_000, 28_644_300,
+  ])
 })

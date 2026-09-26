@@ -24,18 +24,19 @@ const RESULT: ScenarioResult = {
     {
       kind: 'freeze',
       rateBasisPoints: 0,
-      byYear: [savings(100), savings(200)],
+      byYear: [savings(100), savings(206)],
     },
   ],
   total: savings(500),
+  censusEgByYear: [500, 515],
   eliminated: null,
   temporaries: 0,
   opeFiscalYear: 2027,
   leaveFiscalYear: 2027,
 }
 
-test('savings start in the first year after the census and grow 3% a year, freezes by their own year', () => {
-  // FY27: 500 + 100; FY28: (500 + 200) x 1.03 = 721.
+test("census rules and freezes count in each year's pay", () => {
+  // FY27: 500 + 100; FY28: 515 + 206 = 721.
   expect(yearlySavings(RESULT, { years: 2, firstFiscalYear: 2027 })).toEqual([
     600, 721,
   ])

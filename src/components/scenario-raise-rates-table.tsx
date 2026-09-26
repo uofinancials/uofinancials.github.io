@@ -8,6 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
+import { sourceKey } from '@/data/cited-source'
 import type { RaiseRate } from '@/lib/scenario'
 import { toPercent } from '@/lib/scenario-search'
 
@@ -20,7 +21,7 @@ function Sources({ rate }: { rate: RaiseRate }) {
   return (
     <>
       {rate.sources.map((source) => (
-        <span key={`${source.url} ${source.location}`} className="block">
+        <span key={sourceKey(source)} className="block">
           <CitedSourceText source={source} />
         </span>
       ))}
@@ -28,7 +29,7 @@ function Sources({ rate }: { rate: RaiseRate }) {
   )
 }
 
-/** The raise each raise group would get in the first savings year, which a raise freeze forgoes, with its sources. */
+/** The raise each raise group would get in the first savings year, which savings grow by and a raise freeze forgoes, with its sources. */
 export function ScenarioRaiseRatesTable({
   rates,
   firstYear,
@@ -39,14 +40,13 @@ export function ScenarioRaiseRatesTable({
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
-        A raise freeze forgoes the raises the projection spends: in{' '}
-        {fiscalYearLabel(firstYear)}, each raise group's cited terms, or 3%
-        where none is published.
+        Savings count the raises the projection spends, and a raise freeze
+        forgoes them: in {fiscalYearLabel(firstYear)}, each raise group's cited
+        terms, or 3% where none is published.
       </p>
       <Table>
         <caption className="sr-only">
-          Raise rates a raise freeze forgoes in {fiscalYearLabel(firstYear)}, by
-          raise group
+          Raise rates in {fiscalYearLabel(firstYear)}, by raise group
         </caption>
         <TableHeader>
           <TableRow>

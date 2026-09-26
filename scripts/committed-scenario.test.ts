@@ -22,7 +22,13 @@ import {
   type ScenarioResult,
 } from '../src/lib/scenario.ts'
 import { freezeHistoryCensuses } from '../src/lib/scenario-freeze.ts'
-import { costOf, ratesFor, toJobs } from '../src/lib/scenario-jobs.ts'
+import {
+  costOf,
+  type Job,
+  PROJECTED_RAISE_BASIS_POINTS,
+  ratesFor,
+  toJobs,
+} from '../src/lib/scenario-jobs.ts'
 import {
   baselines,
   outlookRows,
@@ -57,6 +63,9 @@ const RAISE_RATES = raiseRates(
   raiseTermsSchema.parse(readJson(RAISES_DATA_PATH)).terms,
   2027,
 )
+const RATE_OF_ROW = new Map(
+  RAISE_RATES.map(({ row, basisPoints }) => [row, basisPoints]),
+)
 const [PROJECTION] = outlookSchema.parse(
   readJson(path.join(DATA_DIR, 'outlook.json')),
 ).projections
@@ -74,6 +83,13 @@ const FY26 = BUDGETS.find(
 )
 if (!FY26) throw new Error('The budget Fall 2025 is joined to is not loaded')
 const SHARES_2025 = egShares(FALL_2025, FY26)
+const FY27_RATES = ratesFor(RATES, 2027)
+
+/** A Fall 2025 job's FY27 raise, read straight from its raise row. */
+function firstRaiseOf(job: Job): number {
+  const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
+  return RATE_OF_ROW.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
+}
 
 function opeGroupCounts(year: number): Record<string, number> {
   const census = HISTORY.find((listed) => listed.year === year)
@@ -257,7 +273,7 @@ test('question 7: executives -10% saves $1.3M of E&G; then everyone -2% saves $9
   ])
 })
 
-test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 positions empty and saves $9.1M of E&G in FY27', () => {
+test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 positions empty and saves $9.3M of E&G in FY27', () => {
   const { result, rows } = runFall2025([
     {
       kind: 'freeze',
@@ -270,39 +286,70 @@ test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 pos
   if (freeze?.kind !== 'freeze') throw new Error('The rule is a freeze')
   expect(result.opeFiscalYear).toBe(2027)
   expect(freeze.rateBasisPoints).toBe(1_033)
+  // 10.33% of each classified job's E&G cost, in FY27 pay at its raise row's rate.
+  const classified = toJobs(FALL_2025, SHARES_2025).filter(
+    (job) => job.record.kind === 'classified',
+  )
+  const directCents = classified.reduce((sum, job) => {
+    const { egCents } = costOf(job, FY27_RATES)
+    const fy27Cents = (egCents * (10_000 + firstRaiseOf(job))) / 10_000
+    return sum + (fy27Cents * 1_033) / 10_000
+  }, 0)
+  expect(Math.abs((freeze.byYear[0]?.egCents ?? 0) - directCents)).toBeLessThan(
+    classified.length,
+  )
   expect(freeze.byYear.map(({ jobs, egCents }) => [jobs, egCents])).toEqual([
-    [189, 907_357_500],
+    [189, 934_578_209],
     [0, 0],
     [0, 0],
     [0, 0],
     [0, 0],
   ])
   expect(rows.map((row) => row.savingsCents)).toEqual([
-    0, 907_357_500, 0, 0, 0, 0,
+    0, 934_578_209, 0, 0, 0, 0,
   ])
 })
 
 test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn FY27 to a surplus, and the balance still runs out in FY30', () => {
-  const { rows } = runFall2025([
+  const overCents = 15_000_000
+  const { result, rows } = runFall2025([
     { kind: 'freeze', scope: ALL, years: 1, afterFreeze: 'refill' },
-    {
-      kind: 'threshold',
-      scope: ALL,
-      overCents: 15_000_000,
-      cutBasisPoints: 500,
-    },
+    { kind: 'threshold', scope: ALL, overCents, cutBasisPoints: 500 },
   ])
+  const [freeze] = result.rules
+  if (freeze?.kind !== 'freeze') throw new Error('The rule is a freeze')
+  // Each job over $150,000 keeps 95% of the part above it; its E&G saving takes the job's FY27 raise.
+  const cut = toJobs(FALL_2025, SHARES_2025).filter(
+    (job) => job.rateCents > overCents,
+  )
+  const directCents = cut.reduce((sum, job) => {
+    const kept = {
+      ...job,
+      rateCents:
+        overCents + Math.round(((job.rateCents - overCents) * 9_500) / 10_000),
+    }
+    const savedCents =
+      costOf(job, FY27_RATES).egCents - costOf(kept, FY27_RATES).egCents
+    return (
+      sum + Math.round((savedCents * (10_000 + firstRaiseOf(job))) / 10_000)
+    )
+  }, 0)
+  const [censusCents = 0] = result.censusEgByYear
+  expect(Math.abs(censusCents - directCents)).toBeLessThan(cut.length)
+  expect(rows[1]?.savingsCents).toBe(
+    censusCents + (freeze.byYear[0]?.egCents ?? 0),
+  )
   expect(rows.map((row) => row.savingsCents)).toEqual([
-    0, 4_742_365_500, 158_729_392, 163_491_274, 168_396_012, 173_447_893,
+    0, 4_929_758_927, 165_387_739, 170_349_372, 175_459_853, 180_723_650,
   ])
   expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
-    448_500_000, 2_465_306_200, -4_165_992_508, -5_515_958_026, -6_786_806_888,
-    -7_140_938_907,
+    448_500_000, 2_652_699_627, -4_159_334_161, -5_509_099_928, -6_779_743_047,
+    -7_133_663_150,
   ])
   expect(
     rows.find((row) => row.remainingFundBalanceCents < 0)?.fiscalYear,
   ).toBe(2030)
-  expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_729_034_329)
+  expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_513_784_859)
 })
 
 test('question 13: the same stack against state funding $20M below projection leaves the balance negative from FY30', () => {
@@ -317,12 +364,12 @@ test('question 13: the same stack against state funding $20M below projection le
   ]
   const { rows } = runFall2025(stack, STATE_FUNDING_BELOW)
   expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
-    448_500_000, 2_465_306_200, -6_165_992_508, -7_625_958_026, -8_981_206_888,
-    -9_423_114_907,
+    448_500_000, 2_652_699_627, -6_159_334_161, -7_619_099_928, -8_974_143_047,
+    -9_415_839_150,
   ])
   expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
-    12_415_355_700, 14_880_662_000, 8_714_669_492, 1_088_711_466,
-    -7_892_495_422, -17_315_610_329,
+    12_415_355_700, 15_068_055_427, 8_908_721_266, 1_289_621_338,
+    -7_684_521_709, -17_100_360_859,
   ])
   expect(rows.every((row) => row.remainingWeeks === null)).toBe(true)
 })
@@ -410,14 +457,9 @@ test("question 17: a one-year raise freeze saves $18.1M of E&G in FY27, each job
   ])
   const [freeze] = result.rules
   if (freeze?.kind !== 'raises') throw new Error('No raise freeze result')
-  const rateOf = new Map(
-    RAISE_RATES.map(({ row, basisPoints }) => [row, basisPoints]),
-  )
-  const yearRates = ratesFor(RATES, 2027)
   const directCents = toJobs(FALL_2025, SHARES_2025).reduce((sum, job) => {
-    const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
-    const { egCents } = costOf(job, yearRates)
-    return sum + Math.round((egCents * (rateOf.get(row) ?? 300)) / 10_000)
+    const { egCents } = costOf(job, FY27_RATES)
+    return sum + Math.round((egCents * firstRaiseOf(job)) / 10_000)
   }, 0)
   expect(freeze.byYear[0]?.egCents).toBe(directCents)
   const years = [

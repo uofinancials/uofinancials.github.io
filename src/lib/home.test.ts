@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import type { Manifest } from '@/data/manifest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { acrossTheBoardTerm } from '@/test/raise-terms'
 import {
   AREA,
   budgetRow,
@@ -21,6 +22,7 @@ import {
   topPaidJobs,
 } from './home'
 import { UNASSIGNED_AREA } from './overview'
+import { raiseRates } from './scenario-raises'
 
 const TEMP = classifiedJob({
   name: 'Temp, Tia',
@@ -94,11 +96,16 @@ test("each example's first-year E&G savings is set against that year's shortfall
     },
     projection: {
       ...TEST_PROJECTION,
-      runRateCents: [100, -15_300_000, -20_000_000],
+      runRateCents: [100, -16_065_000, -20_000_000],
     },
     censusFiscalYear: 2026,
+    raiseRates: raiseRates(
+      [acrossTheBoardTerm('United Academics', 500, '2026-09-01')],
+      2027,
+    ),
   })
-  // 10% of the 10,000,000 over $200,000, and all 5,000,000 over $250,000, each x 0.9 (leave) x 1.7 (OPE).
+  // 10% of the 10,000,000 over $200,000, and all 5,000,000 over $250,000, each x 0.9 (leave) x 1.7 (OPE),
+  // then x 1.05, the career instructor's FY27 raise: 1,530,000 and 7,650,000 become 1,606,500 and 8,032,500.
   expect(
     answers.map(({ fiscalYear, savingsCents, gapShare }) => ({
       fiscalYear,
@@ -106,8 +113,8 @@ test("each example's first-year E&G savings is set against that year's shortfall
       gapShare,
     })),
   ).toEqual([
-    { fiscalYear: 2027, savingsCents: 1_530_000, gapShare: 0.1 },
-    { fiscalYear: 2027, savingsCents: 7_650_000, gapShare: 0.5 },
+    { fiscalYear: 2027, savingsCents: 1_606_500, gapShare: 0.1 },
+    { fiscalYear: 2027, savingsCents: 8_032_500, gapShare: 0.5 },
   ])
 })
 

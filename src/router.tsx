@@ -73,6 +73,7 @@ const homeRoute = createRoute({
       loadCensus(),
       queryClient.ensureQueryData(outlookQuery),
       queryClient.ensureQueryData(opeRatesQuery),
+      queryClient.ensureQueryData(raiseTermsQuery),
     ])
     return { year: census.year, fiscalYear, censusDate: census.censusDate }
   },

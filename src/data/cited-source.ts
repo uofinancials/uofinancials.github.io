@@ -9,3 +9,10 @@ export const citedSourceSchema = z.strictObject({
 })
 
 export type CitedSource = z.infer<typeof citedSourceSchema>
+
+/** One key per cited place: the document's URL and the location in it. */
+export function sourceKey(
+  source: Pick<CitedSource, 'url' | 'location'>,
+): string {
+  return `${source.url} ${source.location}`
+}

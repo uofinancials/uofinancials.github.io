@@ -1,4 +1,4 @@
-import type { CitedSource } from '../data/cited-source.ts'
+import { type CitedSource, sourceKey } from '../data/cited-source.ts'
 import type { FallRecord } from '../data/fall.ts'
 import type { AcrossTheBoardTerm, PoolTerm, RaiseTerm } from '../data/raises.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
@@ -97,6 +97,15 @@ export function raiseRates(
   })
 }
 
+/** The sources cited by any rate, each once. */
+export function raiseSources(rates: RaiseRate[]): CitedSource[] {
+  const sources = new Map<string, CitedSource>()
+  for (const source of rates.flatMap((rate) => rate.sources)) {
+    sources.set(sourceKey(source), source)
+  }
+  return [...sources.values()]
+}
+
 /** Each projected year's raise in basis points: the first year's rate, then 3%. */
 function schedule(firstBasisPoints: number, years: number): number[] {
   return Array.from({ length: years }, (_, index) =>
@@ -111,6 +120,36 @@ function growth(path: number[]): bigint[] {
     product *= BASIS_BIG + BigInt(basisPoints)
     return product
   })
+}
+
+/** A job's raise in the first savings year: its raise row's rate, or 3%. */
+function firstRaiseOf(
+  census: DepartmentCensus,
+  raiseRates: RaiseRate[],
+): (record: FallRecord) => number {
+  const rowRates = new Map(
+    raiseRates.map((rate) => [rate.row, rate.basisPoints]),
+  )
+  return (record) =>
+    rowRates.get(
+      raiseRowOf(record, census.year, trendGroupOf(record, census.year)),
+    ) ?? PROJECTED_RAISE_BASIS_POINTS
+}
+
+/** Each projected year's pay over a job's census pay: its first-year raise, then 3% a year, scaled by `BASIS` to the power of the year; it returns the same array for every job with the same first-year raise, which callers group by. */
+export function payGrowthOf(
+  census: DepartmentCensus,
+  raiseRates: RaiseRate[],
+  years: number,
+): (record: FallRecord) => bigint[] {
+  const firstRaise = firstRaiseOf(census, raiseRates)
+  const paths = new Map<number, bigint[]>()
+  return (record) => {
+    const first = firstRaise(record)
+    const path = paths.get(first) ?? growth(schedule(first, years))
+    paths.set(first, path)
+    return path
+  }
 }
 
 /**
@@ -222,20 +261,13 @@ export function raiseFreezeSavings(options: {
     { length: projectedYears },
     (_, index) => BASIS_BIG ** BigInt(index + 1),
   )
-  const rowRates = new Map(
-    options.raiseRates.map((rate) => [rate.row, rate.basisPoints]),
-  )
+  const firstRaise = firstRaiseOf(census, options.raiseRates)
   const removedByKey = new Map<string, bigint[][]>()
   for (const job of options.jobs) {
     if (job.isRemoved) continue
     const covering = trackers.filter(({ scope }) => scope.has(job.record))
     if (covering.length === 0) continue
-    const row = raiseRowOf(
-      job.record,
-      census.year,
-      trendGroupOf(job.record, census.year),
-    )
-    const first = rowRates.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
+    const first = firstRaise(job.record)
     const key = [
       first,
       ...covering.map((tracker) => trackers.indexOf(tracker)),

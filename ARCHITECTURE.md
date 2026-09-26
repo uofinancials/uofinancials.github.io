@@ -171,7 +171,7 @@ flowchart LR
   areas by a measure held in the URL, the highest published salary rates, and
   the data's dates, each linking to its page; driven by the `src/lib` home
   figures, department table, and scenarios over the latest Fall year, its budget
-  year, the outlook, the OPE rates, and the manifest.
+  year, the outlook, the OPE rates, the raise terms, and the manifest.
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
   every Fall census, or for continuing jobs in each pair of consecutive censuses
   the median change in salary rate, the counts of changed class, rank, and
@@ -208,13 +208,14 @@ flowchart LR
   over the outlook file.
 - `/scenarios` - rules stacked over the latest Fall census, edited in place,
   with each rule's jobs and salary, full cost, and E&G savings, each
-  elimination's budgeted pay, OPE, and S&S, the raise rates a raise freeze
-  forgoes with their sources, the savings set against the E&G projection or one
-  of its cases by fiscal year, example questions, the stated methods, and the
-  sources, with the rules and case held in the URL; driven by the `src/lib`
-  scenario modules over one Fall year, its budget year, the budget year of the
-  first savings year, the OPE rates, the raise terms, and the outlook file, and
-  every Fall year from 2019 when a hiring freeze is present.
+  elimination's budgeted pay, OPE, and S&S, the first savings year's raise rates
+  that savings grow by and a raise freeze forgoes, with their sources, the
+  savings set against the E&G projection or one of its cases by fiscal year,
+  example questions, the stated methods, and the sources, with the rules and
+  case held in the URL; driven by the `src/lib` scenario modules over one Fall
+  year, its budget year, the budget year of the first savings year, the OPE
+  rates, the raise terms, and the outlook file, and every Fall year from 2019
+  when a hiring freeze is present.
 - `/sources` - every source file in the manifest and every document the raise
   terms and the budget outlook cite, with retrieval dates, hashes, and counts;
   driven by `src/data` and `src/lib`.

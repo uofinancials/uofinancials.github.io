@@ -61,6 +61,17 @@ export function divideHalfUp(numerator: bigint, denominator: bigint): bigint {
   return (numerator * 2n + denominator) / (denominator * 2n)
 }
 
+/** Cents grown by `product`, a growth `years` years out scaled by `BASIS` to that power, rounded half up. */
+export function growCents(
+  cents: number,
+  product: bigint,
+  years: number,
+): number {
+  return Number(
+    divideHalfUp(BigInt(cents) * product, BASIS_BIG ** BigInt(years)),
+  )
+}
+
 function leaveKey(group: string, appliesTo: string | null): string {
   return `${group}|${appliesTo ?? ''}`
 }

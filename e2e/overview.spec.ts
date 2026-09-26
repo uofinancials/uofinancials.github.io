@@ -39,16 +39,17 @@ test('a scenario answer states its estimate and opens the same savings on the sc
   await page.goto('/')
   const main = page.getByRole('main')
   await expect(main).toContainText(
-    'About $1,387,199 of E&G savings in FY27, 6.1% of the projected FY27 shortfall.',
+    'About $1,442,675 of E&G savings in FY27, 6.3% of the projected FY27 shortfall.',
   )
   await expect(main).toContainText('not recommendations about any person')
   await page
     .getByRole('link', { name: 'What would 10% off pay above $200,000 save?' })
     .click()
   await expect(page).toHaveURL(/\/scenarios\?rules=/)
-  await expect(
-    page.getByRole('row', { name: /^1\. 10% off pay above/ }).getByRole('cell'),
-  ).toContainText(['$1,387,199'])
+  const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
+  await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
+    '$1,442,675',
+  )
 })
 
 test('the area preview switches measure in the link and links each area', async ({
