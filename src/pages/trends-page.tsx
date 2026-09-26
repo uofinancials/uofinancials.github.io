@@ -17,6 +17,7 @@ import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery } from '@/data/queries'
 import { SPEND_METHOD } from '@/lib/overview'
+import { peerKeyFor } from '@/lib/peer-group'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,
@@ -99,8 +100,16 @@ function useTrends() {
       })),
     [fallYears],
   )
-  const view = resolveTrendView(search, years)
-  const { kind, group, dept, position, from, to } = view
+  const resolved = resolveTrendView(search, years)
+  const position = useMemo(
+    () =>
+      resolved.position === null
+        ? null
+        : peerKeyFor(censuses, resolved.position),
+    [censuses, resolved.position],
+  )
+  const view = { ...resolved, position }
+  const { kind, group, dept, from, to } = view
   const isChange = view.metric === CHANGE_METRIC
   const trends = useMemo(
     () =>

@@ -1,6 +1,7 @@
 import { type FallRecord, isPrimaryJob, type StaffKind } from '../data/fall.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
+import { positionOf } from './peer-group.ts'
 import {
   emptyCounts,
   type GroupCounts,
@@ -95,13 +96,6 @@ export type JobFilter = {
   kind: StaffKind | 'all'
   term: Term | null
   position: string | null
-}
-
-/** A job's position class code if classified, or its rank if unclassified, as published. */
-export function positionOf(record: FallRecord): string | null {
-  return record.kind === 'classified'
-    ? (record.positionClass?.code ?? null)
-    : record.rank
 }
 
 /** How a position reads on the page: a class's title and code, or a rank. */

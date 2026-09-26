@@ -53,6 +53,10 @@ test('an opened group’s change lines are its categories, and a filter narrows 
   ).toBeVisible()
   await page.goto('/trends?dept=000000')
   await expect(page.getByRole('main')).toContainText('Pay department: 000000')
+  await page.goto('/trends?position=D9101')
+  await expect(page.getByRole('main')).toContainText(
+    /Class or rank: .+ \(class 9101\)/,
+  )
   await expect(page.getByRole('columnheader', { name: 'Faculty' })).toHaveCount(
     0,
   )
