@@ -2,6 +2,7 @@ import { useLoaderData, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { useCensusPlace } from '@/components/use-census-place'
 import type { FallRecord } from '@/data/fall'
+import { type CategoryTotals, categoryTotals } from '@/lib/overview'
 import {
   binsInRange,
   countNames,
@@ -62,6 +63,7 @@ export type Matching = {
   nameCount: number
   distribution: Distribution
   groups: GroupRow[]
+  categories: CategoryTotals
 }
 
 function useMatching({
@@ -90,6 +92,7 @@ function useMatching({
       nameCount: countNames(jobs),
       distribution: binsInRange(buildDistribution(jobs, year), filterView),
       groups: groupSummary(jobs, year),
+      categories: categoryTotals(jobs),
     }),
     [jobs, year, filterView],
   )

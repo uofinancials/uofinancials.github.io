@@ -78,32 +78,33 @@ flowchart LR
   view with its computed figures, rate chart, records table, and job history,
   the budget outlook's lines and cases tables, the scenario rule list, rule
   editor, scope fields, savings, eliminations, and raise rates tables, savings
-  total, and outlook section, and the hooks and query that load one census's
-  placed jobs, the people list's matching jobs, the pay changes of a Trends
-  view, the name index, a scenario and its result, and the censuses a hiring
-  freeze reads.
+  total, and outlook section, the home page's scenario answers, area breakdown,
+  and top-paid table, and the hooks and query that load one census's placed
+  jobs, the people list's matching jobs, the pay changes of a Trends view, the
+  name index, a scenario and its result, and the censuses a hiring freeze reads.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
   cross-year employee groups and their trends, budget account groups, a
   department's budget and jobs, the department index, the department table's
-  rows with their year-on-year changes, sort order for tables, the salary rate
-  distribution, each page's URL state, source citations, number formatting, the
-  person links between consecutive Fall years, the person lookup (name index,
-  name matching, linked runs, and a record's published fields), the people
-  list's filtering, sorting, and paging of one census's jobs, a person's
-  computed figures, rates by job, job history, a job's class or rank and the
-  medians beside it, continuing jobs' pay changes with the rank renames and
-  title abbreviations they use, a job's estimated raise group, and each raise
-  group's median change beside its compounded across-the-board terms, the budget
-  outlook's gap by year, chart series, and cited sources, and scenarios: a job's
-  estimated OPE rate group, each area's estimated E&G share, rules over one
-  census, the hiring freeze and the censuses it reads, department and area
-  eliminations by budget line and the budget year they use, raise freezes and
-  each raise group's rate they forgo, savings against the projection or one of
-  its cases, the rules' and case's URL form, rule and scope labels, new rules
-  and their order, and example scenarios.
+  rows with their year-on-year changes and each area's figures, the home page's
+  headlines, example answers, jobs per census, area bars, and top-paid jobs,
+  sort order for tables, the salary rate distribution, each page's URL state,
+  source citations, number formatting, the person links between consecutive Fall
+  years, the person lookup (name index, name matching, linked runs, and a
+  record's published fields), the people list's filtering, sorting, and paging
+  of one census's jobs, a person's computed figures, rates by job, job history,
+  a job's class or rank and the medians beside it, continuing jobs' pay changes
+  with the rank renames and title abbreviations they use, a job's estimated
+  raise group, and each raise group's median change beside its compounded
+  across-the-board terms, the budget outlook's gap by year, chart series, and
+  cited sources, and scenarios: a job's estimated OPE rate group, each area's
+  estimated E&G share, rules over one census, the hiring freeze and the censuses
+  it reads, department and area eliminations by budget line and the budget year
+  they use, raise freezes and each raise group's rate they forgo, savings
+  against the projection or one of its cases, the rules' and case's URL form,
+  rule and scope labels, new rules and their order, and example scenarios.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -140,11 +141,19 @@ flowchart LR
   arithmetic: lines to totals, run rates, and fund balances.
 - `scripts/committed-scenario.test.ts` - OPE rate groups, E&G shares, and
   scenario results on the committed data.
+- `scripts/committed-home.test.ts` - Fall 2025 totals, area placement, and the
+  home page's figures on the committed data.
 
 ### End-to-end tests (`e2e/`)
 
-- `e2e/home.spec.ts` - the built site's routes, notice, overview, trends,
-  departments, the people list and person page, sources page, and `404.html`.
+- `e2e/home.spec.ts` - the built site's routes, notice, navigation, trends, a
+  department's jobs link, the people list and person page, sources page, and
+  `404.html`.
+- `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
+  preview, trend and top-paid previews, and narrow layout, and the People page's
+  spend by EEO category.
+- `e2e/departments.spec.ts` - the departments table's sorting, levels, and
+  filters, a unit's and an area's pages, the scenario link, and narrow layout.
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, and
   sources.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
@@ -155,9 +164,13 @@ flowchart LR
 
 ## Pages
 
-- `/` - the overview: people, FTE, and salary spend for the latest Fall census,
-  by EEO category and by college or VP area; driven by `src/lib` totals and area
-  assignment over one Fall year and one budget year.
+- `/` - the portal: headline figures from the projection, the budget, and the
+  latest Fall census, the projected gap as a chart, two scenario examples'
+  savings against the gap, job records per census, the largest colleges and VP
+  areas by a measure held in the URL, the highest published salary rates, and
+  the data's dates, each linking to its page; driven by the `src/lib` home
+  figures, department table, and scenarios over the latest Fall year, its budget
+  year, the outlook, the OPE rates, and the manifest.
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
   every Fall census, or for continuing jobs in each pair of consecutive censuses
   the median change in salary rate, the counts of changed class, rank, and
@@ -180,9 +193,9 @@ flowchart LR
   year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   charts of the matching jobs by salary rate, with primary-job percentiles, and
-  by group, and names from other censuses when a name has no job in it; not
-  indexed by search engines; driven by the `src/lib` people list and
-  distribution over one Fall year and its budget year.
+  by group, their salary spend by EEO category, and names from other censuses
+  when a name has no job in it; not indexed by search engines; driven by the
+  `src/lib` people list and distribution over one Fall year and its budget year.
 - `/people/$name` - one name's computed figures, its rates by job over time, its
   records for one census at a time, and its job history, with a back button; not
   indexed by search engines; driven by the `src/lib` person lookup and summary

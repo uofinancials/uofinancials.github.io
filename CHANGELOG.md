@@ -67,13 +67,28 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on the Sources page; a computed figure says how it was computed.
 - The site follows the system's light or dark setting.
 - A page whose data cannot load names the file that failed and offers a retry.
-- The home page is an overview of the latest Fall census (Fall 2025): people,
-  FTE, and estimated salary spend (published annual salary rate x FTE, zero for
-  unpaid leave), and the same by EEO category and by college or VP area, each as
-  a bar chart with a table and a source caption saying how it was computed.
-  Classified temporaries, whose published rates are annualised hourly rates, are
-  counted in people and FTE but kept out of salary spend and shown as their own
-  row.
+- The home page opens on what the site offers, each part linking to its page:
+  - four headline figures: the FY27 E&G run rate from the Board of Trustees'
+    June 2026 projection (-$22,770,593, as published), the FY26 budget summed
+    over every published line ($1,768,500,895), and Fall 2025 estimated salary
+    spend ($504,812,068: published annual salary rate x FTE, zero for unpaid
+    leave, classified temporaries left out) and people (6,268 names), each cited
+    and saying how it was computed;
+  - the projected run rate and ending fund balance by fiscal year as a chart,
+    with the run rate for FY27 and FY31 in the text;
+  - two scenario examples answered live - 10% off pay above $200,000 saves about
+    $1,387,199 of E&G in FY27, 6.1% of the FY27 shortfall - each opening its
+    scenario, labelled as estimates with the methods behind a toggle;
+  - job records published per Fall census, 2014-2025, as a line chart, counted
+    from the source files;
+  - the ten largest colleges and VP areas by FY26 budget, Fall 2025 salary
+    spend, or jobs, chosen by a toggle held in the link, as bars and a table
+    whose names open each area's page, with how the census's jobs were placed;
+  - the ten highest published annual salary rates in Fall 2025, one row per job
+    as published (classified temporaries and possible students left out), each
+    name opening its person page, and a link to every job by rate;
+  - the dates the census, budget, and projection are as of, linking to the
+    Sources page.
 - College or VP areas come from the budget's organisation hierarchy for the
   census's fiscal year. Where UO does not publish a pay department's area, the
   site assigns it from the department's name, or by hand for 26 Fall 2025
@@ -155,6 +170,9 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   - a column selector, with class or rank, term, job type, and EEO category
     hidden by default;
   - a name with no job in the census listed with the censuses it appears in.
+  - below the table, the matching jobs' estimated salary spend by EEO category
+    as a bar chart and a table of people, jobs, FTE, spend, and share, with
+    classified temporaries in a row of their own.
 - The list is kept in its link, and the page asks search engines not to index
   it. Records marked `possibleStudent` are shown as published. The department
   and person pages link to it with their filters.

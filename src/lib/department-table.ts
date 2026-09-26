@@ -121,6 +121,46 @@ function areaOf(code: string | null, orgs: BudgetYear['orgs']): Area | null {
   return code === null ? null : { code, name: orgs[code]?.name ?? code }
 }
 
+/** Each area with the jobs placed in it, then the jobs placed in none, when there are any. */
+function placedAreas(
+  orgs: BudgetYear['orgs'],
+  areaJobs: Map<string | null, FallRecord[]>,
+): { code: string | null; name: string; records: FallRecord[] }[] {
+  const areas = [
+    ...listAreas(orgs),
+    ...(areaJobs.has(null) ? [{ code: null, name: UNASSIGNED_AREA }] : []),
+  ]
+  return areas.map(({ code, name }) => ({
+    code,
+    name,
+    records: areaJobs.get(code) ?? [],
+  }))
+}
+
+export type AreaFigure = Pick<
+  DepartmentRow,
+  'code' | 'name' | 'budgetCents' | 'jobs' | 'spendCents'
+>
+
+/** Each area's budget and census jobs and spend, as its row in `departmentRows` has them. */
+export function areaFigures(
+  census: DepartmentCensus,
+  budget: BudgetYear,
+): AreaFigure[] {
+  const totals = sumBy(budget.rows, (row) => row.org)
+  const { areaJobs } = placeDepartments(census)
+  return placedAreas(census.orgs, areaJobs).map(({ code, name, records }) => {
+    const { jobs, spendCents } = measureJobs(records)
+    return {
+      code,
+      name,
+      budgetCents: unitSum(code, budget.orgs, totals),
+      jobs,
+      spendCents,
+    }
+  })
+}
+
 /** The rows of both levels for one census, with changes from the one before; an area's census changes are blank. */
 export function departmentRows(
   now: TableYear,
@@ -138,20 +178,9 @@ export function departmentRows(
   }
   const { orgs } = now.census
   const { units, areaJobs } = placeDepartments(now.census)
-  const unplaced = areaJobs.get(null)
-  const areas = [
-    ...listAreas(orgs),
-    ...(unplaced ? [{ code: null, name: UNASSIGNED_AREA }] : []),
-  ]
   return {
-    areas: areas.map(({ code, name }) =>
-      row({
-        code,
-        name,
-        area: null,
-        records: areaJobs.get(code) ?? [],
-        earlier: null,
-      }),
+    areas: placedAreas(orgs, areaJobs).map((area) =>
+      row({ ...area, area: null, earlier: null }),
     ),
     units: units.map((unit) =>
       row({

@@ -1,7 +1,5 @@
-import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
 import type { FallEntry, Manifest } from '../data/manifest.ts'
-import { type AreaAssignment, createAreaAssigner } from './areas.ts'
 
 /** FTE is held as integer hundredths (the sum of appointment percents). */
 export type Totals = {
@@ -13,13 +11,12 @@ export type Totals = {
 
 export type GroupTotals = { key: string; totals: Totals }
 
-export type Overview = {
-  /** Every job, temporaries included; spend excludes temporaries. */
-  total: Totals
+/** A census's spend by EEO category, with classified temporaries apart. */
+export type CategoryTotals = {
   byCategory: GroupTotals[]
-  byArea: GroupTotals[]
   /** Classified temporaries, kept out of every spend figure above. */
   temps: Totals
+  totalSpendCents: number
 }
 
 const UNPAID_STATUS = /^On Leave (No|Without) Pay|^Terminated$/
@@ -79,23 +76,15 @@ export function groupTotals(
     )
 }
 
-export function buildOverview(
-  records: FallRecord[],
-  areaOf: (record: FallRecord) => string,
-): Overview {
-  const temps = records.filter(isClassifiedTemp)
+export function categoryTotals(records: FallRecord[]): CategoryTotals {
   const others = records.filter((record) => !isClassifiedTemp(record))
   return {
-    total: {
-      ...summarize(records),
-      spendCents: summarize(others).spendCents,
-    },
     byCategory: groupTotals(
       others,
       (record) => record.eeoCategory ?? NO_CATEGORY,
     ),
-    byArea: groupTotals(others, areaOf),
-    temps: summarize(temps),
+    temps: summarize(records.filter(isClassifiedTemp)),
+    totalSpendCents: summarize(others).spendCents,
   }
 }
 
@@ -139,31 +128,4 @@ export function selectOverviewSources(manifest: Manifest): {
     census,
     fiscalYear: fiscalYearForCensus(manifest, census.censusDate),
   }
-}
-
-export type CensusOverview = Overview & {
-  /** Jobs in the area table by how their area was assigned. */
-  areaBases: Record<AreaAssignment['basis'], number>
-}
-
-/** The overview of one census, with areas named from its fiscal year's budget. */
-export function buildCensusOverview(
-  census: { year: number; records: FallRecord[] },
-  orgs: BudgetYear['orgs'],
-): CensusOverview {
-  const assign = createAreaAssigner(census.records, orgs, census.year)
-  const areaBases = { published: 0, name: 0, hand: 0, unassigned: 0 }
-  const areaNames = new Map<FallRecord, string>()
-  for (const record of census.records) {
-    if (isClassifiedTemp(record)) continue
-    const { area, basis } = assign(record)
-    areaBases[basis] += 1
-    areaNames.set(
-      record,
-      area === null ? UNASSIGNED_AREA : (orgs[area]?.name ?? area),
-    )
-  }
-  const areaOf = (record: FallRecord) =>
-    areaNames.get(record) ?? UNASSIGNED_AREA
-  return { ...buildOverview(census.records, areaOf), areaBases }
 }

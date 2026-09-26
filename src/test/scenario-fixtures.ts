@@ -1,5 +1,6 @@
 import type { BudgetRow, BudgetYear } from '@/data/budget'
 import type { OpeRates } from '@/data/ope'
+import type { Projection } from '@/data/outlook'
 import type { ScenarioResult } from '@/lib/scenario'
 
 export const AREA = '222000'
@@ -101,4 +102,58 @@ export function censusSavings(result: ScenarioResult) {
   return result.rules.map((rule) =>
     rule.kind === 'census' ? rule.savings : null,
   )
+}
+
+const SOURCE = {
+  url: 'https://example.org/packet.pdf',
+  document: 'Packet',
+  location: 'p. 1',
+  retrievedOn: '2026-09-25',
+}
+
+/** A three-year projection with two cases, for tests. */
+export const TEST_PROJECTION: Projection = {
+  id: 'test',
+  title: 'Test projection',
+  fiscalYears: [2026, 2027, 2028],
+  source: SOURCE,
+  lines: [
+    {
+      label: 'Revenue',
+      section: 'revenue',
+      kind: 'total',
+      cents: [10_000, 10_000, 10_000],
+    },
+    {
+      label: 'Expenses',
+      section: 'expense',
+      kind: 'total',
+      cents: [9_900, 11_000, 12_000],
+    },
+  ],
+  runRateCents: [100, -1_000, -2_000],
+  beginningFundBalanceCents: [5_000, 5_100, 4_100],
+  endingFundBalanceCents: [5_100, 4_100, 2_100],
+  weeksOfExpenses: [26.8, 19.4, 9.1],
+  presentValueCents: 0,
+  reductionTargetCents: 0,
+  reductionTargetSource: SOURCE,
+  cases: [
+    {
+      label: 'Base case',
+      runRateCents: [100, -1_000, -2_000],
+      endingFundBalanceCents: [5_100, 4_100, 2_100],
+      weeksOfExpenses: [26.8, 19.4, 9.1],
+      presentValueCents: 0,
+    },
+    {
+      label: 'Less state funding',
+      runRateCents: [100, -1_500, -2_500],
+      endingFundBalanceCents: [5_100, 3_600, 1_100],
+      weeksOfExpenses: [26.8, 17.0, 4.8],
+      presentValueCents: 0,
+    },
+  ],
+  casesSource: SOURCE,
+  assumptions: [],
 }

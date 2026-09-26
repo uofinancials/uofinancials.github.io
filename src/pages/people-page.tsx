@@ -10,9 +10,12 @@ import { SalaryDistributionFigure } from '@/components/salary-distribution-figur
 import { SortControls } from '@/components/sort-controls'
 import { SourceCitation } from '@/components/source-citation'
 import { tabLinkClass } from '@/components/tab-link-class'
+import { TotalsChart } from '@/components/totals-chart'
+import { TotalsTable } from '@/components/totals-table'
 import { type Matching, usePeople } from '@/components/use-people'
 import type { FallRecord } from '@/data/fall'
-import { formatCount } from '@/lib/format'
+import { formatCount, formatDollars } from '@/lib/format'
+import { type CategoryTotals, SPEND_METHOD } from '@/lib/overview'
 import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people-list'
 import {
   type ListColumn,
@@ -147,6 +150,39 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
   )
 }
 
+function CategorySpend({
+  totals: { byCategory, temps, totalSpendCents },
+  year,
+}: {
+  totals: CategoryTotals
+  year: number
+}) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xl font-semibold">Salary spend by EEO category</h2>
+      <TotalsChart
+        bars={byCategory.map(({ key, totals }) => ({
+          key,
+          value: totals.spendCents,
+        }))}
+        valueLabel="Salary spend"
+        format={formatDollars}
+        label="Salary spend by EEO category"
+      />
+      <TotalsTable
+        groupLabel="EEO category"
+        groups={byCategory}
+        totalSpendCents={totalSpendCents}
+        temps={temps}
+      />
+      <SourceCitation
+        source={{ kind: 'fall', year }}
+        computed={`over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`}
+      />
+    </section>
+  )
+}
+
 function JobsSection({
   sorted,
   view,
@@ -218,7 +254,14 @@ export function PeoplePage() {
         <OtherCensusNames q={view.q} year={view.year} />
       )}
       {matching.jobs.length > 0 && (
-        <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
+        <>
+          <JobsSection
+            sorted={matching.sorted}
+            view={view}
+            onSort={handleSort}
+          />
+          <CategorySpend totals={matching.categories} year={view.year} />
+        </>
       )}
       <SourceCitation
         source={{ kind: 'fall', year: view.year }}

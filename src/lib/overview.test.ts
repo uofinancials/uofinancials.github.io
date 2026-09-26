@@ -1,14 +1,12 @@
 import { expect, test } from 'vitest'
 import { classifiedJob } from '@/test/fall-records'
 import {
-  buildCensusOverview,
-  buildOverview,
+  categoryTotals,
   fiscalYearOf,
   groupTotals,
   jobSpendCents,
   selectOverviewSources,
   summarize,
-  UNASSIGNED_AREA,
 } from './overview'
 
 const job = classifiedJob
@@ -61,40 +59,31 @@ test('groups are sorted by spend, and a person counts once in each group', () =>
   expect(groups[1]?.totals.spendCents).toBe(1_000_000 + 5_000_000)
 })
 
-test('the overview keeps classified temporaries out of spend but in headcount and FTE', () => {
-  const overview = buildOverview(
-    [
-      job({ apptPercent: 100 }),
-      job({
-        name: 'Temp, Tia',
-        apptPercent: 10,
-        annualSalaryRateCents: 41_600_000,
-        eeoCategory: 'Other/Temp',
-        positionClass: { code: 'TS4017', title: null },
-      }),
+test('category totals keep classified temporaries out of spend and in a row of their own', () => {
+  const totals = categoryTotals([
+    job({ apptPercent: 100 }),
+    job({
+      name: 'Temp, Tia',
+      apptPercent: 10,
+      annualSalaryRateCents: 41_600_000,
+      eeoCategory: 'Other/Temp',
+      positionClass: { code: 'TS4017', title: null },
+    }),
+  ])
+  expect(totals).toEqual({
+    byCategory: [
+      {
+        key: 'Secy/Clerical',
+        totals: {
+          people: 1,
+          jobs: 1,
+          fteHundredths: 100,
+          spendCents: 5_000_000,
+        },
+      },
     ],
-    () => 'Area A',
-  )
-  expect(overview.total).toEqual({
-    people: 2,
-    jobs: 2,
-    fteHundredths: 110,
-    spendCents: 5_000_000,
-  })
-  expect(overview.byCategory.map((group) => group.key)).toEqual([
-    'Secy/Clerical',
-  ])
-  expect(overview.byArea).toEqual([
-    {
-      key: 'Area A',
-      totals: { people: 1, jobs: 1, fteHundredths: 100, spendCents: 5_000_000 },
-    },
-  ])
-  expect(overview.temps).toEqual({
-    people: 1,
-    jobs: 1,
-    fteHundredths: 10,
-    spendCents: 4_160_000,
+    temps: { people: 1, jobs: 1, fteHundredths: 10, spendCents: 4_160_000 },
+    totalSpendCents: 5_000_000,
   })
 })
 
@@ -140,39 +129,4 @@ test('the overview uses the latest census and the budget of its fiscal year, or 
   expect(() => selected([2020], [])).toThrow(
     'The manifest lists no budget for the census of 2020-11-01',
   )
-})
-
-test('the census overview names areas and counts how each was assigned', () => {
-  const overview = buildCensusOverview(
-    {
-      year: 2025,
-      records: [
-        job({ payDepartment: { code: '222120', name: 'CAS Theatre Arts' } }),
-        job({
-          name: 'Roe, Bo',
-          payDepartment: { code: '223500', name: 'CAS Math' },
-        }),
-        job({
-          name: 'Poe, Cy',
-          payDepartment: { code: '999999', name: 'Zed Ops' },
-        }),
-      ],
-    },
-    {
-      '222000': { name: 'Arts & Sciences, College of', level: 3, parent: null },
-      '222120': { name: 'CAS Theatre Arts', level: 5, parent: '222000' },
-    },
-  )
-  expect(
-    overview.byArea.map((group) => [group.key, group.totals.jobs]),
-  ).toEqual([
-    ['Arts & Sciences, College of', 2],
-    [UNASSIGNED_AREA, 1],
-  ])
-  expect(overview.areaBases).toEqual({
-    published: 1,
-    name: 1,
-    hand: 0,
-    unassigned: 1,
-  })
 })

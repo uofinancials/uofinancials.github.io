@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import type { Projection } from '@/data/outlook'
+import { TEST_PROJECTION } from '@/test/scenario-fixtures'
 import type { Savings, ScenarioResult } from './scenario'
 import {
   baselines,
@@ -8,61 +8,8 @@ import {
   yearlySavings,
 } from './scenario-outlook'
 
-const SOURCE = {
-  url: 'https://example.org/packet.pdf',
-  document: 'Packet',
-  location: 'p. 1',
-  retrievedOn: '2026-09-25',
-}
-
-const PROJECTION: Projection = {
-  id: 'test',
-  title: 'Test projection',
-  fiscalYears: [2026, 2027, 2028],
-  source: SOURCE,
-  lines: [
-    {
-      label: 'Revenue',
-      section: 'revenue',
-      kind: 'total',
-      cents: [10_000, 10_000, 10_000],
-    },
-    {
-      label: 'Expenses',
-      section: 'expense',
-      kind: 'total',
-      cents: [9_900, 11_000, 12_000],
-    },
-  ],
-  runRateCents: [100, -1_000, -2_000],
-  beginningFundBalanceCents: [5_000, 5_100, 4_100],
-  endingFundBalanceCents: [5_100, 4_100, 2_100],
-  weeksOfExpenses: [26.8, 19.4, 9.1],
-  presentValueCents: 0,
-  reductionTargetCents: 0,
-  reductionTargetSource: SOURCE,
-  cases: [
-    {
-      label: 'Base case',
-      runRateCents: [100, -1_000, -2_000],
-      endingFundBalanceCents: [5_100, 4_100, 2_100],
-      weeksOfExpenses: [26.8, 19.4, 9.1],
-      presentValueCents: 0,
-    },
-    {
-      label: 'Less state funding',
-      runRateCents: [100, -1_500, -2_500],
-      endingFundBalanceCents: [5_100, 3_600, 1_100],
-      weeksOfExpenses: [26.8, 17.0, 4.8],
-      presentValueCents: 0,
-    },
-  ],
-  casesSource: SOURCE,
-  assumptions: [],
-}
-
-const [BASE, LESS_STATE] = baselines(PROJECTION)
-const FISCAL_YEARS = PROJECTION.fiscalYears
+const [BASE, LESS_STATE] = baselines(TEST_PROJECTION)
+const FISCAL_YEARS = TEST_PROJECTION.fiscalYears
 
 const savings = (egCents: number): Savings => ({
   jobs: 0,
@@ -112,7 +59,7 @@ test('eliminations grow 3% a year from their budget year, not from the first sav
 })
 
 test('the baselines are the projection, named for the case that matches it, then the other cases without expenses', () => {
-  expect(baselines(PROJECTION)).toEqual([
+  expect(baselines(TEST_PROJECTION)).toEqual([
     {
       label: 'Base case',
       runRateCents: [100, -1_000, -2_000],
@@ -126,7 +73,7 @@ test('the baselines are the projection, named for the case that matches it, then
       expenseCents: null,
     },
   ])
-  expect(baselines({ ...PROJECTION, cases: [] })[0]?.label).toBe(
+  expect(baselines({ ...TEST_PROJECTION, cases: [] })[0]?.label).toBe(
     'Test projection',
   )
 })
