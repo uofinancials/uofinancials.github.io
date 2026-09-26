@@ -11,16 +11,25 @@ const RULE: Rule = {
   cutBasisPoints: 1_000,
 }
 
-function renderEditor() {
+const ELIMINATIONS = [
+  {
+    code: '222000',
+    name: 'Arts & Sciences, College of',
+    units: [{ code: '223501', name: 'CAS Mathematics' }],
+  },
+]
+
+function renderEditor(rule: Rule = RULE) {
   const onChange = vi.fn()
   const onMove = vi.fn()
   render(
     <ScenarioRuleEditor
-      rule={RULE}
+      rule={rule}
       position={1}
       count={2}
       areas={[]}
       positions={new Map([['E0104', 'Office Specialist 2 (E0104)']])}
+      eliminations={ELIMINATIONS}
       onChange={onChange}
       onMove={onMove}
       onRemove={vi.fn()}
@@ -63,4 +72,17 @@ test('the first rule cannot move up, and moving down is named for its place', as
   expect(
     screen.getByRole('group', { name: /^1\. 10% off pay above/ }),
   ).toBeVisible()
+})
+
+test('an elimination picks an area or one of its units, and has no scope fields', async () => {
+  const { onChange } = renderEditor({ kind: 'eliminate', code: '222000' })
+  const field = screen.getByRole('combobox', { name: 'Department or area' })
+  expect(field).toHaveDisplayValue('All of Arts & Sciences, College of')
+  await userEvent.selectOptions(field, 'CAS Mathematics (223501)')
+  expect(onChange).toHaveBeenLastCalledWith({
+    kind: 'eliminate',
+    code: '223501',
+  })
+  expect(screen.queryByRole('combobox', { name: /^Group/ })).toBeNull()
+  expect(screen.getByRole('group', { name: '1. Eliminated' })).toBeVisible()
 })

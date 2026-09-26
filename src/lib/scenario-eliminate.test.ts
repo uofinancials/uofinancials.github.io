@@ -11,6 +11,8 @@ import {
 } from '@/test/scenario-fixtures'
 import { toDepartmentCensus } from './department-jobs'
 import { ANY_SCOPE, type Rule, runScenario } from './scenario'
+import { eliminationFiscalYear, eliminationOptions } from './scenario-eliminate'
+import { eliminationRows, totalEgCents } from './scenario-labels'
 
 const MATH = '223501'
 const BIOLOGY = { code: UNIT, name: 'CAS Biology' }
@@ -82,6 +84,7 @@ test('a unit saves its pay, OPE, and S&S lines, E&G by fund type 11, leaving out
     egCents: 19_000_000,
     allFundsCents: 19_500_000,
     isPartlyMatched: false,
+    isCovered: false,
   })
 })
 
@@ -100,8 +103,8 @@ test('an area saves every unit in it once, and a unit inside it or a repeat save
   const result = run([eliminate(AREA), eliminate(UNIT), eliminate(AREA)])
   expect(result.rules).toMatchObject([
     { isArea: true, jobs: 3, egCents: 26_800_000, allFundsCents: 27_300_000 },
-    { jobs: 0, egCents: 0, allFundsCents: 0, isPartlyMatched: false },
-    { jobs: 0, egCents: 0, allFundsCents: 0 },
+    { jobs: 0, egCents: 0, allFundsCents: 0, isCovered: true },
+    { jobs: 0, egCents: 0, allFundsCents: 0, isCovered: true },
   ])
   expect(result.eliminated).toEqual({
     egCents: 26_800_000,
@@ -140,4 +143,37 @@ test('with no elimination budget there is no eliminated total, and an eliminatio
   expect(() => runScenario({ ...options, rules: [eliminate(UNIT)] })).toThrow(
     'no budget year',
   )
+})
+
+test('a covered unit carries no partial-match note, since the area took its census jobs', () => {
+  const [, math] = run([eliminate(AREA), eliminate(MATH)]).rules
+  expect(math).toMatchObject({ isCovered: true, isPartlyMatched: false })
+})
+
+test('eliminations use the first savings year budget, or the latest before it', () => {
+  expect(eliminationFiscalYear([2025, 2026, 2027], 2027)).toBe(2027)
+  expect(eliminationFiscalYear([2025, 2026], 2027)).toBe(2026)
+  expect(() => eliminationFiscalYear([2028], 2027)).toThrow('FY2027')
+})
+
+test('the options are each area by name with its units by name', () => {
+  expect(eliminationOptions(FY27)).toEqual([
+    {
+      code: AREA,
+      name: 'Arts & Sciences',
+      units: [
+        { code: UNIT, name: 'CAS Biology' },
+        { code: MATH, name: 'CAS Mathematics' },
+      ],
+    },
+  ])
+})
+
+test('elimination rows keep their stack position, and the total adds them to the census rules', () => {
+  const result = run([
+    { kind: 'cut', scope: ANY_SCOPE, cutBasisPoints: 1_000 },
+    eliminate(MATH),
+  ])
+  expect(eliminationRows(result).map(({ position }) => position)).toEqual([2])
+  expect(totalEgCents(result)).toBe(result.total.egCents + 7_800_000)
 })

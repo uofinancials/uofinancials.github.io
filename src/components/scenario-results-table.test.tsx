@@ -16,12 +16,14 @@ function renderTable(historyStatus: 'ready' | 'loading') {
       rows={[
         {
           key: '0',
+          position: 1,
           label: 'Pay capped at $900,000',
           scope: 'All jobs',
           result: { kind: 'census', savings: savings(1, 10_000_000) },
         },
         {
           key: '1',
+          position: 3,
           label: 'A 1-year hiring freeze, then positions refilled',
           scope: 'classified',
           result: {
@@ -34,7 +36,6 @@ function renderTable(historyStatus: 'ready' | 'loading') {
       total={savings(1, 10_000_000)}
       firstYear={2027}
       historyStatus={historyStatus}
-      reductionTargetCents={6_500_000_000}
     />,
   )
 }
@@ -46,21 +47,20 @@ test('a freeze shows its first year and turnover, the total leaves it out, and a
       .getAllByRole('cell')
       .map((cell) => cell.textContent)
   expect(
-    screen.getByRole('rowheader', { name: /^2\. A 1-year hiring freeze/ }),
+    screen.getByRole('rowheader', { name: /^3\. A 1-year hiring freeze/ }),
   ).toHaveTextContent(
     'positions and savings in FY27, at 10.33% turnover a year',
   )
-  expect(cells(/^2\./)).toEqual(['189', '$900,000', '–', '$450,000'])
+  expect(cells(/^3\./)).toEqual(['189', '$900,000', '–', '$450,000'])
   expect(cells(/^Census rules/)).toEqual(['1', '$100,000', '–', '$50,000'])
   expect(
     screen.getByRole('rowheader', { name: /^1\. Pay capped/ }),
   ).toHaveTextContent(/This rule reaches one job\./)
-  expect(screen.getByText(/0\.1% of the Board's \$65,000,000/)).toBeVisible()
 })
 
 test('a freeze waiting on past censuses says so instead of showing figures', () => {
   renderTable('loading')
   expect(
-    within(screen.getByRole('row', { name: /^2\./ })).getByRole('cell'),
+    within(screen.getByRole('row', { name: /^3\./ })).getByRole('cell'),
   ).toHaveTextContent('Loading past censuses')
 })

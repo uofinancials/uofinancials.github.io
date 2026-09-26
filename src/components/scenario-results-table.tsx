@@ -9,12 +9,7 @@ import {
 } from '@/components/ui/table'
 import type { ScenarioHistory } from '@/components/use-scenario-history'
 import { fiscalYearLabel } from '@/data/budget'
-import {
-  formatCount,
-  formatDollars,
-  formatOrBlank,
-  formatShare,
-} from '@/lib/format'
+import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import type { RuleResult, Savings } from '@/lib/scenario'
 import { type ResultRow, smallReachNote } from '@/lib/scenario-labels'
 import { toPercent } from '@/lib/scenario-search'
@@ -65,19 +60,17 @@ function ResultCells({
   return <SavingsCells savings={first} />
 }
 
-/** Each rule's savings in stack order, and the census rules' total; a freeze shows its first projected year. */
+/** Each census rule's and freeze's savings in stack order, and the census rules' total; a freeze shows its first projected year. */
 export function ScenarioResultsTable({
   rows,
   total,
   firstYear,
   historyStatus,
-  reductionTargetCents,
 }: {
   rows: ResultRow[]
   total: Savings
   firstYear: number
   historyStatus: HistoryStatus
-  reductionTargetCents: number
 }) {
   return (
     <div className="space-y-2">
@@ -96,10 +89,10 @@ export function ScenarioResultsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map(({ key, label, scope, result }, index) => (
+          {rows.map(({ key, position, label, scope, result }) => (
             <TableRow key={key}>
               <TableHead scope="row" className="font-normal whitespace-normal">
-                {index + 1}. {label}
+                {position}. {label}
                 {result.kind === 'freeze' &&
                   `, positions and savings in ${fiscalYearLabel(firstYear)}`}
                 {result.kind === 'freeze' &&
@@ -126,13 +119,6 @@ export function ScenarioResultsTable({
       <p className="text-sm text-muted-foreground">
         The total counts the census rules once a year. Freezes are not in it:
         their savings change year by year and are counted in the outlook below.
-      </p>
-      <p className="text-sm">
-        The census rules' E&G savings are{' '}
-        {formatShare(total.egCents, reductionTargetCents)} of the Board's{' '}
-        {formatDollars(reductionTargetCents)} a year reduction estimate. That
-        estimate is close to the projected gap's present value, not the gap in
-        any one year.
       </p>
     </div>
   )

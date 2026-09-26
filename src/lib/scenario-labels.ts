@@ -9,6 +9,7 @@ import {
   positionOf,
 } from './salary-distribution.ts'
 import type {
+  EliminationResult,
   Rule,
   RuleResult,
   ScenarioResult,
@@ -93,6 +94,8 @@ export function positionOptions(records: FallRecord[]): Map<string, string> {
 /** One row of the savings table: a rule as it reads, and what it did. */
 export type ResultRow = {
   key: string
+  /** The rule's place in the whole stack, from 1. */
+  position: number
   label: string
   scope: string
   result: RuleResult
@@ -111,6 +114,7 @@ export function scenarioResultRows(
       ? [
           {
             key: `${index} ${rule.kind}`,
+            position: index + 1,
             label: describeRule(rule),
             scope: describeScope(rule.scope, census, budget),
             result: ruleResult,
@@ -118,4 +122,18 @@ export function scenarioResultRows(
         ]
       : []
   })
+}
+
+/** Each elimination's result with its place in the whole stack, from 1. */
+export function eliminationRows(
+  result: ScenarioResult,
+): { position: number; result: EliminationResult }[] {
+  return result.rules.flatMap((rule, index) =>
+    rule.kind === 'eliminate' ? [{ position: index + 1, result: rule }] : [],
+  )
+}
+
+/** A year's E&G savings before freezes: the census rules' total and the eliminations. */
+export function totalEgCents(result: ScenarioResult): number {
+  return result.total.egCents + (result.eliminated?.egCents ?? 0)
 }

@@ -17,7 +17,7 @@ import { egShares } from '@/lib/eg-share'
 import { fiscalYearOf } from '@/lib/overview'
 import type { Rule } from '@/lib/scenario'
 import { freezeHistoryCensuses } from '@/lib/scenario-freeze'
-import { scenarioResultRows } from '@/lib/scenario-labels'
+import { eliminationRows, scenarioResultRows } from '@/lib/scenario-labels'
 import {
   baselines,
   firstSavingsYear,
@@ -28,12 +28,15 @@ import { parseRules, resolveBaselineIndex } from '@/lib/scenario-search'
 
 /** The route's census joined to its budget, with the rates, outlook, and E&G shares. */
 function useScenarioData() {
-  const { year, fiscalYear, censusDate } = useLoaderData({
-    from: '/scenarios',
-  })
+  const { year, fiscalYear, censusDate, eliminationFiscalYear } = useLoaderData(
+    { from: '/scenarios' },
+  )
   const { data: manifest } = useSuspenseQuery(manifestQuery)
   const { data: fall } = useSuspenseQuery(fallYearQuery(year))
   const { data: budget } = useSuspenseQuery(budgetYearQuery(fiscalYear))
+  const { data: eliminationBudget } = useSuspenseQuery(
+    budgetYearQuery(eliminationFiscalYear),
+  )
   const { data: rates } = useSuspenseQuery(opeRatesQuery)
   const { data: outlook } = useSuspenseQuery(outlookQuery)
   const [projection] = outlook.projections
@@ -51,6 +54,7 @@ function useScenarioData() {
   const firstYear = firstSavingsYear(projection.fiscalYears, censusFiscalYear)
   return {
     budget,
+    eliminationBudget,
     rates,
     projection,
     census,
@@ -70,6 +74,7 @@ function useScenarioResult(
   history: DepartmentCensus[],
 ) {
   const { census, censusFiscalYear, rates, shares, projection, budget } = data
+  const { eliminationBudget } = data
   const result = useMemo(
     () =>
       projectScenario({
@@ -80,15 +85,25 @@ function useScenarioResult(
         egShares: shares,
         history,
         fiscalYears: projection.fiscalYears,
-        eliminationBudget: null,
+        eliminationBudget,
       }),
-    [census, censusFiscalYear, rules, rates, shares, history, projection],
+    [
+      census,
+      censusFiscalYear,
+      rules,
+      rates,
+      shares,
+      history,
+      projection,
+      eliminationBudget,
+    ],
   )
   const resultRows = useMemo(
     () => scenarioResultRows(rules, result, census, budget),
     [rules, result, census, budget],
   )
-  return { result, resultRows }
+  const eliminations = useMemo(() => eliminationRows(result), [result])
+  return { result, resultRows, eliminations }
 }
 
 /**
@@ -100,8 +115,12 @@ export function useScenario() {
   const search = useSearch({ from: '/scenarios' })
   const data = useScenarioData()
   const { rules, dropped } = useMemo(
-    () => parseRules(search.rules ?? [], new Set()),
-    [search.rules],
+    () =>
+      parseRules(
+        search.rules ?? [],
+        new Set(Object.keys(data.eliminationBudget.orgs)),
+      ),
+    [search.rules, data.eliminationBudget],
   )
   const computedRules = useDeferredValue(rules)
   const history = useScenarioHistory(
@@ -117,7 +136,7 @@ export function useScenario() {
       )
     ]
   if (!baseline) throw new Error('The projection has no baseline')
-  const { result, resultRows } = useScenarioResult(
+  const { result, resultRows, eliminations } = useScenarioResult(
     data,
     computedRules,
     history.history,
@@ -142,6 +161,7 @@ export function useScenario() {
     baseline,
     result,
     resultRows,
+    eliminations,
     rows,
   }
 }

@@ -119,3 +119,66 @@ test('rules are added, edited, moved, and removed in place, and held in the link
     /Pay capped/,
   )
 })
+
+test('an elimination saves a unit’s FY27 E&G lines, notes a partial census match, and is held in the link', async ({
+  page,
+}) => {
+  await page.goto('/scenarios')
+  await page
+    .getByRole('button', { name: 'Eliminate a department or area' })
+    .click()
+  await page
+    .getByRole('group', { name: /^1\. Eliminated/ })
+    .getByRole('combobox', { name: 'Department or area' })
+    .selectOption({ label: 'CAS Mathematics (223501)' })
+  const row = page.getByRole('row', { name: /^1\. CAS Mathematics \(223501\)/ })
+  await expect(row.getByRole('cell')).toHaveText([
+    '0',
+    '$7,054,153',
+    '$4,512,969',
+    '$139,436',
+    '$11,706,558',
+    '$11,826,279',
+  ])
+  await expect(row).toContainText('under other codes')
+  await expect(page.getByRole('main')).toContainText(
+    'FY27 budget as of posting period 2',
+  )
+  await page.reload()
+  await expect(
+    page.getByRole('row', { name: /^1\. CAS Mathematics/ }),
+  ).toBeVisible()
+  const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
+  await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
+    '$11,706,558',
+  )
+})
+
+test('an elimination naming a code the budget does not list is left out and counted', async ({
+  page,
+}) => {
+  await page.goto(
+    `/scenarios?rules=${encodeURIComponent(JSON.stringify([{ kind: 'eliminate', code: '999999' }]))}`,
+  )
+  await expect(page.getByRole('status')).toHaveText(
+    '1 rule in the link could not be read and was left out.',
+  )
+})
+
+test('the page with an elimination does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/scenarios')
+  await page
+    .getByRole('button', { name: 'Eliminate a department or area' })
+    .click()
+  await page
+    .getByRole('combobox', { name: 'Department or area' })
+    .selectOption({ label: 'All of Arts & Sciences, College of' })
+  await expect(
+    page.getByRole('row', { name: /^1\. All of Arts & Sciences/ }),
+  ).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+})

@@ -338,6 +338,7 @@ test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines a
       egCents: 18_421_006_950,
       allFundsCents: 19_107_829_350,
       isPartlyMatched: false,
+      isCovered: false,
     },
     {
       kind: 'census',

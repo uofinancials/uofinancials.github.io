@@ -1,6 +1,6 @@
 import type { BudgetRow, BudgetYear } from '../data/budget.ts'
 import { type AccountGroup, accountGroupOf } from './account-groups.ts'
-import { ORG_LEVEL_AREA } from './areas.ts'
+import { listAreas, ORG_LEVEL_AREA } from './areas.ts'
 import { placeJobs } from './census-search.ts'
 import { unitsOf } from './department-budget.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
@@ -27,8 +27,10 @@ export type EliminationResult = {
   eg: EliminatedLines
   egCents: number
   allFundsCents: number
-  /** A unit whose census pay under its code is under half its budgeted salaries; never an area. */
+  /** A unit whose census pay under its code is under half its budgeted salaries; never an area, nor a code an earlier elimination covered. */
   isPartlyMatched: boolean
+  /** Every unit the code covers was taken by an earlier elimination. */
+  isCovered: boolean
 }
 
 const LINE_OF_GROUP: Partial<Record<AccountGroup, keyof EliminatedLines>> = {
@@ -96,17 +98,15 @@ export function eliminationSavings(options: {
   const { census, jobs, budget } = options
   const taken = new Set<string>()
   return options.eliminations.map(({ code }) => {
-    const units = new Set(
-      [...(unitsOf(code, budget.orgs) ?? [])].filter(
-        (unit) => !taken.has(unit),
-      ),
-    )
+    const covered = [...(unitsOf(code, budget.orgs) ?? [])]
+    const units = new Set(covered.filter((unit) => !taken.has(unit)))
     for (const unit of units) taken.add(unit)
     const lines = sumLines(
       budget.rows.filter((row) => units.has(row.org)),
       budget,
     )
     const { excluded, censusPay } = excludeJobs(code, census, jobs)
+    const isCovered = covered.length > 0 && units.size === 0
     return {
       kind: 'eliminate',
       code,
@@ -114,7 +114,39 @@ export function eliminationSavings(options: {
       isArea: budget.orgs[code]?.level === ORG_LEVEL_AREA,
       jobs: excluded,
       ...lines,
-      isPartlyMatched: isPartlyMatched(code, budget, censusPay),
+      isPartlyMatched: !isCovered && isPartlyMatched(code, budget, censusPay),
+      isCovered,
     }
   })
+}
+
+/** The budget year eliminations use: the first savings year's, or the latest published before it. */
+export function eliminationFiscalYear(
+  published: number[],
+  firstSavingsYear: number,
+): number {
+  const year = Math.max(
+    ...published.filter((listed) => listed <= firstSavingsYear),
+  )
+  if (!Number.isFinite(year)) {
+    throw new Error(
+      `No budget is published for FY${firstSavingsYear} or before`,
+    )
+  }
+  return year
+}
+
+/** A budget year's areas by name, each with its units by name: what an elimination can name. */
+export function eliminationOptions(budget: BudgetYear): {
+  code: string
+  name: string
+  units: { code: string; name: string }[]
+}[] {
+  return listAreas(budget.orgs).map((area) => ({
+    ...area,
+    units: Object.entries(budget.orgs)
+      .filter(([, org]) => org.parent === area.code)
+      .map(([code, org]) => ({ code, name: org.name }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  }))
 }

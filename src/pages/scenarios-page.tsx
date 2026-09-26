@@ -1,9 +1,11 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { CitedLine } from '@/components/cited-line'
 import { PageSection } from '@/components/page-section'
+import { ScenarioEliminationsTable } from '@/components/scenario-eliminations-table'
 import { ScenarioOutlookSection } from '@/components/scenario-outlook-section'
 import { ScenarioResultsTable } from '@/components/scenario-results-table'
 import { ScenarioRuleList } from '@/components/scenario-rule-list'
+import { ScenarioSavingsTotal } from '@/components/scenario-savings-total'
 import { SourceCitation } from '@/components/source-citation'
 import { useScenario } from '@/components/use-scenario'
 import { fiscalYearLabel } from '@/data/budget'
@@ -11,9 +13,11 @@ import { EG_SHARE_METHOD } from '@/lib/eg-share'
 import { formatCount, formatDollars } from '@/lib/format'
 import { OPE_GROUP_METHOD } from '@/lib/ope-groups'
 import { SCENARIO_METHOD } from '@/lib/scenario'
+import { ELIMINATE_METHOD } from '@/lib/scenario-eliminate'
 import { SCENARIO_EXAMPLES } from '@/lib/scenario-examples'
 import { FREEZE_METHOD } from '@/lib/scenario-freeze'
 import { FULL_COST_METHOD } from '@/lib/scenario-jobs'
+import { totalEgCents } from '@/lib/scenario-labels'
 import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario-outlook'
 import { toSearchRules } from '@/lib/scenario-search'
 
@@ -23,6 +27,7 @@ const METHODS = [
   OPE_GROUP_METHOD,
   EG_SHARE_METHOD,
   FREEZE_METHOD,
+  ELIMINATE_METHOD,
   SCENARIO_OUTLOOK_METHOD,
 ]
 
@@ -45,7 +50,8 @@ function Examples() {
 }
 
 function Sources({ scenario }: { scenario: ReturnType<typeof useScenario> }) {
-  const { census, projection, history, historyCensuses } = scenario
+  const { census, projection, history, historyCensuses, eliminationBudget } =
+    scenario
   const [first] = historyCensuses
   return (
     <div className="space-y-2">
@@ -53,6 +59,11 @@ function Sources({ scenario }: { scenario: ReturnType<typeof useScenario> }) {
       <SourceCitation
         source={{ kind: 'budget', fiscalYear: census.fiscalYear }}
       />
+      {eliminationBudget.fiscalYear !== census.fiscalYear && (
+        <SourceCitation
+          source={{ kind: 'budget', fiscalYear: eliminationBudget.fiscalYear }}
+        />
+      )}
       <SourceCitation source={{ kind: 'rates' }} />
       {history.status === 'ready' && first && (
         <SourceCitation
@@ -70,7 +81,7 @@ function RulesSection({
 }: {
   scenario: ReturnType<typeof useScenario>
 }) {
-  const { census, budget, rules, dropped, result, firstYear } = scenario
+  const { census, budget, eliminationBudget, rules, dropped, result } = scenario
   const navigate = useNavigate({ from: '/scenarios' })
   return (
     <PageSection title="Rules">
@@ -87,6 +98,7 @@ function RulesSection({
         rules={rules}
         census={census}
         budget={budget}
+        eliminationBudget={eliminationBudget}
         onChange={(changed) =>
           navigate({
             search: (previous) => ({
@@ -101,16 +113,50 @@ function RulesSection({
         Fall {census.year} has {formatCount(result.base.jobs)} jobs a scenario
         can change, costing {formatDollars(result.base.salaryCents)} in salary
         and {formatDollars(result.base.egCents)} in E&G at{' '}
-        {fiscalYearLabel(firstYear)} rates; {formatCount(result.temporaries)}{' '}
-        classified temporaries are left out.
+        {fiscalYearLabel(scenario.firstYear)} rates;{' '}
+        {formatCount(result.temporaries)} classified temporaries are left out.
       </p>
+    </PageSection>
+  )
+}
+
+function SavingsSection({
+  scenario,
+}: {
+  scenario: ReturnType<typeof useScenario>
+}) {
+  const { result, resultRows, eliminations, history, firstYear } = scenario
+  return (
+    <PageSection title="Savings by rule">
+      {resultRows.length > 0 && (
+        <ScenarioResultsTable
+          rows={resultRows}
+          total={result.total}
+          firstYear={firstYear}
+          historyStatus={history.status}
+        />
+      )}
+      {eliminations.length > 0 && result.eliminated && (
+        <ScenarioEliminationsTable
+          rows={eliminations}
+          total={result.eliminated}
+          period={scenario.eliminationBudget.period}
+        />
+      )}
+      <ScenarioSavingsTotal
+        totalCents={totalEgCents(result)}
+        eliminatedCents={
+          eliminations.length > 0 ? (result.eliminated?.egCents ?? null) : null
+        }
+        reductionTargetCents={scenario.projection.reductionTargetCents}
+      />
     </PageSection>
   )
 }
 
 export function ScenariosPage() {
   const scenario = useScenario()
-  const { census, computedRules, result, rows, history, firstYear } = scenario
+  const { census, computedRules, rows, history } = scenario
   const navigate = useNavigate({ from: '/scenarios' })
   return (
     <div className="space-y-8">
@@ -131,17 +177,7 @@ export function ScenariosPage() {
         <Examples />
       </PageSection>
       <RulesSection scenario={scenario} />
-      {computedRules.length > 0 && (
-        <PageSection title="Savings by rule">
-          <ScenarioResultsTable
-            rows={scenario.resultRows}
-            total={result.total}
-            firstYear={firstYear}
-            historyStatus={history.status}
-            reductionTargetCents={scenario.projection.reductionTargetCents}
-          />
-        </PageSection>
-      )}
+      {computedRules.length > 0 && <SavingsSection scenario={scenario} />}
       <PageSection title="Against the projection">
         <ScenarioOutlookSection
           rows={rows}

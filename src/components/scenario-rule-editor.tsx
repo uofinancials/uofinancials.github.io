@@ -2,10 +2,15 @@ import { ArrowDown, ArrowUp, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { DraftInput } from '@/components/draft-input'
 import { ScenarioScopeFields } from '@/components/scenario-scope-fields'
-import { SelectField } from '@/components/select-field'
+import {
+  CONTROL_CLASS,
+  FIELD_CLASS,
+  SelectField,
+} from '@/components/select-field'
 import type { IndexArea } from '@/lib/department-index'
 import { CENTS_PER_DOLLAR } from '@/lib/format'
 import type { Rule } from '@/lib/scenario'
+import type { eliminationOptions } from '@/lib/scenario-eliminate'
 import { describeRule } from '@/lib/scenario-labels'
 import {
   parseDollarsText,
@@ -39,11 +44,47 @@ function PercentField({
   )
 }
 
+type EliminationOptions = ReturnType<typeof eliminationOptions>
+
+function EliminateField({
+  code,
+  options,
+  onSelect,
+}: {
+  code: string
+  options: EliminationOptions
+  onSelect: (code: string) => void
+}) {
+  return (
+    <label className={FIELD_CLASS}>
+      <span className="text-muted-foreground">Department or area</span>
+      <select
+        className={CONTROL_CLASS}
+        value={code}
+        onChange={(event) => onSelect(event.target.value)}
+      >
+        {options.map((area) => (
+          <optgroup key={area.code} label={area.name}>
+            <option value={area.code}>All of {area.name}</option>
+            {area.units.map((unit) => (
+              <option key={unit.code} value={unit.code}>
+                {unit.name} ({unit.code})
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </label>
+  )
+}
+
 function AmountFields({
   rule,
+  eliminations,
   onChange,
 }: {
   rule: Rule
+  eliminations: EliminationOptions
   onChange: (rule: Rule) => void
 }) {
   switch (rule.kind) {
@@ -95,6 +136,14 @@ function AmountFields({
           />
         </>
       )
+    case 'eliminate':
+      return (
+        <EliminateField
+          code={rule.code}
+          options={eliminations}
+          onSelect={(code) => onChange({ ...rule, code })}
+        />
+      )
   }
 }
 
@@ -122,13 +171,14 @@ function RuleButton({
   )
 }
 
-/** One rule's amounts and scope, with buttons to move it in the stack or remove it. */
+/** One rule's amounts and scope, or an elimination's code, with buttons to move it in the stack or remove it. */
 export function ScenarioRuleEditor({
   rule,
   position,
   count,
   areas,
   positions,
+  eliminations,
   onChange,
   onMove,
   onRemove,
@@ -138,6 +188,7 @@ export function ScenarioRuleEditor({
   count: number
   areas: IndexArea[]
   positions: Map<string, string>
+  eliminations: EliminationOptions
   onChange: (rule: Rule) => void
   onMove: (offset: -1 | 1) => void
   onRemove: () => void
@@ -149,7 +200,11 @@ export function ScenarioRuleEditor({
         {position}. {describeRule(rule)}
       </legend>
       <div className="flex flex-wrap gap-4">
-        <AmountFields rule={rule} onChange={onChange} />
+        <AmountFields
+          rule={rule}
+          eliminations={eliminations}
+          onChange={onChange}
+        />
       </div>
       {rule.kind !== 'eliminate' && (
         <ScenarioScopeFields
