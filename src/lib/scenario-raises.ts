@@ -1,11 +1,17 @@
 import type { CitedSource } from '../data/cited-source.ts'
 import type { FallRecord } from '../data/fall.ts'
-import type { RaiseTerm } from '../data/raises.ts'
+import type { AcrossTheBoardTerm, PoolTerm, RaiseTerm } from '../data/raises.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { fiscalYearOf } from './overview.ts'
-import { RAISE_ROWS, type RaiseRow, raiseRowOf } from './raise-groups.ts'
+import {
+  RAISE_ROWS,
+  type RaiseRow,
+  raiseRowOf,
+  termCovers,
+} from './raise-groups.ts'
 import { type FreezeRule, freezeShare } from './scenario-freeze.ts'
 import {
+  addCost,
   BASIS,
   BASIS_BIG,
   costOf,
@@ -53,10 +59,7 @@ const OTHER_JOBS = 'Other jobs'
 export const RAISE_FREEZE_METHOD =
   "A raise freeze saves the raises the projection spends, as this site's estimate. In the first year after the census each raise group's rate is its cited across-the-board, merit pool, and equity pool terms effective that year, or the projection's 3% where none is published; every later year is 3% for every group. Each job's raise group is estimated from its published class, rank, OA salary grade, and title, since UO publishes no bargaining unit; jobs in no group (executives, coaches, postdoctoral scholars, and unranked jobs with no OA grade) get 3%. A frozen year gives no raise, or only up to the cap; raises then resume on the lower pay, with no catch-up. Each frozen year counts in full. Steps, longevity, and one-time payments are not counted. A raise freeze applies last, to the pay every other rule left and only to the part of a job a hiring freeze keeps filled."
 
-type RatedTerm = Extract<
-  RaiseTerm,
-  { kind: 'across-the-board' | 'merit-pool' | 'equity-pool' }
->
+type RatedTerm = AcrossTheBoardTerm | PoolTerm
 
 function effectiveFiscalYear(term: RatedTerm): number | null {
   const date =
@@ -71,14 +74,6 @@ function termBasisPoints(term: RatedTerm): number {
   )
 }
 
-function covers(term: RatedTerm, row: RaiseRow): boolean {
-  return (
-    term.employeeGroup === row.group &&
-    (term.populations.includes('all') ||
-      term.populations.includes(row.population))
-  )
-}
-
 /** Each raise row's rate in `fiscalYear`, then "Other jobs": the sum of the terms effective that year that cover it, or 3%. */
 export function raiseRates(
   terms: RaiseTerm[],
@@ -86,33 +81,20 @@ export function raiseRates(
 ): RaiseRate[] {
   const rated = terms.filter(
     (term): term is RatedTerm =>
-      (term.kind === 'across-the-board' ||
-        term.kind === 'merit-pool' ||
-        term.kind === 'equity-pool') &&
-      effectiveFiscalYear(term) === fiscalYear,
+      'populations' in term && effectiveFiscalYear(term) === fiscalYear,
   )
-  const projected = (row: RaiseRow | null, label: string): RaiseRate => ({
-    row,
-    label,
-    basisPoints: PROJECTED_RAISE_BASIS_POINTS,
-    sources: [],
+  return [...RAISE_ROWS, null].map((row) => {
+    const covering = row ? rated.filter((term) => termCovers(term, row)) : []
+    return {
+      row,
+      label: row?.label ?? OTHER_JOBS,
+      basisPoints:
+        covering.length === 0
+          ? PROJECTED_RAISE_BASIS_POINTS
+          : covering.reduce((sum, term) => sum + termBasisPoints(term), 0),
+      sources: covering.map((term) => term.source),
+    }
   })
-  return [
-    ...RAISE_ROWS.map((row) => {
-      const covering = rated.filter((term) => covers(term, row))
-      if (covering.length === 0) return projected(row, row.label)
-      return {
-        row,
-        label: row.label,
-        basisPoints: covering.reduce(
-          (sum, term) => sum + termBasisPoints(term),
-          0,
-        ),
-        sources: covering.map((term) => term.source),
-      }
-    }),
-    projected(null, OTHER_JOBS),
-  ]
 }
 
 /** Each projected year's raise in basis points: the first year's rate, then 3%. */
@@ -131,27 +113,27 @@ function growth(path: number[]): bigint[] {
   })
 }
 
-function scaleBig(cents: number, numerator: bigint, year: number): number {
-  return Number(
-    divideHalfUp(BigInt(cents) * numerator, BASIS_BIG ** BigInt(year + 1)),
-  )
-}
-
-/** A job's cost times the pay growth a rule removes in `year` (from 0), times the share kept filled. */
-function savedCost(
-  cost: JobCost,
-  removed: bigint,
-  year: number,
-  held: number,
-): JobCost {
-  const scale = (cents: number) =>
-    Math.round(scaleBig(cents, removed, year) * held)
-  return {
-    salaryCents: scale(cost.salaryCents),
-    fullCostCents:
-      cost.fullCostCents === null ? null : scale(cost.fullCostCents),
-    egCents: scale(cost.egCents),
-  }
+/**
+ * For a first-year rate and the raise freezes covering a job, in stack order,
+ * the pay growth each freeze removes in each projected year.
+ */
+function removedGrowth(
+  firstBasisPoints: number,
+  covering: RaiseFreezeRule[],
+  years: number,
+): bigint[][] {
+  let path = schedule(firstBasisPoints, years)
+  return covering.map((rule) => {
+    const frozen = path.map((basisPoints, index) =>
+      index < rule.years
+        ? Math.min(basisPoints, rule.capBasisPoints)
+        : basisPoints,
+    )
+    const before = growth(path)
+    const after = growth(frozen)
+    path = frozen
+    return before.map((product, index) => product - (after[index] ?? 0n))
+  })
 }
 
 type Tracker = {
@@ -160,57 +142,62 @@ type Tracker = {
   byYear: Savings[]
 }
 
-/** The share of a job each hiring freeze covering it keeps filled, per projected year. */
-function heldShares(
-  record: FallRecord,
-  freezes: { held: HeldFreeze; scope: Set<FallRecord> }[],
+/** A hiring freeze's scope and the share of it kept filled each projected year. */
+type Filled = { scope: Set<FallRecord>; kept: number[] }
+
+function filledShares(
+  census: DepartmentCensus,
+  freezes: HeldFreeze[],
   years: number,
-): number[] {
-  const covering = freezes.filter(({ scope }) => scope.has(record))
-  return Array.from({ length: years }, (_, index) =>
-    covering.reduce(
-      (share, { held }) =>
-        share *
-        (1 - freezeShare(held.rule, held.rateBasisPoints, index + 1) / BASIS),
-      1,
+): Filled[] {
+  return freezes.map(({ rule, rateBasisPoints }) => ({
+    scope: scopeJobs(census, rule.scope),
+    kept: Array.from(
+      { length: years },
+      (_, index) => 1 - freezeShare(rule, rateBasisPoints, index + 1) / BASIS,
     ),
-  )
+  }))
 }
 
-/** Lays each raise freeze covering a job over its raise path, in stack order. */
+/** Adds one job's savings to each raise freeze covering it, each year, scaled by the share the hiring freezes keep filled. */
 function saveJob(options: {
   cost: JobCost
-  path: number[]
-  held: number[]
+  removed: bigint[][]
   covering: Tracker[]
+  filled: Filled[]
+  divisors: bigint[]
+  record: FallRecord
 }): void {
-  let path = options.path
-  for (const { rule, byYear } of options.covering) {
-    const frozen = path.map((basisPoints, index) =>
-      index < rule.years
-        ? Math.min(basisPoints, rule.capBasisPoints)
-        : basisPoints,
-    )
-    const before = growth(path)
-    const after = growth(frozen)
+  const { cost, divisors } = options
+  const holding = options.filled.filter(({ scope }) =>
+    scope.has(options.record),
+  )
+  options.covering.forEach(({ byYear }, at) => {
     byYear.forEach((savings, index) => {
-      const removed = (before[index] ?? 0n) - (after[index] ?? 0n)
+      const removed = options.removed[at]?.[index] ?? 0n
       if (removed === 0n) return
-      const saved = savedCost(
-        options.cost,
-        removed,
-        index,
-        options.held[index] ?? 1,
+      const held = holding.reduce(
+        (share, { kept }) => share * (kept[index] ?? 1),
+        1,
+      )
+      const scale = (cents: number) =>
+        Math.round(
+          Number(divideHalfUp(BigInt(cents) * removed, divisors[index] ?? 1n)) *
+            held,
+        )
+      addCost(
+        savings,
+        {
+          salaryCents: scale(cost.salaryCents),
+          fullCostCents:
+            cost.fullCostCents === null ? null : scale(cost.fullCostCents),
+          egCents: scale(cost.egCents),
+        },
+        1,
       )
       savings.jobs += 1
-      savings.salaryCents += saved.salaryCents
-      savings.egCents += saved.egCents
-      if (savings.fullCostCents !== null && saved.fullCostCents !== null) {
-        savings.fullCostCents += saved.fullCostCents
-      }
     })
-    path = frozen
-  }
+  })
 }
 
 /** Each raise freeze's savings per projected year, in stack order, over the pay every other rule left. */
@@ -224,18 +211,21 @@ export function raiseFreezeSavings(options: {
   projectedYears: number
 }): RaiseFreezeResult[] {
   const { census, rates, projectedYears } = options
+  if (options.raiseFreezes.length === 0) return []
   const trackers: Tracker[] = options.raiseFreezes.map((rule) => ({
     rule,
     scope: scopeJobs(census, rule.scope),
     byYear: Array.from({ length: projectedYears }, () => emptySavings(rates)),
   }))
-  const freezes = options.freezes.map((held) => ({
-    held,
-    scope: scopeJobs(census, held.rule.scope),
-  }))
+  const filled = filledShares(census, options.freezes, projectedYears)
+  const divisors = Array.from(
+    { length: projectedYears },
+    (_, index) => BASIS_BIG ** BigInt(index + 1),
+  )
   const rowRates = new Map(
     options.raiseRates.map((rate) => [rate.row, rate.basisPoints]),
   )
+  const removedByKey = new Map<string, bigint[][]>()
   for (const job of options.jobs) {
     if (job.isRemoved) continue
     const covering = trackers.filter(({ scope }) => scope.has(job.record))
@@ -245,14 +235,26 @@ export function raiseFreezeSavings(options: {
       census.year,
       trendGroupOf(job.record, census.year),
     )
+    const first = rowRates.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
+    const key = [
+      first,
+      ...covering.map((tracker) => trackers.indexOf(tracker)),
+    ].join(' ')
+    const removed =
+      removedByKey.get(key) ??
+      removedGrowth(
+        first,
+        covering.map(({ rule }) => rule),
+        projectedYears,
+      )
+    removedByKey.set(key, removed)
     saveJob({
       cost: costOf(job, rates),
-      path: schedule(
-        rowRates.get(row) ?? PROJECTED_RAISE_BASIS_POINTS,
-        projectedYears,
-      ),
-      held: heldShares(job.record, freezes, projectedYears),
+      removed,
       covering,
+      filled,
+      divisors,
+      record: job.record,
     })
   }
   return trackers.map(({ byYear }) => ({ kind: 'raises', byYear }))

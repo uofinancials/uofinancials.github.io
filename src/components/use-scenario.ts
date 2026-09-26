@@ -25,7 +25,7 @@ import {
   outlookRows,
   projectScenario,
 } from '@/lib/scenario-outlook'
-import { raiseRates } from '@/lib/scenario-raises'
+import { raiseRates as ratesOfYear } from '@/lib/scenario-raises'
 import { parseRules, resolveBaselineIndex } from '@/lib/scenario-search'
 
 /** The route's census joined to its budget, with the rates, outlook, and E&G shares. */
@@ -55,8 +55,8 @@ function useScenarioData() {
   const options = useMemo(() => baselines(projection), [projection])
   const censusFiscalYear = fiscalYearOf(censusDate)
   const firstYear = firstSavingsYear(projection.fiscalYears, censusFiscalYear)
-  const rowRates = useMemo(
-    () => raiseRates(raiseTerms.terms, firstYear),
+  const raiseRates = useMemo(
+    () => ratesOfYear(raiseTerms.terms, firstYear),
     [raiseTerms, firstYear],
   )
   return {
@@ -70,7 +70,7 @@ function useScenarioData() {
     options,
     censusFiscalYear,
     firstYear,
-    raiseRates: rowRates,
+    raiseRates,
   }
 }
 
@@ -82,7 +82,7 @@ function useScenarioResult(
   history: DepartmentCensus[],
 ) {
   const { census, censusFiscalYear, rates, shares, projection, budget } = data
-  const { eliminationBudget, raiseRates: rowRates } = data
+  const { eliminationBudget, raiseRates } = data
   const result = useMemo(
     () =>
       projectScenario({
@@ -94,7 +94,7 @@ function useScenarioResult(
         history,
         fiscalYears: projection.fiscalYears,
         eliminationBudget,
-        raiseRates: rowRates,
+        raiseRates,
       }),
     [
       census,
@@ -105,7 +105,7 @@ function useScenarioResult(
       history,
       projection,
       eliminationBudget,
-      rowRates,
+      raiseRates,
     ],
   )
   const resultRows = useMemo(

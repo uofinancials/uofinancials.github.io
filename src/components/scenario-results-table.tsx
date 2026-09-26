@@ -45,21 +45,21 @@ function ResultCells({
 }) {
   if (result.kind === 'census') return <SavingsCells savings={result.savings} />
   const [first] = result.byYear
-  if (historyStatus !== 'ready' || !first) {
+  if (historyStatus === 'loading' || historyStatus === 'error' || !first) {
     return (
       <TableCell colSpan={HEADS.length}>
         {historyStatus === 'error'
           ? 'Past censuses not loaded'
-          : historyStatus === 'ready'
-            ? 'No projected year'
-            : 'Loading past censuses'}
+          : historyStatus === 'loading'
+            ? 'Loading past censuses'
+            : 'No projected year'}
       </TableCell>
     )
   }
   return <SavingsCells savings={first} />
 }
 
-/** Each census rule's and freeze's savings in stack order, and the census rules' total; a hiring or raise freeze shows its first projected year, and a raise freeze waits on past censuses only beside a hiring freeze. */
+/** Each census rule's and freeze's savings in stack order, and the census rules' total; a hiring or raise freeze shows its first projected year, or a notice while past censuses load or fail. */
 export function ScenarioResultsTable({
   rows,
   total,
@@ -71,7 +71,6 @@ export function ScenarioResultsTable({
   firstYear: number
   historyStatus: HistoryStatus
 }) {
-  const hasFreeze = rows.some(({ result }) => result.kind === 'freeze')
   return (
     <div className="space-y-2">
       <Table>
@@ -111,14 +110,7 @@ export function ScenarioResultsTable({
                   </span>
                 )}
               </TableHead>
-              <ResultCells
-                result={result}
-                historyStatus={
-                  result.kind === 'raises' && !hasFreeze
-                    ? 'ready'
-                    : historyStatus
-                }
-              />
+              <ResultCells result={result} historyStatus={historyStatus} />
             </TableRow>
           ))}
         </TableBody>

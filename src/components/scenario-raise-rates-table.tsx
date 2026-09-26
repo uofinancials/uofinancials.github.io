@@ -1,3 +1,4 @@
+import { CitedSourceText } from '@/components/cited-source-text'
 import {
   Table,
   TableBody,
@@ -18,12 +19,9 @@ function Sources({ rate }: { rate: RaiseRate }) {
   }
   return (
     <>
-      {rate.sources.map(({ url, document, location, retrievedOn }) => (
-        <span key={`${url} ${location}`} className="block">
-          <a className="underline" href={url}>
-            {document}
-          </a>
-          , {location}, retrieved {retrievedOn}
+      {rate.sources.map((source) => (
+        <span key={`${source.url} ${source.location}`} className="block">
+          <CitedSourceText source={source} />
         </span>
       ))}
     </>

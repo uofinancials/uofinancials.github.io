@@ -104,8 +104,8 @@ const raiseTermSchema = z
     { message: "a term names only its group's populations" },
   )
   .transform((term, context) => {
+    if (!('populations' in term)) return term
     if (term.kind !== 'across-the-board') {
-      if (!('populations' in term)) return term
       return {
         ...term,
         basisPoints: BASIS_POINT_PERCENT.test(term.percent)

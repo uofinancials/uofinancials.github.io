@@ -1,3 +1,4 @@
+import { CitedSourceText } from '@/components/cited-source-text'
 import { SourceCitation } from '@/components/source-citation'
 import {
   Table,
@@ -58,10 +59,7 @@ function TermsTable({ terms }: { terms: AcrossTheBoardTerm[] }) {
             <TableCell className={NUMBER_CELL}>{term.percent}%</TableCell>
             <TableCell>{effectiveOf(term)}</TableCell>
             <TableCell>
-              <a className="underline" href={term.source.url}>
-                {term.source.document}
-              </a>
-              , {term.source.location}, retrieved {term.source.retrievedOn}
+              <CitedSourceText source={term.source} />
             </TableCell>
           </TableRow>
         ))}

@@ -5,7 +5,7 @@ import type {
   RaiseTerms,
 } from '../data/raises.ts'
 import { type ContinuingPair, filterPairs } from './pay-changes.ts'
-import { RAISE_ROWS, type RaiseRow } from './raise-groups.ts'
+import { RAISE_ROWS, type RaiseRow, termCovers } from './raise-groups.ts'
 import { MIN_JOBS_SHOWN, medianOf, type TrendFilter } from './trends.ts'
 
 const BASIS_POINTS_PER_UNIT = 10_000
@@ -48,9 +48,7 @@ export function acrossTheBoard(
   const used = terms.filter(
     (term): term is AcrossTheBoardTerm =>
       term.kind === 'across-the-board' &&
-      term.employeeGroup === row.group &&
-      (term.populations.includes('all') ||
-        term.populations.includes(row.population)) &&
+      termCovers(term, row) &&
       isInWindow(term, window),
   )
   if (used.length === 0) return null
