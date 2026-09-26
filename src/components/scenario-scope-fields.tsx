@@ -1,10 +1,7 @@
 import { useId } from 'react'
+import { AreaSelect } from '@/components/area-select'
 import { DraftInput } from '@/components/draft-input'
-import {
-  CONTROL_CLASS,
-  FIELD_CLASS,
-  SelectField,
-} from '@/components/select-field'
+import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
 import type { IndexArea } from '@/lib/department-index'
 import { TERMS } from '@/lib/salary-distribution'
@@ -33,33 +30,14 @@ function DeptField({
       area.code === dept || area.entries.some((entry) => entry.code === dept),
   )
   return (
-    <label className={FIELD_CLASS}>
-      <span className="text-muted-foreground">Department or area</span>
-      <select
-        className={CONTROL_CLASS}
-        value={dept ?? ALL}
-        onChange={(event) =>
-          onSelect(event.target.value === ALL ? null : event.target.value)
-        }
-      >
-        <option value={ALL}>All of UO</option>
-        {dept !== null && !isListed && (
-          <option value={dept}>Code {dept}</option>
-        )}
-        {areas.map((area) => (
-          <optgroup key={area.code ?? area.name} label={area.name}>
-            {area.code !== null && (
-              <option value={area.code}>All of {area.name}</option>
-            )}
-            {area.entries.map((entry) => (
-              <option key={entry.code} value={entry.code}>
-                {entry.name} ({entry.code})
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </label>
+    <AreaSelect
+      value={dept ?? ALL}
+      areas={areas}
+      onSelect={(value) => onSelect(value === ALL ? null : value)}
+    >
+      <option value={ALL}>All of UO</option>
+      {dept !== null && !isListed && <option value={dept}>Code {dept}</option>}
+    </AreaSelect>
   )
 }
 

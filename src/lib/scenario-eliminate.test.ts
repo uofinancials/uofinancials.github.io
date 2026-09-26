@@ -150,7 +150,7 @@ test('the options are each area by name with its units by name', () => {
     {
       code: AREA,
       name: 'Arts & Sciences',
-      units: [
+      entries: [
         { code: UNIT, name: 'CAS Biology' },
         { code: MATH, name: 'CAS Mathematics' },
       ],

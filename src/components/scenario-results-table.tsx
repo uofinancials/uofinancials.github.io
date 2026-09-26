@@ -13,10 +13,10 @@ import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import type { Savings } from '@/lib/scenario'
 import { type ResultRow, smallReachNote } from '@/lib/scenario-labels'
 import { toPercent } from '@/lib/scenario-search'
+import { NUMBER_CELL } from '@/lib/utils'
 
 type HistoryStatus = ScenarioHistory['status']
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const HEADS = ['Jobs', 'Salary', 'Full cost', 'E&G']
 
 function SavingsCells({ savings }: { savings: Savings }) {

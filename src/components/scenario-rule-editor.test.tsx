@@ -15,7 +15,7 @@ const ELIMINATIONS = [
   {
     code: '222000',
     name: 'Arts & Sciences, College of',
-    units: [{ code: '223501', name: 'CAS Mathematics' }],
+    entries: [{ code: '223501', name: 'CAS Mathematics' }],
   },
 ]
 

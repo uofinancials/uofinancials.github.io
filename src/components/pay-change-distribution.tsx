@@ -1,13 +1,6 @@
+import { BinTable } from '@/components/bin-table'
 import { SelectField } from '@/components/select-field'
 import { StackedBarChart } from '@/components/stacked-bar-chart'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { formatCount } from '@/lib/format'
 import {
   type ChangeDistribution,
@@ -17,8 +10,6 @@ import {
 } from '@/lib/pay-changes'
 import { stackedCounts } from '@/lib/trend-groups'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
-
-const NUMBER_CELL = 'text-right tabular-nums'
 
 /** The chosen census pair's jobs by change in rate, as a stacked histogram and a table. */
 export function PayChangeDistribution({
@@ -59,39 +50,14 @@ export function PayChangeDistribution({
             series={stacks}
             label={label}
           />
-          <Table>
-            <caption className="sr-only">{label}</caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead scope="col">Change</TableHead>
-                {stacks.map(({ key }) => (
-                  <TableHead key={key} scope="col" className="text-right">
-                    {key}
-                  </TableHead>
-                ))}
-                <TableHead scope="col" className="text-right">
-                  Total
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {distribution.bins.map((bin) => (
-                <TableRow key={changeBinLabel(bin)}>
-                  <TableHead scope="row" className="font-normal">
-                    {changeBinRange(bin)}
-                  </TableHead>
-                  {stacks.map(({ key }) => (
-                    <TableCell key={key} className={NUMBER_CELL}>
-                      {formatCount(bin.counts[key])}
-                    </TableCell>
-                  ))}
-                  <TableCell className={NUMBER_CELL}>
-                    {formatCount(bin.total)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <BinTable
+            bins={distribution.bins}
+            groups={stacks.map(({ key }) => key)}
+            heading="Change"
+            caption={label}
+            rowKey={changeBinLabel}
+            rowHeader={changeBinRange}
+          />
         </>
       )}
     </section>

@@ -23,8 +23,8 @@ import {
   runRateFor,
 } from '@/lib/budget-outlook'
 import { formatCompactDollars, formatDollars } from '@/lib/format'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const GAP_HEADS = ['Revenue', 'Expenses', 'Run rate', 'Ending fund balance']
 
 function ReportedNotes({

@@ -11,6 +11,7 @@ import type { FallRecord } from '@/data/fall'
 import { formatDollars } from '@/lib/format'
 import { recordKey } from '@/lib/people-list'
 import { titleOf } from '@/lib/person-fields'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** Jobs as published, each name linked to its person page for the census year. */
 export function TopPaidTable({
@@ -57,7 +58,7 @@ export function TopPaidTable({
             <TableCell className="min-w-32 whitespace-normal">
               {job.payDepartment.name}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
+            <TableCell className={NUMBER_CELL}>
               {formatDollars(job.annualSalaryRateCents)}
             </TableCell>
           </TableRow>

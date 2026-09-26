@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/table'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import type { GroupRow } from '@/lib/people-list'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** Jobs per group as bars, and a table of each group's jobs and median rate. */
 export function GroupJobsFigure({

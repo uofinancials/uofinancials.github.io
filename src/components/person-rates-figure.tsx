@@ -16,8 +16,7 @@ import type { PeerMedians } from '@/lib/peer-median'
 import type { Person } from '@/lib/person-lookup'
 import { MEDIAN_SERIES, personRates } from '@/lib/person-summary'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** Each job's published rate by census, as a chart and a table. */
 export function PersonRatesFigure({

@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { CensusControls } from '@/components/census-controls'
 import { ColumnPicker } from '@/components/column-picker'
 import { GroupJobsFigure } from '@/components/group-jobs-figure'
+import { PageSection } from '@/components/page-section'
 import { PeopleControls } from '@/components/people-controls'
 import { peopleIndexQuery } from '@/components/people-index-query'
 import { PeopleTable } from '@/components/people-table'
@@ -158,8 +159,7 @@ function CategorySpend({
   year: number
 }) {
   return (
-    <section className="space-y-3">
-      <h2 className="text-xl font-semibold">Salary spend by EEO category</h2>
+    <PageSection title="Salary spend by EEO category">
       <TotalsChart
         bars={byCategory.map(({ key, totals }) => ({
           key,
@@ -179,7 +179,7 @@ function CategorySpend({
         source={{ kind: 'fall', year }}
         computed={`over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`}
       />
-    </section>
+    </PageSection>
   )
 }
 

@@ -9,8 +9,7 @@ import {
 import { formatCount, formatShare, NO_VALUE } from '@/lib/format'
 import { type ChangeCounts, pairLabel } from '@/lib/pay-changes'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 const COLUMNS: {
   heading: string

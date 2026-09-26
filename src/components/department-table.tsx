@@ -17,6 +17,7 @@ import {
   formatOrBlank,
 } from '@/lib/format'
 import type { SortDirection } from '@/lib/sort'
+import { NUMBER_CELL } from '@/lib/utils'
 
 const FIGURES: {
   label: string
@@ -124,7 +125,7 @@ export function DepartmentTable({
               </TableCell>
             )}
             {FIGURES.map(({ sort, value }) => (
-              <TableCell key={sort} className="text-right tabular-nums">
+              <TableCell key={sort} className={NUMBER_CELL}>
                 {value(row)}
               </TableCell>
             ))}

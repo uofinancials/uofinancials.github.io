@@ -9,9 +9,7 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import { formatDollars, formatOrBlank, formatWeeks } from '@/lib/format'
-import { cn } from '@/lib/utils'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { cn, NUMBER_CELL } from '@/lib/utils'
 
 function Row({
   label,

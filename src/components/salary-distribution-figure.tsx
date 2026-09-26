@@ -1,12 +1,5 @@
+import { BinTable } from '@/components/bin-table'
 import { StackedBarChart } from '@/components/stacked-bar-chart'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import {
   binLabel,
@@ -16,59 +9,6 @@ import {
   type SalaryBin,
 } from '@/lib/salary-distribution'
 import { stackedCounts, type TrendGroup } from '@/lib/trend-groups'
-
-const NUMBER_CELL = 'text-right tabular-nums'
-
-function BinTable({
-  distribution,
-  groups,
-  onSelectBin,
-}: {
-  distribution: Distribution
-  groups: TrendGroup[]
-  onSelectBin: (bin: SalaryBin) => void
-}) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead scope="col">Salary rate</TableHead>
-          {groups.map((group) => (
-            <TableHead key={group} scope="col" className="text-right">
-              {group}
-            </TableHead>
-          ))}
-          <TableHead scope="col" className="text-right">
-            Total
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {distribution.bins.map((bin) => (
-          <TableRow key={bin.floorCents}>
-            <TableHead scope="row" className="font-normal">
-              <button
-                type="button"
-                className="underline"
-                onClick={() => onSelectBin(bin)}
-              >
-                {binRange(bin)}
-              </button>
-            </TableHead>
-            {groups.map((group) => (
-              <TableCell key={group} className={NUMBER_CELL}>
-                {formatCount(bin.counts[group])}
-              </TableCell>
-            ))}
-            <TableCell className={NUMBER_CELL}>
-              {formatCount(bin.total)}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
-}
 
 function Summary({
   distribution,
@@ -133,9 +73,19 @@ export function SalaryDistributionFigure({
         </summary>
         <Summary distribution={distribution} groups={groups} />
         <BinTable
-          distribution={distribution}
+          bins={distribution.bins}
           groups={groups}
-          onSelectBin={onSelectBin}
+          heading="Salary rate"
+          rowKey={(bin) => bin.floorCents}
+          rowHeader={(bin) => (
+            <button
+              type="button"
+              className="underline"
+              onClick={() => onSelectBin(bin)}
+            >
+              {binRange(bin)}
+            </button>
+          )}
         />
       </details>
     </section>

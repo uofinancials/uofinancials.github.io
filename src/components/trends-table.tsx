@@ -9,8 +9,7 @@ import {
 import { formatOrBlank } from '@/lib/format'
 import type { TrendPoint, TrendSeries } from '@/lib/trends'
 import { type CensusMetric, METRIC_INFO } from '@/lib/trends-search'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** The selected metric by census year, a column per series and one for their total. */
 export function TrendsTable({

@@ -16,9 +16,8 @@ import {
   formatDollars,
   formatOrBlank,
 } from '@/lib/format'
-import { cn } from '@/lib/utils'
+import { cn, NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const BREAKDOWN_OPTIONS = [
   ['account', 'Account group'],
   ['fund', 'Fund type'],

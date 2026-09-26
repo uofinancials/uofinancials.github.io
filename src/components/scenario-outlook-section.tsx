@@ -22,8 +22,8 @@ import {
   type OutlookRow,
   scenarioSeries,
 } from '@/lib/scenario-outlook'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const HEADS = [
   'Savings',
   'Run rate',

@@ -19,8 +19,8 @@ import { pairLabel } from '@/lib/pay-changes'
 import type { RaiseComparison } from '@/lib/raise-comparison'
 import { RAISE_ROW_METHOD, UNPLACED_JOBS } from '@/lib/raise-groups'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const NO_TERM = 'No term recorded'
 
 const COMPUTED = `${RAISE_ROW_METHOD} The across-the-board increase compounds every cited across-the-board term for the row that took effect after the earlier census date and on or before the later one; which terms apply to which row is this site's reading of each term's published scope. A retroactive term may reach the census a pair later. The part other than across-the-board is the median change less the across-the-board increase, in percentage points: an estimate of merit, step, equity, promotion, and other increases for the group, never for a person. Medians are shown for ${MIN_JOBS_SHOWN} or more jobs.`
