@@ -5,9 +5,13 @@ import { listAreas, ORG_LEVEL_AREA } from './areas.ts'
 import { sumBy, unitsOf } from './department-budget.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
-import { fiscalYearForCensus, UNASSIGNED_AREA } from './overview.ts'
+import {
+  fiscalYearForCensus,
+  SPEND_METHOD,
+  UNASSIGNED_AREA,
+} from './overview.ts'
 import type { SortDirection } from './people-search.ts'
-import { measureJobs } from './trends.ts'
+import { MIN_JOBS_SHOWN, measureJobs } from './trends.ts'
 
 /** A census joined to the budget year that names its areas. */
 export type TableYear = { census: DepartmentCensus; budget: BudgetYear }
@@ -37,7 +41,7 @@ export const CHANGE_MIN_JOBS = 10
 /** A budget change is blank when the earlier beginning budget is smaller. */
 export const CHANGE_MIN_BUDGET_CENTS = 10_000_000
 
-export const DEPARTMENT_TABLE_METHOD = `The budget is UO’s Total Expenditure Budget as published; an area’s is the sum of its units. Its change compares beginning budgets, set at the start of each year, since the total grows through a year and the later year is not at year-end. Jobs, salary spend, and median salary rate are as on each department’s page. Each change is the percent change from the year before. It is blank when the earlier year has fewer than ${CHANGE_MIN_JOBS} jobs or a beginning budget under ${formatDollars(CHANGE_MIN_BUDGET_CENTS)}, or does not publish the code. An area’s jobs, spend, and median changes are blank, since the site places fewer of the earlier census’s jobs in areas.`
+export const DEPARTMENT_TABLE_METHOD = `The budget is UO’s Total Expenditure Budget as published; an area’s is the sum of its units. Its change compares beginning budgets, set at the start of each year, since the total grows through a year and the later year is not at year-end. Jobs are Fall census jobs paid under the code, or, for an area, placed in it; ${SPEND_METHOD} Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Each change is the percent change from the year before. It is blank when the earlier year has fewer than ${CHANGE_MIN_JOBS} jobs or a beginning budget under ${formatDollars(CHANGE_MIN_BUDGET_CENTS)}, or does not publish the code. An area’s jobs, spend, and median changes are blank, since the site places fewer of the earlier census’s jobs in areas.`
 
 type BudgetSums = {
   orgs: BudgetYear['orgs']
@@ -205,6 +209,28 @@ export function departmentRows(
       ),
     ),
   }
+}
+
+/** The latest two censuses with the budget years that name their areas; `null` with fewer than two. */
+export function latestTableYears(
+  censuses: DepartmentCensus[],
+  budgets: BudgetYear[],
+): { now: TableYear; before: TableYear } | null {
+  const tableYear = (census: DepartmentCensus): TableYear => {
+    const budget = budgets.find(
+      ({ fiscalYear }) => fiscalYear === census.fiscalYear,
+    )
+    if (!budget) {
+      throw new Error(
+        `The budget for fiscal year ${census.fiscalYear} is not loaded`,
+      )
+    }
+    return { census, budget }
+  }
+  const [now, before] = [...censuses].sort((a, b) => b.year - a.year)
+  return now && before
+    ? { now: tableYear(now), before: tableYear(before) }
+    : null
 }
 
 /** The latest census and the one before it, each with the budget year that names its areas. */
