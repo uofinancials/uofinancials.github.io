@@ -37,7 +37,6 @@ export function acrossTheBoardTerm(
   }
 }
 
-/** A parsed merit or equity pool term. */
 export function poolTerm(
   employeeGroup: EmployeeGroup,
   basisPoints: number | null,
