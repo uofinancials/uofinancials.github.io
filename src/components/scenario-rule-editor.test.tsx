@@ -26,7 +26,8 @@ function renderEditor(rule: Rule = RULE) {
     <ScenarioRuleEditor
       rule={rule}
       position={1}
-      count={2}
+      canMoveUp={false}
+      canMoveDown
       areas={[]}
       positions={new Map([['E0104', 'Office Specialist 2 (E0104)']])}
       eliminations={ELIMINATIONS}
@@ -64,7 +65,10 @@ test('a class or rank is set only when it names one in the census', async () => 
 
 test('the first rule cannot move up, and moving down is named for its place', async () => {
   const { onMove } = renderEditor()
-  expect(screen.getByRole('button', { name: 'Move rule 1 up' })).toBeDisabled()
+  const up = screen.getByRole('button', { name: 'Move rule 1 up' })
+  expect(up).toHaveAttribute('aria-disabled', 'true')
+  await userEvent.click(up)
+  expect(onMove).not.toHaveBeenCalled()
   await userEvent.click(
     screen.getByRole('button', { name: 'Move rule 1 down' }),
   )

@@ -21,7 +21,7 @@ const AFTER_FREEZE_OPTIONS: [string, string][] = [
   ['eliminate', 'Eliminated'],
 ]
 const BUTTON_CLASS =
-  'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-sm disabled:opacity-50'
+  'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-sm aria-disabled:opacity-50'
 
 function PercentField({
   basisPoints,
@@ -169,8 +169,8 @@ function RuleButton({
       type="button"
       className={BUTTON_CLASS}
       aria-label={label}
-      disabled={isDisabled}
-      onClick={onClick}
+      aria-disabled={isDisabled}
+      onClick={isDisabled ? undefined : onClick}
     >
       {children}
     </button>
@@ -181,7 +181,8 @@ function RuleButton({
 export function ScenarioRuleEditor({
   rule,
   position,
-  count,
+  canMoveUp,
+  canMoveDown,
   areas,
   positions,
   eliminations,
@@ -191,7 +192,8 @@ export function ScenarioRuleEditor({
 }: {
   rule: Rule
   position: number
-  count: number
+  canMoveUp: boolean
+  canMoveDown: boolean
   areas: IndexArea[]
   positions: Map<string, string>
   eliminations: IndexArea[]
@@ -223,14 +225,14 @@ export function ScenarioRuleEditor({
       <div className="flex flex-wrap gap-2">
         <RuleButton
           label={`Move ${name} up`}
-          isDisabled={position === 1}
+          isDisabled={!canMoveUp}
           onClick={() => onMove(-1)}
         >
           <ArrowUp aria-hidden className="size-4" /> Up
         </RuleButton>
         <RuleButton
           label={`Move ${name} down`}
-          isDisabled={position === count}
+          isDisabled={!canMoveDown}
           onClick={() => onMove(1)}
         >
           <ArrowDown aria-hidden className="size-4" /> Down

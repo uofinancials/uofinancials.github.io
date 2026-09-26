@@ -1,4 +1,10 @@
-import { ANY_SCOPE, type Rule } from './scenario.ts'
+import {
+  ANY_SCOPE,
+  type Rule,
+  type RuleStage,
+  stageOf,
+  stageRank,
+} from './scenario.ts'
 
 export const RULE_KINDS = [
   'threshold',
@@ -42,14 +48,36 @@ export function newRule(kind: RuleKind, firstCode: string): Rule {
   }
 }
 
-/** The rules with the one at `index` swapped with its neighbour; unchanged at either end. */
-export function moveRule(rules: Rule[], index: number, offset: -1 | 1): Rule[] {
-  const target = index + offset
+export const RULE_STAGE_HEADINGS: Record<RuleStage, string> = {
+  eliminate: 'Removed first',
+  census: 'Pay rules, in order',
+  freeze: 'Hiring freezes, after the rules above',
+  raises: 'Raise freezes, last',
+}
+
+/** Whether the rule at `index` can swap with its neighbour at `offset`: both exist and share a stage. */
+export function canMoveRule(
+  rules: Rule[],
+  index: number,
+  offset: -1 | 1,
+): boolean {
   const moving = rules[index]
-  const other = rules[target]
-  if (moving === undefined || other === undefined) return rules
-  const moved = [...rules]
-  moved[index] = other
-  moved[target] = moving
-  return moved
+  const other = rules[index + offset]
+  return (
+    moving !== undefined &&
+    other !== undefined &&
+    stageOf(moving) === stageOf(other)
+  )
+}
+
+export function swapAt<T>(items: T[], index: number, offset: -1 | 1): T[] {
+  const moving = items[index]
+  const other = items[index + offset]
+  if (moving === undefined || other === undefined) return items
+  return items.with(index, other).with(index + offset, moving)
+}
+
+/** Where a new rule goes in stage-ordered rules: the end of its stage. */
+export function ruleInsertIndex(rules: Rule[], rule: Rule): number {
+  return rules.filter((listed) => stageRank(listed) <= stageRank(rule)).length
 }

@@ -3,7 +3,7 @@ import { orgCodeParam } from '../data/budget.ts'
 import { staffKindSchema } from '../data/fall.ts'
 import { CENTS_PER_DOLLAR } from './format.ts'
 import { TERMS } from './salary-distribution.ts'
-import type { Rule, ScenarioScope } from './scenario.ts'
+import { type Rule, type ScenarioScope, sortByStage } from './scenario.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 
 const BASIS_POINTS_PER_PERCENT = 100
@@ -147,7 +147,7 @@ function toRule(entry: z.output<typeof ruleEntry>): Rule {
   }
 }
 
-/** The rules a search's `rules` array holds, and how many entries were not rules; an elimination must name one of `budgetCodes`. */
+/** The rules a search's `rules` array holds, in stage order, and how many entries were not rules; an elimination must name one of `budgetCodes`. */
 export function parseRules(
   entries: unknown[],
   budgetCodes: ReadonlySet<string>,
@@ -162,7 +162,7 @@ export function parseRules(
       parsed.data.kind !== 'eliminate' || budgetCodes.has(parsed.data.code)
     return isListed ? [toRule(parsed.data)] : []
   })
-  return { rules, dropped: entries.length - rules.length }
+  return { rules: sortByStage(rules), dropped: entries.length - rules.length }
 }
 
 function toScopeEntry(scope: ScenarioScope): ScopeEntry {
