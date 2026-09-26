@@ -1,5 +1,6 @@
 import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
 import { type PeerGroup, peerGroupOf } from './peer-group.ts'
+import { isPrimaryJob } from './person-lookup.ts'
 import { MIN_JOBS_SHOWN, medianRateCents } from './trends.ts'
 
 function medianKey(year: number, group: PeerGroup, term: number): string {
@@ -15,7 +16,7 @@ export function peerMedians(years: FallYear[]): PeerMedians {
     const year = censusYearOf(censusDate)
     for (const record of records) {
       const group = peerGroupOf(record)
-      if (record.jobType !== 'Primary' || !group) continue
+      if (!isPrimaryJob(record) || !group) continue
       const key = medianKey(year, group, record.termOfServiceMonths)
       const groupRates = rates.get(key)
       if (groupRates) groupRates.push(record.annualSalaryRateCents)

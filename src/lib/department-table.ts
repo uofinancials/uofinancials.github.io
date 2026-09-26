@@ -203,6 +203,13 @@ export function departmentRows(
   }
 }
 
+function latestTwo<T extends { year: number }>(
+  items: T[],
+): { now: T; before: T } | null {
+  const [now, before] = [...items].sort((a, b) => b.year - a.year)
+  return now && before ? { now, before } : null
+}
+
 /** The latest two censuses with the budget years that name their areas; `null` with fewer than two. */
 export function latestTableYears(
   censuses: DepartmentCensus[],
@@ -219,9 +226,9 @@ export function latestTableYears(
     }
     return { census, budget }
   }
-  const [now, before] = [...censuses].sort((a, b) => b.year - a.year)
-  return now && before
-    ? { now: tableYear(now), before: tableYear(before) }
+  const latest = latestTwo(censuses)
+  return latest
+    ? { now: tableYear(latest.now), before: tableYear(latest.before) }
     : null
 }
 
@@ -230,16 +237,13 @@ export function selectTableSources(manifest: Manifest): {
   now: { year: number; fiscalYear: number }
   before: { year: number; fiscalYear: number }
 } {
-  const [now, before] = [...manifest.fall]
-    .sort((a, b) => b.year - a.year)
-    .map(({ year, censusDate }) => ({
-      year,
-      fiscalYear: fiscalYearForCensus(manifest, censusDate),
-    }))
-  if (!now || !before) {
-    throw new Error('The department table needs two Fall censuses')
-  }
-  return { now, before }
+  const latest = latestTwo(manifest.fall)
+  if (!latest) throw new Error('The department table needs two Fall censuses')
+  const source = ({ year, censusDate }: (typeof manifest.fall)[number]) => ({
+    year,
+    fiscalYear: fiscalYearForCensus(manifest, censusDate),
+  })
+  return { now: source(latest.now), before: source(latest.before) }
 }
 
 export const DEPARTMENT_SORTS = [

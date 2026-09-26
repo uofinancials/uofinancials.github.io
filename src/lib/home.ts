@@ -5,6 +5,7 @@ import type { Manifest } from '../data/manifest.ts'
 import type { OpeRates } from '../data/ope.ts'
 import type { Projection } from '../data/outlook.ts'
 import type { AreaAssignment } from './areas.ts'
+import { runRateFor } from './budget-outlook.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import type { AreaFigure } from './department-table.ts'
 import { egShares } from './eg-share.ts'
@@ -23,9 +24,7 @@ import { compareKeys } from './sort.ts'
 /** The projection's run rate in the first projected year after the census. */
 function runRateAfter(projection: Projection, censusFiscalYear: number) {
   const fiscalYear = firstSavingsYear(projection.fiscalYears, censusFiscalYear)
-  const cents =
-    projection.runRateCents[projection.fiscalYears.indexOf(fiscalYear)] ?? 0
-  return { fiscalYear, cents }
+  return { fiscalYear, cents: runRateFor(projection, fiscalYear) ?? 0 }
 }
 
 export type HeadlineFigures = {

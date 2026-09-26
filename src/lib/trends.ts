@@ -2,6 +2,7 @@ import type { FallRecord, StaffKind } from '../data/fall.ts'
 import { isClassifiedTemp, summarize } from './overview.ts'
 import { type PeerGroup, peerGroupOf } from './peer-group.ts'
 import { department } from './person-fields.ts'
+import { isPrimaryJob } from './person-lookup.ts'
 import {
   compareLines,
   lineOf,
@@ -126,7 +127,7 @@ export function medianRateCents(rates: number[]): number | null {
 export function measureJobs(records: FallRecord[]): Omit<TrendPoint, 'year'> {
   const paid = records.filter((record) => !isClassifiedTemp(record))
   const rates = paid
-    .filter((record) => record.jobType === 'Primary')
+    .filter(isPrimaryJob)
     .map((record) => record.annualSalaryRateCents)
   return {
     jobs: records.length,

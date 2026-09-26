@@ -34,6 +34,13 @@ export function gapRows(projection: Projection): GapRow[] {
   }))
 }
 
+export function runRateFor(
+  projection: Projection,
+  fiscalYear: number,
+): number | undefined {
+  return projection.runRateCents[projection.fiscalYears.indexOf(fiscalYear)]
+}
+
 export const RUN_RATE_SERIES = 'Run rate'
 export const FUND_BALANCE_SERIES = 'Ending fund balance'
 

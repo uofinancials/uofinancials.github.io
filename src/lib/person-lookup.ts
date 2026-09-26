@@ -65,9 +65,13 @@ function recordsByNameAndYear(years: FallYear[]): Map<string, PersonYear[]> {
   return byName
 }
 
+export function isPrimaryJob(record: FallRecord): boolean {
+  return record.jobType === 'Primary'
+}
+
 /** The first job of type Primary among the records, if any. */
 export function primaryJobOf(records: FallRecord[]): FallRecord | undefined {
-  return records.find((record) => record.jobType === 'Primary')
+  return records.find(isPrimaryJob)
 }
 
 /** One entry per name exactly as published, sorted by name. */
