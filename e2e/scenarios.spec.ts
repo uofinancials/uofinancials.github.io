@@ -48,7 +48,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
     .getByRole('link', { name: /^With a one-year hiring freeze and 5% off/ })
     .click()
   await expect(
-    page.getByRole('rowheader', { name: /^1\. A 1-year hiring freeze/ }),
+    page.getByRole('rowheader', { name: /^2\. A 1-year hiring freeze/ }),
   ).toContainText('turnover a year')
   const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
   await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
@@ -105,16 +105,23 @@ test('rules are added, edited, moved, and removed in place, and held in the link
   await expect(
     page.getByRole('rowheader', { name: /^2\. A 1-year hiring freeze/ }),
   ).toContainText('at 10.33% turnover a year')
+  await page.getByRole('button', { name: 'Cut pay', exact: true }).click()
+  await expect(page.getByRole('group', { name: /^2\./ })).toHaveAccessibleName(
+    /% off pay$/,
+  )
+  await expect(page.getByRole('group', { name: /^3\./ })).toHaveAccessibleName(
+    /hiring freeze/,
+  )
   await page.getByRole('button', { name: 'Move rule 2 up' }).click()
   await expect(page.getByRole('group', { name: /^1\./ })).toHaveAccessibleName(
-    /hiring freeze/,
+    /% off pay$/,
   )
   await page.reload()
   await expect(page.getByRole('group', { name: /^2\./ })).toHaveAccessibleName(
     /Pay capped/,
   )
   await page.getByRole('button', { name: 'Remove rule 1' }).click()
-  await expect(page.getByRole('group')).toHaveCount(1)
+  await expect(page.getByRole('group')).toHaveCount(2)
   await expect(page.getByRole('group', { name: /^1\./ })).toHaveAccessibleName(
     /Pay capped/,
   )

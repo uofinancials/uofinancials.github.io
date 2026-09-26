@@ -11,6 +11,7 @@ import {
 } from './scenario-search'
 
 const RULES: Rule[] = [
+  { kind: 'eliminate', code: '223501' },
   {
     kind: 'threshold',
     scope: { ...ANY_SCOPE, group: 'Executives', dept: '222000' },
@@ -24,7 +25,6 @@ const RULES: Rule[] = [
     cutBasisPoints: 5,
   },
   { kind: 'freeze', scope: ANY_SCOPE, years: 2, afterFreeze: 'eliminate' },
-  { kind: 'eliminate', code: '223501' },
   {
     kind: 'raises',
     scope: { ...ANY_SCOPE, kind: 'classified' },
@@ -36,19 +36,19 @@ const BUDGET_CODES = new Set(['222000', '223501'])
 
 test('rules round-trip through the URL form in dollars and percents, leaving out "any" scope fields', () => {
   const entries = toSearchRules(RULES)
-  expect(entries[0]).toEqual({
+  expect(entries[0]).toEqual({ kind: 'eliminate', code: '223501' })
+  expect(entries[1]).toEqual({
     kind: 'threshold',
     scope: { group: 'Executives', dept: '222000' },
     overDollars: 200_000,
     cutPercent: 12.5,
   })
-  expect(entries[3]).toEqual({
+  expect(entries[4]).toEqual({
     kind: 'freeze',
     scope: {},
     years: 2,
     afterFreeze: 'eliminate',
   })
-  expect(entries[4]).toEqual({ kind: 'eliminate', code: '223501' })
   expect(entries[5]).toEqual({
     kind: 'raises',
     scope: { kind: 'classified' },

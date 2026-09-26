@@ -58,13 +58,13 @@ export const SCENARIO_EXAMPLES: ScenarioExample[] = [
     question:
       'With a one-year hiring freeze and 5% off pay above $150,000, what gap is left each year to FY31?',
     rules: [
-      { kind: 'freeze', scope: ANY_SCOPE, years: 1, afterFreeze: 'refill' },
       {
         kind: 'threshold',
         scope: ANY_SCOPE,
         overCents: 15_000_000,
         cutBasisPoints: 500,
       },
+      { kind: 'freeze', scope: ANY_SCOPE, years: 1, afterFreeze: 'refill' },
     ],
   },
 ]

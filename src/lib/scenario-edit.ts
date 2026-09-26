@@ -42,12 +42,42 @@ export function newRule(kind: RuleKind, firstCode: string): Rule {
   }
 }
 
-/** The rules with the one at `index` swapped with its neighbour; unchanged at either end. */
+/** The stages a scenario runs its rules in, whatever their order in the stack. */
+export const RULE_STAGES = ['eliminate', 'census', 'freeze', 'raises'] as const
+export type RuleStage = (typeof RULE_STAGES)[number]
+
+export const RULE_STAGE_HEADINGS: Record<RuleStage, string> = {
+  eliminate: 'Removed first',
+  census: 'Pay rules, in order',
+  freeze: 'Hiring freezes, after the rules above',
+  raises: 'Raise freezes, last',
+}
+
+export function stageOf(rule: Rule): RuleStage {
+  switch (rule.kind) {
+    case 'threshold':
+    case 'remove':
+    case 'cut':
+      return 'census'
+    default:
+      return rule.kind
+  }
+}
+
+/** The rules in stage order, keeping their order within each stage. */
+export function sortByStage(rules: Rule[]): Rule[] {
+  return rules.toSorted(
+    (a, b) => RULE_STAGES.indexOf(stageOf(a)) - RULE_STAGES.indexOf(stageOf(b)),
+  )
+}
+
+/** The rules with the one at `index` swapped with its neighbour; unchanged at either end of its stage. */
 export function moveRule(rules: Rule[], index: number, offset: -1 | 1): Rule[] {
   const target = index + offset
   const moving = rules[index]
   const other = rules[target]
   if (moving === undefined || other === undefined) return rules
+  if (stageOf(moving) !== stageOf(other)) return rules
   const moved = [...rules]
   moved[index] = other
   moved[target] = moving
