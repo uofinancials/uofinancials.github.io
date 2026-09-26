@@ -20,7 +20,7 @@ import type {
   ScenarioResult,
   ScenarioScope,
 } from '../src/lib/scenario.ts'
-import { scenarioOutlook } from '../src/lib/scenario-outlook.ts'
+import { baselines, scenarioOutlook } from '../src/lib/scenario-outlook.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
 import {
   budgetDataPath,
@@ -142,8 +142,15 @@ function censusSavings(result: ScenarioResult) {
   )
 }
 
-/** Fall 2025 set against the projection, from FY27 at FY27 OPE rates. */
-function runFall2025(rules: Rule[]) {
+const BASELINES = baselines(PROJECTION)
+const STATE_FUNDING_BELOW = BASELINES.findIndex(({ label }) =>
+  label.startsWith('State funding $20 million below'),
+)
+
+/** Fall 2025 set against a baseline, from FY27 at FY27 OPE rates. */
+function runFall2025(rules: Rule[], baselineIndex = 0) {
+  const baseline = BASELINES[baselineIndex]
+  if (!baseline) throw new Error(`No baseline ${baselineIndex}`)
   return scenarioOutlook({
     census: FALL_2025,
     censusFiscalYear: fiscalYearOf(FALL_2025_DATE),
@@ -151,7 +158,8 @@ function runFall2025(rules: Rule[]) {
     rates: RATES,
     egShares: SHARES_2025,
     history: HISTORY,
-    projection: PROJECTION,
+    fiscalYears: PROJECTION.fiscalYears,
+    baseline,
   })
 }
 
@@ -166,6 +174,14 @@ test('with no rules, the outlook is the projection as published', () => {
 })
 
 // The values below match an independent Python recomputation over public/data/.
+test('the baselines are the projection, named for its base case, and its five other cases', () => {
+  expect(BASELINES.map(({ label }) => label)).toEqual(
+    PROJECTION.cases.map(({ label }) => label),
+  )
+  expect(BASELINES[0]?.expenseCents).not.toBeNull()
+  expect(STATE_FUNDING_BELOW).toBe(3)
+})
+
 test('question 2: 10% off pay above $200,000 reaches 263 jobs and saves $1.4M of E&G a year', () => {
   const { result } = runFall2025([
     {
@@ -275,4 +291,26 @@ test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn 
     rows.find((row) => row.remainingFundBalanceCents < 0)?.fiscalYear,
   ).toBe(2030)
   expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_729_034_329)
+})
+
+test('question 13: the same stack against state funding $20M below projection leaves the balance negative from FY30', () => {
+  const stack: Rule[] = [
+    { kind: 'freeze', scope: ALL, years: 1, afterFreeze: 'refill' },
+    {
+      kind: 'threshold',
+      scope: ALL,
+      overCents: 15_000_000,
+      cutBasisPoints: 500,
+    },
+  ]
+  const { rows } = runFall2025(stack, STATE_FUNDING_BELOW)
+  expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
+    448_500_000, 2_465_306_200, -6_165_992_508, -7_625_958_026, -8_981_206_888,
+    -9_423_114_907,
+  ])
+  expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
+    12_415_355_700, 14_880_662_000, 8_714_669_492, 1_088_711_466,
+    -7_892_495_422, -17_315_610_329,
+  ])
+  expect(rows.every((row) => row.remainingWeeks === null)).toBe(true)
 })

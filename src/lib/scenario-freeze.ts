@@ -30,7 +30,7 @@ export type FreezeResult = {
 }
 
 export const FREEZE_METHOD =
-  "A hiring freeze is this site's estimate from past turnover, not a list of jobs. Its rate is the share of the scope's salary spend held by names that appear in one Fall census and in none of the next, averaged over the censuses given; that counts retirements, resignations, non-renewals, and name changes alike. In each year of the freeze, that share of the scope compounds: 1 - (1 - rate)^years. When it ends, positions are refilled at the departing jobs' pay, or stay eliminated, as the rule says. No exceptions are assumed. A freeze applies after every other rule, to the jobs and rates they left; freezes over the same jobs apply in order."
+  "A hiring freeze is this site's estimate from past turnover, not a list of jobs. Its rate is the share of the scope's salary spend held by names that appear in one Fall census and in none of the next, averaged over the censuses given; that counts retirements, resignations, non-renewals, and name changes alike. In each year of the freeze, that share of the scope compounds: 1 - (1 - rate)^years. When it ends, positions are refilled at the departing jobs' pay, or stay eliminated, as the rule says. Each year of the freeze counts in full, as if it began on the first day of the fiscal year. No exceptions are assumed. A freeze applies after every other rule, to the jobs and rates they left; freezes over the same jobs apply in order."
 
 /** The share of a scope's spend, in basis points, whose names leave between consecutive censuses; `null` with no spend. */
 function departedBasisPoints(

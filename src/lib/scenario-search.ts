@@ -54,10 +54,19 @@ const ruleEntry = z.discriminatedUnion('kind', [
 
 type ScopeEntry = z.input<typeof scopeEntry>
 
+/** A scenario as URL search params: `case` indexes the baselines, and `rules` is read by `parseRules`. */
 export const scenarioSearchSchema = z.object({
-  year: z.number().int().optional().catch(undefined),
+  case: z.number().int().nonnegative().optional().catch(undefined),
   rules: z.array(z.unknown()).optional().catch(undefined),
 })
+
+/** The baseline a search's `case` names, or the first when it names none. */
+export function resolveBaselineIndex(
+  index: number | undefined,
+  baselineCount: number,
+): number {
+  return index !== undefined && index < baselineCount ? index : 0
+}
 
 function toScope(entry: z.output<typeof scopeEntry>): ScenarioScope {
   return {

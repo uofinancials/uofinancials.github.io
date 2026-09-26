@@ -1,6 +1,10 @@
 import { expect, test } from 'vitest'
 import type { Rule, ScenarioScope } from './scenario'
-import { parseRules, toSearchRules } from './scenario-search'
+import {
+  parseRules,
+  resolveBaselineIndex,
+  toSearchRules,
+} from './scenario-search'
 
 const ALL: ScenarioScope = {
   group: null,
@@ -54,4 +58,10 @@ test('a malformed entry is dropped and counted, never read as a wider scope', ()
     rules: [{ kind: 'remove', scope: { ...ALL, dept: '222000' } }],
     dropped: 6,
   })
+})
+
+test('a case index out of range falls back to the first baseline', () => {
+  expect(resolveBaselineIndex(undefined, 6)).toBe(0)
+  expect(resolveBaselineIndex(3, 6)).toBe(3)
+  expect(resolveBaselineIndex(6, 6)).toBe(0)
 })

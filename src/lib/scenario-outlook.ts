@@ -1,22 +1,35 @@
 import type { OpeRates } from '../data/ope.ts'
 import type { Projection } from '../data/outlook.ts'
-import { type GapRow, gapRows } from './budget-outlook.ts'
+import { sectionTotal } from './budget-outlook.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { type Rule, runScenario, type ScenarioResult } from './scenario.ts'
 import { BASIS_BIG, divideHalfUp } from './scenario-jobs.ts'
 
-export type OutlookRow = GapRow & {
+/** What savings are set against: the projection or one of its published cases. */
+export type Baseline = {
+  label: string
+  runRateCents: number[]
+  endingFundBalanceCents: number[]
+  /** `null` for an alternative case, which publishes no expenses. */
+  expenseCents: number[] | null
+}
+
+export type OutlookRow = {
+  fiscalYear: number
+  runRateCents: number
+  endingFundBalanceCents: number
   /** E&G savings in the year: zero before the first year after the census. */
   savingsCents: number
   remainingRunRateCents: number
   remainingFundBalanceCents: number
-  /** Ending balance over the year's expenses less savings, in weeks to a tenth; `null` when those expenses are not positive. */
+  /** Ending balance over the year's expenses less savings, in weeks to a tenth; `null` when the expenses are unpublished or not positive. */
   remainingWeeks: number | null
 }
 
 /** The projection's own assumption for pay in later years. */
 export const SAVINGS_GROWTH_BASIS_POINTS = 300
 const WEEKS_PER_YEAR = 52
+const PROJECTION_LABEL = 'The projection as published'
 const TENTHS = 10
 
 export const SCENARIO_OUTLOOK_METHOD =
@@ -41,52 +54,95 @@ export function yearlySavings(result: ScenarioResult, years: number): number[] {
   })
 }
 
-function weeksOf(balanceCents: number, expenseCents: number): number | null {
-  if (expenseCents <= 0) return null
+function hasSameYears(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((cents, index) => cents === b[index])
+}
+
+/**
+ * The projection with its expenses, named after the case that matches it,
+ * then every other published case.
+ */
+export function baselines(projection: Projection): Baseline[] {
+  const isBase = (scenario: Projection['cases'][number]) =>
+    hasSameYears(scenario.runRateCents, projection.runRateCents) &&
+    hasSameYears(
+      scenario.endingFundBalanceCents,
+      projection.endingFundBalanceCents,
+    )
+  const base: Baseline = {
+    label: projection.cases.find(isBase)?.label ?? PROJECTION_LABEL,
+    runRateCents: projection.runRateCents,
+    endingFundBalanceCents: projection.endingFundBalanceCents,
+    expenseCents: sectionTotal(projection, 'expense'),
+  }
+  const others = projection.cases
+    .filter((scenario) => !isBase(scenario))
+    .map(({ label, runRateCents, endingFundBalanceCents }) => ({
+      label,
+      runRateCents,
+      endingFundBalanceCents,
+      expenseCents: null,
+    }))
+  return [base, ...others]
+}
+
+function weeksOf(
+  balanceCents: number,
+  expenseCents: number | undefined,
+): number | null {
+  if (expenseCents === undefined || expenseCents <= 0) return null
   return (
     Math.round(((balanceCents * WEEKS_PER_YEAR) / expenseCents) * TENTHS) /
     TENTHS
   )
 }
 
-/** The index of the first projected year after the census, or the row count when there is none. */
-function firstSavingsIndex(rows: GapRow[], censusFiscalYear: number): number {
-  const found = rows.findIndex((row) => row.fiscalYear > censusFiscalYear)
-  return found < 0 ? rows.length : found
+/** The index of the first projected year after the census, or the year count when there is none. */
+function firstSavingsIndex(
+  fiscalYears: number[],
+  censusFiscalYear: number,
+): number {
+  const found = fiscalYears.findIndex((year) => year > censusFiscalYear)
+  return found < 0 ? fiscalYears.length : found
 }
 
-/** The projection's years with a scenario's savings set against them. */
+/** The projection's years with a scenario's savings set against a baseline. */
 export function outlookRows(options: {
   result: ScenarioResult
-  projection: Projection
+  fiscalYears: number[]
+  baseline: Baseline
   censusFiscalYear: number
 }): OutlookRow[] {
-  const { result, projection, censusFiscalYear } = options
-  const rows = gapRows(projection)
-  const firstIndex = firstSavingsIndex(rows, censusFiscalYear)
-  const savings = yearlySavings(result, rows.length - firstIndex)
+  const { result, fiscalYears, baseline, censusFiscalYear } = options
+  const firstIndex = firstSavingsIndex(fiscalYears, censusFiscalYear)
+  const savings = yearlySavings(result, fiscalYears.length - firstIndex)
   let savedCents = 0
-  return rows.map((row, index) => {
+  return fiscalYears.map((fiscalYear, index) => {
+    const runRateCents = baseline.runRateCents[index] ?? 0
+    const endingFundBalanceCents = baseline.endingFundBalanceCents[index] ?? 0
     const savingsCents = savings[index - firstIndex] ?? 0
     savedCents += savingsCents
-    const remainingFundBalanceCents = row.endingFundBalanceCents + savedCents
+    const remainingFundBalanceCents = endingFundBalanceCents + savedCents
+    const expenseCents = baseline.expenseCents?.[index]
     return {
-      ...row,
+      fiscalYear,
+      runRateCents,
+      endingFundBalanceCents,
       savingsCents,
-      remainingRunRateCents: row.runRateCents + savingsCents,
+      remainingRunRateCents: runRateCents + savingsCents,
       remainingFundBalanceCents,
       remainingWeeks: weeksOf(
         remainingFundBalanceCents,
-        row.expenseCents - savingsCents,
+        expenseCents === undefined ? undefined : expenseCents - savingsCents,
       ),
     }
   })
 }
 
 /**
- * Runs a scenario against a projection: at the OPE rates of the first
- * projected year after the census, with freezes laid over every projected
- * year from then.
+ * Runs a scenario against a baseline over the projection's years: at the OPE
+ * rates of the first projected year after the census, with freezes laid over
+ * every projected year from then.
  */
 export function scenarioOutlook(options: {
   census: DepartmentCensus
@@ -95,18 +151,15 @@ export function scenarioOutlook(options: {
   rates: OpeRates
   egShares: Map<string, number>
   history: DepartmentCensus[]
-  projection: Projection
+  fiscalYears: number[]
+  baseline: Baseline
 }): { result: ScenarioResult; rows: OutlookRow[] } {
-  const { projection, censusFiscalYear } = options
-  const years = projection.fiscalYears
-  const firstIndex = firstSavingsIndex(gapRows(projection), censusFiscalYear)
+  const { fiscalYears, censusFiscalYear } = options
+  const firstIndex = firstSavingsIndex(fiscalYears, censusFiscalYear)
   const result = runScenario({
     ...options,
-    opeFiscalYear: years[firstIndex] ?? censusFiscalYear,
-    projectedYears: years.length - firstIndex,
+    opeFiscalYear: fiscalYears[firstIndex] ?? censusFiscalYear,
+    projectedYears: fiscalYears.length - firstIndex,
   })
-  return {
-    result,
-    rows: outlookRows({ result, projection, censusFiscalYear }),
-  }
+  return { result, rows: outlookRows({ ...options, result }) }
 }

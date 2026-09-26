@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import type { Projection } from '@/data/outlook'
 import type { Savings, ScenarioResult } from './scenario'
-import { outlookRows, yearlySavings } from './scenario-outlook'
+import { baselines, outlookRows, yearlySavings } from './scenario-outlook'
 
 const SOURCE = {
   url: 'https://example.org/packet.pdf',
@@ -36,10 +36,28 @@ const PROJECTION: Projection = {
   presentValueCents: 0,
   reductionTargetCents: 0,
   reductionTargetSource: SOURCE,
-  cases: [],
+  cases: [
+    {
+      label: 'Base case',
+      runRateCents: [100, -1_000, -2_000],
+      endingFundBalanceCents: [5_100, 4_100, 2_100],
+      weeksOfExpenses: [26.8, 19.4, 9.1],
+      presentValueCents: 0,
+    },
+    {
+      label: 'Less state funding',
+      runRateCents: [100, -1_500, -2_500],
+      endingFundBalanceCents: [5_100, 3_600, 1_100],
+      weeksOfExpenses: [26.8, 17.0, 4.8],
+      presentValueCents: 0,
+    },
+  ],
   casesSource: SOURCE,
   assumptions: [],
 }
+
+const [BASE, LESS_STATE] = baselines(PROJECTION)
+const FISCAL_YEARS = PROJECTION.fiscalYears
 
 const savings = (egCents: number): Savings => ({
   jobs: 0,
@@ -68,10 +86,32 @@ test('savings start in the first year after the census and grow 3% a year, freez
   expect(yearlySavings(RESULT, 2)).toEqual([600, 721])
 })
 
+test('the baselines are the projection, named for the case that matches it, then the other cases without expenses', () => {
+  expect(baselines(PROJECTION)).toEqual([
+    {
+      label: 'Base case',
+      runRateCents: [100, -1_000, -2_000],
+      endingFundBalanceCents: [5_100, 4_100, 2_100],
+      expenseCents: [9_900, 11_000, 12_000],
+    },
+    {
+      label: 'Less state funding',
+      runRateCents: [100, -1_500, -2_500],
+      endingFundBalanceCents: [5_100, 3_600, 1_100],
+      expenseCents: null,
+    },
+  ])
+  expect(baselines({ ...PROJECTION, cases: [] })[0]?.label).toBe(
+    'The projection as published',
+  )
+})
+
 test('the remaining gap and balance roll forward from the first saving year, with weeks of expenses less savings', () => {
+  if (!BASE) throw new Error('The projection has a base')
   const rows = outlookRows({
     result: RESULT,
-    projection: PROJECTION,
+    fiscalYears: FISCAL_YEARS,
+    baseline: BASE,
     censusFiscalYear: 2026,
   })
   expect(
@@ -118,10 +158,36 @@ test('the remaining gap and balance roll forward from the first saving year, wit
   ])
 })
 
-test('a census after every projected year saves nothing against it', () => {
+test('against a case, savings add to its own run rate and balance, and weeks are not computed', () => {
+  if (!LESS_STATE) throw new Error('The projection has a second case')
   const rows = outlookRows({
     result: RESULT,
-    projection: PROJECTION,
+    fiscalYears: FISCAL_YEARS,
+    baseline: LESS_STATE,
+    censusFiscalYear: 2026,
+  })
+  expect(
+    rows.map((row) => [
+      row.runRateCents,
+      row.remainingRunRateCents,
+      row.remainingFundBalanceCents,
+      row.remainingWeeks,
+    ]),
+  ).toEqual([
+    [100, 100, 5_100, null],
+    // -1,500 + 600; 3,600 + 600.
+    [-1_500, -900, 4_200, null],
+    // -2,500 + 721; 1,100 + 1,321.
+    [-2_500, -1_779, 2_421, null],
+  ])
+})
+
+test('a census after every projected year saves nothing against it', () => {
+  if (!BASE) throw new Error('The projection has a base')
+  const rows = outlookRows({
+    result: RESULT,
+    fiscalYears: FISCAL_YEARS,
+    baseline: BASE,
     censusFiscalYear: 2028,
   })
   expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
