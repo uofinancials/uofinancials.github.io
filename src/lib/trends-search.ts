@@ -98,7 +98,7 @@ export const trendsSearchSchema = z.object({
 
 export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 
-export type TrendView = TrendFilter & {
+export type TrendView = Omit<TrendFilter, 'jobs'> & {
   metric: TrendMetric
   hide: string[]
   /** A college or VP area code; its jobs are placed as its department page places them. */

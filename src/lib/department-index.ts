@@ -1,7 +1,11 @@
 import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
 import { listAreas, ORG_LEVEL_AREA } from './areas.ts'
-import { type DepartmentCensus, isAreaCode } from './department-jobs.ts'
+import {
+  type DepartmentCensus,
+  departmentYears,
+  isAreaCode,
+} from './department-jobs.ts'
 import { UNASSIGNED_AREA } from './overview.ts'
 
 /** A unit or pay department, the area it sits in, and the jobs paid under its code. */
@@ -130,5 +134,24 @@ export function describeCode(
     hasBudget: budgetNames.length > 0,
     hasJobs: isArea || jobs.length > 0,
     area: isArea ? null : containingArea(code, jobs, newestBudgets),
+  }
+}
+
+/** An area's jobs in every census, placed as its page places them; its name as `describeCode` gives it, or the code; and the budget years that placed them. */
+export function areaTrendFilter(
+  area: string,
+  censuses: DepartmentCensus[],
+  budgets: BudgetYear[],
+) {
+  const fiscalYears = censuses.map(({ fiscalYear }) => fiscalYear)
+  return {
+    jobs: new Set(
+      departmentYears(area, censuses).years.flatMap(({ records }) => records),
+    ),
+    name: describeCode(area, censuses, budgets)?.name ?? area,
+    fiscalYears: {
+      from: Math.min(...fiscalYears),
+      to: Math.max(...fiscalYears),
+    },
   }
 }

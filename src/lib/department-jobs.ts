@@ -136,22 +136,6 @@ export function departmentYears(
   }
 }
 
-/** An area's jobs in every census, placed as its page places them; its latest budget name, or the code; and the budget years that placed them. */
-export function areaTrendFilter(area: string, censuses: DepartmentCensus[]) {
-  const fiscalYears = censuses.map(({ fiscalYear }) => fiscalYear)
-  const named = censuses.findLast(({ orgs }) => orgs[area] !== undefined)
-  return {
-    jobs: new Set(
-      departmentYears(area, censuses).years.flatMap(({ records }) => records),
-    ),
-    name: named?.orgs[area]?.name ?? area,
-    fiscalYears: {
-      from: Math.min(...fiscalYears),
-      to: Math.max(...fiscalYears),
-    },
-  }
-}
-
 /** The department's jobs over its censuses with jobs. */
 export function departmentTrends(
   { years, yearsWithJobs }: DepartmentYears,
@@ -162,6 +146,7 @@ export function departmentTrends(
     group: null,
     dept: null,
     position: null,
+    jobs: null,
     from: yearsWithJobs[0] ?? 0,
     to: yearsWithJobs.at(-1) ?? 0,
   })

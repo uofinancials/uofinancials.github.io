@@ -13,6 +13,7 @@ const ALL: TrendFilter = {
   group: null,
   dept: null,
   position: null,
+  jobs: null,
   from: 2014,
   to: 2025,
 }

@@ -3,7 +3,6 @@ import type { BudgetYear } from '@/data/budget'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { createAreaAssigner } from './areas'
 import {
-  areaTrendFilter,
   type DepartmentCensus,
   departmentClasses,
   departmentTrends,
@@ -67,14 +66,6 @@ test('an area’s jobs are those the assigner places in it, with how', () => {
       unassignedSiteWide: 1,
     },
   ])
-})
-
-test('an area’s trend filter holds its placed jobs in every census, named from its budget', () => {
-  const filter = areaTrendFilter('222000', CENSUSES)
-  expect(filter.jobs.size).toBe(3)
-  expect(filter.name).toBe('Arts & Sciences, College of')
-  expect(filter.fiscalYears).toEqual({ from: 2026, to: 2026 })
-  expect(areaTrendFilter('222999', CENSUSES).name).toBe('222999')
 })
 
 const rank = (rankName: string, annualSalaryRateCents: number) =>

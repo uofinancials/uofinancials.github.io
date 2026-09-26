@@ -1,4 +1,4 @@
-import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQueries } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { PayChangesSection } from '@/components/pay-changes-section'
@@ -13,14 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useDepartmentCensuses } from '@/components/use-department-censuses'
 import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
-import { budgetYearQuery, fallYearQuery, manifestQuery } from '@/data/queries'
-import {
-  AREA_PLACEMENT_METHOD,
-  areaTrendFilter,
-  toDepartmentCensuses,
-} from '@/lib/department-jobs'
+import { fallYearQuery, toData } from '@/data/queries'
+import { areaTrendFilter } from '@/lib/department-index'
+import { AREA_PLACEMENT_METHOD } from '@/lib/department-jobs'
 import { SPEND_METHOD } from '@/lib/overview'
 import { peerKeyFor } from '@/lib/peer-group'
 import {
@@ -34,6 +32,7 @@ import {
   buildTrends,
   filterNames,
   MIN_JOBS_SHOWN,
+  type TrendFilter,
   type Trends,
 } from '@/lib/trends'
 import {
@@ -86,23 +85,12 @@ function GroupMapping() {
   )
 }
 
-function toData<T>(results: { data: T }[]): T[] {
-  return results.map(({ data }) => data)
-}
-
 function useAreaJobs(area: string | null, falls: FallYear[]) {
   const { fiscalYears } = useLoaderData({ from: '/trends' })
-  const { data: manifest } = useSuspenseQuery(manifestQuery)
-  const budgets = useSuspenseQueries({
-    queries: fiscalYears.map(budgetYearQuery),
-    combine: toData,
-  })
+  const { budgets, censuses } = useDepartmentCensuses(fiscalYears, falls)
   return useMemo(
-    () =>
-      area === null
-        ? null
-        : areaTrendFilter(area, toDepartmentCensuses(manifest, falls, budgets)),
-    [area, manifest, falls, budgets],
+    () => (area === null ? null : areaTrendFilter(area, censuses, budgets)),
+    [area, censuses, budgets],
   )
 }
 
@@ -129,25 +117,25 @@ function useTrends() {
         : peerKeyFor(censuses, resolved.position),
     [censuses, resolved.position],
   )
-  const area = useAreaJobs(resolved.area, fallYears)
-  const jobs = area?.jobs
-  const view = { ...resolved, position, jobs }
+  const view = { ...resolved, position }
+  const area = useAreaJobs(view.area, fallYears)
   const { kind, group, dept, from, to } = view
+  const filter = useMemo(
+    (): TrendFilter => ({
+      kind,
+      group,
+      dept,
+      position,
+      jobs: area?.jobs ?? null,
+      from,
+      to,
+    }),
+    [kind, group, dept, position, area, from, to],
+  )
   const isChange = view.metric === CHANGE_METRIC
   const trends = useMemo(
-    () =>
-      isChange
-        ? null
-        : buildTrends(censuses, {
-            kind,
-            group,
-            dept,
-            position,
-            from,
-            to,
-            jobs,
-          }),
-    [censuses, isChange, kind, group, dept, position, from, to, jobs],
+    () => (isChange ? null : buildTrends(censuses, filter)),
+    [censuses, isChange, filter],
   )
   const names = useMemo(
     () => ({
@@ -156,7 +144,7 @@ function useTrends() {
     }),
     [censuses, dept, position, area],
   )
-  const changes = usePayChanges(fallYears, view)
+  const changes = usePayChanges(fallYears, view, filter)
   return { years, view, trends, names, changes, area }
 }
 

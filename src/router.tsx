@@ -93,6 +93,17 @@ async function loadFallYears({
   return { years }
 }
 
+async function loadBudgetYears(queryClient: QueryClient) {
+  const manifest = await queryClient.ensureQueryData(manifestQuery)
+  const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
+  await Promise.all(
+    fiscalYears.map((year) =>
+      queryClient.ensureQueryData(budgetYearQuery(year)),
+    ),
+  )
+  return fiscalYears
+}
+
 const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
@@ -100,20 +111,9 @@ const trendsRoute = createRoute({
   loaderDeps: ({ search }) => ({ area: search.area }),
   loader: async (options) => {
     const { queryClient } = options.context
-    const loadBudgets = async () => {
-      if (options.deps.area === undefined) return []
-      const manifest = await queryClient.ensureQueryData(manifestQuery)
-      const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
-      await Promise.all(
-        fiscalYears.map((year) =>
-          queryClient.ensureQueryData(budgetYearQuery(year)),
-        ),
-      )
-      return fiscalYears
-    }
     const [loaded, fiscalYears] = await Promise.all([
       loadFallYears(options),
-      loadBudgets(),
+      options.deps.area === undefined ? [] : loadBudgetYears(queryClient),
       queryClient.ensureQueryData(raiseTermsQuery),
     ])
     return { ...loaded, fiscalYears }
@@ -147,13 +147,10 @@ const departmentRoute = createRoute({
   loader: async ({ context: { queryClient }, params: { code } }) => {
     if (!orgCode.safeParse(code).success) throw notFound()
     const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     const fallYears = manifest.fall.map(({ year }) => year)
-    const [eliminationFiscalYear] = await Promise.all([
+    const [eliminationFiscalYear, fiscalYears] = await Promise.all([
       loadEliminationYear(queryClient, manifest),
-      ...fiscalYears.map((year) =>
-        queryClient.ensureQueryData(budgetYearQuery(year)),
-      ),
+      loadBudgetYears(queryClient),
       ...fallYears.map((year) =>
         queryClient.ensureQueryData(fallYearQuery(year)),
       ),
