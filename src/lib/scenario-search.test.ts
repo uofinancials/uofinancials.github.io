@@ -1,25 +1,28 @@
 import { expect, test } from 'vitest'
-import type { Rule, ScenarioScope } from './scenario'
-import { parseRules, toSearchRules } from './scenario-search'
-
-const ALL: ScenarioScope = {
-  group: null,
-  kind: 'all',
-  term: null,
-  position: null,
-  dept: null,
-}
+import { ANY_SCOPE, type Rule } from './scenario'
+import {
+  parseDollarsText,
+  parsePercentText,
+  parseRules,
+  parseYearsText,
+  resolveBaselineIndex,
+  toSearchRules,
+} from './scenario-search'
 
 const RULES: Rule[] = [
   {
     kind: 'threshold',
-    scope: { ...ALL, group: 'Executives', dept: '222000' },
+    scope: { ...ANY_SCOPE, group: 'Executives', dept: '222000' },
     overCents: 20_000_000,
     cutBasisPoints: 1_250,
   },
-  { kind: 'remove', scope: { ...ALL, kind: 'classified', term: 12 } },
-  { kind: 'cut', scope: { ...ALL, position: 'Professor' }, cutBasisPoints: 5 },
-  { kind: 'freeze', scope: ALL, years: 2, afterFreeze: 'eliminate' },
+  { kind: 'remove', scope: { ...ANY_SCOPE, kind: 'classified', term: 12 } },
+  {
+    kind: 'cut',
+    scope: { ...ANY_SCOPE, position: 'Professor' },
+    cutBasisPoints: 5,
+  },
+  { kind: 'freeze', scope: ANY_SCOPE, years: 2, afterFreeze: 'eliminate' },
 ]
 
 test('rules round-trip through the URL form in dollars and percents, leaving out "any" scope fields', () => {
@@ -51,7 +54,31 @@ test('a malformed entry is dropped and counted, never read as a wider scope', ()
       { kind: 'remove', scope: { dept: 222000 } },
     ]),
   ).toEqual({
-    rules: [{ kind: 'remove', scope: { ...ALL, dept: '222000' } }],
+    rules: [{ kind: 'remove', scope: { ...ANY_SCOPE, dept: '222000' } }],
     dropped: 6,
   })
+})
+
+test('a case names its baseline by label, and one it does not name falls back to the first', () => {
+  const labels = ['Base', 'Less state funding', 'More students']
+  expect(resolveBaselineIndex(undefined, labels)).toBe(0)
+  expect(resolveBaselineIndex('More students', labels)).toBe(2)
+  expect(resolveBaselineIndex('Withdrawn case', labels)).toBe(0)
+})
+
+test('typed amounts parse as the URL form allows, and anything else is not a value', () => {
+  expect(parseDollarsText('200000')).toBe(20_000_000)
+  expect(parseDollarsText('0')).toBe(0)
+  for (const text of ['', ' ', '200000.5', '-1', 'abc']) {
+    expect(parseDollarsText(text)).toBeNull()
+  }
+  expect(parsePercentText('12.5')).toBe(1_250)
+  expect(parsePercentText('100')).toBe(10_000)
+  for (const text of ['', '0', '100.01', '12.345']) {
+    expect(parsePercentText(text)).toBeNull()
+  }
+  expect(parseYearsText('5')).toBe(5)
+  for (const text of ['', '0', '6', '1.5']) {
+    expect(parseYearsText(text)).toBeNull()
+  }
 })

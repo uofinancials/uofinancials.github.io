@@ -22,7 +22,7 @@ import {
 } from './scenario-jobs.ts'
 
 export type { FreezeResult, FreezeRule } from './scenario-freeze.ts'
-export type { Savings, ScenarioScope } from './scenario-jobs.ts'
+export { ANY_SCOPE, type Savings, type ScenarioScope } from './scenario-jobs.ts'
 
 export type Rule =
   | {

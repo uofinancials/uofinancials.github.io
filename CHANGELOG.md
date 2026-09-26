@@ -220,3 +220,27 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   checks the packet's own arithmetic: lines sum to totals, revenue less expenses
   is the run rate, and balances roll forward. The sources page lists the
   documents cited.
+
+- A scenarios page (`/scenarios`, "Scenarios" in the nav, linked from the budget
+  page) where a reader stacks rules over the Fall 2025 census and sees what each
+  would save, labelled throughout as this site's estimate and not a prediction
+  or a recommendation about anyone:
+  - four kinds of rule - a cut to pay above a threshold, removing jobs, a
+    percentage cut, and a hiring freeze - each over any group, staff kind, term,
+    department or area, and class or rank, added, edited, moved, and removed in
+    place;
+  - each rule's jobs and its salary, full cost, and E&G savings, applied in
+    order so no job is counted twice, and the census rules' total as a share of
+    the Board's $65 million reduction estimate;
+  - a hiring freeze's rate from past turnover, Fall 2019-2025, whose censuses
+    load only when a freeze is added, with its positions and savings by year;
+  - the E&G savings set against the June 2026 projection or any of its
+    alternative cases, FY26-FY31: the run rate and fund balance with savings,
+    weeks of expenses where the case publishes expenses, and the first year the
+    balance falls below zero, as a chart and a table;
+  - five example questions that load their rules, a note when a rule reaches one
+    or two jobs, every method stated, and each source cited.
+
+  The rules and the chosen case are held in the link, so a scenario can be
+  shared; an entry the link cannot read is left out and counted. A test checks
+  the question 13 stack against the state-funding-below case to the cent.

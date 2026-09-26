@@ -15,6 +15,7 @@ for (const path of [
   '/people',
   '/people/No such name',
   '/budget',
+  '/scenarios',
   '/sources',
   '/no-such-page',
 ]) {

@@ -1,13 +1,8 @@
 import { expect, test } from 'vitest'
 import type { FallRecord } from '@/data/fall'
+import { ANY_SCOPE } from '@/lib/scenario'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import {
-  ANY_SCOPE,
-  AREA,
-  RATES,
-  scenarioBudget,
-  UNIT,
-} from '@/test/scenario-fixtures'
+import { AREA, RATES, scenarioBudget, UNIT } from '@/test/scenario-fixtures'
 import { toDepartmentCensus } from './department-jobs'
 import { type Rule, runScenario, type ScenarioScope } from './scenario'
 import { departureRate, type FreezeRule, freezeShare } from './scenario-freeze'

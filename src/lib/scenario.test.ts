@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
+import { ANY_SCOPE } from '@/lib/scenario'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
-  ANY_SCOPE,
   AREA,
   budgetRow,
   censusSavings,

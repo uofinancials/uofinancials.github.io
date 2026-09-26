@@ -8,13 +8,10 @@ import {
   ALL_GROUPS,
   GROUP_OPTIONS,
   STAFF_KIND_OPTIONS,
+  TERM_OPTIONS,
 } from '@/lib/trends-search'
 
 const ALL = 'all'
-const TERM_OPTIONS: [string, string][] = [
-  [ALL, '9 and 12 months'],
-  ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
-]
 
 function PlaceFilter({
   place,

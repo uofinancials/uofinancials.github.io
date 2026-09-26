@@ -10,17 +10,21 @@ import { toDepartmentCensuses } from '../src/lib/department-jobs.ts'
 import { egShareOf, egShares } from '../src/lib/eg-share.ts'
 import { opeGroupOf } from '../src/lib/ope-groups.ts'
 import {
-  fiscalYearForCensus,
   fiscalYearOf,
   isClassifiedTemp,
   jobSpendCents,
 } from '../src/lib/overview.ts'
-import type {
-  Rule,
-  ScenarioResult,
-  ScenarioScope,
+import {
+  ANY_SCOPE as ALL,
+  type Rule,
+  type ScenarioResult,
 } from '../src/lib/scenario.ts'
-import { scenarioOutlook } from '../src/lib/scenario-outlook.ts'
+import { freezeHistoryCensuses } from '../src/lib/scenario-freeze.ts'
+import {
+  baselines,
+  outlookRows,
+  projectScenario,
+} from '../src/lib/scenario-outlook.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
 import {
   budgetDataPath,
@@ -29,31 +33,20 @@ import {
   OPE_DATA_PATH,
 } from './scrape/cache.ts'
 
-/** The first census with a published OPE rate: Fall 2019 falls in FY20. */
-const FIRST_OPE_CENSUS = 2019
-
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8'))
 }
 
 const MANIFEST = manifestSchema.parse(readJson(MANIFEST_PATH))
-const FALLS = MANIFEST.fall
-  .filter(({ year }) => year >= FIRST_OPE_CENSUS)
-  .map(({ year }) =>
-    fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
-  )
-const BUDGETS = MANIFEST.budget
-  .filter(({ fiscalYear }) =>
-    FALLS.some(
-      ({ censusDate }) =>
-        fiscalYearForCensus(MANIFEST, censusDate) === fiscalYear,
-    ),
-  )
-  .map(({ fiscalYear }) =>
-    budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
-  )
-const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
 const RATES = opeRatesSchema.parse(readJson(OPE_DATA_PATH))
+const CENSUSES = freezeHistoryCensuses(MANIFEST, RATES)
+const FALLS = CENSUSES.map(({ year }) =>
+  fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
+)
+const BUDGETS = [...new Set(CENSUSES.map(({ fiscalYear }) => fiscalYear))].map(
+  (fiscalYear) => budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+)
+const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
 const [PROJECTION] = outlookSchema.parse(
   readJson(path.join(DATA_DIR, 'outlook.json')),
 ).projections
@@ -82,6 +75,18 @@ function opeGroupCounts(year: number): Record<string, number> {
   }
   return counts
 }
+
+test('a freeze averages turnover over Fall 2019-2025, the censuses with a published OPE rate', () => {
+  expect(CENSUSES).toEqual([
+    { year: 2019, fiscalYear: 2021 },
+    { year: 2020, fiscalYear: 2021 },
+    { year: 2021, fiscalYear: 2022 },
+    { year: 2022, fiscalYear: 2023 },
+    { year: 2023, fiscalYear: 2024 },
+    { year: 2024, fiscalYear: 2025 },
+    { year: 2025, fiscalYear: 2026 },
+  ])
+})
 
 test('every job in Fall 2019-2025 maps to an OPE group, and 2019 and 2025 match an independent count', () => {
   for (const { year } of HISTORY) opeGroupCounts(year)
@@ -128,31 +133,34 @@ test('Fall 2025 against the FY26 budget: $504.8M of pay, $297.2M of it E&G, and 
   expect(SHARES_2025.get('222000')).toBe(8_633)
 })
 
-const ALL: ScenarioScope = {
-  group: null,
-  kind: 'all',
-  term: null,
-  position: null,
-  dept: null,
-}
-
 function censusSavings(result: ScenarioResult) {
   return result.rules.map((rule) =>
     rule.kind === 'census' ? rule.savings : null,
   )
 }
 
-/** Fall 2025 set against the projection, from FY27 at FY27 OPE rates. */
-function runFall2025(rules: Rule[]) {
-  return scenarioOutlook({
+const BASELINES = baselines(PROJECTION)
+const STATE_FUNDING_BELOW = BASELINES.findIndex(({ label }) =>
+  label.startsWith('State funding $20 million below'),
+)
+
+/** Fall 2025 set against a baseline, from FY27 at FY27 OPE rates. */
+function runFall2025(rules: Rule[], baselineIndex = 0) {
+  const baseline = BASELINES[baselineIndex]
+  if (!baseline) throw new Error(`No baseline ${baselineIndex}`)
+  const options = {
     census: FALL_2025,
     censusFiscalYear: fiscalYearOf(FALL_2025_DATE),
+    fiscalYears: PROJECTION.fiscalYears,
+  }
+  const result = projectScenario({
+    ...options,
     rules,
     rates: RATES,
     egShares: SHARES_2025,
     history: HISTORY,
-    projection: PROJECTION,
   })
+  return { result, rows: outlookRows({ ...options, result, baseline }) }
 }
 
 test('with no rules, the outlook is the projection as published', () => {
@@ -166,6 +174,14 @@ test('with no rules, the outlook is the projection as published', () => {
 })
 
 // The values below match an independent Python recomputation over public/data/.
+test('the baselines are the projection, named for its base case, and its five other cases', () => {
+  expect(BASELINES.map(({ label }) => label)).toEqual(
+    PROJECTION.cases.map(({ label }) => label),
+  )
+  expect(BASELINES[0]?.expenseCents).not.toBeNull()
+  expect(STATE_FUNDING_BELOW).toBe(3)
+})
+
 test('question 2: 10% off pay above $200,000 reaches 263 jobs and saves $1.4M of E&G a year', () => {
   const { result } = runFall2025([
     {
@@ -275,4 +291,26 @@ test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn 
     rows.find((row) => row.remainingFundBalanceCents < 0)?.fiscalYear,
   ).toBe(2030)
   expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_729_034_329)
+})
+
+test('question 13: the same stack against state funding $20M below projection leaves the balance negative from FY30', () => {
+  const stack: Rule[] = [
+    { kind: 'freeze', scope: ALL, years: 1, afterFreeze: 'refill' },
+    {
+      kind: 'threshold',
+      scope: ALL,
+      overCents: 15_000_000,
+      cutBasisPoints: 500,
+    },
+  ]
+  const { rows } = runFall2025(stack, STATE_FUNDING_BELOW)
+  expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
+    448_500_000, 2_465_306_200, -6_165_992_508, -7_625_958_026, -8_981_206_888,
+    -9_423_114_907,
+  ])
+  expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
+    12_415_355_700, 14_880_662_000, 8_714_669_492, 1_088_711_466,
+    -7_892_495_422, -17_315_610_329,
+  ])
+  expect(rows.every((row) => row.remainingWeeks === null)).toBe(true)
 })
