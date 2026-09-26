@@ -1,8 +1,13 @@
 import { expect, test } from 'vitest'
-import { classifiedJob } from '@/test/fall-records'
+import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { ANY_SCOPE, scenarioBudget, UNIT } from '@/test/scenario-fixtures'
 import { toDepartmentCensus } from './department-jobs'
-import { describeRule, describeScope, smallReachNote } from './scenario-labels'
+import {
+  describeRule,
+  describeScope,
+  positionOptions,
+  smallReachNote,
+} from './scenario-labels'
 
 const BUDGET = scenarioBudget([])
 const CENSUS = toDepartmentCensus(
@@ -73,4 +78,20 @@ test('only a rule reaching one or two jobs carries the small-reach note', () => 
   expect(smallReachNote(1)).toMatch(/^This rule reaches one job\./)
   expect(smallReachNote(2)).toMatch(/^This rule reaches two jobs\./)
   expect(smallReachNote(3)).toBeNull()
+})
+
+test('position options list each class and rank once, by label', () => {
+  expect(
+    positionOptions([
+      classifiedJob(),
+      classifiedJob(),
+      classifiedJob({ positionClass: { code: 'C1487', title: null } }),
+      unclassifiedJob({ rank: 'Professor' }),
+      unclassifiedJob({ rank: null }),
+    ]),
+  ).toEqual([
+    ['C1487', 'C1487'],
+    ['E0104', 'Office Specialist 2 (E0104)'],
+    ['Professor', 'Professor'],
+  ])
 })

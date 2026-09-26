@@ -1,7 +1,10 @@
 import { expect, test } from 'vitest'
 import { ANY_SCOPE as ALL, type Rule } from './scenario'
 import {
+  parseDollarsText,
+  parsePercentText,
   parseRules,
+  parseYearsText,
   resolveBaselineIndex,
   toSearchRules,
 } from './scenario-search'
@@ -56,4 +59,21 @@ test('a case index out of range falls back to the first baseline', () => {
   expect(resolveBaselineIndex(undefined, 6)).toBe(0)
   expect(resolveBaselineIndex(3, 6)).toBe(3)
   expect(resolveBaselineIndex(6, 6)).toBe(0)
+})
+
+test('typed amounts parse as the URL form allows, and anything else is not a value', () => {
+  expect(parseDollarsText('200000')).toBe(20_000_000)
+  expect(parseDollarsText('0')).toBe(0)
+  for (const text of ['', ' ', '200000.5', '-1', 'abc']) {
+    expect(parseDollarsText(text)).toBeNull()
+  }
+  expect(parsePercentText('12.5')).toBe(1_250)
+  expect(parsePercentText('100')).toBe(10_000)
+  for (const text of ['', '0', '100.01', '12.345']) {
+    expect(parsePercentText(text)).toBeNull()
+  }
+  expect(parseYearsText('5')).toBe(5)
+  for (const text of ['', '0', '6', '1.5']) {
+    expect(parseYearsText(text)).toBeNull()
+  }
 })

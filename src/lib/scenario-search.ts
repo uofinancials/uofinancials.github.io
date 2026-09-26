@@ -31,11 +31,37 @@ const percentEntry = z
   )
   .transform(Math.round)
 
+const dollarsEntry = z.number().int().nonnegative()
+const yearsEntry = z.number().int().min(1).max(MAX_FREEZE_YEARS)
+
+/** A typed number, or `null` for blank text, before it is checked. */
+function typedNumber(text: string): number | null {
+  return text.trim() === '' ? null : Number(text)
+}
+
+/** Whole dollars typed into a field, as cents; `null` when they are not a valid threshold. */
+export function parseDollarsText(text: string): number | null {
+  const parsed = dollarsEntry.safeParse(typedNumber(text))
+  return parsed.success ? parsed.data * CENTS_PER_DOLLAR : null
+}
+
+/** A percent typed into a field, as basis points; `null` when it is not a valid cut. */
+export function parsePercentText(text: string): number | null {
+  const parsed = percentEntry.safeParse(typedNumber(text))
+  return parsed.success ? parsed.data : null
+}
+
+/** Freeze years typed into a field; `null` when they are not 1 to 5. */
+export function parseYearsText(text: string): number | null {
+  const parsed = yearsEntry.safeParse(typedNumber(text))
+  return parsed.success ? parsed.data : null
+}
+
 const ruleEntry = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('threshold'),
     scope: scopeEntry.default({}),
-    overDollars: z.number().int().nonnegative(),
+    overDollars: dollarsEntry,
     cutPercent: percentEntry,
   }),
   z.strictObject({ kind: z.literal('remove'), scope: scopeEntry.default({}) }),
@@ -47,7 +73,7 @@ const ruleEntry = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('freeze'),
     scope: scopeEntry.default({}),
-    years: z.number().int().min(1).max(MAX_FREEZE_YEARS),
+    years: yearsEntry,
     afterFreeze: z.enum(['refill', 'eliminate']),
   }),
 ])

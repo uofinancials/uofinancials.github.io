@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { CitedLine } from '@/components/cited-line'
 import { ScenarioOutlookSection } from '@/components/scenario-outlook-section'
 import { ScenarioResultsTable } from '@/components/scenario-results-table'
+import { ScenarioRuleList } from '@/components/scenario-rule-list'
 import { SourceCitation } from '@/components/source-citation'
 import { useScenario } from '@/components/use-scenario'
 import { fiscalYearLabel } from '@/data/budget'
@@ -74,10 +75,52 @@ function Sources({ scenario }: { scenario: ReturnType<typeof useScenario> }) {
   )
 }
 
+function RulesSection({
+  scenario,
+}: {
+  scenario: ReturnType<typeof useScenario>
+}) {
+  const { census, budget, rules, dropped, result, firstYear } = scenario
+  const navigate = useNavigate({ from: '/scenarios' })
+  return (
+    <Section title="Rules">
+      {dropped > 0 && (
+        <p role="status">
+          {formatCount(dropped)} {dropped === 1 ? 'rule' : 'rules'} in the link
+          could not be read and {dropped === 1 ? 'was' : 'were'} left out.
+        </p>
+      )}
+      {rules.length === 0 && (
+        <p>No rules yet. Start from an example above, or add one.</p>
+      )}
+      <ScenarioRuleList
+        rules={rules}
+        census={census}
+        budget={budget}
+        onChange={(changed) =>
+          navigate({
+            search: (previous) => ({
+              ...previous,
+              rules: toSearchRules(changed),
+            }),
+            replace: true,
+          })
+        }
+      />
+      <p className="text-sm text-muted-foreground">
+        Fall {census.year} has {formatCount(result.base.jobs)} jobs a scenario
+        can change, costing {formatDollars(result.base.salaryCents)} in salary
+        and {formatDollars(result.base.egCents)} in E&G at{' '}
+        {fiscalYearLabel(firstYear)} rates; {formatCount(result.temporaries)}{' '}
+        classified temporaries are left out.
+      </p>
+    </Section>
+  )
+}
+
 export function ScenariosPage() {
   const scenario = useScenario()
-  const { census, budget, rules, dropped, result, rows, history, firstYear } =
-    scenario
+  const { census, budget, rules, result, rows, history, firstYear } = scenario
   const navigate = useNavigate({ from: '/scenarios' })
   return (
     <div className="space-y-8">
@@ -97,25 +140,7 @@ export function ScenariosPage() {
       <Section title="Examples">
         <Examples />
       </Section>
-      <Section title="Rules">
-        {dropped > 0 && (
-          <p role="status">
-            {formatCount(dropped)} {dropped === 1 ? 'rule' : 'rules'} in the
-            link could not be read and {dropped === 1 ? 'was' : 'were'} left
-            out.
-          </p>
-        )}
-        {rules.length === 0 && (
-          <p>No rules yet. Start from an example above.</p>
-        )}
-        <p className="text-sm text-muted-foreground">
-          Fall {census.year} has {formatCount(result.base.jobs)} jobs a scenario
-          can change, costing {formatDollars(result.base.salaryCents)} in salary
-          and {formatDollars(result.base.egCents)} in E&G at{' '}
-          {fiscalYearLabel(firstYear)} rates; {formatCount(result.temporaries)}{' '}
-          classified temporaries are left out.
-        </p>
-      </Section>
+      <RulesSection scenario={scenario} />
       {rules.length > 0 && (
         <Section title="Savings by rule">
           <ScenarioResultsTable

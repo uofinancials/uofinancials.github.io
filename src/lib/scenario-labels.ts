@@ -1,8 +1,9 @@
 import type { BudgetYear } from '../data/budget.ts'
+import type { FallRecord } from '../data/fall.ts'
 import { describePlace } from './census-search.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
-import { positionLabel } from './salary-distribution.ts'
+import { positionLabel, positionOf } from './salary-distribution.ts'
 import type { Rule, ScenarioScope } from './scenario.ts'
 import { BASIS } from './scenario-jobs.ts'
 import { toPercent } from './scenario-search.ts'
@@ -63,4 +64,17 @@ export function smallReachNote(jobs: number): string | null {
   const reach = SMALL_REACH.get(jobs)
   if (reach === undefined) return null
   return `This rule reaches ${reach}. A scenario is an estimate over job classes, groups, and thresholds, not a recommendation about anyone.`
+}
+
+/** Each class and rank in the census as `[key, label]`, by label: a class's title and code, or a rank. */
+export function positionOptions(records: FallRecord[]): [string, string][] {
+  const labels = new Map<string, string>()
+  for (const record of records) {
+    const key = positionOf(record)
+    if (key === null || labels.has(key)) continue
+    const title =
+      record.kind === 'classified' ? record.positionClass?.title : null
+    labels.set(key, title ? `${title} (${key})` : key)
+  }
+  return [...labels].sort((a, b) => a[1].localeCompare(b[1]))
 }

@@ -83,3 +83,39 @@ test('a rule the link cannot read is left out and counted', async ({
   )
   await expect(page.getByRole('row', { name: /^1\. 5% off pay/ })).toBeVisible()
 })
+
+test('rules are added, edited, moved, and removed in place, and held in the link', async ({
+  page,
+}) => {
+  await page.goto('/scenarios')
+  await page.getByRole('button', { name: 'Cut pay above a threshold' }).click()
+  const threshold = page.getByRole('group', { name: /^1\./ })
+  await threshold.getByRole('textbox', { name: 'Pay above ($)' }).fill('250000')
+  await threshold.getByRole('textbox', { name: 'Cut (%)' }).fill('100')
+  await expect(
+    page
+      .getByRole('row', { name: /^1\. Pay capped at \$250,000/ })
+      .getByRole('cell'),
+  ).toHaveText(['127', '$31,183,426', '$41,861,840', '$6,847,684'])
+  await page.getByRole('button', { name: 'Hiring freeze' }).click()
+  await page
+    .getByRole('group', { name: /^2\./ })
+    .getByRole('combobox', { name: /^Staff/ })
+    .selectOption('classified')
+  await expect(
+    page.getByRole('rowheader', { name: /^2\. A 1-year hiring freeze/ }),
+  ).toContainText('at 10.33% turnover a year')
+  await page.getByRole('button', { name: 'Move rule 2 up' }).click()
+  await expect(page.getByRole('group', { name: /^1\./ })).toHaveAccessibleName(
+    /hiring freeze/,
+  )
+  await page.reload()
+  await expect(page.getByRole('group', { name: /^2\./ })).toHaveAccessibleName(
+    /Pay capped/,
+  )
+  await page.getByRole('button', { name: 'Remove rule 1' }).click()
+  await expect(page.getByRole('group')).toHaveCount(1)
+  await expect(page.getByRole('group', { name: /^1\./ })).toHaveAccessibleName(
+    /Pay capped/,
+  )
+})
