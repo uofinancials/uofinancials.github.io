@@ -1,6 +1,6 @@
 import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
-import { HAND_AREAS } from './hand-areas.ts'
+import { handAreasFor } from './hand-areas.ts'
 
 type Orgs = BudgetYear['orgs']
 
@@ -60,9 +60,7 @@ export function createAreaAssigner(
 ): (record: FallRecord) => AreaAssignment {
   const prefixAreas = learnPrefixAreas(records, orgs)
   const handAreas = new Map(
-    HAND_AREAS.filter(
-      ({ from, to }) => from <= censusYear && censusYear <= to,
-    ).map(({ code, area }) => [code, area]),
+    handAreasFor(censusYear).map(({ code, area }) => [code, area]),
   )
   return ({ payDepartment }) => {
     const published = publishedArea(payDepartment.code, orgs)

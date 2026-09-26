@@ -80,7 +80,6 @@ function changeOf(from: number | null, to: number | null): number | null {
 
 type RowInput = Pick<DepartmentRow, 'code' | 'name' | 'area'> & {
   records: FallRecord[]
-  /** The earlier census's jobs. */
   earlier: FallRecord[]
 }
 
@@ -170,21 +169,28 @@ export function departmentRows(
   const beforeSums = toBudgetSums(before.budget)
   const row = (input: RowInput) => toRow(input, nowSums, beforeSums)
   const earlierByCode = new Map<string | null, FallRecord[]>()
+  const earlierByArea = new Map<string | null, FallRecord[]>()
+  const add = (
+    groups: Map<string | null, FallRecord[]>,
+    key: string | null,
+    record: FallRecord,
+  ) => {
+    const group = groups.get(key)
+    if (group) group.push(record)
+    else groups.set(key, [record])
+  }
   for (const record of before.census.records) {
-    const { code } = record.payDepartment
-    const records = earlierByCode.get(code) ?? []
-    records.push(record)
-    earlierByCode.set(code, records)
+    add(earlierByCode, record.payDepartment.code, record)
+    add(earlierByArea, before.census.assign(record).area, record)
   }
   const { orgs } = now.census
   const { units, areaJobs } = placeDepartments(now.census)
-  const earlierAreaJobs = placeDepartments(before.census).areaJobs
   return {
     areas: placedAreas(orgs, areaJobs).map((area) =>
       row({
         ...area,
         area: null,
-        earlier: earlierAreaJobs.get(area.code) ?? [],
+        earlier: earlierByArea.get(area.code) ?? [],
       }),
     ),
     units: units.map((unit) =>

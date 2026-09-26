@@ -120,3 +120,10 @@ export const HAND_AREAS: readonly HandArea[] = [
   { code: '110532', area: KNIGHT_CAMPUS, from: 2024, to: 2025 },
   { code: '110651', area: KNIGHT_CAMPUS, from: 2025, to: 2025 },
 ]
+
+/** The rows in force for one Fall census. */
+export function handAreasFor(censusYear: number): HandArea[] {
+  return HAND_AREAS.filter(
+    ({ from, to }) => from <= censusYear && censusYear <= to,
+  )
+}
