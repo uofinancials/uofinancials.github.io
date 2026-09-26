@@ -295,3 +295,9 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   of the FY27 budget rows. Another checks the FY27 raise rates against the terms
   and a one-year raise freeze, $18.1 million of E&G in FY27 over the committed
   data (retrieved 2026-09-24), against a direct sum over its jobs.
+
+- The code is licensed under MIT (`LICENSE`) and the data under `public/data/`
+  is dedicated to the public domain under CC0 1.0 (`public/data/LICENSE`, also
+  served at `/data/LICENSE`). Every page's footer links to the source on GitHub
+  and to both licenses, and the README asks reusers of the data to cite its
+  source documents.
