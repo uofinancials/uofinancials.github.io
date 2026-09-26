@@ -45,21 +45,21 @@ function ResultCells({
 }) {
   if (result.kind === 'census') return <SavingsCells savings={result.savings} />
   const [first] = result.byYear
-  if (historyStatus !== 'ready' || !first) {
+  if (historyStatus === 'loading' || historyStatus === 'error' || !first) {
     return (
       <TableCell colSpan={HEADS.length}>
         {historyStatus === 'error'
           ? 'Past censuses not loaded'
-          : historyStatus === 'ready'
-            ? 'No projected year'
-            : 'Loading past censuses'}
+          : historyStatus === 'loading'
+            ? 'Loading past censuses'
+            : 'No projected year'}
       </TableCell>
     )
   }
   return <SavingsCells savings={first} />
 }
 
-/** Each census rule's and freeze's savings in stack order, and the census rules' total; a freeze shows its first projected year. */
+/** Each census rule's and freeze's savings in stack order, and the census rules' total; a hiring or raise freeze shows its first projected year, or a notice while past censuses load or fail. */
 export function ScenarioResultsTable({
   rows,
   total,
@@ -94,13 +94,19 @@ export function ScenarioResultsTable({
                 {position}. {label}
                 {result.kind === 'freeze' &&
                   `, positions and savings in ${fiscalYearLabel(firstYear)}`}
+                {result.kind === 'raises' &&
+                  `, savings in ${fiscalYearLabel(firstYear)}`}
                 {result.kind === 'freeze' &&
                   historyStatus === 'ready' &&
                   `, at ${toPercent(result.rateBasisPoints)}% turnover a year`}
                 <span className="block text-muted-foreground">{scope}</span>
-                {result.kind === 'census' && (
+                {result.kind !== 'freeze' && (
                   <span className="block text-muted-foreground">
-                    {smallReachNote(result.savings.jobs)}
+                    {smallReachNote(
+                      result.kind === 'census'
+                        ? result.savings.jobs
+                        : (result.byYear[0]?.jobs ?? 0),
+                    )}
                   </span>
                 )}
               </TableHead>
@@ -116,8 +122,9 @@ export function ScenarioResultsTable({
         </TableFooter>
       </Table>
       <p className="text-sm text-muted-foreground">
-        The total counts the census rules once a year. Freezes are not in it:
-        their savings change year by year and are counted in the outlook below.
+        The total counts the census rules once a year. Hiring and raise freezes
+        are not in it: their savings change year by year and are counted in the
+        outlook below.
       </p>
     </div>
   )

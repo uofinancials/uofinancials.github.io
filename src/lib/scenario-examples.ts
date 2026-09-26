@@ -51,6 +51,10 @@ export const SCENARIO_EXAMPLES: ScenarioExample[] = [
     ],
   },
   {
+    question: 'What would a one-year raise freeze save?',
+    rules: [{ kind: 'raises', scope: ANY_SCOPE, years: 1, capBasisPoints: 0 }],
+  },
+  {
     question:
       'With a one-year hiring freeze and 5% off pay above $150,000, what gap is left each year to FY31?',
     rules: [

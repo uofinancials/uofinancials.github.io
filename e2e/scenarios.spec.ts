@@ -182,3 +182,57 @@ test('the page with an elimination does not scroll sideways at 360px', async ({
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })
+
+test("a raise freeze saves each group's FY27 raise and shows the rates and sources it used", async ({
+  page,
+}) => {
+  await page.goto('/scenarios')
+  await page
+    .getByRole('link', { name: 'What would a one-year raise freeze save?' })
+    .click()
+  const row = page.getByRole('row', { name: /^1\. Raises frozen for 1 year/ })
+  await expect(row.getByRole('cell').first()).toHaveText('6,291')
+  await expect(row.getByRole('cell').last()).toHaveText('$18,121,437')
+  const rates = page.getByRole('table', { name: /Raise rates a raise freeze/ })
+  await expect(
+    rates.getByRole('row', { name: /^Officers of Administration/ }),
+  ).toContainText('3.75%')
+  await expect(rates.getByRole('row', { name: /^SEIU 503/ })).toContainText(
+    "The projection's 3%",
+  )
+  const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
+  await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
+    '$18,121,437',
+  )
+  await expect(page.getByRole('main')).toContainText('with no catch-up')
+})
+
+test('a raise cap is edited in place and held in the link', async ({
+  page,
+}) => {
+  await page.goto('/scenarios')
+  await page.getByRole('button', { name: 'Freeze raises' }).click()
+  const rule = page.getByRole('group', { name: /^1\./ })
+  await rule.getByRole('textbox', { name: 'Cap raises at (%)' }).fill('1')
+  await rule.getByRole('textbox', { name: 'Years' }).fill('2')
+  await expect(page).toHaveURL(/capPercent/)
+  await page.reload()
+  await expect(
+    page.getByRole('row', { name: /^1\. Raises capped at 1% for 2 years/ }),
+  ).toBeVisible()
+})
+
+test('the page with a raise freeze does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/scenarios')
+  await page
+    .getByRole('link', { name: 'What would a one-year raise freeze save?' })
+    .click()
+  await expect(
+    page.getByRole('table', { name: /Raise rates a raise freeze/ }),
+  ).toBeVisible()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(360)
+})

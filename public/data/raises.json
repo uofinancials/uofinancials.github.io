@@ -75,6 +75,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured professor faculty",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "merit-pool",
       "percent": "2.0",
       "amountCents": null,
@@ -90,6 +93,11 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Non-tenure-track faculty",
+      "populations": [
+        "career-instructional",
+        "career-research",
+        "pro-tem"
+      ],
       "kind": "merit-pool",
       "percent": "2.0",
       "amountCents": null,
@@ -105,6 +113,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured professor faculty",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "merit-pool",
       "percent": "3.5",
       "amountCents": null,
@@ -120,6 +131,11 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Non-tenure-track faculty",
+      "populations": [
+        "career-instructional",
+        "career-research",
+        "pro-tem"
+      ],
       "kind": "merit-pool",
       "percent": "3.5",
       "amountCents": null,
@@ -154,6 +170,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Eligible faculty",
+      "populations": [
+        "all"
+      ],
       "kind": "merit-pool",
       "percent": "2.25",
       "amountCents": null,
@@ -188,6 +207,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured faculty",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "equity-pool",
       "percent": "0.75",
       "amountCents": null,
@@ -223,6 +245,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured faculty with an appointment on December 31, 2019",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "merit-pool",
       "percent": "1.625",
       "amountCents": null,
@@ -238,6 +263,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured faculty",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "equity-pool",
       "percent": "0.50",
       "amountCents": null,
@@ -253,6 +281,10 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career non-tenure-track faculty with an appointment on December 31, 2019",
+      "populations": [
+        "career-instructional",
+        "career-research"
+      ],
       "kind": "merit-pool",
       "percent": "2.125",
       "amountCents": null,
@@ -306,6 +338,11 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career, tenure-track, and tenured faculty appointed on or before July 1, 2023",
+      "populations": [
+        "tenure-related",
+        "career-instructional",
+        "career-research"
+      ],
       "kind": "merit-pool",
       "percent": "3",
       "amountCents": null,
@@ -379,6 +416,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Career instructional faculty covered by the internal equity study",
+      "populations": [
+        "career-instructional"
+      ],
       "kind": "equity-pool",
       "percent": "2.0",
       "amountCents": null,
@@ -471,6 +511,9 @@
     {
       "employeeGroup": "United Academics",
       "appliesTo": "Tenure-track and tenured faculty appointed on or before December 16, 2025",
+      "populations": [
+        "tenure-related"
+      ],
       "kind": "merit-pool",
       "percent": "3.0",
       "amountCents": null,
@@ -948,6 +991,9 @@
     {
       "employeeGroup": "Officers of Administration",
       "appliesTo": "Eligible officers of administration",
+      "populations": [
+        "all"
+      ],
       "kind": "merit-pool",
       "percent": "2.25",
       "amountCents": null,
@@ -1023,6 +1069,9 @@
     {
       "employeeGroup": "Officers of Administration",
       "appliesTo": "Eligible officers of administration",
+      "populations": [
+        "all"
+      ],
       "kind": "merit-pool",
       "percent": "3.75",
       "amountCents": null,

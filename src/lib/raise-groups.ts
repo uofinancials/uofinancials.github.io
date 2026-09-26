@@ -3,7 +3,7 @@ import type {
   FallRecord,
   FallUnclassified,
 } from '../data/fall.ts'
-import type { EmployeeGroup, Population } from '../data/raises.ts'
+import type { EmployeeGroup, Population, RaiseTerm } from '../data/raises.ts'
 import { isClassifiedTemp } from './overview.ts'
 import type { TrendGroup } from './trend-groups.ts'
 
@@ -20,6 +20,18 @@ function row(
   label: string = group,
 ): RaiseRow {
   return { group, population, label }
+}
+
+/** Whether a term that names populations reaches a raise row: its group, and every population or the row's. */
+export function termCovers(
+  term: Extract<RaiseTerm, { populations: Population[] }>,
+  row: RaiseRow,
+): boolean {
+  return (
+    term.employeeGroup === row.group &&
+    (term.populations.includes('all') ||
+      term.populations.includes(row.population))
+  )
 }
 
 const UA = 'United Academics'

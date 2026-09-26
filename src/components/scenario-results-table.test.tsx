@@ -64,3 +64,50 @@ test('a freeze waiting on past censuses says so instead of showing figures', () 
     within(screen.getByRole('row', { name: /^3\./ })).getByRole('cell'),
   ).toHaveTextContent('Loading past censuses')
 })
+
+const RAISE_ROW = {
+  key: '4',
+  position: 4,
+  label: 'Raises frozen for 1 year',
+  scope: 'All jobs',
+  result: { kind: 'raises' as const, byYear: [savings(3, 760_000)] },
+}
+
+test('a raise freeze shows its first year at once, and waits on past censuses only beside a hiring freeze', () => {
+  const { unmount } = render(
+    <ScenarioResultsTable
+      rows={[RAISE_ROW]}
+      total={savings(0, 0)}
+      firstYear={2027}
+      historyStatus="idle"
+    />,
+  )
+  const row = () => screen.getByRole('row', { name: /^4\. Raises frozen/ })
+  expect(row()).toHaveTextContent('savings in FY27')
+  expect(
+    within(row())
+      .getAllByRole('cell')
+      .map((cell) => cell.textContent),
+  ).toEqual(['3', '$7,600', '–', '$3,800'])
+  unmount()
+  render(
+    <ScenarioResultsTable
+      rows={[
+        RAISE_ROW,
+        {
+          ...RAISE_ROW,
+          key: '5',
+          position: 5,
+          label: 'A 1-year hiring freeze',
+          result: { kind: 'freeze', rateBasisPoints: 0, byYear: [] },
+        },
+      ]}
+      total={savings(0, 0)}
+      firstYear={2027}
+      historyStatus="loading"
+    />,
+  )
+  expect(within(row()).getByRole('cell')).toHaveTextContent(
+    'Loading past censuses',
+  )
+})

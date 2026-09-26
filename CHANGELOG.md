@@ -43,12 +43,12 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   SEIU 503 and Teamsters 206 classified staff, UO police, and officers of
   administration, 2013-2026, each citing its agreement or UO page, section, and
   page, with percentages as published. Ten years-and-groups with no public
-  source are listed as gaps. Each across-the-board term also records which part
-  of its group it applies to (for United Academics, tenure-related, career
-  instructional, career research, or pro tem faculty; for UOPA, police officers,
-  dispatchers, or community service officers), read by this site from the term's
-  published scope. The two terms whose day is not published record the window
-  their source gives.
+  source are listed as gaps. Each across-the-board, merit pool, and equity pool
+  term also records which part of its group it applies to (for United Academics,
+  tenure-related, career instructional, career research, or pro tem faculty; for
+  UOPA, police officers, dispatchers, or community service officers), read by
+  this site from the term's published scope. The two terms whose day is not
+  published record the window their source gives.
 - Person links between consecutive Fall Census years: a name is linked to the
   same name in the next year when each year lists exactly one primary job for it
   and both are in the same pay department. The links are computed, not published
@@ -225,10 +225,10 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   page) where a reader stacks rules over the Fall 2025 census and sees what each
   would save, labelled throughout as this site's estimate and not a prediction
   or a recommendation about anyone:
-  - four kinds of pay rule - a cut to pay above a threshold, removing jobs, a
-    percentage cut, and a hiring freeze - each over any group, staff kind, term,
-    department or area, and class or rank, added, edited, moved, and removed in
-    place;
+  - five kinds of pay rule - a cut to pay above a threshold, removing jobs, a
+    percentage cut, a hiring freeze, and a raise freeze - each over any group,
+    staff kind, term, department or area, and class or rank, added, edited,
+    moved, and removed in place;
   - each rule's jobs and its salary, full cost, and E&G savings, applied in
     order so no job is counted twice;
   - eliminating a college or VP area, or one budget unit, which saves its
@@ -237,6 +237,14 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     grown 3% a year after FY27. An elimination applies before every other rule
     and takes its census jobs out of them. A unit whose census jobs are mostly
     filed under other codes says pay rules may also count some of its staff;
+  - a raise freeze for one to five years, or a cap on raises, which saves the
+    raises the Board's projection spends: in FY27 each raise group's cited
+    across-the-board, merit pool, and equity pool terms (5% for tenure-related
+    United Academics faculty, 3.75% for officers of administration), or 3% where
+    none is published, and 3% a year for everyone after. Raises resume on the
+    lower pay with no catch-up; a raise freeze applies after every other rule
+    and only to the part of a job a hiring freeze keeps filled. A table shows
+    each group's FY27 rate and its sources;
   - the pay rules' and eliminations' E&G savings together as a share of the
     Board's $65 million reduction estimate;
   - a hiring freeze's rate from past turnover, Fall 2019-2025, whose censuses
@@ -245,7 +253,7 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     alternative cases, FY26-FY31: the run rate and fund balance with savings,
     weeks of expenses where the case publishes expenses, and the first year the
     balance falls below zero, as a chart and a table;
-  - five example questions that load their rules, a note when a rule reaches one
+  - six example questions that load their rules, a note when a rule reaches one
     or two jobs, every method stated, and each source cited.
 
   The rules and the chosen case are held in the link, so a scenario can be
@@ -253,4 +261,6 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   FY27 budget does not list, is left out and counted. A test checks the question
   13 stack against the state-funding-below case to the cent, and eliminations of
   Arts & Sciences, CAS Mathematics, and CAS English against an independent sum
-  of the FY27 budget rows.
+  of the FY27 budget rows. Another checks the FY27 raise rates against the terms
+  and a one-year raise freeze, $18.1 million of E&G in FY27 over the committed
+  data (retrieved 2026-09-24), against a direct sum over its jobs.

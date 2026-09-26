@@ -72,6 +72,13 @@ test('a rule reads as what it does', () => {
       afterFreeze: 'eliminate',
     }),
   ).toBe('A 2-year hiring freeze, then positions eliminated')
+  const raises = { kind: 'raises', scope: ANY_SCOPE } as const
+  expect(describeRule({ ...raises, years: 1, capBasisPoints: 0 })).toBe(
+    'Raises frozen for 1 year',
+  )
+  expect(describeRule({ ...raises, years: 2, capBasisPoints: 150 })).toBe(
+    'Raises capped at 1.5% for 2 years',
+  )
 })
 
 test('only a rule reaching one or two jobs carries the small-reach note', () => {

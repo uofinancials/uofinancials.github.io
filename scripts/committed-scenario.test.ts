@@ -6,6 +6,7 @@ import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { outlookSchema } from '../src/data/outlook.ts'
+import { raiseTermsSchema } from '../src/data/raises.ts'
 import { toDepartmentCensuses } from '../src/lib/department-jobs.ts'
 import { egShareOf, egShares } from '../src/lib/eg-share.ts'
 import { opeGroupOf } from '../src/lib/ope-groups.ts'
@@ -14,23 +15,27 @@ import {
   isClassifiedTemp,
   jobSpendCents,
 } from '../src/lib/overview.ts'
+import { raiseRowOf } from '../src/lib/raise-groups.ts'
 import {
   ANY_SCOPE as ALL,
   type Rule,
   type ScenarioResult,
 } from '../src/lib/scenario.ts'
 import { freezeHistoryCensuses } from '../src/lib/scenario-freeze.ts'
+import { costOf, ratesFor, toJobs } from '../src/lib/scenario-jobs.ts'
 import {
   baselines,
   outlookRows,
   projectScenario,
 } from '../src/lib/scenario-outlook.ts'
+import { raiseRates } from '../src/lib/scenario-raises.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
 import {
   budgetDataPath,
   DATA_DIR,
   MANIFEST_PATH,
   OPE_DATA_PATH,
+  RAISES_DATA_PATH,
 } from './scrape/cache.ts'
 
 function readJson(file: string): unknown {
@@ -48,6 +53,10 @@ const BUDGETS = [...new Set(CENSUSES.map(({ fiscalYear }) => fiscalYear))].map(
 )
 const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
 const FY27 = budgetYearSchema.parse(readJson(budgetDataPath(2027)))
+const RAISE_RATES = raiseRates(
+  raiseTermsSchema.parse(readJson(RAISES_DATA_PATH)).terms,
+  2027,
+)
 const [PROJECTION] = outlookSchema.parse(
   readJson(path.join(DATA_DIR, 'outlook.json')),
 ).projections
@@ -161,6 +170,7 @@ function runFall2025(rules: Rule[], baselineIndex = 0) {
     egShares: SHARES_2025,
     history: HISTORY,
     eliminationBudget: FY27,
+    raiseRates: RAISE_RATES,
   })
   return { result, rows: outlookRows({ ...options, result, baseline }) }
 }
@@ -369,4 +379,56 @@ test('a unit the census files under another code is partly matched; one it files
       isPartlyMatched: false,
     },
   ])
+})
+
+test('question 17: the FY27 raise rates follow the cited terms, with 3% where none is published', () => {
+  expect(
+    Object.fromEntries(
+      RAISE_RATES.map(({ label, basisPoints, sources }) => [
+        label,
+        [basisPoints, sources.length],
+      ]),
+    ),
+  ).toEqual({
+    'United Academics, tenure-related': [500, 2],
+    'United Academics, career instructional': [462, 2],
+    'United Academics, career research': [300, 1],
+    'United Academics, pro tem, visiting, and retired': [200, 1],
+    'SEIU 503': [300, 0],
+    'Teamsters 206': [300, 1],
+    'UOPA, police officers': [300, 0],
+    'UOPA, dispatchers': [300, 0],
+    'UOPA, community service officers': [300, 0],
+    'Officers of Administration': [375, 1],
+    'Other jobs': [300, 0],
+  })
+})
+
+test("question 17: a one-year raise freeze saves $18.1M of E&G in FY27, each job's FY27 raise, then that saving grows 3% a year", () => {
+  const { result, rows } = runFall2025([
+    { kind: 'raises', scope: ALL, years: 1, capBasisPoints: 0 },
+  ])
+  const [freeze] = result.rules
+  if (freeze?.kind !== 'raises') throw new Error('No raise freeze result')
+  const rateOf = new Map(
+    RAISE_RATES.map(({ row, basisPoints }) => [row, basisPoints]),
+  )
+  const yearRates = ratesFor(RATES, 2027)
+  const directCents = toJobs(FALL_2025, SHARES_2025).reduce((sum, job) => {
+    const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
+    const { egCents } = costOf(job, yearRates)
+    return sum + Math.round((egCents * (rateOf.get(row) ?? 300)) / 10_000)
+  }, 0)
+  expect(freeze.byYear[0]?.egCents).toBe(directCents)
+  const years = [
+    1_812_143_671, 1_866_507_955, 1_922_503_123, 1_980_178_281, 2_039_583_596,
+  ]
+  expect(freeze.byYear.map(({ egCents }) => egCents)).toEqual(years)
+  expect(freeze.byYear.every(({ jobs }) => jobs === 6_291)).toBe(true)
+  // Each later year is the one before x 1.03, give or take a cent per job.
+  years.slice(1).forEach((cents, index) => {
+    const before = years[index] ?? 0
+    expect(Math.abs(cents - before * 1.03)).toBeLessThan(6_291)
+  })
+  expect(rows.map((row) => row.savingsCents)).toEqual([0, ...years])
 })

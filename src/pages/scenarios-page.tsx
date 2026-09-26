@@ -3,6 +3,7 @@ import { CitedLine } from '@/components/cited-line'
 import { PageSection } from '@/components/page-section'
 import { ScenarioEliminationsTable } from '@/components/scenario-eliminations-table'
 import { ScenarioOutlookSection } from '@/components/scenario-outlook-section'
+import { ScenarioRaiseRatesTable } from '@/components/scenario-raise-rates-table'
 import { ScenarioResultsTable } from '@/components/scenario-results-table'
 import { ScenarioRuleList } from '@/components/scenario-rule-list'
 import { ScenarioSavingsTotal } from '@/components/scenario-savings-total'
@@ -19,6 +20,7 @@ import { FREEZE_METHOD } from '@/lib/scenario-freeze'
 import { FULL_COST_METHOD } from '@/lib/scenario-jobs'
 import { totalEgCents } from '@/lib/scenario-labels'
 import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario-outlook'
+import { RAISE_FREEZE_METHOD } from '@/lib/scenario-raises'
 import { toSearchRules } from '@/lib/scenario-search'
 
 const METHODS = [
@@ -28,6 +30,7 @@ const METHODS = [
   EG_SHARE_METHOD,
   FREEZE_METHOD,
   ELIMINATE_METHOD,
+  RAISE_FREEZE_METHOD,
   SCENARIO_OUTLOOK_METHOD,
 ]
 
@@ -126,6 +129,9 @@ function SavingsSection({
   scenario: ReturnType<typeof useScenario>
 }) {
   const { result, resultRows, eliminations, history, firstYear } = scenario
+  const hasRaiseFreeze = scenario.computedRules.some(
+    (rule) => rule.kind === 'raises',
+  )
   return (
     <PageSection title="Savings by rule">
       {resultRows.length > 0 && (
@@ -134,6 +140,12 @@ function SavingsSection({
           total={result.total}
           firstYear={firstYear}
           historyStatus={history.status}
+        />
+      )}
+      {hasRaiseFreeze && (
+        <ScenarioRaiseRatesTable
+          rates={scenario.raiseRates}
+          firstYear={firstYear}
         />
       )}
       {result.eliminated && (

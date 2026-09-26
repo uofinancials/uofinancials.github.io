@@ -26,6 +26,12 @@ import {
   scopeJobs,
   toJobs,
 } from './scenario-jobs.ts'
+import {
+  type RaiseFreezeResult,
+  type RaiseFreezeRule,
+  type RaiseRate,
+  raiseFreezeSavings,
+} from './scenario-raises.ts'
 
 export type {
   EliminateRule,
@@ -33,6 +39,11 @@ export type {
 } from './scenario-eliminate.ts'
 export type { FreezeResult, FreezeRule } from './scenario-freeze.ts'
 export { ANY_SCOPE, type Savings, type ScenarioScope } from './scenario-jobs.ts'
+export type {
+  RaiseFreezeResult,
+  RaiseFreezeRule,
+  RaiseRate,
+} from './scenario-raises.ts'
 
 export type Rule =
   | {
@@ -45,14 +56,16 @@ export type Rule =
   | { kind: 'cut'; scope: ScenarioScope; cutBasisPoints: number }
   | FreezeRule
   | EliminateRule
+  | RaiseFreezeRule
 
-type CensusRule = Exclude<Rule, FreezeRule | EliminateRule>
+type CensusRule = Exclude<Rule, FreezeRule | EliminateRule | RaiseFreezeRule>
 
-/** What one rule did: a census rule's savings, a freeze's savings by projected year, or an elimination's budget lines. */
+/** What one rule did: a census rule's savings, a hiring or raise freeze's savings by projected year, or an elimination's budget lines. */
 export type RuleResult =
   | { kind: 'census'; savings: Savings }
   | FreezeResult
   | EliminationResult
+  | RaiseFreezeResult
 
 /** The eliminations' budget lines summed, in the budget's fiscal year. */
 export type EliminatedTotal = {
@@ -119,6 +132,12 @@ function applyRule(
   return savings
 }
 
+function isCensusRule(rule: Rule): rule is CensusRule {
+  return (
+    rule.kind === 'threshold' || rule.kind === 'remove' || rule.kind === 'cut'
+  )
+}
+
 function takeNext<T>(results: T[]): T {
   const result = results.shift()
   if (!result) throw new Error('A rule has no result')
@@ -149,10 +168,42 @@ function sumSavings(parts: Savings[], rates: Rates): Savings {
   return total
 }
 
+/** Each hiring and raise freeze's savings, in stack order of each kind. */
+function freezeResults(
+  options: Parameters<typeof runScenario>[0],
+  jobs: Job[],
+  rates: Rates,
+): { freezes: FreezeResult[]; raiseFreezes: RaiseFreezeResult[] } {
+  const { census, rules, projectedYears } = options
+  const freezeRules = rules.filter((rule) => rule.kind === 'freeze')
+  const freezes = freezeSavings({
+    census,
+    history: options.history,
+    jobs,
+    freezes: freezeRules,
+    rates,
+    projectedYears,
+  })
+  const raiseFreezes = raiseFreezeSavings({
+    census,
+    jobs,
+    raiseFreezes: rules.filter((rule) => rule.kind === 'raises'),
+    freezes: freezeRules.map((rule, index) => ({
+      rule,
+      rateBasisPoints: freezes[index]?.rateBasisPoints ?? 0,
+    })),
+    rates,
+    raiseRates: options.raiseRates,
+    projectedYears,
+  })
+  return { freezes, raiseFreezes }
+}
+
 /**
  * Runs the rules over one census: eliminations first, from
- * `eliminationBudget`, then the census rules in order, then freezes, which take
- * their rates from `history` and lay their savings over `projectedYears`.
+ * `eliminationBudget`, then the census rules in order, then hiring freezes,
+ * which take their rates from `history` and lay their savings over
+ * `projectedYears`, then raise freezes at `raiseRates`.
  */
 export function runScenario(options: {
   census: DepartmentCensus
@@ -163,6 +214,7 @@ export function runScenario(options: {
   history: DepartmentCensus[]
   projectedYears: number
   eliminationBudget: BudgetYear
+  raiseRates: RaiseRate[]
 }): ScenarioResult {
   const { census, rules, rates, egShares, opeFiscalYear } = options
   const yearRates = ratesFor(rates, opeFiscalYear)
@@ -177,32 +229,27 @@ export function runScenario(options: {
     eliminations: rules.filter((rule) => rule.kind === 'eliminate'),
   })
   const eliminated = eliminatedTotal(options.eliminationBudget, eliminations)
-  const censusResults = rules.map((rule) =>
-    rule.kind === 'freeze' || rule.kind === 'eliminate'
-      ? null
-      : applyRule(rule, jobs, scopeJobs(census, rule.scope), yearRates),
-  )
-  const freezeResults = freezeSavings({
-    census,
-    history: options.history,
-    jobs,
-    freezes: rules.filter((rule) => rule.kind === 'freeze'),
-    rates: yearRates,
-    projectedYears: options.projectedYears,
-  })
+  const censusResults = rules
+    .filter(isCensusRule)
+    .map((rule) =>
+      applyRule(rule, jobs, scopeJobs(census, rule.scope), yearRates),
+    )
+  const { freezes, raiseFreezes } = freezeResults(options, jobs, yearRates)
+  const queues = {
+    census: censusResults.map((savings) => ({
+      kind: 'census' as const,
+      savings,
+    })),
+    freeze: freezes,
+    raises: raiseFreezes,
+    eliminate: eliminations,
+  }
   return {
     base,
-    rules: rules.map((rule, index): RuleResult => {
-      const savings = censusResults[index]
-      if (savings) return { kind: 'census', savings }
-      return rule.kind === 'freeze'
-        ? takeNext(freezeResults)
-        : takeNext(eliminations)
-    }),
-    total: sumSavings(
-      censusResults.filter((savings) => savings !== null),
-      yearRates,
+    rules: rules.map((rule) =>
+      takeNext<RuleResult>(queues[isCensusRule(rule) ? 'census' : rule.kind]),
     ),
+    total: sumSavings(censusResults, yearRates),
     eliminated,
     temporaries: census.records.length - jobs.length,
     opeFiscalYear: yearRates ? opeFiscalYear : null,

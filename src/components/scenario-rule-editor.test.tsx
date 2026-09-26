@@ -86,3 +86,22 @@ test('an elimination picks an area or one of its units, and has no scope fields'
   expect(screen.queryByRole('combobox', { name: /^Group/ })).toBeNull()
   expect(screen.getByRole('group', { name: '1. Eliminated' })).toBeVisible()
 })
+
+test('a raise freeze takes years and a cap of zero or more, over a scope', async () => {
+  const rule: Rule = {
+    kind: 'raises',
+    scope: ANY_SCOPE,
+    years: 1,
+    capBasisPoints: 0,
+  }
+  const { onChange } = renderEditor(rule)
+  const cap = screen.getByRole('textbox', { name: 'Cap raises at (%)' })
+  await userEvent.clear(cap)
+  await userEvent.type(cap, '1.5')
+  expect(onChange).toHaveBeenLastCalledWith({ ...rule, capBasisPoints: 150 })
+  const years = screen.getByRole('textbox', { name: 'Years' })
+  await userEvent.clear(years)
+  await userEvent.type(years, '3')
+  expect(onChange).toHaveBeenLastCalledWith({ ...rule, years: 3 })
+  expect(screen.getByRole('combobox', { name: 'Class or rank' })).toBeVisible()
+})

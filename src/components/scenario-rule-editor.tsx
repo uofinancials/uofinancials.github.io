@@ -13,6 +13,7 @@ import type { Rule } from '@/lib/scenario'
 import type { EliminationOption } from '@/lib/scenario-eliminate'
 import { describeRule } from '@/lib/scenario-labels'
 import {
+  parseCapText,
   parseDollarsText,
   parsePercentText,
   parseYearsText,
@@ -41,6 +42,50 @@ function PercentField({
       parse={parsePercentText}
       onValue={onValue}
     />
+  )
+}
+
+function YearsField({
+  years,
+  onValue,
+}: {
+  years: number
+  onValue: (years: number) => void
+}) {
+  return (
+    <DraftInput
+      label="Years"
+      inputMode="numeric"
+      value={String(years)}
+      parse={parseYearsText}
+      onValue={onValue}
+    />
+  )
+}
+
+type RaiseFreezeRule = Extract<Rule, { kind: 'raises' }>
+
+function RaiseFields({
+  rule,
+  onChange,
+}: {
+  rule: RaiseFreezeRule
+  onChange: (rule: RaiseFreezeRule) => void
+}) {
+  return (
+    <>
+      <YearsField
+        years={rule.years}
+        onValue={(years) => onChange({ ...rule, years })}
+      />
+      <DraftInput
+        label="Cap raises at (%)"
+        inputMode="decimal"
+        value={String(toPercent(rule.capBasisPoints))}
+        parse={parseCapText}
+        onValue={(capBasisPoints) => onChange({ ...rule, capBasisPoints })}
+      />
+    </>
   )
 }
 
@@ -116,11 +161,8 @@ function AmountFields({
     case 'freeze':
       return (
         <>
-          <DraftInput
-            label="Years"
-            inputMode="numeric"
-            value={String(rule.years)}
-            parse={parseYearsText}
+          <YearsField
+            years={rule.years}
             onValue={(years) => onChange({ ...rule, years })}
           />
           <SelectField
@@ -136,6 +178,8 @@ function AmountFields({
           />
         </>
       )
+    case 'raises':
+      return <RaiseFields rule={rule} onChange={onChange} />
     case 'eliminate':
       return (
         <EliminateField

@@ -28,6 +28,9 @@ export type Savings = {
   egCents: number
 }
 
+/** The projection's raise for groups without a settled contract and for its later years. */
+export const PROJECTED_RAISE_BASIS_POINTS = 300
+
 export const BASIS = 10_000
 export const BASIS_BIG = 10_000n
 
