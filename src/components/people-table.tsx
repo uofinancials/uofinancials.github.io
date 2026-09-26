@@ -14,6 +14,7 @@ import { type PeopleView, recordKey } from '@/lib/people-list'
 import type { PeopleSort } from '@/lib/people-search'
 import { LIST_FIELDS } from '@/lib/person-fields'
 import type { SortDirection } from '@/lib/sort'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** One page of jobs, a row each, named and linked to the person, in the view's columns; each sortable header sorts by its column. */
 export function PeopleTable({
@@ -65,9 +66,7 @@ export function PeopleTable({
               <TableCell
                 key={label}
                 className={
-                  isNumber
-                    ? 'text-right tabular-nums'
-                    : 'min-w-28 whitespace-normal'
+                  isNumber ? NUMBER_CELL : 'min-w-28 whitespace-normal'
                 }
               >
                 {value(record) ?? NO_VALUE}

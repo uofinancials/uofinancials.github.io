@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { PageSection } from '@/components/page-section'
 import {
   Table,
   TableBody,
@@ -14,27 +15,10 @@ import { manifestQuery, outlookQuery, raiseTermsQuery } from '@/data/queries'
 import { outlookSources } from '@/lib/budget-outlook'
 import { listCitedDocuments, sourceAnchor } from '@/lib/citation'
 import { formatCount, formatDollars } from '@/lib/format'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const HASH_CELL = 'font-mono text-xs'
 const NOT_STATED = 'not stated'
-
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id?: string
-  title: string
-  children: ReactNode
-}) {
-  return (
-    <section id={id} className="space-y-3">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      {children}
-    </section>
-  )
-}
 
 function SourceTable({
   head,
@@ -238,7 +222,7 @@ export function SourcesPage() {
           Figures the site computes are labelled as computed.
         </p>
       </div>
-      <Section title="Fall Census salary reports">
+      <PageSection title="Fall Census salary reports">
         {firstFall && (
           <p>
             Published by the UO Office of Data Enablement on its{' '}
@@ -249,8 +233,8 @@ export function SourcesPage() {
           </p>
         )}
         <FallSources fall={manifest.fall} />
-      </Section>
-      <Section title="Operational expenditure budgets">
+      </PageSection>
+      <PageSection title="Operational expenditure budgets">
         {firstBudget && (
           <p>
             Published by UO Budget and Resource Planning on its{' '}
@@ -261,27 +245,30 @@ export function SourcesPage() {
           </p>
         )}
         <BudgetSources budget={manifest.budget} />
-      </Section>
+      </PageSection>
       {manifest.rates && (
-        <Section id={sourceAnchor({ kind: 'rates' })} title="Blended OPE rates">
+        <PageSection
+          id={sourceAnchor({ kind: 'rates' })}
+          title="Blended OPE rates"
+        >
           <RateSources rates={manifest.rates} />
-        </Section>
+        </PageSection>
       )}
-      <Section title="Raise terms">
+      <PageSection title="Raise terms">
         <p>
           Across-the-board, merit, step, and one-time raise terms, entered by
           hand from these documents, each term citing its section and page.
         </p>
         <RaiseSources />
-      </Section>
-      <Section title="Budget outlook">
+      </PageSection>
+      <PageSection title="Budget outlook">
         <p>
           The E&G fund projection, the budget figures, and the announced budget
           actions on the budget page, entered by hand from these documents, each
           figure citing its page.
         </p>
         <OutlookSources />
-      </Section>
+      </PageSection>
     </div>
   )
 }

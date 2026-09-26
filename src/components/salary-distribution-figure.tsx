@@ -16,8 +16,7 @@ import {
   type SalaryBin,
 } from '@/lib/salary-distribution'
 import { stackedCounts, type TrendGroup } from '@/lib/trend-groups'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 function BinTable({
   distribution,

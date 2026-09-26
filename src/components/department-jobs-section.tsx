@@ -29,8 +29,8 @@ import {
   METRIC_OPTIONS,
   STAFF_KIND_OPTIONS,
 } from '@/lib/trends-search'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const STAFF_KINDS = ['unclassified', 'classified'] as const
 const KIND_TITLES = {
   unclassified: 'Unclassified jobs by rank',

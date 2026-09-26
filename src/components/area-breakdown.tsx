@@ -12,8 +12,8 @@ import {
 import type { AreaFigure } from '@/lib/department-table'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
 import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const SHOWN_AREAS = 10
 
 /** The largest colleges and VP areas by one measure, as bars and as a table whose names link to each area's page. */

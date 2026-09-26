@@ -11,8 +11,8 @@ import { fiscalYearLabel } from '@/data/budget'
 import { formatCount, formatDollars } from '@/lib/format'
 import type { EliminatedTotal, EliminationResult } from '@/lib/scenario'
 import { smallReachNote } from '@/lib/scenario-labels'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const HEADS = [
   'Census jobs',
   'E&G pay',

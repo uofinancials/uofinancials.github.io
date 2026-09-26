@@ -9,8 +9,7 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import { formatDollars, formatOrBlank } from '@/lib/format'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** Each published case's run rate by fiscal year, its present value, and its final ending fund balance. */
 export function OutlookCasesTable({ projection }: { projection: Projection }) {

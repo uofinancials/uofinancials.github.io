@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/table'
 import { formatChange, formatOrBlank } from '@/lib/format'
 import { type ChangeSeries, pairLabel } from '@/lib/pay-changes'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** Each line's median change per census pair, as a chart and a table. */
 export function PayChangeLines({

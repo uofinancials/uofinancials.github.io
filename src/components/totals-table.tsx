@@ -14,8 +14,8 @@ import {
   formatShare,
 } from '@/lib/format'
 import type { GroupTotals, Totals } from '@/lib/overview'
+import { NUMBER_CELL } from '@/lib/utils'
 
-const NUMBER_CELL = 'text-right tabular-nums'
 const NUMBER_HEADS = ['People', 'Jobs', 'FTE', 'Salary spend', 'Share']
 
 function CountCells({ totals }: { totals: Totals }) {

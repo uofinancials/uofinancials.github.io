@@ -17,8 +17,7 @@ import {
 } from '@/lib/pay-changes'
 import { stackedCounts } from '@/lib/trend-groups'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
-
-const NUMBER_CELL = 'text-right tabular-nums'
+import { NUMBER_CELL } from '@/lib/utils'
 
 /** The chosen census pair's jobs by change in rate, as a stacked histogram and a table. */
 export function PayChangeDistribution({
