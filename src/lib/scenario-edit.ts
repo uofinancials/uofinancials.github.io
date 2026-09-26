@@ -1,6 +1,12 @@
 import { ANY_SCOPE, type Rule } from './scenario.ts'
 
-export const RULE_KINDS = ['threshold', 'remove', 'cut', 'freeze'] as const
+export const RULE_KINDS = [
+  'threshold',
+  'remove',
+  'cut',
+  'freeze',
+  'eliminate',
+] as const
 export type RuleKind = (typeof RULE_KINDS)[number]
 
 export const RULE_KIND_LABELS: Record<RuleKind, string> = {
@@ -8,10 +14,11 @@ export const RULE_KIND_LABELS: Record<RuleKind, string> = {
   remove: 'Remove jobs',
   cut: 'Cut pay',
   freeze: 'Hiring freeze',
+  eliminate: 'Eliminate a department or area',
 }
 
-/** A new rule of a kind, over all jobs, with starting amounts. */
-export function newRule(kind: RuleKind): Rule {
+/** A new rule of a kind, over all jobs, with starting amounts; an elimination starts at `firstCode`. */
+export function newRule(kind: RuleKind, firstCode: string): Rule {
   switch (kind) {
     case 'threshold':
       return {
@@ -26,6 +33,8 @@ export function newRule(kind: RuleKind): Rule {
       return { kind, scope: ANY_SCOPE, cutBasisPoints: 500 }
     case 'freeze':
       return { kind, scope: ANY_SCOPE, years: 1, afterFreeze: 'refill' }
+    case 'eliminate':
+      return { kind, code: firstCode }
   }
 }
 

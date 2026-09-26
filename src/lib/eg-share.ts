@@ -6,8 +6,8 @@ import type { DepartmentCensus } from './department-jobs.ts'
 import { isClassifiedTemp, jobSpendCents } from './overview.ts'
 
 /** BRP's OPE rate page labels fund type 11 "E&G"; the budget workbooks call it Budgeted Operations. */
-const EG_FUND_TYPE = '11'
-const SALARY_ACCOUNT_TYPES = new Set(['61', '62', '63', '64'])
+export const EG_FUND_TYPE = '11'
+export const SALARY_ACCOUNT_TYPES = new Set(['61', '62', '63', '64'])
 const FULL_SHARE = 10_000
 
 export const EG_SHARE_METHOD =

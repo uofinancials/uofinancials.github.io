@@ -25,8 +25,14 @@ import {
   departmentSearchSchema,
   departmentsSearchSchema,
 } from '@/lib/department-search'
-import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
+import {
+  fiscalYearForCensus,
+  fiscalYearOf,
+  selectOverviewSources,
+} from '@/lib/overview'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
+import { eliminationFiscalYear } from '@/lib/scenario-eliminate'
+import { firstSavingsYear } from '@/lib/scenario-outlook'
 import { scenarioSearchSchema } from '@/lib/scenario-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { BudgetPage } from '@/pages/budget-page'
@@ -184,22 +190,43 @@ const budgetRoute = createRoute({
   component: BudgetPage,
 })
 
+/** The latest census and its budget, the rates and outlook, and the budget eliminations use. */
+async function loadScenario({
+  context: { queryClient },
+}: {
+  context: { queryClient: QueryClient }
+}) {
+  const manifest = await queryClient.ensureQueryData(manifestQuery)
+  const { census, fiscalYear } = selectOverviewSources(manifest)
+  const loadEliminationBudget = async () => {
+    const [projection] = (await queryClient.ensureQueryData(outlookQuery))
+      .projections
+    const year = eliminationFiscalYear(
+      manifest.budget.map((entry) => entry.fiscalYear),
+      firstSavingsYear(projection.fiscalYears, fiscalYearOf(census.censusDate)),
+    )
+    await queryClient.ensureQueryData(budgetYearQuery(year))
+    return year
+  }
+  const [eliminationYear] = await Promise.all([
+    loadEliminationBudget(),
+    queryClient.ensureQueryData(fallYearQuery(census.year)),
+    queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+    queryClient.ensureQueryData(opeRatesQuery),
+  ])
+  return {
+    year: census.year,
+    fiscalYear,
+    censusDate: census.censusDate,
+    eliminationFiscalYear: eliminationYear,
+  }
+}
+
 const scenariosRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/scenarios',
   validateSearch: scenarioSearchSchema,
-  loader: async ({ context: { queryClient } }) => {
-    const { census, fiscalYear } = selectOverviewSources(
-      await queryClient.ensureQueryData(manifestQuery),
-    )
-    await Promise.all([
-      queryClient.ensureQueryData(fallYearQuery(census.year)),
-      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
-      queryClient.ensureQueryData(opeRatesQuery),
-      queryClient.ensureQueryData(outlookQuery),
-    ])
-    return { year: census.year, fiscalYear, censusDate: census.censusDate }
-  },
+  loader: loadScenario,
   component: ScenariosPage,
 })
 

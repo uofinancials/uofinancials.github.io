@@ -47,6 +47,7 @@ const BUDGETS = [...new Set(CENSUSES.map(({ fiscalYear }) => fiscalYear))].map(
   (fiscalYear) => budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
 )
 const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
+const FY27 = budgetYearSchema.parse(readJson(budgetDataPath(2027)))
 const [PROJECTION] = outlookSchema.parse(
   readJson(path.join(DATA_DIR, 'outlook.json')),
 ).projections
@@ -144,7 +145,7 @@ const STATE_FUNDING_BELOW = BASELINES.findIndex(({ label }) =>
   label.startsWith('State funding $20 million below'),
 )
 
-/** Fall 2025 set against a baseline, from FY27 at FY27 OPE rates. */
+/** Fall 2025 set against a baseline, from FY27 at FY27 OPE rates, with eliminations from the FY27 budget. */
 function runFall2025(rules: Rule[], baselineIndex = 0) {
   const baseline = BASELINES[baselineIndex]
   if (!baseline) throw new Error(`No baseline ${baselineIndex}`)
@@ -159,6 +160,7 @@ function runFall2025(rules: Rule[], baselineIndex = 0) {
     rates: RATES,
     egShares: SHARES_2025,
     history: HISTORY,
+    eliminationBudget: FY27,
   })
   return { result, rows: outlookRows({ ...options, result, baseline }) }
 }
@@ -313,4 +315,58 @@ test('question 13: the same stack against state funding $20M below projection le
     -7_892_495_422, -17_315_610_329,
   ])
   expect(rows.every((row) => row.remainingWeeks === null)).toBe(true)
+})
+
+// Budget figures below match an independent sum of public/data/budget/FY27.json rows.
+test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines and takes its 1,219 census jobs from the other rules', () => {
+  const { result, rows } = runFall2025([
+    { kind: 'eliminate', code: '222000' },
+    { kind: 'remove', scope: { ...ALL, dept: '222000' } },
+  ])
+  expect(result.rules).toEqual([
+    {
+      kind: 'eliminate',
+      code: '222000',
+      name: 'Arts & Sciences, College of',
+      isArea: true,
+      jobs: 1_219,
+      eg: {
+        payCents: 10_721_399_400,
+        opeCents: 7_236_959_350,
+        servicesCents: 462_648_200,
+      },
+      egCents: 18_421_006_950,
+      allFundsCents: 19_107_829_350,
+      isPartlyMatched: false,
+      isCovered: false,
+    },
+    {
+      kind: 'census',
+      savings: { jobs: 0, salaryCents: 0, fullCostCents: 0, egCents: 0 },
+    },
+  ])
+  expect(rows[1]?.savingsCents).toBe(18_421_006_950)
+})
+
+test('a unit the census files under another code is partly matched; one it files under its own is not', () => {
+  const { result } = runFall2025([
+    { kind: 'eliminate', code: '223501' },
+    { kind: 'eliminate', code: '222050' },
+  ])
+  expect(result.rules).toMatchObject([
+    {
+      name: 'CAS Mathematics',
+      jobs: 0,
+      egCents: 1_170_655_800,
+      allFundsCents: 1_182_627_900,
+      isPartlyMatched: true,
+    },
+    {
+      name: 'CAS English',
+      jobs: 72,
+      egCents: 866_622_200,
+      allFundsCents: 889_222_100,
+      isPartlyMatched: false,
+    },
+  ])
 })

@@ -225,13 +225,20 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   page) where a reader stacks rules over the Fall 2025 census and sees what each
   would save, labelled throughout as this site's estimate and not a prediction
   or a recommendation about anyone:
-  - four kinds of rule - a cut to pay above a threshold, removing jobs, a
+  - four kinds of pay rule - a cut to pay above a threshold, removing jobs, a
     percentage cut, and a hiring freeze - each over any group, staff kind, term,
     department or area, and class or rank, added, edited, moved, and removed in
     place;
   - each rule's jobs and its salary, full cost, and E&G savings, applied in
-    order so no job is counted twice, and the census rules' total as a share of
-    the Board's $65 million reduction estimate;
+    order so no job is counted twice;
+  - eliminating a college or VP area, or one budget unit, which saves its
+    budgeted salaries and pay, OPE, and services and supplies from the FY27
+    budget (posting period 2), E&G beside all funds, summed as published and
+    grown 3% a year after FY27. An elimination applies before every other rule
+    and takes its census jobs out of them. A unit whose census jobs are mostly
+    filed under other codes says pay rules may also count some of its staff;
+  - the pay rules' and eliminations' E&G savings together as a share of the
+    Board's $65 million reduction estimate;
   - a hiring freeze's rate from past turnover, Fall 2019-2025, whose censuses
     load only when a freeze is added, with its positions and savings by year;
   - the E&G savings set against the June 2026 projection or any of its
@@ -242,5 +249,8 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     or two jobs, every method stated, and each source cited.
 
   The rules and the chosen case are held in the link, so a scenario can be
-  shared; an entry the link cannot read is left out and counted. A test checks
-  the question 13 stack against the state-funding-below case to the cent.
+  shared; an entry the link cannot read, or an elimination naming a code the
+  FY27 budget does not list, is left out and counted. A test checks the question
+  13 stack against the state-funding-below case to the cent, and eliminations of
+  Arts & Sciences, CAS Mathematics, and CAS English against an independent sum
+  of the FY27 budget rows.

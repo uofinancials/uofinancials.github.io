@@ -23,7 +23,9 @@ const RULES: Rule[] = [
     cutBasisPoints: 5,
   },
   { kind: 'freeze', scope: ANY_SCOPE, years: 2, afterFreeze: 'eliminate' },
+  { kind: 'eliminate', code: '223501' },
 ]
+const BUDGET_CODES = new Set(['222000', '223501'])
 
 test('rules round-trip through the URL form in dollars and percents, leaving out "any" scope fields', () => {
   const entries = toSearchRules(RULES)
@@ -39,24 +41,45 @@ test('rules round-trip through the URL form in dollars and percents, leaving out
     years: 2,
     afterFreeze: 'eliminate',
   })
-  expect(parseRules(entries)).toEqual({ rules: RULES, dropped: 0 })
+  expect(entries[4]).toEqual({ kind: 'eliminate', code: '223501' })
+  expect(parseRules(entries, BUDGET_CODES)).toEqual({
+    rules: RULES,
+    dropped: 0,
+  })
 })
 
 test('a malformed entry is dropped and counted, never read as a wider scope', () => {
   expect(
-    parseRules([
-      { kind: 'cut', cutPercent: 12.345 },
-      { kind: 'cut', cutPercent: 0 },
-      { kind: 'remove', scope: { group: 'Deans' } },
-      { kind: 'freeze', years: 6, afterFreeze: 'refill' },
-      { kind: 'raise' },
-      'remove',
-      { kind: 'remove', scope: { dept: 222000 } },
-    ]),
+    parseRules(
+      [
+        { kind: 'cut', cutPercent: 12.345 },
+        { kind: 'cut', cutPercent: 0 },
+        { kind: 'remove', scope: { group: 'Deans' } },
+        { kind: 'freeze', years: 6, afterFreeze: 'refill' },
+        { kind: 'raise' },
+        'remove',
+        { kind: 'remove', scope: { dept: 222000 } },
+        { kind: 'eliminate', code: '2235' },
+        { kind: 'eliminate', code: '223501', scope: {} },
+      ],
+      BUDGET_CODES,
+    ),
   ).toEqual({
     rules: [{ kind: 'remove', scope: { ...ANY_SCOPE, dept: '222000' } }],
-    dropped: 6,
+    dropped: 8,
   })
+})
+
+test('an elimination is read only when it names a code in the budget year, the router having read an all-digit code as a number', () => {
+  expect(
+    parseRules(
+      [
+        { kind: 'eliminate', code: 222000 },
+        { kind: 'eliminate', code: '223100' },
+      ],
+      BUDGET_CODES,
+    ),
+  ).toEqual({ rules: [{ kind: 'eliminate', code: '222000' }], dropped: 1 })
 })
 
 test('a case names its baseline by label, and one it does not name falls back to the first', () => {

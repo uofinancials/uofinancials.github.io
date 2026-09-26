@@ -47,6 +47,7 @@ function run(rules: Rule[]) {
     opeFiscalYear: 2026,
     history: HISTORY,
     projectedYears: 4,
+    eliminationBudget: BUDGET,
   })
 }
 

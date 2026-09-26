@@ -76,10 +76,11 @@ flowchart LR
   comparison, the people list's controls, table, sort controls, column picker,
   and group figure, the person view with its computed figures, rate chart,
   records table, and job history, the budget outlook's lines and cases tables,
-  the scenario rule list, rule editor, scope fields, savings table, and outlook
-  section, and the hooks and query that load one census's placed jobs, the
-  people list's matching jobs, the pay changes of a Trends view, the name index,
-  a scenario and its result, and the censuses a hiring freeze reads.
+  the scenario rule list, rule editor, scope fields, savings and eliminations
+  tables, savings total, and outlook section, and the hooks and query that load
+  one census's placed jobs, the people list's matching jobs, the pay changes of
+  a Trends view, the name index, a scenario and its result, and the censuses a
+  hiring freeze reads.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -96,7 +97,8 @@ flowchart LR
   group's median change beside its compounded across-the-board terms, the budget
   outlook's gap by year, chart series, and cited sources, and scenarios: a job's
   estimated OPE rate group, each area's estimated E&G share, rules over one
-  census, the hiring freeze and the censuses it reads, savings against the
+  census, the hiring freeze and the censuses it reads, department and area
+  eliminations by budget line and the budget year they use, savings against the
   projection or one of its cases, the rules' and case's URL form, rule and scope
   labels, new rules and their order, and example scenarios.
 - `src/test` - shared test fixtures.
@@ -143,7 +145,7 @@ flowchart LR
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, and
   sources.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
-  freeze, cases, unreadable link entries, and narrow layout.
+  freeze, eliminations, cases, unreadable link entries, and narrow layout.
 - `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, its
   raise comparison, and its link from the person page.
 
@@ -183,12 +185,13 @@ flowchart LR
   announced budget actions, each cited; driven by the `src/lib` budget outlook
   over the outlook file.
 - `/scenarios` - rules stacked over the latest Fall census, edited in place,
-  with each rule's jobs and salary, full cost, and E&G savings, the savings set
-  against the E&G projection or one of its cases by fiscal year, example
-  questions, the stated methods, and the sources, with the rules and case held
-  in the URL; driven by the `src/lib` scenario modules over one Fall year, its
-  budget year, the OPE rates, and the outlook file, and every Fall year from
-  2019 when a hiring freeze is present.
+  with each rule's jobs and salary, full cost, and E&G savings, each
+  elimination's budgeted pay, OPE, and S&S, the savings set against the E&G
+  projection or one of its cases by fiscal year, example questions, the stated
+  methods, and the sources, with the rules and case held in the URL; driven by
+  the `src/lib` scenario modules over one Fall year, its budget year, the budget
+  year of the first savings year, the OPE rates, and the outlook file, and every
+  Fall year from 2019 when a hiring freeze is present.
 - `/sources` - every source file in the manifest and every document the raise
   terms and the budget outlook cite, with retrieval dates, hashes, and counts;
   driven by `src/data` and `src/lib`.

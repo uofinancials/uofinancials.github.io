@@ -81,6 +81,7 @@ const RESULT: ScenarioResult = {
     },
   ],
   total: savings(500),
+  eliminated: null,
   temporaries: 0,
   opeFiscalYear: 2027,
   leaveFiscalYear: 2027,
@@ -88,7 +89,26 @@ const RESULT: ScenarioResult = {
 
 test('savings start in the first year after the census and grow 3% a year, freezes by their own year', () => {
   // FY27: 500 + 100; FY28: (500 + 200) x 1.03 = 721.
-  expect(yearlySavings(RESULT, 2)).toEqual([600, 721])
+  expect(yearlySavings(RESULT, { years: 2, firstFiscalYear: 2027 })).toEqual([
+    600, 721,
+  ])
+})
+
+test('eliminations grow 3% a year from their budget year, not from the first savings year', () => {
+  const eliminated = { egCents: 1_000, allFundsCents: 9_999, fiscalYear: 2026 }
+  // 1,000 x 1.03 = 1,030 in FY27; 1,000 x 1.03^2 = 1,060.9 in FY28.
+  expect(
+    yearlySavings(
+      { ...RESULT, eliminated },
+      { years: 2, firstFiscalYear: 2027 },
+    ),
+  ).toEqual([600 + 1_030, 721 + 1_061])
+  expect(
+    yearlySavings(
+      { ...RESULT, eliminated: { ...eliminated, fiscalYear: 2027 } },
+      { years: 1, firstFiscalYear: 2027 },
+    ),
+  ).toEqual([1_600])
 })
 
 test('the baselines are the projection, named for the case that matches it, then the other cases without expenses', () => {

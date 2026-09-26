@@ -1,4 +1,4 @@
-import { fiscalYearLabel } from '../data/budget.ts'
+import { type BudgetYear, fiscalYearLabel } from '../data/budget.ts'
 import type { OpeRates } from '../data/ope.ts'
 import type { Projection } from '../data/outlook.ts'
 import {
@@ -37,7 +37,7 @@ const WEEKS_PER_YEAR = 52
 const TENTHS = 10
 
 export const SCENARIO_OUTLOOK_METHOD =
-  "Savings against the projection are this site's estimate. Each year's E&G savings start in full in the first fiscal year after the census and grow 3% a year, the projection's own raise assumption for later years; freeze savings follow the freeze year by year. Savings use that first year's OPE rates, are gross, and count no revenue lost. The remaining gap is the projected run rate plus savings, and the remaining fund balance is the projected balance plus every year's savings so far. The projection may already count the hiring freeze announced in May 2026; its materials do not say."
+  "Savings against the projection are this site's estimate. Each year's E&G savings start in full in the first fiscal year after the census and grow 3% a year, the projection's own raise assumption for later years; freeze savings follow the freeze year by year. Elimination savings start at their budget year's lines and grow at the same 3% from that year, services and supplies included. Savings use that first year's OPE rates, are gross, and count no revenue lost. The remaining gap is the projected run rate plus savings, and the remaining fund balance is the projected balance plus every year's savings so far. The projection may already count the hiring freeze announced in May 2026; its materials do not say."
 
 function grow(cents: number, years: number): number {
   const numerator =
@@ -46,15 +46,25 @@ function grow(cents: number, years: number): number {
   return Number(divideHalfUp(numerator, BASIS_BIG ** BigInt(years)))
 }
 
-/** E&G savings in each projected year after the census, the first at index 0. */
-export function yearlySavings(result: ScenarioResult, years: number): number[] {
-  return Array.from({ length: years }, (_, index) => {
+/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year. */
+export function yearlySavings(
+  result: ScenarioResult,
+  options: { years: number; firstFiscalYear: number },
+): number[] {
+  const { eliminated } = result
+  const eliminatedFrom = eliminated
+    ? Math.max(0, options.firstFiscalYear - eliminated.fiscalYear)
+    : 0
+  return Array.from({ length: options.years }, (_, index) => {
     const freezeCents = result.rules.reduce(
       (sum, rule) =>
         rule.kind === 'freeze' ? sum + (rule.byYear[index]?.egCents ?? 0) : sum,
       0,
     )
-    return grow(result.total.egCents + freezeCents, index)
+    return (
+      grow(result.total.egCents + freezeCents, index) +
+      grow(eliminated?.egCents ?? 0, eliminatedFrom + index)
+    )
   })
 }
 
@@ -114,7 +124,10 @@ export function outlookRows(options: {
 }): OutlookRow[] {
   const { result, fiscalYears, baseline, censusFiscalYear } = options
   const firstIndex = firstSavingsIndex(fiscalYears, censusFiscalYear)
-  const savings = yearlySavings(result, fiscalYears.length - firstIndex)
+  const savings = yearlySavings(result, {
+    years: fiscalYears.length - firstIndex,
+    firstFiscalYear: firstSavingsYear(fiscalYears, censusFiscalYear),
+  })
   let savedCents = 0
   return fiscalYears.map((fiscalYear, index) => {
     const runRateCents = baseline.runRateCents[index] ?? 0
@@ -151,6 +164,7 @@ export function projectScenario(options: {
   egShares: Map<string, number>
   history: DepartmentCensus[]
   fiscalYears: number[]
+  eliminationBudget: BudgetYear
 }): ScenarioResult {
   const { fiscalYears, censusFiscalYear } = options
   return runScenario({
