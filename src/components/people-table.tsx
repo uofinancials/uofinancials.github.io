@@ -3,6 +3,7 @@ import { SortHeader } from '@/components/sort-header'
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -31,6 +32,9 @@ export function PeopleTable({
   )
   return (
     <Table>
+      <TableCaption className="mt-0 mb-2 caption-top text-left">
+        Fall {view.year} jobs
+      </TableCaption>
       <TableHeader>
         <TableRow>
           <SortHeader label="Name" sort="name" view={view} onSort={onSort} />

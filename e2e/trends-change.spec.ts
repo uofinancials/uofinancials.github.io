@@ -39,6 +39,9 @@ test('the change measure shows each census pair’s median by group, the change 
   await page.goto('/trends?metric=change&dept=000000')
   await expect(main).toContainText('Pay department: 000000')
   await expect(main).toContainText('0 continuing jobs match')
+  await page.goto('/trends?metric=change&from=2025')
+  await expect(main).toContainText('A change needs two consecutive censuses')
+  await expect(page.getByRole('group', { name: 'Lines' })).toHaveCount(0)
 })
 
 test('an opened group’s change lines are its categories, and a filter narrows the other measures too', async ({

@@ -102,6 +102,10 @@ test('each line is the median of its pairs, blank below three', () => {
   expect(point?.median).toBeCloseTo(0.03, 10)
 })
 
+test('a range without a pair year has no lines', () => {
+  expect(payChangeTrends([], [], null)).toEqual([])
+})
+
 test('changes fall in whole-point bins from -5% to 20%, with open bins either side', () => {
   const pairs = continuingPairs(
     linkedYears(2024, [

@@ -132,7 +132,9 @@ export function TrendsControls({
         />
       </div>
       <JobFilters names={names} onChange={onChange} />
-      <LineToggles lines={lines} hidden={view.hide} onChange={onChange} />
+      {lines.length > 0 && (
+        <LineToggles lines={lines} hidden={view.hide} onChange={onChange} />
+      )}
     </div>
   )
 }

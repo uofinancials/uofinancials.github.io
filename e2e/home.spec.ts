@@ -374,15 +374,14 @@ test('the people list filters, sorts, and pages one census, and its chart sets t
   await page.getByRole('button', { name: '$50,000 to $59,999' }).click()
   await expect(page).toHaveURL(/min=50000&max=59999/)
   await expect(main).toContainText('Rate to $59,999')
-  // The spend by EEO category table always has the header; the list gains it.
-  const categoryHeaders = page.getByRole('columnheader', {
-    name: 'EEO category',
-  })
-  await expect(categoryHeaders).toHaveCount(1)
+  const categoryHeader = page
+    .getByRole('table', { name: 'Fall 2025 jobs' })
+    .getByRole('columnheader', { name: 'EEO category' })
+  await expect(categoryHeader).toHaveCount(0)
   await page.getByText('Columns', { exact: true }).click()
   await page.getByRole('checkbox', { name: 'EEO category' }).check()
   await expect(page).toHaveURL(/cols=/)
-  await expect(categoryHeaders).toHaveCount(2)
+  await expect(categoryHeader).toBeVisible()
   await page.getByRole('link', { name: 'By group' }).click()
   await expect(page).toHaveURL(/chart=groups/)
   await expect(
@@ -393,7 +392,9 @@ test('the people list filters, sorts, and pages one census, and its chart sets t
 test('the people list does not scroll sideways at 360px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 })
   await page.goto('/people?dept=223100')
-  await expect(page.getByRole('table').first()).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'Fall 2025 jobs' }),
+  ).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })

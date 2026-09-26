@@ -243,19 +243,19 @@ export function recordKey(record: FallRecord): number {
   return nextRecordId
 }
 
-/** The distribution with only the bins that overlap the view's rate range. */
+/** The distribution with only the bins that overlap the view's rate range, less the empty bins at either end. */
 export function binsInRange(
   distribution: Distribution,
   { minCents, ceilingCents }: Pick<PeopleView, 'minCents' | 'ceilingCents'>,
 ): Distribution {
-  return {
-    ...distribution,
-    bins: distribution.bins.filter(
-      (bin) =>
-        (minCents === null ||
-          bin.ceilingCents === null ||
-          bin.ceilingCents > minCents) &&
-        (ceilingCents === null || bin.floorCents < ceilingCents),
-    ),
-  }
+  const inRange = distribution.bins.filter(
+    (bin) =>
+      (minCents === null ||
+        bin.ceilingCents === null ||
+        bin.ceilingCents > minCents) &&
+      (ceilingCents === null || bin.floorCents < ceilingCents),
+  )
+  const first = inRange.findIndex(({ total }) => total > 0)
+  const last = inRange.findLastIndex(({ total }) => total > 0)
+  return { ...distribution, bins: inRange.slice(first, last + 1) }
 }

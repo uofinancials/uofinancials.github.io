@@ -124,12 +124,13 @@ function measure(fromYear: number, ratios: number[] = []): ChangePoint {
   }
 }
 
-/** All pairs, then one series per group with a pair, or per published category of an opened group, for each pair year. */
+/** All pairs, then one series per group with a pair, or per published category of an opened group, for each pair year; none without a pair year. */
 export function payChangeTrends(
   pairs: ContinuingPair[],
   fromYears: number[],
   opened: TrendGroup | null,
 ): ChangeSeries[] {
+  if (fromYears.length === 0) return []
   const ratios = new Map<string, number[]>()
   const add = (key: string, ratio: number) => {
     const bucket = ratios.get(key)
