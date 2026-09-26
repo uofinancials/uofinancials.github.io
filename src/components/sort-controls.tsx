@@ -1,11 +1,7 @@
 import { SelectField } from '@/components/select-field'
 import type { PeopleView } from '@/lib/people-list'
-import {
-  PEOPLE_SORTS,
-  type PeopleSort,
-  SORT_LABELS,
-  type SortDirection,
-} from '@/lib/people-search'
+import { PEOPLE_SORTS, type PeopleSort, SORT_LABELS } from '@/lib/people-search'
+import type { SortDirection } from '@/lib/sort'
 
 const SORT_OPTIONS = PEOPLE_SORTS.map((sort): [string, string] => [
   sort,

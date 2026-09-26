@@ -7,7 +7,6 @@ import {
   type PeopleChart,
   type PeopleSearch,
   type PeopleSort,
-  type SortDirection,
 } from './people-search.ts'
 import { titleOf } from './person-fields.ts'
 import { hasEveryWord, queryWords } from './person-lookup.ts'
@@ -17,6 +16,7 @@ import {
   positionOf,
   type SalaryBin,
 } from './salary-distribution.ts'
+import { compareKeys, type SortDirection } from './sort.ts'
 import { TREND_GROUPS, type TrendGroup, trendGroupOf } from './trend-groups.ts'
 import { measureJobs } from './trends.ts'
 
@@ -100,12 +100,6 @@ function sortKey(
     case 'category':
       return (record) => record.eeoCategory ?? ''
   }
-}
-
-function compareKeys(a: string | number, b: string | number): number {
-  return typeof a === 'number' && typeof b === 'number'
-    ? a - b
-    : collator.compare(String(a), String(b))
 }
 
 /** The jobs in the sort's order, ties by name and then as published. */

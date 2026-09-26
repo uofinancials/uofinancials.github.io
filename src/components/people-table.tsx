@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { SortHeader } from '@/components/sort-header'
 import {
   Table,
   TableBody,
@@ -10,52 +11,9 @@ import {
 import type { FallRecord } from '@/data/fall'
 import { NO_VALUE } from '@/lib/format'
 import { type PeopleView, recordKey } from '@/lib/people-list'
-import type { PeopleSort, SortDirection } from '@/lib/people-search'
+import type { PeopleSort } from '@/lib/people-search'
 import { LIST_FIELDS } from '@/lib/person-fields'
-import { cn } from '@/lib/utils'
-
-const ARIA_SORT: Record<SortDirection, 'ascending' | 'descending'> = {
-  asc: 'ascending',
-  desc: 'descending',
-}
-
-function SortHeader({
-  label,
-  sort,
-  isNumber = false,
-  view,
-  onSort,
-}: {
-  label: string
-  sort: PeopleSort | null
-  isNumber?: boolean
-  view: PeopleView
-  onSort: (sort: PeopleSort, dir: SortDirection) => void
-}) {
-  const isSorted = sort !== null && sort === view.sort
-  return (
-    <TableHead
-      scope="col"
-      aria-sort={isSorted ? ARIA_SORT[view.dir] : undefined}
-      className={cn(isNumber && 'text-right')}
-    >
-      {sort === null ? (
-        label
-      ) : (
-        <button
-          type="button"
-          className="underline decoration-dotted"
-          onClick={() =>
-            onSort(sort, isSorted && view.dir === 'asc' ? 'desc' : 'asc')
-          }
-        >
-          {label}
-          {isSorted && (view.dir === 'asc' ? ' ▲' : ' ▼')}
-        </button>
-      )}
-    </TableHead>
-  )
-}
+import type { SortDirection } from '@/lib/sort'
 
 /** One page of jobs, a row each, named and linked to the person, in the view's columns; each sortable header sorts by its column. */
 export function PeopleTable({

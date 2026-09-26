@@ -197,7 +197,7 @@ export function DepartmentJobsSection({
               to="/people"
               search={{ dept: code, year: view.year }}
             >
-              Jobs by name, Fall {view.year}
+              Jobs and salary distribution, Fall {view.year}
             </Link>
           </p>
           {STAFF_KINDS.map((kind) => {

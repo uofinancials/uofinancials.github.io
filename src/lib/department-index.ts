@@ -1,106 +1,73 @@
 import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
-import { createAreaAssigner, listAreas, ORG_LEVEL_AREA } from './areas.ts'
-import { sumBy } from './department-budget.ts'
+import { listAreas, ORG_LEVEL_AREA } from './areas.ts'
 import { type DepartmentCensus, isAreaCode } from './department-jobs.ts'
 import { UNASSIGNED_AREA } from './overview.ts'
 
-export type IndexEntry = {
+/** A unit or pay department, the area it sits in, and the jobs paid under its code. */
+export type PlacedUnit = {
   code: string
   name: string
-  /** The unit's Total Expenditure Budget; `null` when the budget publishes no unit with this code. */
-  budgetCents: number | null
-  jobs: number
+  area: string | null
+  records: FallRecord[]
 }
 
 /** An area and the units and pay departments in it; `code` is `null` for pay departments no area was assigned. */
-export type IndexArea = Omit<IndexEntry, 'code'> & {
+export type IndexArea = {
   code: string | null
-  entries: IndexEntry[]
+  name: string
+  entries: { code: string; name: string }[]
 }
 
 function byName(a: { name: string }, b: { name: string }) {
   return a.name.localeCompare(b.name)
 }
 
-type PlacedEntry = IndexEntry & { area: string | null }
-
-function unitEntries(budget: BudgetYear): Map<string, PlacedEntry> {
-  const unitCents = sumBy(budget.rows, (row) => row.org)
-  const entries = new Map<string, PlacedEntry>()
-  for (const [code, org] of Object.entries(budget.orgs)) {
+/**
+ * One census placed in its areas: every unit the budget publishes, then each
+ * pay department it does not, with their jobs, and each area's jobs, those
+ * placed in none under `null`. A pay department with an area's code is that
+ * area's.
+ */
+export function placeDepartments({ records, orgs, assign }: DepartmentCensus): {
+  units: PlacedUnit[]
+  areaJobs: Map<string | null, FallRecord[]>
+} {
+  const units = new Map<string, PlacedUnit>()
+  for (const [code, org] of Object.entries(orgs)) {
     if (org.level === ORG_LEVEL_AREA) continue
-    const budgetCents = unitCents.get(code) ?? 0
-    entries.set(code, {
-      code,
-      name: org.name,
-      budgetCents,
-      jobs: 0,
-      area: org.parent,
-    })
+    units.set(code, { code, name: org.name, area: org.parent, records: [] })
   }
-  return entries
-}
-
-/** The areas of one budget year, each with its units and the census's pay departments placed in it. */
-export function departmentIndex(
-  census: { year: number; records: FallRecord[] },
-  budget: BudgetYear,
-): IndexArea[] {
-  const assign = createAreaAssigner(census.records, budget.orgs, census.year)
-  const entries = unitEntries(budget)
-  const areaJobs = new Map<string | null, number>()
-  for (const record of census.records) {
+  const areaJobs = new Map<string | null, FallRecord[]>()
+  for (const record of records) {
     const { area } = assign(record)
-    areaJobs.set(area, (areaJobs.get(area) ?? 0) + 1)
+    const placed = areaJobs.get(area) ?? []
+    placed.push(record)
+    areaJobs.set(area, placed)
     const { code, name } = record.payDepartment
     if (code === null || code === area) continue
-    const entry = entries.get(code) ?? {
-      code,
-      name,
-      budgetCents: null,
-      jobs: 0,
-      area,
-    }
-    entries.set(code, { ...entry, jobs: entry.jobs + 1 })
+    const unit = units.get(code) ?? { code, name, area, records: [] }
+    unit.records.push(record)
+    units.set(code, unit)
   }
-  const areaCodes = [
-    ...listAreas(budget.orgs).map(({ code }) => code),
-    ...(areaJobs.has(null) ? [null] : []),
-  ]
-  return areaCodes
-    .map((code) => {
-      const members = [...entries.values()]
-        .filter((entry) => entry.area === code)
-        .map(({ area: _area, ...entry }) => entry)
-        .sort(byName)
-      return {
-        code,
-        name:
-          code === null ? UNASSIGNED_AREA : (budget.orgs[code]?.name ?? code),
-        budgetCents:
-          code === null
-            ? null
-            : members.reduce((sum, entry) => sum + (entry.budgetCents ?? 0), 0),
-        jobs: areaJobs.get(code) ?? 0,
-        entries: members,
-      }
-    })
-    .sort((a, b) => (a.code === null ? 1 : b.code === null ? -1 : byName(a, b)))
+  return { units: [...units.values()], areaJobs }
 }
 
-/** Areas whose name or code contains the text keep every entry; others keep only the entries that do. */
-export function filterIndex(areas: IndexArea[], text: string): IndexArea[] {
-  const needle = text.trim().toLowerCase()
-  if (needle === '') return areas
-  const matches = (item: { code: string | null; name: string }) =>
-    item.name.toLowerCase().includes(needle) ||
-    (item.code ?? '').includes(needle)
-  return areas.flatMap((area) => {
-    if (matches(area)) return [area]
-    const entries = area.entries.filter(matches)
-    return entries.length === 0 ? [] : [{ ...area, entries }]
-  })
+/** The areas of a census's budget year, each with its units and the pay departments placed in it. */
+export function departmentIndex(census: DepartmentCensus): IndexArea[] {
+  const { units, areaJobs } = placeDepartments(census)
+  const areaCodes = [
+    ...listAreas(census.orgs).map(({ code }) => code),
+    ...(areaJobs.has(null) ? [null] : []),
+  ]
+  return areaCodes.map((code) => ({
+    code,
+    name: code === null ? UNASSIGNED_AREA : (census.orgs[code]?.name ?? code),
+    entries: units
+      .filter((unit) => unit.area === code)
+      .map(({ code: unitCode, name }) => ({ code: unitCode, name }))
+      .sort(byName),
+  }))
 }
 
 export type CodeProfile = {

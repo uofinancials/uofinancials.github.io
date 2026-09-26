@@ -18,17 +18,15 @@ import { positionOptions } from '@/lib/scenario-labels'
 export function ScenarioRuleList({
   rules,
   census,
-  budget,
   eliminationBudget,
   onChange,
 }: {
   rules: Rule[]
   census: DepartmentCensus
-  budget: BudgetYear
   eliminationBudget: BudgetYear
   onChange: (rules: Rule[]) => void
 }) {
-  const areas = useMemo(() => departmentIndex(census, budget), [census, budget])
+  const areas = useMemo(() => departmentIndex(census), [census])
   const positions = useMemo(() => positionOptions(census.records), [census])
   const eliminations = useMemo(
     () => eliminationOptions(eliminationBudget),

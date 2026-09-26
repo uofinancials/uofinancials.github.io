@@ -20,10 +20,10 @@ import {
   type PeopleChart,
   type PeopleSearch,
   type PeopleSort,
-  type SortDirection,
 } from '@/lib/people-search'
 import { formatYearRanges, matchPeople, yearsOf } from '@/lib/person-lookup'
 import { RATE_NOTE, type SalaryBin } from '@/lib/salary-distribution'
+import type { SortDirection } from '@/lib/sort'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
 const CHART_LABELS: Record<PeopleChart, string> = {
@@ -39,6 +39,7 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
         {PEOPLE_CHARTS.map((option) => (
           <li key={option}>
             <Link
+              from="/people"
               to="/people"
               search={(previous) => ({ ...previous, chart: option })}
               replace
@@ -96,6 +97,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
     ) : (
       <Link
         className="underline"
+        from="/people"
         to="/people"
         search={(previous) => ({ ...previous, page: to })}
       >
