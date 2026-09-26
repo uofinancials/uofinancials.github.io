@@ -4,16 +4,14 @@ import { ScenarioRuleEditor } from '@/components/scenario-rule-editor'
 import type { BudgetYear } from '@/data/budget'
 import { departmentIndex } from '@/lib/department-index'
 import type { DepartmentCensus } from '@/lib/department-jobs'
-import type { Rule } from '@/lib/scenario'
+import { RULE_STAGES, type Rule, stageOf } from '@/lib/scenario'
 import {
   canMoveRule,
   newRule,
   RULE_KIND_LABELS,
   RULE_KINDS,
   RULE_STAGE_HEADINGS,
-  RULE_STAGES,
   ruleInsertIndex,
-  stageOf,
   swapAt,
 } from '@/lib/scenario-edit'
 import { eliminationOptions } from '@/lib/scenario-eliminate'

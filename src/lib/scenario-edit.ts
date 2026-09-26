@@ -1,4 +1,10 @@
-import { ANY_SCOPE, type Rule } from './scenario.ts'
+import {
+  ANY_SCOPE,
+  type Rule,
+  type RuleStage,
+  stageOf,
+  stageRank,
+} from './scenario.ts'
 
 export const RULE_KINDS = [
   'threshold',
@@ -42,33 +48,11 @@ export function newRule(kind: RuleKind, firstCode: string): Rule {
   }
 }
 
-/** The stages a scenario runs its rules in, whatever their order in the stack. */
-export const RULE_STAGES = ['eliminate', 'census', 'freeze', 'raises'] as const
-export type RuleStage = (typeof RULE_STAGES)[number]
-
 export const RULE_STAGE_HEADINGS: Record<RuleStage, string> = {
   eliminate: 'Removed first',
   census: 'Pay rules, in order',
   freeze: 'Hiring freezes, after the rules above',
   raises: 'Raise freezes, last',
-}
-
-export function stageOf(rule: Rule): RuleStage {
-  switch (rule.kind) {
-    case 'threshold':
-    case 'remove':
-    case 'cut':
-      return 'census'
-    default:
-      return rule.kind
-  }
-}
-
-/** The rules in stage order, keeping their order within each stage. */
-export function sortByStage(rules: Rule[]): Rule[] {
-  return rules.toSorted(
-    (a, b) => RULE_STAGES.indexOf(stageOf(a)) - RULE_STAGES.indexOf(stageOf(b)),
-  )
 }
 
 /** Whether the rule at `index` can swap with its neighbour at `offset`: both exist and share a stage. */
@@ -96,6 +80,5 @@ export function swapAt<T>(items: T[], index: number, offset: -1 | 1): T[] {
 
 /** Where a new rule goes in stage-ordered rules: the end of its stage. */
 export function ruleInsertIndex(rules: Rule[], rule: Rule): number {
-  const rank = (listed: Rule) => RULE_STAGES.indexOf(stageOf(listed))
-  return rules.filter((listed) => rank(listed) <= rank(rule)).length
+  return rules.filter((listed) => stageRank(listed) <= stageRank(rule)).length
 }

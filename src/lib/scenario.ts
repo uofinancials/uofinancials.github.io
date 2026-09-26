@@ -146,6 +146,21 @@ function isCensusRule(rule: Rule): rule is CensusRule {
   )
 }
 
+/** The stages a scenario runs its rules in, in run order, whatever their order in the stack. */
+export const RULE_STAGES = ['eliminate', 'census', 'freeze', 'raises'] as const
+export type RuleStage = (typeof RULE_STAGES)[number]
+
+export function stageOf(rule: Rule): RuleStage {
+  return isCensusRule(rule) ? 'census' : rule.kind
+}
+
+export const stageRank = (rule: Rule) => RULE_STAGES.indexOf(stageOf(rule))
+
+/** The rules in stage order, keeping their order within each stage. */
+export function sortByStage(rules: Rule[]): Rule[] {
+  return rules.toSorted((a, b) => stageRank(a) - stageRank(b))
+}
+
 /** Whether a rule's savings grow by the first-year raise rates: every rule but an elimination, which grows from its budget lines. */
 export function usesRaiseRates(rule: Rule): boolean {
   return isCensusRule(rule) || rule.kind === 'freeze' || rule.kind === 'raises'
@@ -308,9 +323,7 @@ export function runScenario(options: {
   }
   return {
     base,
-    rules: rules.map((rule) =>
-      takeNext<RuleResult>(queues[isCensusRule(rule) ? 'census' : rule.kind]),
-    ),
+    rules: rules.map((rule) => takeNext<RuleResult>(queues[stageOf(rule)])),
     total: sumSavings(censusRules.results, yearRates),
     censusEgByYear: censusRules.egByYear,
     eliminated,

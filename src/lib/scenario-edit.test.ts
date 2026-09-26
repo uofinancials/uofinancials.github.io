@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
+import { sortByStage } from './scenario'
 import {
   canMoveRule,
   newRule,
   RULE_KINDS,
   ruleInsertIndex,
-  sortByStage,
   swapAt,
 } from './scenario-edit'
 import { parseRules, toSearchRules } from './scenario-search'
