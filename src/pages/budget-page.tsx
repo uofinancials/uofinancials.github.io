@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { CitedLine } from '@/components/cited-line'
 import { OutlookCasesTable } from '@/components/outlook-cases-table'
@@ -146,6 +147,13 @@ export function BudgetPage() {
           estimates. They cover the E&G fund only, the part of the budget funded
           mostly by tuition and state appropriation, and leave out any budget
           action not yet taken.
+        </p>
+        <p className="text-sm">
+          To set this site's estimate of pay changes against the projection, see{' '}
+          <Link to="/scenarios" className="underline">
+            Scenarios
+          </Link>
+          .
         </p>
       </div>
       <Section title="Projected gap by fiscal year">

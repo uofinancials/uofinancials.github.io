@@ -10,7 +10,6 @@ import { toDepartmentCensuses } from '../src/lib/department-jobs.ts'
 import { egShareOf, egShares } from '../src/lib/eg-share.ts'
 import { opeGroupOf } from '../src/lib/ope-groups.ts'
 import {
-  fiscalYearForCensus,
   fiscalYearOf,
   isClassifiedTemp,
   jobSpendCents,
@@ -20,6 +19,7 @@ import {
   type Rule,
   type ScenarioResult,
 } from '../src/lib/scenario.ts'
+import { freezeHistoryCensuses } from '../src/lib/scenario-freeze.ts'
 import { baselines, scenarioOutlook } from '../src/lib/scenario-outlook.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
 import {
@@ -29,31 +29,20 @@ import {
   OPE_DATA_PATH,
 } from './scrape/cache.ts'
 
-/** The first census with a published OPE rate: Fall 2019 falls in FY20. */
-const FIRST_OPE_CENSUS = 2019
-
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8'))
 }
 
 const MANIFEST = manifestSchema.parse(readJson(MANIFEST_PATH))
-const FALLS = MANIFEST.fall
-  .filter(({ year }) => year >= FIRST_OPE_CENSUS)
-  .map(({ year }) =>
-    fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
-  )
-const BUDGETS = MANIFEST.budget
-  .filter(({ fiscalYear }) =>
-    FALLS.some(
-      ({ censusDate }) =>
-        fiscalYearForCensus(MANIFEST, censusDate) === fiscalYear,
-    ),
-  )
-  .map(({ fiscalYear }) =>
-    budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
-  )
-const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
 const RATES = opeRatesSchema.parse(readJson(OPE_DATA_PATH))
+const CENSUSES = freezeHistoryCensuses(MANIFEST, RATES)
+const FALLS = CENSUSES.map(({ year }) =>
+  fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
+)
+const BUDGETS = [...new Set(CENSUSES.map(({ fiscalYear }) => fiscalYear))].map(
+  (fiscalYear) => budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+)
+const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
 const [PROJECTION] = outlookSchema.parse(
   readJson(path.join(DATA_DIR, 'outlook.json')),
 ).projections
@@ -82,6 +71,18 @@ function opeGroupCounts(year: number): Record<string, number> {
   }
   return counts
 }
+
+test('a freeze averages turnover over Fall 2019-2025, the censuses with a published OPE rate', () => {
+  expect(CENSUSES).toEqual([
+    { year: 2019, fiscalYear: 2021 },
+    { year: 2020, fiscalYear: 2021 },
+    { year: 2021, fiscalYear: 2022 },
+    { year: 2022, fiscalYear: 2023 },
+    { year: 2023, fiscalYear: 2024 },
+    { year: 2024, fiscalYear: 2025 },
+    { year: 2025, fiscalYear: 2026 },
+  ])
+})
 
 test('every job in Fall 2019-2025 maps to an OPE group, and 2019 and 2025 match an independent count', () => {
   for (const { year } of HISTORY) opeGroupCounts(year)

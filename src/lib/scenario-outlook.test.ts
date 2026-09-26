@@ -1,7 +1,12 @@
 import { expect, test } from 'vitest'
 import type { Projection } from '@/data/outlook'
 import type { Savings, ScenarioResult } from './scenario'
-import { baselines, outlookRows, yearlySavings } from './scenario-outlook'
+import {
+  baselines,
+  firstShortfallYear,
+  outlookRows,
+  yearlySavings,
+} from './scenario-outlook'
 
 const SOURCE = {
   url: 'https://example.org/packet.pdf',
@@ -193,4 +198,20 @@ test('a census after every projected year saves nothing against it', () => {
   expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
     5_100, 4_100, 2_100,
   ])
+})
+
+test('the shortfall year is the first with a fund balance below zero', () => {
+  const row = (fiscalYear: number, remainingFundBalanceCents: number) => ({
+    fiscalYear,
+    runRateCents: 0,
+    endingFundBalanceCents: 0,
+    savingsCents: 0,
+    remainingRunRateCents: 0,
+    remainingFundBalanceCents,
+    remainingWeeks: null,
+  })
+  expect(firstShortfallYear([row(2027, 0), row(2028, -1), row(2029, -2)])).toBe(
+    2028,
+  )
+  expect(firstShortfallYear([row(2027, 0)])).toBeNull()
 })

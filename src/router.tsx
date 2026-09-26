@@ -16,6 +16,7 @@ import {
   budgetYearQuery,
   fallYearQuery,
   manifestQuery,
+  opeRatesQuery,
   outlookQuery,
   raiseTermsQuery,
 } from '@/data/queries'
@@ -26,6 +27,7 @@ import {
 } from '@/lib/department-search'
 import { fiscalYearForCensus, selectOverviewSources } from '@/lib/overview'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
+import { scenarioSearchSchema } from '@/lib/scenario-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
 import { BudgetPage } from '@/pages/budget-page'
 import { DepartmentPage } from '@/pages/department-page'
@@ -34,6 +36,7 @@ import { NotFoundPage } from '@/pages/not-found-page'
 import { OverviewPage } from '@/pages/overview-page'
 import { PeoplePage } from '@/pages/people-page'
 import { PersonPage } from '@/pages/person-page'
+import { ScenariosPage } from '@/pages/scenarios-page'
 import { SourcesPage } from '@/pages/sources-page'
 import { TrendsPage } from '@/pages/trends-page'
 
@@ -181,6 +184,25 @@ const budgetRoute = createRoute({
   component: BudgetPage,
 })
 
+const scenariosRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/scenarios',
+  validateSearch: scenarioSearchSchema,
+  loader: async ({ context: { queryClient } }) => {
+    const { census, fiscalYear } = selectOverviewSources(
+      await queryClient.ensureQueryData(manifestQuery),
+    )
+    await Promise.all([
+      queryClient.ensureQueryData(fallYearQuery(census.year)),
+      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+      queryClient.ensureQueryData(opeRatesQuery),
+      queryClient.ensureQueryData(outlookQuery),
+    ])
+    return { year: census.year, fiscalYear, censusDate: census.censusDate }
+  },
+  component: ScenariosPage,
+})
+
 const sourcesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sources',
@@ -201,6 +223,7 @@ const routeTree = rootRoute.addChildren([
   peopleRoute,
   personRoute,
   budgetRoute,
+  scenariosRoute,
   sourcesRoute,
 ])
 

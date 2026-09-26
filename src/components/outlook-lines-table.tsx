@@ -8,11 +8,10 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
-import { formatDollars, formatOrBlank } from '@/lib/format'
+import { formatDollars, formatOrBlank, formatWeeks } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const NUMBER_CELL = 'text-right tabular-nums'
-const WEEKS_DECIMALS = 1
 
 function Row({
   label,
@@ -95,7 +94,7 @@ export function OutlookLinesTable({ projection }: { projection: Projection }) {
           label="Weeks of operating expenses"
           years={years}
           values={projection.weeksOfExpenses}
-          format={(weeks) => weeks.toFixed(WEEKS_DECIMALS)}
+          format={formatWeeks}
         />
       </TableBody>
     </Table>

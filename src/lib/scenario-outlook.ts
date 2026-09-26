@@ -1,3 +1,4 @@
+import { fiscalYearLabel } from '../data/budget.ts'
 import type { OpeRates } from '../data/ope.ts'
 import type { Projection } from '../data/outlook.ts'
 import { sectionTotal } from './budget-outlook.ts'
@@ -162,4 +163,31 @@ export function scenarioOutlook(options: {
     projectedYears: fiscalYears.length - firstIndex,
   })
   return { result, rows: outlookRows({ ...options, result }) }
+}
+
+/** The first fiscal year whose fund balance with savings is below zero, or `null`. */
+export function firstShortfallYear(rows: OutlookRow[]): number | null {
+  return (
+    rows.find((row) => row.remainingFundBalanceCents < 0)?.fiscalYear ?? null
+  )
+}
+
+/** The outlook chart's fiscal-year labels and its published and with-savings lines. */
+export function scenarioSeries(rows: OutlookRow[]): {
+  labels: string[]
+  series: { key: string; values: number[] }[]
+} {
+  const line = (key: string, pick: (row: OutlookRow) => number) => ({
+    key,
+    values: rows.map(pick),
+  })
+  return {
+    labels: rows.map((row) => fiscalYearLabel(row.fiscalYear)),
+    series: [
+      line('Run rate', (row) => row.runRateCents),
+      line('Run rate with savings', (row) => row.remainingRunRateCents),
+      line('Ending fund balance', (row) => row.endingFundBalanceCents),
+      line('Fund balance with savings', (row) => row.remainingFundBalanceCents),
+    ],
+  }
 }

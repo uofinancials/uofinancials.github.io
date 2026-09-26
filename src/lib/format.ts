@@ -84,6 +84,13 @@ export function formatYears(years: number): string {
   return `${YEARS.format(years)} years`
 }
 
+const WEEKS_DECIMALS = 1
+
+/** Formats weeks of expenses to a tenth, e.g. `-1.0`. */
+export function formatWeeks(weeks: number): string {
+  return weeks.toFixed(WEEKS_DECIMALS)
+}
+
 export const NO_VALUE = '–'
 
 /** Formats a figure that may be missing, showing `NO_VALUE` for it. */
