@@ -136,17 +136,17 @@ export function eliminationFiscalYear(
   return year
 }
 
+type Named = { code: string; name: string }
+
+/** An area an elimination can name, with its units. */
+export type EliminationOption = Named & { units: Named[] }
+
 /** A budget year's areas by name, each with its units by name: what an elimination can name. */
-export function eliminationOptions(budget: BudgetYear): {
-  code: string
-  name: string
-  units: { code: string; name: string }[]
-}[] {
+export function eliminationOptions(budget: BudgetYear): EliminationOption[] {
   return listAreas(budget.orgs).map((area) => ({
     ...area,
-    units: Object.entries(budget.orgs)
-      .filter(([, org]) => org.parent === area.code)
-      .map(([code, org]) => ({ code, name: org.name }))
+    units: [...(unitsOf(area.code, budget.orgs) ?? [])]
+      .map((code) => ({ code, name: budget.orgs[code]?.name ?? code }))
       .sort((a, b) => a.name.localeCompare(b.name)),
   }))
 }

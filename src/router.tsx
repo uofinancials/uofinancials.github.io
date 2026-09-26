@@ -198,18 +198,22 @@ async function loadScenario({
 }) {
   const manifest = await queryClient.ensureQueryData(manifestQuery)
   const { census, fiscalYear } = selectOverviewSources(manifest)
-  const [outlook] = await Promise.all([
-    queryClient.ensureQueryData(outlookQuery),
+  const loadEliminationBudget = async () => {
+    const [projection] = (await queryClient.ensureQueryData(outlookQuery))
+      .projections
+    const year = eliminationFiscalYear(
+      manifest.budget.map((entry) => entry.fiscalYear),
+      firstSavingsYear(projection.fiscalYears, fiscalYearOf(census.censusDate)),
+    )
+    await queryClient.ensureQueryData(budgetYearQuery(year))
+    return year
+  }
+  const [eliminationYear] = await Promise.all([
+    loadEliminationBudget(),
     queryClient.ensureQueryData(fallYearQuery(census.year)),
     queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
     queryClient.ensureQueryData(opeRatesQuery),
   ])
-  const [projection] = outlook.projections
-  const eliminationYear = eliminationFiscalYear(
-    manifest.budget.map((entry) => entry.fiscalYear),
-    firstSavingsYear(projection.fiscalYears, fiscalYearOf(census.censusDate)),
-  )
-  await queryClient.ensureQueryData(budgetYearQuery(eliminationYear))
   return {
     year: census.year,
     fiscalYear,

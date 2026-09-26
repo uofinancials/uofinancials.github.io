@@ -10,7 +10,7 @@ import {
 import type { ScenarioHistory } from '@/components/use-scenario-history'
 import { fiscalYearLabel } from '@/data/budget'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
-import type { RuleResult, Savings } from '@/lib/scenario'
+import type { Savings } from '@/lib/scenario'
 import { type ResultRow, smallReachNote } from '@/lib/scenario-labels'
 import { toPercent } from '@/lib/scenario-search'
 
@@ -40,11 +40,10 @@ function ResultCells({
   result,
   historyStatus,
 }: {
-  result: RuleResult
+  result: ResultRow['result']
   historyStatus: HistoryStatus
 }) {
   if (result.kind === 'census') return <SavingsCells savings={result.savings} />
-  if (result.kind === 'eliminate') return null
   const [first] = result.byYear
   if (historyStatus !== 'ready' || !first) {
     return (

@@ -67,7 +67,7 @@ export type ScenarioResult = {
   rules: RuleResult[]
   /** The census rules' savings summed: the base less what remains before any freeze. */
   total: Savings
-  /** `null` when no budget was given for eliminations. */
+  /** `null` when the scenario has no elimination. */
   eliminated: EliminatedTotal | null
   /** Classified temporaries left out of the base. */
   temporaries: number
@@ -125,23 +125,12 @@ function takeNext<T>(results: T[]): T {
   return result
 }
 
-function eliminate(
-  budget: BudgetYear | null,
-  census: DepartmentCensus,
-  jobs: Job[],
-  rules: Rule[],
-): EliminationResult[] {
-  const eliminations = rules.filter((rule) => rule.kind === 'eliminate')
-  if (eliminations.length === 0) return []
-  if (!budget) throw new Error('An elimination rule has no budget year')
-  return eliminationSavings({ census, jobs, budget, eliminations })
-}
-
+/** The eliminations' budget lines summed; `null` when there is no elimination. */
 function eliminatedTotal(
-  budget: BudgetYear | null,
+  budget: BudgetYear,
   results: EliminationResult[],
 ): EliminatedTotal | null {
-  if (!budget) return null
+  if (results.length === 0) return null
   return {
     egCents: results.reduce((sum, result) => sum + result.egCents, 0),
     allFundsCents: results.reduce(
@@ -174,16 +163,20 @@ export function runScenario(options: {
   opeFiscalYear: number
   history: DepartmentCensus[]
   projectedYears: number
-  eliminationBudget: BudgetYear | null
+  eliminationBudget: BudgetYear
 }): ScenarioResult {
   const { census, rules, rates, egShares, opeFiscalYear } = options
   const yearRates = ratesFor(rates, opeFiscalYear)
   const jobs = toJobs(census, egShares)
-  const base = sumSavings(
-    jobs.map((job) => ({ ...costOf(job, yearRates), jobs: 1 })),
-    yearRates,
-  )
-  const eliminations = eliminate(options.eliminationBudget, census, jobs, rules)
+  const base = emptySavings(yearRates)
+  for (const job of jobs) addCost(base, costOf(job, yearRates), 1)
+  base.jobs = jobs.length
+  const eliminations = eliminationSavings({
+    census,
+    jobs,
+    budget: options.eliminationBudget,
+    eliminations: rules.filter((rule) => rule.kind === 'eliminate'),
+  })
   const eliminated = eliminatedTotal(options.eliminationBudget, eliminations)
   const censusResults = rules.map((rule) =>
     rule.kind === 'freeze' || rule.kind === 'eliminate'

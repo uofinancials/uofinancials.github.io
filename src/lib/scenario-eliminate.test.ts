@@ -129,20 +129,8 @@ test('an elimination applies before every other rule, whatever the order', () =>
   expect(result.eliminated?.egCents).toBe(19_000_000)
 })
 
-test('with no elimination budget there is no eliminated total, and an elimination cannot run', () => {
-  const options = {
-    census: CENSUS,
-    rates: RATES,
-    egShares: new Map(),
-    opeFiscalYear: 2026,
-    history: [],
-    projectedYears: 0,
-    eliminationBudget: null,
-  }
-  expect(runScenario({ ...options, rules: [] }).eliminated).toBeNull()
-  expect(() => runScenario({ ...options, rules: [eliminate(UNIT)] })).toThrow(
-    'no budget year',
-  )
+test('a scenario with no elimination has no eliminated total', () => {
+  expect(run([]).eliminated).toBeNull()
 })
 
 test('a covered unit carries no partial-match note, since the area took its census jobs', () => {

@@ -98,7 +98,7 @@ export type ResultRow = {
   position: number
   label: string
   scope: string
-  result: RuleResult
+  result: Exclude<RuleResult, EliminationResult>
 }
 
 /** Each rule but eliminations beside its result, in stack order. */
@@ -110,7 +110,9 @@ export function scenarioResultRows(
 ): ResultRow[] {
   return rules.flatMap((rule, index) => {
     const ruleResult = result.rules[index]
-    return ruleResult && rule.kind !== 'eliminate'
+    return ruleResult &&
+      rule.kind !== 'eliminate' &&
+      ruleResult.kind !== 'eliminate'
       ? [
           {
             key: `${index} ${rule.kind}`,

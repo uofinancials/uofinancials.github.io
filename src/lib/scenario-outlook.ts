@@ -164,7 +164,7 @@ export function projectScenario(options: {
   egShares: Map<string, number>
   history: DepartmentCensus[]
   fiscalYears: number[]
-  eliminationBudget: BudgetYear | null
+  eliminationBudget: BudgetYear
 }): ScenarioResult {
   const { fiscalYears, censusFiscalYear } = options
   return runScenario({

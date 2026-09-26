@@ -10,7 +10,7 @@ import {
 import type { IndexArea } from '@/lib/department-index'
 import { CENTS_PER_DOLLAR } from '@/lib/format'
 import type { Rule } from '@/lib/scenario'
-import type { eliminationOptions } from '@/lib/scenario-eliminate'
+import type { EliminationOption } from '@/lib/scenario-eliminate'
 import { describeRule } from '@/lib/scenario-labels'
 import {
   parseDollarsText,
@@ -44,7 +44,7 @@ function PercentField({
   )
 }
 
-type EliminationOptions = ReturnType<typeof eliminationOptions>
+type EliminationOptions = EliminationOption[]
 
 function EliminateField({
   code,

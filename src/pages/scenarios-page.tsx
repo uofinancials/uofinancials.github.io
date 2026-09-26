@@ -136,7 +136,7 @@ function SavingsSection({
           historyStatus={history.status}
         />
       )}
-      {eliminations.length > 0 && result.eliminated && (
+      {result.eliminated && (
         <ScenarioEliminationsTable
           rows={eliminations}
           total={result.eliminated}
@@ -145,9 +145,7 @@ function SavingsSection({
       )}
       <ScenarioSavingsTotal
         totalCents={totalEgCents(result)}
-        eliminatedCents={
-          eliminations.length > 0 ? (result.eliminated?.egCents ?? null) : null
-        }
+        eliminatedCents={result.eliminated?.egCents ?? null}
         reductionTargetCents={scenario.projection.reductionTargetCents}
       />
     </PageSection>
