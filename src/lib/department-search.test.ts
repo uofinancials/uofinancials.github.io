@@ -2,6 +2,8 @@ import { expect, test } from 'vitest'
 import {
   budgetYearLabel,
   departmentSearchSchema,
+  departmentsSearchSchema,
+  resolveDepartmentsView,
   resolveDepartmentView,
 } from './department-search'
 
@@ -11,12 +13,41 @@ test('a malformed search falls back to the defaults', () => {
     metric: 'fte',
     kind: 'classified',
     year: 'x',
+    sort: 'nope',
+    dir: 'asc',
   })
   expect(resolveDepartmentView(search, [2023, 2025])).toEqual({
     budget: 'account',
     metric: 'fte',
     kind: 'classified',
     year: 2025,
+    sort: 'budget',
+    dir: 'asc',
+  })
+})
+
+test('the index opens on areas by budget, largest first, and keeps what the link asks for', () => {
+  expect(resolveDepartmentsView(departmentsSearchSchema.parse({}))).toEqual({
+    q: '',
+    level: 'areas',
+    area: null,
+    sort: 'budget',
+    dir: 'desc',
+  })
+  expect(
+    resolveDepartmentsView(
+      departmentsSearchSchema.parse({
+        level: 'units',
+        area: 222000,
+        sort: 'jobsChange',
+        dir: 'up',
+      }),
+    ),
+  ).toMatchObject({
+    level: 'units',
+    area: '222000',
+    sort: 'jobsChange',
+    dir: 'desc',
   })
 })
 

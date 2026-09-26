@@ -40,15 +40,17 @@ export function unitsOf(
   )
 }
 
-/** Total Expenditure Budget cents per key. */
+/** Cents per key, of the Total Expenditure Budget unless `amountOf` picks another amount. */
 export function sumBy(
   rows: BudgetRow[],
   keyOf: (row: BudgetRow) => string,
+  amountOf: (row: BudgetRow) => number = (row) =>
+    row.totalExpenditureBudgetCents,
 ): Map<string, number> {
   const sums = new Map<string, number>()
   for (const row of rows) {
     const key = keyOf(row)
-    sums.set(key, (sums.get(key) ?? 0) + row.totalExpenditureBudgetCents)
+    sums.set(key, (sums.get(key) ?? 0) + amountOf(row))
   }
   return sums
 }

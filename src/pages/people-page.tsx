@@ -39,6 +39,7 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
         {PEOPLE_CHARTS.map((option) => (
           <li key={option}>
             <Link
+              from="/people"
               to="/people"
               search={(previous) => ({ ...previous, chart: option })}
               replace
@@ -96,6 +97,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
     ) : (
       <Link
         className="underline"
+        from="/people"
         to="/people"
         search={(previous) => ({ ...previous, page: to })}
       >
