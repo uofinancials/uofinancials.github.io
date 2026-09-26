@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { createMemoryHistory } from '@tanstack/react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { App } from './app'
 import { createAppRouter } from './router'
@@ -23,6 +23,25 @@ test('an unknown path renders the not-found page inside the layout', async () =>
   ).toBeInTheDocument()
   expect(screen.getByRole('contentinfo')).toHaveTextContent(
     'not affiliated with',
+  )
+})
+
+test('the footer links to the source and both licenses', async () => {
+  renderAt('/no-such-page')
+  await screen.findByRole('heading', { name: 'Page not found' })
+  const footer = within(screen.getByRole('contentinfo'))
+  const repo = 'https://github.com/uofinancials/uofinancials.github.io'
+  expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+    'href',
+    repo,
+  )
+  expect(footer.getByRole('link', { name: 'MIT licensed' })).toHaveAttribute(
+    'href',
+    `${repo}/blob/main/LICENSE`,
+  )
+  expect(footer.getByRole('link', { name: 'CC0' })).toHaveAttribute(
+    'href',
+    `${repo}/blob/main/public/data/LICENSE`,
   )
 })
 
