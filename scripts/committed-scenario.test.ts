@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../src/data/budget.ts'
@@ -36,6 +35,7 @@ import {
 } from '../src/lib/scenario-outlook.ts'
 import { raiseRates } from '../src/lib/scenario-raises.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
+import { readJson } from './committed-json.ts'
 import {
   budgetDataPath,
   DATA_DIR,
@@ -43,10 +43,6 @@ import {
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
 } from './scrape/cache.ts'
-
-function readJson(file: string): unknown {
-  return JSON.parse(readFileSync(file, 'utf8'))
-}
 
 const MANIFEST = manifestSchema.parse(readJson(MANIFEST_PATH))
 const RATES = opeRatesSchema.parse(readJson(OPE_DATA_PATH))

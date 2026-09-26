@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { Manifest } from '@/data/manifest'
-import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { classifiedJob, fallFile, unclassifiedJob } from '@/test/fall-records'
 import { acrossTheBoardTerm } from '@/test/raise-terms'
 import {
   AREA,
@@ -123,16 +123,7 @@ test('jobs per census are the summed file records, oldest first', () => {
     year,
     censusDate: `${year}-11-01`,
     sourcePage: 'https://example.org',
-    files: records.map((count) => ({
-      kind: 'classified' as const,
-      fileName: 'f.pdf',
-      sha256: 'a'.repeat(64),
-      pages: 1,
-      extractDate: `${year}-11-02`,
-      retrievedOn: '2026-09-24',
-      records: count,
-      possibleStudents: 0,
-    })),
+    files: records.map((count) => fallFile({ records: count })),
   })
   const manifest: Manifest = {
     fall: [entry(2025, [10, 5]), entry(2014, [3])],

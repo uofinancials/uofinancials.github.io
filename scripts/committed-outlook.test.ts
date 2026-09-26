@@ -1,15 +1,15 @@
-import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
 import { outlookSchema, type ProjectionLine } from '../src/data/outlook.ts'
 import { sectionTotal } from '../src/lib/budget-outlook.ts'
+import { readJson } from './committed-json.ts'
 import { DATA_DIR } from './scrape/cache.ts'
 
 /** The published tables round each figure to the dollar, so their sums can be a dollar off. */
 const ROUNDING_CENTS = 100
 
 const outlook = outlookSchema.parse(
-  JSON.parse(readFileSync(path.join(DATA_DIR, 'outlook.json'), 'utf8')),
+  readJson(path.join(DATA_DIR, 'outlook.json')),
 )
 
 function expectWithinRounding(actual: number, expected: number) {
