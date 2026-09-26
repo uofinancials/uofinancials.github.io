@@ -102,11 +102,12 @@ flowchart LR
   raise group, and each raise group's median change beside its compounded
   across-the-board terms, the budget outlook's gap by year, chart series, and
   cited sources, and scenarios: a job's estimated OPE rate group, each area's
-  estimated E&G share, rules over one census, the hiring freeze and the censuses
-  it reads, department and area eliminations by budget line and the budget year
-  they use, raise freezes and each raise group's rate they forgo, savings
-  against the projection or one of its cases, the rules' and case's URL form,
-  rule and scope labels, new rules and their order, and example scenarios.
+  estimated E&G share, rules over one census and the stage each runs in, the
+  hiring freeze and the censuses it reads, department and area eliminations by
+  budget line and the budget year they use, raise freezes and each raise group's
+  rate they forgo, savings against the projection or one of its cases, the
+  rules' and case's URL form, rule and scope labels, new rules and their order,
+  and example scenarios.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -208,16 +209,16 @@ flowchart LR
   reduction estimate, the all-funds budget, the stated assumptions, and the
   announced budget actions, each cited; driven by the `src/lib` budget outlook
   over the outlook file.
-- `/scenarios` - rules stacked over the latest Fall census, edited in place,
-  with each rule's jobs and salary, full cost, and E&G savings, each
-  elimination's budgeted pay, OPE, and S&S, the first savings year's raise rates
-  that savings grow by and a raise freeze forgoes, with their sources, the
-  savings set against the E&G projection or one of its cases by fiscal year,
-  example questions, the stated methods, and the sources, with the rules and
-  case held in the URL; driven by the `src/lib` scenario modules over one Fall
-  year, its budget year, the budget year of the first savings year, the OPE
-  rates, the raise terms, and the outlook file, and every Fall year from 2019
-  when a hiring freeze is present.
+- `/scenarios` - rules over the latest Fall census, grouped by the stage each
+  runs in and edited in place, with each rule's jobs and salary, full cost, and
+  E&G savings, each elimination's budgeted pay, OPE, and S&S, the first savings
+  year's raise rates that savings grow by and a raise freeze forgoes, with their
+  sources, the savings set against the E&G projection or one of its cases by
+  fiscal year, example questions, the stated methods, and the sources, with the
+  rules and case held in the URL; driven by the `src/lib` scenario modules over
+  one Fall year, its budget year, the budget year of the first savings year, the
+  OPE rates, the raise terms, and the outlook file, and every Fall year from
+  2019 when a hiring freeze is present.
 - `/sources` - every source file in the manifest and every document the raise
   terms and the budget outlook cite, with retrieval dates, hashes, and counts;
   driven by `src/data` and `src/lib`.
