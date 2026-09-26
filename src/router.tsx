@@ -27,6 +27,7 @@ import {
   departmentsSearchSchema,
 } from '@/lib/department-search'
 import { selectTableSources } from '@/lib/department-table'
+import { homeSearchSchema } from '@/lib/home'
 import {
   fiscalYearForCensus,
   fiscalYearOf,
@@ -56,6 +57,7 @@ const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  validateSearch: homeSearchSchema,
   loader: async ({ context: { queryClient } }) => {
     const { census, fiscalYear } = selectOverviewSources(
       await queryClient.ensureQueryData(manifestQuery),
@@ -63,8 +65,10 @@ const homeRoute = createRoute({
     await Promise.all([
       queryClient.ensureQueryData(fallYearQuery(census.year)),
       queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+      queryClient.ensureQueryData(outlookQuery),
+      queryClient.ensureQueryData(opeRatesQuery),
     ])
-    return { year: census.year, fiscalYear }
+    return { year: census.year, fiscalYear, censusDate: census.censusDate }
   },
   component: OverviewPage,
 })

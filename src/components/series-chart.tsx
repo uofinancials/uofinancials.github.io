@@ -4,6 +4,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import { cn } from '@/lib/utils'
 import { lineColor } from './line-color'
 
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
@@ -28,6 +29,7 @@ export function SeriesChart({
   format,
   formatAxis,
   label,
+  className,
 }: {
   labels: string[]
   series: ChartSeries[]
@@ -35,6 +37,8 @@ export function SeriesChart({
   format: (value: number) => string
   formatAxis: (value: number) => string
   label: string
+  /** Overrides the chart's height classes. */
+  className?: string
 }) {
   const data = labels.map((x, index) => ({
     x,
@@ -44,7 +48,10 @@ export function SeriesChart({
   }))
   return (
     <figure aria-label={label}>
-      <ChartContainer config={{}} className="aspect-auto h-96 w-full">
+      <ChartContainer
+        config={{}}
+        className={cn('aspect-auto h-96 w-full', className)}
+      >
         <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} />
           <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />

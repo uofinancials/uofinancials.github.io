@@ -63,7 +63,7 @@ function toBudgetSums(budget: BudgetYear): BudgetSums {
 }
 
 /** The amount summed over the units a code covers; `null` when it is no org. */
-function unitSum(
+export function unitSum(
   code: string | null,
   orgs: BudgetYear['orgs'],
   amounts: Map<string, number>,
