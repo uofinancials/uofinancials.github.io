@@ -54,10 +54,11 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   and both are in the same pay department. The links are computed, not published
   by UO; the committed 2014-2025 data (retrieved 2026-09-24) yields 52,880.
 - Pages share one layout, up to 1,200 pixels wide: a header with the site name
-  and navigation, which marks the current section in bold and underlined, and
-  the footer with the independence notice and the error report link. Paths the
-  site does not have show a not-found page inside that layout, and every path
-  loads directly on GitHub Pages.
+  and navigation (Budget, Scenarios, Trends, Departments, People, Sources),
+  which marks the current section in bold and underlined, and the footer with
+  the independence notice and the error report link. Paths the site does not
+  have show a not-found page inside that layout, and every path loads directly
+  on GitHub Pages.
 - A Sources page (`/sources`) listing each Fall Census report, budget workbook,
   and OPE rate page the site uses - with its retrieval date, SHA-256, and
   counts - and every document the raise terms cite.
