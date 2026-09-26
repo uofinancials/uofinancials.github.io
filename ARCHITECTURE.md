@@ -135,7 +135,8 @@ flowchart LR
   page.
 - `scripts/scrape/budget-file.ts` - one budget workbook as a typed budget year.
 - `scripts/scrape/ope-pages.ts` - the OPE rate pages as typed rates.
-- `scripts/scrape/cache.ts` - the source and data locations.
+- `scripts/scrape/cache.ts` - the source and data locations, and the committed
+  JSON reader.
 - `scripts/committed-data.test.ts` - schema and total checks of every committed
   data file, and each census's area placement.
 - `scripts/committed-outlook.test.ts` - the budget outlook's published

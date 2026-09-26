@@ -68,6 +68,10 @@ export type FallRecord = z.infer<typeof fallRecordSchema>
 export type FallYear = z.infer<typeof fallYearSchema>
 export type StaffKind = z.infer<typeof staffKindSchema>
 
+export function isPrimaryJob(record: FallRecord): boolean {
+  return record.jobType === 'Primary'
+}
+
 export function censusYearOf(censusDate: string): number {
   return Number(censusDate.slice(0, 4))
 }

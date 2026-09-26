@@ -1,4 +1,4 @@
-import type { FallRecord, StaffKind } from '../data/fall.ts'
+import { type FallRecord, isPrimaryJob, type StaffKind } from '../data/fall.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
 import {
@@ -42,9 +42,7 @@ function primaryPercentiles(
   records: FallRecord[],
 ): Distribution['percentiles'] {
   const rates = records
-    .filter(
-      (record) => record.jobType === 'Primary' && !isClassifiedTemp(record),
-    )
+    .filter((record) => isPrimaryJob(record) && !isClassifiedTemp(record))
     .map((record) => record.annualSalaryRateCents)
     .sort((a, b) => a - b)
   if (rates.length < MIN_JOBS_SHOWN) return null

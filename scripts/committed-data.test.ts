@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../src/data/budget.ts'
@@ -48,14 +48,11 @@ import {
   MANIFEST_PATH,
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
+  readJson,
 } from './scrape/cache.ts'
 
 /** Parsing and linking every census takes about five seconds alone, more beside other test files. */
 const ALL_YEARS_TIMEOUT_MS = 20_000
-
-function readJson(file: string): unknown {
-  return JSON.parse(readFileSync(file, 'utf8'))
-}
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'every committed Fall year matches its schema and its manifest entry, and the years yield the researched number of person links and runs',

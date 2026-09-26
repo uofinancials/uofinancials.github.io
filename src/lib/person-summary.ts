@@ -41,6 +41,13 @@ export type RunCards = {
   averageChange: { ratio: number; pairsUsed: number } | null
 }
 
+function ratioOf(from: FallRecord, to: FallRecord): number {
+  return (
+    (to.annualSalaryRateCents - from.annualSalaryRateCents) /
+    from.annualSalaryRateCents
+  )
+}
+
 function rateChange(from: PersonYear, to: PersonYear): RateChange | null {
   const fromJob = primaryJobOf(from.records)
   const toJob = primaryJobOf(to.records)
@@ -50,9 +57,7 @@ function rateChange(from: PersonYear, to: PersonYear): RateChange | null {
     toYear: to.year,
     fromCents: fromJob.annualSalaryRateCents,
     toCents: toJob.annualSalaryRateCents,
-    ratio:
-      (toJob.annualSalaryRateCents - fromJob.annualSalaryRateCents) /
-      fromJob.annualSalaryRateCents,
+    ratio: ratioOf(fromJob, toJob),
   }
 }
 
@@ -68,10 +73,7 @@ function comparableRatio(from: PersonYear, to: PersonYear): number[] {
   ) {
     return []
   }
-  return [
-    (toJob.annualSalaryRateCents - fromJob.annualSalaryRateCents) /
-      fromJob.annualSalaryRateCents,
-  ]
+  return [ratioOf(fromJob, toJob)]
 }
 
 function yearsSinceStart(run: PersonRun): number | null {

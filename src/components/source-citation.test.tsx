@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import {
   createMemoryHistory,
   createRootRoute,
@@ -9,6 +9,8 @@ import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import type { Manifest } from '@/data/manifest'
 import { manifestQuery } from '@/data/queries'
+import { fallFile } from '@/test/fall-records'
+import { testQueryClient } from '@/test/query-client'
 import { SourceCitation } from './source-citation'
 
 const MANIFEST: Manifest = {
@@ -17,18 +19,7 @@ const MANIFEST: Manifest = {
       year: 2025,
       censusDate: '2025-11-01',
       sourcePage: 'https://example.org/salary-reports',
-      files: [
-        {
-          kind: 'classified',
-          fileName: 'Classified.pdf',
-          sha256: 'a'.repeat(64),
-          pages: 1,
-          extractDate: '2025-11-05',
-          retrievedOn: '2026-09-24',
-          records: 1,
-          possibleStudents: 0,
-        },
-      ],
+      files: [fallFile()],
     },
   ],
   budget: [],
@@ -36,7 +27,7 @@ const MANIFEST: Manifest = {
 }
 
 async function renderCitation(computed?: string) {
-  const queryClient = new QueryClient()
+  const queryClient = testQueryClient()
   queryClient.setQueryData(manifestQuery.queryKey, MANIFEST)
   const router = createRouter({
     routeTree: createRootRoute({

@@ -16,7 +16,12 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import type { Outlook, Projection } from '@/data/outlook'
 import { outlookQuery } from '@/data/queries'
-import { type GapRow, gapRows, outlookSeries } from '@/lib/budget-outlook'
+import {
+  type GapRow,
+  gapRows,
+  outlookSeries,
+  runRateFor,
+} from '@/lib/budget-outlook'
 import { formatCompactDollars, formatDollars } from '@/lib/format'
 
 const NUMBER_CELL = 'text-right tabular-nums'
@@ -30,8 +35,7 @@ function ReportedNotes({
   projection: Projection
 }) {
   return reported.map(({ fiscalYear, runRateCents, basis, source }) => {
-    const projected =
-      projection.runRateCents[projection.fiscalYears.indexOf(fiscalYear)]
+    const projected = runRateFor(projection, fiscalYear)
     return (
       <div key={fiscalYear} className="space-y-1">
         <p className="text-sm">

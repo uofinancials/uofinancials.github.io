@@ -9,10 +9,9 @@ import {
   raiseRowOf,
   termCovers,
 } from './raise-groups.ts'
-import { type FreezeRule, freezeShare } from './scenario-freeze.ts'
+import type { FilledFreeze } from './scenario-freeze.ts'
 import {
   addCost,
-  BASIS,
   BASIS_BIG,
   costOf,
   divideHalfUp,
@@ -50,9 +49,6 @@ export type RaiseRate = {
   basisPoints: number
   sources: CitedSource[]
 }
-
-/** A hiring freeze in the stack and the turnover rate it found. */
-export type HeldFreeze = { rule: FreezeRule; rateBasisPoints: number }
 
 const OTHER_JOBS = 'Other jobs'
 
@@ -181,29 +177,12 @@ type Tracker = {
   byYear: Savings[]
 }
 
-/** A hiring freeze's scope and the share of it kept filled each projected year. */
-type Filled = { scope: Set<FallRecord>; kept: number[] }
-
-function filledShares(
-  census: DepartmentCensus,
-  freezes: HeldFreeze[],
-  years: number,
-): Filled[] {
-  return freezes.map(({ rule, rateBasisPoints }) => ({
-    scope: scopeJobs(census, rule.scope),
-    kept: Array.from(
-      { length: years },
-      (_, index) => 1 - freezeShare(rule, rateBasisPoints, index + 1) / BASIS,
-    ),
-  }))
-}
-
 /** Adds one job's savings to each raise freeze covering it, each year, scaled by the share the hiring freezes keep filled. */
 function saveJob(options: {
   cost: JobCost
   removed: bigint[][]
   covering: Tracker[]
-  filled: Filled[]
+  filled: FilledFreeze[]
   divisors: bigint[]
   record: FallRecord
 }): void {
@@ -244,7 +223,7 @@ export function raiseFreezeSavings(options: {
   census: DepartmentCensus
   jobs: Job[]
   raiseFreezes: RaiseFreezeRule[]
-  freezes: HeldFreeze[]
+  filled: FilledFreeze[]
   rates: Rates
   raiseRates: RaiseRate[]
   projectedYears: number
@@ -256,7 +235,6 @@ export function raiseFreezeSavings(options: {
     scope: scopeJobs(census, rule.scope),
     byYear: Array.from({ length: projectedYears }, () => emptySavings(rates)),
   }))
-  const filled = filledShares(census, options.freezes, projectedYears)
   const divisors = Array.from(
     { length: projectedYears },
     (_, index) => BASIS_BIG ** BigInt(index + 1),
@@ -284,7 +262,7 @@ export function raiseFreezeSavings(options: {
       cost: costOf(job, rates),
       removed,
       covering,
-      filled,
+      filled: options.filled,
       divisors,
       record: job.record,
     })

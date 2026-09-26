@@ -131,6 +131,9 @@ function subtractCost(cost: JobCost, part: JobCost): JobCost {
   }
 }
 
+/** A hiring freeze's scope and the share of it kept filled each projected year. */
+export type FilledFreeze = { scope: Set<FallRecord>; kept: number[] }
+
 /** One freeze's scope and, per projected year, its share and what it has saved so far; `jobs` accumulates fractional positions. */
 type Tracker = {
   rateBasisPoints: number
@@ -155,7 +158,7 @@ function saveJob(yearCosts: JobCost[], covering: Tracker[]): void {
   })
 }
 
-/** Each freeze's savings per projected year in that year's pay, in stack order, over the jobs and rates every other rule left. */
+/** Each freeze's savings per projected year in that year's pay, in stack order, over the jobs and rates every other rule left, and the share of each scope it keeps filled. */
 export function freezeSavings(options: {
   census: DepartmentCensus
   history: DepartmentCensus[]
@@ -165,7 +168,7 @@ export function freezeSavings(options: {
   projectedYears: number
   /** Each projected year's pay over a job's census pay, scaled by `BASIS` to the power of the year. */
   payGrowthOf: (record: FallRecord) => bigint[]
-}): FreezeResult[] {
+}): { results: FreezeResult[]; filled: FilledFreeze[] } {
   const { census, history, jobs, rates, projectedYears } = options
   const trackers: Tracker[] = options.freezes.map((freeze) => {
     const rateBasisPoints = departureRate(history, freeze.scope)
@@ -192,12 +195,18 @@ export function freezeSavings(options: {
       covering,
     )
   }
-  return trackers.map(({ rateBasisPoints, years }) => ({
-    kind: 'freeze',
-    rateBasisPoints,
-    byYear: years.map(({ savings }) => ({
-      ...savings,
-      jobs: Math.round(savings.jobs),
+  return {
+    results: trackers.map(({ rateBasisPoints, years }) => ({
+      kind: 'freeze',
+      rateBasisPoints,
+      byYear: years.map(({ savings }) => ({
+        ...savings,
+        jobs: Math.round(savings.jobs),
+      })),
     })),
-  }))
+    filled: trackers.map(({ scope, years }) => ({
+      scope,
+      kept: years.map(({ share }) => 1 - share / BASIS),
+    })),
+  }
 }

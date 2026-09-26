@@ -1,14 +1,12 @@
-import { QueryClient } from '@tanstack/react-query'
 import { createMemoryHistory } from '@tanstack/react-router'
 import { render, screen, within } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
+import { testQueryClient } from '@/test/query-client'
 import { App } from './app'
 import { createAppRouter } from './router'
 
 function renderAt(path: string) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  })
+  const queryClient = testQueryClient()
   const router = createAppRouter({
     queryClient,
     history: createMemoryHistory({ initialEntries: [path] }),

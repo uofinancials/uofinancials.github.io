@@ -1,4 +1,5 @@
 import type { FallClassified, FallUnclassified, FallYear } from '@/data/fall'
+import type { FallEntry } from '@/data/manifest'
 
 const COMMON = {
   name: 'Doe, Ann',
@@ -51,4 +52,21 @@ export function unclassifiedJob(
 /** A Fall census of the given year, for tests. */
 export function census(year: number, records: FallYear['records']): FallYear {
   return { censusDate: `${year}-11-01`, records }
+}
+
+type FallFile = FallEntry['files'][number]
+
+/** A Fall manifest file entry with plain defaults. */
+export function fallFile(overrides: Partial<FallFile> = {}): FallFile {
+  return {
+    kind: 'classified',
+    fileName: 'Classified.pdf',
+    sha256: 'a'.repeat(64),
+    pages: 1,
+    extractDate: '2025-11-05',
+    retrievedOn: '2026-09-24',
+    records: 1,
+    possibleStudents: 0,
+    ...overrides,
+  }
 }

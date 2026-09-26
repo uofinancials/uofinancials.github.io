@@ -1,4 +1,9 @@
-import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
+import {
+  censusYearOf,
+  type FallRecord,
+  type FallYear,
+  isPrimaryJob,
+} from '../data/fall.ts'
 
 /**
  * A computed link between a name's records in `fromYear` and `fromYear + 1`:
@@ -17,7 +22,7 @@ export type PersonLink = {
 function primaryJobs(records: FallRecord[]): Map<string, FallRecord | null> {
   const jobs = new Map<string, FallRecord | null>()
   for (const record of records) {
-    if (record.jobType !== 'Primary') continue
+    if (!isPrimaryJob(record)) continue
     jobs.set(record.name, jobs.has(record.name) ? null : record)
   }
   return jobs

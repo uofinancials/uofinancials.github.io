@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import type { Manifest } from '@/data/manifest'
+import { fallFile } from '@/test/fall-records'
 import { citeSource, listCitedDocuments } from './citation'
 
 const HASH = 'a'.repeat(64)
@@ -11,26 +12,8 @@ const MANIFEST: Manifest = {
       censusDate: '2025-11-01',
       sourcePage: 'https://example.org/salary-reports',
       files: [
-        {
-          kind: 'classified',
-          fileName: 'Classified.pdf',
-          sha256: HASH,
-          pages: 1,
-          extractDate: '2025-11-05',
-          retrievedOn: '2026-09-20',
-          records: 1,
-          possibleStudents: 0,
-        },
-        {
-          kind: 'unclassified',
-          fileName: 'Unclassified.pdf',
-          sha256: HASH,
-          pages: 1,
-          extractDate: '2025-11-05',
-          retrievedOn: '2026-09-24',
-          records: 1,
-          possibleStudents: 0,
-        },
+        fallFile({ retrievedOn: '2026-09-20' }),
+        fallFile({ kind: 'unclassified', fileName: 'Unclassified.pdf' }),
       ],
     },
   ],
