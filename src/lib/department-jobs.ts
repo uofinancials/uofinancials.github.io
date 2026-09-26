@@ -20,6 +20,9 @@ import {
   type Trends,
 } from './trends.ts'
 
+export const AREA_PLACEMENT_METHOD =
+  'An area’s jobs are those whose pay department the site places in it: by UO’s budget hierarchy for the census’s fiscal year, by a department-name prefix every placed department shares, or by hand.'
+
 /** One census with the budget hierarchy that names its areas, and the area assigner built from them. */
 export type DepartmentCensus = {
   year: number
@@ -130,6 +133,22 @@ export function departmentYears(
     placements: isArea
       ? placed.flatMap(({ placement }) => (placement ? [placement] : []))
       : null,
+  }
+}
+
+/** An area's jobs in every census, placed as its page places them; its latest budget name, or the code; and the budget years that placed them. */
+export function areaTrendFilter(area: string, censuses: DepartmentCensus[]) {
+  const fiscalYears = censuses.map(({ fiscalYear }) => fiscalYear)
+  const named = censuses.findLast(({ orgs }) => orgs[area] !== undefined)
+  return {
+    jobs: new Set(
+      departmentYears(area, censuses).years.flatMap(({ records }) => records),
+    ),
+    name: named?.orgs[area]?.name ?? area,
+    fiscalYears: {
+      from: Math.min(...fiscalYears),
+      to: Math.max(...fiscalYears),
+    },
   }
 }
 

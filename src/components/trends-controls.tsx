@@ -44,11 +44,17 @@ function LineToggles({
   )
 }
 
+type FilterNames = {
+  dept: string | null
+  area: string | null
+  position: string | null
+}
+
 function JobFilters({
   names,
   onChange,
 }: {
-  names: { dept: string | null; position: string | null }
+  names: FilterNames
   onChange: (search: TrendsSearch) => void
 }) {
   return (
@@ -57,6 +63,12 @@ function JobFilters({
         <RemovableFilter
           text={`Pay department: ${names.dept}`}
           onRemove={() => onChange({ dept: undefined })}
+        />
+      )}
+      {names.area !== null && (
+        <RemovableFilter
+          text={`Area: ${names.area}`}
+          onRemove={() => onChange({ area: undefined })}
         />
       )}
       {names.position !== null && (
@@ -69,7 +81,7 @@ function JobFilters({
   )
 }
 
-/** The trends view's controls, with the pay department and class or rank filters a link sets; each change is a new URL search. */
+/** The trends view's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
 export function TrendsControls({
   view,
   years,
@@ -80,7 +92,7 @@ export function TrendsControls({
   view: TrendView
   years: number[]
   lines: string[]
-  names: { dept: string | null; position: string | null }
+  names: FilterNames
   onChange: (search: TrendsSearch) => void
 }) {
   const yearOptions = years.map((year): [string, string] => [

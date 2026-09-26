@@ -67,10 +67,12 @@ function useDepartmentData() {
 
 function DepartmentLinks({
   code,
+  isArea,
   canEliminate,
   hasPayChanges,
 }: {
   code: string
+  isArea: boolean
   canEliminate: boolean
   hasPayChanges: boolean
 }) {
@@ -90,7 +92,10 @@ function DepartmentLinks({
         <Link
           className="underline"
           to="/trends"
-          search={{ dept: code, metric: 'change' }}
+          search={{
+            ...(isArea ? { area: code } : { dept: code }),
+            metric: 'change',
+          }}
         >
           Pay changes
         </Link>
@@ -198,7 +203,7 @@ function DepartmentHeader({
       {hasBothSources && (
         <p className="text-sm text-muted-foreground">{SPONSORED_NOTE}</p>
       )}
-      <DepartmentLinks code={profile.code} {...links} />
+      <DepartmentLinks code={profile.code} isArea={profile.isArea} {...links} />
     </header>
   )
 }
@@ -250,7 +255,7 @@ export function DepartmentPage() {
         hasBothSources={profile.hasBudget && hasJobs}
         links={{
           canEliminate: eliminationOrgs?.[code] !== undefined,
-          hasPayChanges: !profile.isArea && hasJobs,
+          hasPayChanges: hasJobs,
         }}
       />
       {profile.hasBudget ? (

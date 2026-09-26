@@ -19,24 +19,37 @@ export function usePayChanges(fallYears: FallYear[], view: TrendView) {
     () => (isChange ? continuingPairs(fallYears) : null),
     [fallYears, isChange],
   )
-  const { kind, group, dept, position, from, to, fromYears, pair } = view
+  const { kind, group, dept, position, jobs, from, to, fromYears, pair } = view
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
   const raises = useMemo(
     () =>
       pairs &&
       viewRaiseComparison({
         pairs,
-        filter: { kind, group, dept, position, from, to },
+        filter: { kind, group, dept, position, jobs, from, to },
         fromYear: pair,
         years: fallYears,
         raises: raiseTerms,
       }),
-    [pairs, fallYears, raiseTerms, kind, group, dept, position, from, to, pair],
+    [
+      pairs,
+      fallYears,
+      raiseTerms,
+      kind,
+      group,
+      dept,
+      position,
+      jobs,
+      from,
+      to,
+      pair,
+    ],
   )
   const shown = useMemo(
     () =>
-      pairs && filterPairs(pairs, { kind, group, dept, position, from, to }),
-    [pairs, kind, group, dept, position, from, to],
+      pairs &&
+      filterPairs(pairs, { kind, group, dept, position, jobs, from, to }),
+    [pairs, kind, group, dept, position, jobs, from, to],
   )
   return useMemo(
     () =>

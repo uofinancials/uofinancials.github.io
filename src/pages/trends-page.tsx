@@ -1,4 +1,4 @@
-import { useSuspenseQueries } from '@tanstack/react-query'
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { PayChangesSection } from '@/components/pay-changes-section'
@@ -15,7 +15,12 @@ import {
 } from '@/components/ui/table'
 import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
-import { fallYearQuery } from '@/data/queries'
+import { budgetYearQuery, fallYearQuery, manifestQuery } from '@/data/queries'
+import {
+  AREA_PLACEMENT_METHOD,
+  areaTrendFilter,
+  toDepartmentCensuses,
+} from '@/lib/department-jobs'
 import { SPEND_METHOD } from '@/lib/overview'
 import { peerKeyFor } from '@/lib/peer-group'
 import {
@@ -81,8 +86,24 @@ function GroupMapping() {
   )
 }
 
-function toFallYears(results: { data: FallYear }[]) {
+function toData<T>(results: { data: T }[]): T[] {
   return results.map(({ data }) => data)
+}
+
+function useAreaJobs(area: string | null, falls: FallYear[]) {
+  const { fiscalYears } = useLoaderData({ from: '/trends' })
+  const { data: manifest } = useSuspenseQuery(manifestQuery)
+  const budgets = useSuspenseQueries({
+    queries: fiscalYears.map(budgetYearQuery),
+    combine: toData,
+  })
+  return useMemo(
+    () =>
+      area === null
+        ? null
+        : areaTrendFilter(area, toDepartmentCensuses(manifest, falls, budgets)),
+    [area, manifest, falls, budgets],
+  )
 }
 
 function useTrends() {
@@ -90,7 +111,7 @@ function useTrends() {
   const search = useSearch({ from: '/trends' })
   const fallYears = useSuspenseQueries({
     queries: years.map(fallYearQuery),
-    combine: toFallYears,
+    combine: toData,
   })
   const censuses = useMemo(
     () =>
@@ -108,22 +129,35 @@ function useTrends() {
         : peerKeyFor(censuses, resolved.position),
     [censuses, resolved.position],
   )
-  const view = { ...resolved, position }
+  const area = useAreaJobs(resolved.area, fallYears)
+  const jobs = area?.jobs
+  const view = { ...resolved, position, jobs }
   const { kind, group, dept, from, to } = view
   const isChange = view.metric === CHANGE_METRIC
   const trends = useMemo(
     () =>
       isChange
         ? null
-        : buildTrends(censuses, { kind, group, dept, position, from, to }),
-    [censuses, isChange, kind, group, dept, position, from, to],
+        : buildTrends(censuses, {
+            kind,
+            group,
+            dept,
+            position,
+            from,
+            to,
+            jobs,
+          }),
+    [censuses, isChange, kind, group, dept, position, from, to, jobs],
   )
   const names = useMemo(
-    () => filterNames(censuses, { dept, position }),
-    [censuses, dept, position],
+    () => ({
+      ...filterNames(censuses, { dept, position }),
+      area: area?.name ?? null,
+    }),
+    [censuses, dept, position, area],
   )
   const changes = usePayChanges(fallYears, view)
-  return { years, view, trends, names, changes }
+  return { years, view, trends, names, changes, area }
 }
 
 function CensusSection({
@@ -155,7 +189,7 @@ function CensusSection({
 
 export function TrendsPage() {
   const navigate = useNavigate({ from: '/trends' })
-  const { years, view, trends, names, changes } = useTrends()
+  const { years, view, trends, names, changes, area } = useTrends()
   const { metric } = view
   const census =
     trends && metric !== CHANGE_METRIC
@@ -182,6 +216,12 @@ export function TrendsPage() {
         names={names}
         onChange={handleChange}
       />
+      {area && (
+        <SourceCitation
+          source={{ kind: 'budget-range', ...area.fiscalYears }}
+          computed={AREA_PLACEMENT_METHOD}
+        />
+      )}
       {changes && (
         <PayChangesSection
           changes={changes}

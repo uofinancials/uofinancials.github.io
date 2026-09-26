@@ -97,12 +97,26 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
+  loaderDeps: ({ search }) => ({ area: search.area }),
   loader: async (options) => {
-    const [loaded] = await Promise.all([
+    const { queryClient } = options.context
+    const loadBudgets = async () => {
+      if (options.deps.area === undefined) return []
+      const manifest = await queryClient.ensureQueryData(manifestQuery)
+      const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
+      await Promise.all(
+        fiscalYears.map((year) =>
+          queryClient.ensureQueryData(budgetYearQuery(year)),
+        ),
+      )
+      return fiscalYears
+    }
+    const [loaded, fiscalYears] = await Promise.all([
       loadFallYears(options),
-      options.context.queryClient.ensureQueryData(raiseTermsQuery),
+      loadBudgets(),
+      queryClient.ensureQueryData(raiseTermsQuery),
     ])
-    return loaded
+    return { ...loaded, fiscalYears }
   },
   component: TrendsPage,
 })

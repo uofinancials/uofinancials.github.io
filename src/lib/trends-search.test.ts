@@ -15,6 +15,7 @@ test('an empty search is every listed census, by group, in spend', () => {
     hide: [],
     kind: 'all',
     dept: null,
+    area: null,
     position: null,
     from: 2014,
     to: 2025,

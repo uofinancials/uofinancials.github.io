@@ -30,11 +30,13 @@ export type TrendFilter = {
   dept: string | null
   /** A `peerGroupOf` key. */
   position: string | null
+  /** When given, only these jobs pass. */
+  jobs?: ReadonlySet<FallRecord>
   from: number
   to: number
 }
 
-/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, and class or rank; the years are not checked. `peer` is the job's `peerGroupOf`, found here when not given. */
+/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, class or rank, and jobs; the years are not checked. `peer` is the job's `peerGroupOf`, found here when not given. */
 export function matchesJob(
   record: FallRecord,
   group: TrendGroup,
@@ -45,6 +47,7 @@ export function matchesJob(
     (filter.kind === 'all' || record.kind === filter.kind) &&
     (filter.group === null || group === filter.group) &&
     (filter.dept === null || record.payDepartment.code === filter.dept) &&
+    (filter.jobs === undefined || filter.jobs.has(record)) &&
     (filter.position === null ||
       (peer === undefined ? peerGroupOf(record) : peer)?.key ===
         filter.position)
