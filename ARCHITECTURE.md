@@ -33,8 +33,8 @@ entered by hand. The site reads nothing but its bundle and those files.
 - `public/data/ope.json` - OPE, leave, and PERS repayment rates by rate group
   and year, and the rate groups; written by `scripts/scrape`.
 - `public/data/raises.json` - raise terms by employee group, each with its
-  citation and, for across-the-board terms, the populations it applies to, and
-  the recorded gaps; edited by hand.
+  citation and, for across-the-board and pool terms, the populations it applies
+  to, and the recorded gaps; edited by hand.
 - `public/data/outlook.json` - the E&G fund projection by fiscal year with every
   published line, its alternative cases and assumptions, run rates reported
   since, the all-funds budget, and announced budget actions, each with its
@@ -76,11 +76,11 @@ flowchart LR
   comparison, the people list's controls, table, sort controls, column picker,
   and group figure, the person view with its computed figures, rate chart,
   records table, and job history, the budget outlook's lines and cases tables,
-  the scenario rule list, rule editor, scope fields, savings and eliminations
-  tables, savings total, and outlook section, and the hooks and query that load
-  one census's placed jobs, the people list's matching jobs, the pay changes of
-  a Trends view, the name index, a scenario and its result, and the censuses a
-  hiring freeze reads.
+  the scenario rule list, rule editor, scope fields, savings, eliminations, and
+  raise rates tables, savings total, and outlook section, and the hooks and
+  query that load one census's placed jobs, the people list's matching jobs, the
+  pay changes of a Trends view, the name index, a scenario and its result, and
+  the censuses a hiring freeze reads.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
@@ -98,9 +98,10 @@ flowchart LR
   outlook's gap by year, chart series, and cited sources, and scenarios: a job's
   estimated OPE rate group, each area's estimated E&G share, rules over one
   census, the hiring freeze and the censuses it reads, department and area
-  eliminations by budget line and the budget year they use, savings against the
-  projection or one of its cases, the rules' and case's URL form, rule and scope
-  labels, new rules and their order, and example scenarios.
+  eliminations by budget line and the budget year they use, raise freezes and
+  each raise group's rate they forgo, savings against the projection or one of
+  its cases, the rules' and case's URL form, rule and scope labels, new rules
+  and their order, and example scenarios.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -145,7 +146,8 @@ flowchart LR
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, and
   sources.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
-  freeze, eliminations, cases, unreadable link entries, and narrow layout.
+  and raise freezes, eliminations, cases, unreadable link entries, and narrow
+  layout.
 - `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, its
   raise comparison, and its link from the person page.
 
@@ -186,12 +188,13 @@ flowchart LR
   over the outlook file.
 - `/scenarios` - rules stacked over the latest Fall census, edited in place,
   with each rule's jobs and salary, full cost, and E&G savings, each
-  elimination's budgeted pay, OPE, and S&S, the savings set against the E&G
-  projection or one of its cases by fiscal year, example questions, the stated
-  methods, and the sources, with the rules and case held in the URL; driven by
-  the `src/lib` scenario modules over one Fall year, its budget year, the budget
-  year of the first savings year, the OPE rates, and the outlook file, and every
-  Fall year from 2019 when a hiring freeze is present.
+  elimination's budgeted pay, OPE, and S&S, the raise rates a raise freeze
+  forgoes with their sources, the savings set against the E&G projection or one
+  of its cases by fiscal year, example questions, the stated methods, and the
+  sources, with the rules and case held in the URL; driven by the `src/lib`
+  scenario modules over one Fall year, its budget year, the budget year of the
+  first savings year, the OPE rates, the raise terms, and the outlook file, and
+  every Fall year from 2019 when a hiring freeze is present.
 - `/sources` - every source file in the manifest and every document the raise
   terms and the budget outlook cite, with retrieval dates, hashes, and counts;
   driven by `src/data` and `src/lib`.
