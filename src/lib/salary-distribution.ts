@@ -1,7 +1,6 @@
-import type { FallRecord, StaffKind } from '../data/fall.ts'
+import { type FallRecord, isPrimaryJob, type StaffKind } from '../data/fall.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from './format.ts'
 import { isClassifiedTemp } from './overview.ts'
-import { isPrimaryJob } from './person-lookup.ts'
 import {
   emptyCounts,
   type GroupCounts,

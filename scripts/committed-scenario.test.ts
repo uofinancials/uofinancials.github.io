@@ -35,13 +35,13 @@ import {
 } from '../src/lib/scenario-outlook.ts'
 import { raiseRates } from '../src/lib/scenario-raises.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
-import { readJson } from './committed-json.ts'
 import {
   budgetDataPath,
   DATA_DIR,
   MANIFEST_PATH,
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
+  readJson,
 } from './scrape/cache.ts'
 
 const MANIFEST = manifestSchema.parse(readJson(MANIFEST_PATH))

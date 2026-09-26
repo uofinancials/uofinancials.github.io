@@ -12,8 +12,12 @@ import {
 import { areaFigures } from '../src/lib/department-table.ts'
 import { headlineFigures, jobsByCensus, topPaidJobs } from '../src/lib/home.ts'
 import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
-import { readJson } from './committed-json.ts'
-import { budgetDataPath, DATA_DIR, MANIFEST_PATH } from './scrape/cache.ts'
+import {
+  budgetDataPath,
+  DATA_DIR,
+  MANIFEST_PATH,
+  readJson,
+} from './scrape/cache.ts'
 
 function readFall2025() {
   const { records } = fallYearSchema.parse(

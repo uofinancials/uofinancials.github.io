@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fiscalYearLabel } from '../../src/data/budget.ts'
@@ -29,6 +29,10 @@ export function ratesSourcePath(page: string): string {
 }
 
 export const DATA_DIR = path.resolve(import.meta.dirname, '../../public/data')
+
+export function readJson(file: string): unknown {
+  return JSON.parse(readFileSync(file, 'utf8'))
+}
 export const MANIFEST_PATH = path.join(DATA_DIR, 'manifest.json')
 export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
 export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')

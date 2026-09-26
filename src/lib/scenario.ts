@@ -234,7 +234,7 @@ function freezeResults(
   payGrowthOf: (record: FallRecord) => bigint[],
 ): { freezes: FreezeResult[]; raiseFreezes: RaiseFreezeResult[] } {
   const { census, rules, projectedYears } = options
-  const freezes = freezeSavings({
+  const { results: freezes, filled } = freezeSavings({
     census,
     history: options.history,
     jobs,
@@ -247,12 +247,12 @@ function freezeResults(
     census,
     jobs,
     raiseFreezes: rules.filter((rule) => rule.kind === 'raises'),
-    filled: freezes.filled,
+    filled,
     rates,
     raiseRates: options.raiseRates,
     projectedYears,
   })
-  return { freezes: freezes.results, raiseFreezes }
+  return { freezes, raiseFreezes }
 }
 
 /**

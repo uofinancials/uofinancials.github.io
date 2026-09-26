@@ -38,7 +38,6 @@ import { runCards } from '../src/lib/person-summary.ts'
 import { censusWindow, raiseComparison } from '../src/lib/raise-comparison.ts'
 import { buildDistribution } from '../src/lib/salary-distribution.ts'
 import { buildTrends } from '../src/lib/trends.ts'
-import { readJson } from './committed-json.ts'
 import {
   identityProblems,
   totalExpenditureCents,
@@ -49,6 +48,7 @@ import {
   MANIFEST_PATH,
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
+  readJson,
 } from './scrape/cache.ts'
 
 /** Parsing and linking every census takes about five seconds alone, more beside other test files. */

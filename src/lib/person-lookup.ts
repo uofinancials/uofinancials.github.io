@@ -1,4 +1,9 @@
-import { censusYearOf, type FallRecord, type FallYear } from '../data/fall.ts'
+import {
+  censusYearOf,
+  type FallRecord,
+  type FallYear,
+  isPrimaryJob,
+} from '../data/fall.ts'
 import { findPersonLinks } from './person-links.ts'
 
 export const MIN_QUERY_CHARS = 2
@@ -63,10 +68,6 @@ function recordsByNameAndYear(years: FallYear[]): Map<string, PersonYear[]> {
     }
   }
   return byName
-}
-
-export function isPrimaryJob(record: FallRecord): boolean {
-  return record.jobType === 'Primary'
 }
 
 /** The first job of type Primary among the records, if any. */

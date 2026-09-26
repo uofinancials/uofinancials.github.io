@@ -54,10 +54,10 @@ export function census(year: number, records: FallYear['records']): FallYear {
   return { censusDate: `${year}-11-01`, records }
 }
 
-/** A Fall manifest file entry with plain defaults, for tests. */
-export function fallFile(
-  overrides: Partial<FallEntry['files'][number]> = {},
-): FallEntry['files'][number] {
+type FallFile = FallEntry['files'][number]
+
+/** A Fall manifest file entry with plain defaults. */
+export function fallFile(overrides: Partial<FallFile> = {}): FallFile {
   return {
     kind: 'classified',
     fileName: 'Classified.pdf',

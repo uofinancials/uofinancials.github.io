@@ -1,8 +1,7 @@
-import type { FallRecord, StaffKind } from '../data/fall.ts'
+import { type FallRecord, isPrimaryJob, type StaffKind } from '../data/fall.ts'
 import { isClassifiedTemp, summarize } from './overview.ts'
 import { type PeerGroup, peerGroupOf } from './peer-group.ts'
 import { department } from './person-fields.ts'
-import { isPrimaryJob } from './person-lookup.ts'
 import {
   compareLines,
   lineOf,

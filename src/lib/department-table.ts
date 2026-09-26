@@ -1,6 +1,6 @@
 import type { BudgetRow, BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
-import type { Manifest } from '../data/manifest.ts'
+import type { FallEntry, Manifest } from '../data/manifest.ts'
 import { listAreas } from './areas.ts'
 import { sumBy, unitsOf } from './department-budget.ts'
 import { placeDepartments } from './department-index.ts'
@@ -239,7 +239,7 @@ export function selectTableSources(manifest: Manifest): {
 } {
   const latest = latestTwo(manifest.fall)
   if (!latest) throw new Error('The department table needs two Fall censuses')
-  const source = ({ year, censusDate }: (typeof manifest.fall)[number]) => ({
+  const source = ({ year, censusDate }: FallEntry) => ({
     year,
     fiscalYear: fiscalYearForCensus(manifest, censusDate),
   })
