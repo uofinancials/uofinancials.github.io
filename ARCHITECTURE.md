@@ -137,13 +137,13 @@ flowchart LR
 - `scripts/scrape/ope-pages.ts` - the OPE rate pages as typed rates.
 - `scripts/scrape/cache.ts` - the source and data locations.
 - `scripts/committed-data.test.ts` - schema and total checks of every committed
-  data file.
+  data file, and each census's area placement.
 - `scripts/committed-outlook.test.ts` - the budget outlook's published
   arithmetic: lines to totals, run rates, and fund balances.
 - `scripts/committed-scenario.test.ts` - OPE rate groups, E&G shares, and
   scenario results on the committed data.
-- `scripts/committed-home.test.ts` - Fall 2025 totals, area placement, and the
-  home page's figures on the committed data.
+- `scripts/committed-home.test.ts` - Fall 2025 totals, an area's figures, and
+  the home page's figures on the committed data.
 
 ### End-to-end tests (`e2e/`)
 

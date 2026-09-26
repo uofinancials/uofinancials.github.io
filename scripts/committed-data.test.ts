@@ -6,11 +6,18 @@ import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { opeRatesSchema } from '../src/data/ope.ts'
 import { raiseTermsSchema } from '../src/data/raises.ts'
+import { ORG_LEVEL_AREA } from '../src/lib/areas.ts'
 import { departmentBudget } from '../src/lib/department-budget.ts'
 import {
   departmentYears,
   toDepartmentCensuses,
 } from '../src/lib/department-jobs.ts'
+import {
+  HAND_AREAS,
+  type HandArea,
+  handAreasFor,
+} from '../src/lib/hand-areas.ts'
+import { placementBases } from '../src/lib/home.ts'
 import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
 import {
   changeCounts,
@@ -293,6 +300,54 @@ function readDepartmentCensuses() {
   )
   return toDepartmentCensuses(manifest, falls, budgets)
 }
+
+/** Each census's jobs by how they are placed, classified temporaries included. */
+const PLACEMENT_BASES = {
+  2014: { published: 4_395, name: 1_375, hand: 311, unassigned: 30 },
+  2015: { published: 4_715, name: 1_538, hand: 363, unassigned: 47 },
+  2016: { published: 4_800, name: 1_453, hand: 289, unassigned: 0 },
+  2017: { published: 4_890, name: 1_572, hand: 141, unassigned: 0 },
+  2018: { published: 5_143, name: 1_607, hand: 142, unassigned: 0 },
+  2019: { published: 5_091, name: 1_517, hand: 220, unassigned: 10 },
+  2020: { published: 4_920, name: 1_528, hand: 226, unassigned: 7 },
+  2021: { published: 4_433, name: 1_515, hand: 189, unassigned: 8 },
+  2022: { published: 4_633, name: 1_629, hand: 178, unassigned: 10 },
+  2023: { published: 4_871, name: 1_888, hand: 184, unassigned: 0 },
+  2024: { published: 4_885, name: 1_912, hand: 187, unassigned: 0 },
+  2025: { published: 4_896, name: 1_746, hand: 198, unassigned: 0 },
+}
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'each census places its jobs on the pinned bases, and every hand row is used in its years and names an area',
+  () => {
+    const censuses = readDepartmentCensuses()
+    expect(
+      Object.fromEntries(
+        censuses.map((census) => [census.year, placementBases(census)]),
+      ),
+    ).toEqual(PLACEMENT_BASES)
+    const usedRows = new Set<HandArea>()
+    for (const census of censuses) {
+      const handCodes = new Set(
+        census.records
+          .filter((record) => census.assign(record).basis === 'hand')
+          .map((record) => record.payDepartment.code),
+      )
+      const rows = handAreasFor(census.year)
+      const codes = new Set(rows.map(({ code }) => code))
+      expect(codes.size, `Fall ${census.year}`).toBe(rows.length)
+      for (const row of rows) {
+        expect(
+          census.orgs[row.area]?.level,
+          `${row.code} in Fall ${census.year}`,
+        ).toBe(ORG_LEVEL_AREA)
+        if (handCodes.has(row.code)) usedRows.add(row)
+      }
+    }
+    expect(HAND_AREAS.filter((row) => !usedRows.has(row))).toEqual([])
+  },
+  ALL_YEARS_TIMEOUT_MS,
+)
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2025 department jobs match an independent computation, and each census places every job in one area or none',

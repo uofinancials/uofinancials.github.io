@@ -5,18 +5,12 @@ import { budgetYearSchema } from '../src/data/budget.ts'
 import { fallYearSchema } from '../src/data/fall.ts'
 import { manifestSchema } from '../src/data/manifest.ts'
 import { outlookSchema } from '../src/data/outlook.ts'
-import { createAreaAssigner, HAND_AREAS } from '../src/lib/areas.ts'
 import {
   departmentYears,
   toDepartmentCensus,
 } from '../src/lib/department-jobs.ts'
 import { areaFigures } from '../src/lib/department-table.ts'
-import {
-  headlineFigures,
-  jobsByCensus,
-  placementBases,
-  topPaidJobs,
-} from '../src/lib/home.ts'
+import { headlineFigures, jobsByCensus, topPaidJobs } from '../src/lib/home.ts'
 import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
 import { budgetDataPath, DATA_DIR, MANIFEST_PATH } from './scrape/cache.ts'
 
@@ -48,29 +42,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 )
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every Fall 2025 job has an area, every hand row is used, and an area matches an independent computation',
+  'an area matches an independent computation',
   () => {
     const { records, budget } = readFall2025()
     const census = toDepartmentCensus({ year: 2025, records }, budget)
     const areas = areaFigures(census, budget)
-    // Classified temporaries included: 4,463, 1,645, and 183 without them.
-    expect(placementBases(census)).toEqual({
-      published: 4_896,
-      name: 1_746,
-      hand: 198,
-      unassigned: 0,
-    })
-    const assign = createAreaAssigner(records, budget.orgs, 2025)
-    const handCodes = new Set(
-      records
-        .filter((record) => assign(record).basis === 'hand')
-        .map((record) => record.payDepartment.code),
-    )
-    const handAreas = HAND_AREAS[2025] ?? {}
-    expect([...handCodes].sort()).toEqual(Object.keys(handAreas).sort())
-    for (const area of Object.values(handAreas)) {
-      expect(budget.orgs[area]?.level, area).toBe(3)
-    }
     const artsJobs =
       departmentYears('222000', [census]).years.at(-1)?.records ?? []
     // The 81 units whose parent is 222000, summed in Python from FY26.json.

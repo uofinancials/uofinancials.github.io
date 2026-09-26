@@ -67,12 +67,12 @@ test('a code in the hand table for its census year is assigned by hand', () => {
   })
 })
 
-test('another census year does not use the 2025 hand table', () => {
+test("a census outside a hand row's years does not use it", () => {
   expect(
     createAreaAssigner(
       [],
       ORGS,
-      2024,
+      2013,
     )(job('267500', 'University Counseling Center')),
   ).toEqual({ area: null, basis: 'unassigned' })
 })

@@ -4,7 +4,7 @@ import { expect, type Page, test } from '@playwright/test'
 const pageWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth)
 
-test('the departments index ranks areas by budget, and a header sort is held in the link', async ({
+test('the departments index ranks areas by budget with their changes, and a header sort is held in the link', async ({
   page,
 }) => {
   await page.goto('/departments')
@@ -15,9 +15,10 @@ test('the departments index ranks areas by budget, and a header sort is held in 
     table.getByRole('columnheader', { name: 'Budget ▼' }),
   ).toHaveAttribute('aria-sort', 'descending')
   await expect(table.getByRole('row').nth(1)).toContainText('Business Affairs')
+  // 1,273 jobs placed in the area in Fall 2025 against 1,358 in Fall 2024.
   await expect(
-    table.getByRole('link', { name: 'Arts & Sciences, College of' }),
-  ).toBeVisible()
+    table.getByRole('row', { name: /^Arts & Sciences, College of/ }),
+  ).toContainText(/1,273.*-6\.3%/)
   await table.getByRole('button', { name: 'Jobs', exact: true }).click()
   await expect(page).toHaveURL(/sort=jobs/)
   await expect(page).toHaveURL(/dir=asc/)

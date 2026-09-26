@@ -157,8 +157,9 @@ test('a change is blank for a code the earlier year lacks, and under either floo
   })
 })
 
-test('an area sums its units and its placed jobs, keeps its budget change, and leaves its census changes blank', () => {
-  // Beginning 16,000,000 (Biology alone in FY25) to 25,000,000.
+test('an area sums its units and its placed jobs, and its changes compare the jobs placed in it the year before', () => {
+  // Beginning 16,000,000 (Biology alone in FY25) to 25,000,000. The earlier
+  // census places 19 jobs in the area: spend 85,000,000, median 4,000,000.
   expect(byCode(areas, '222000')).toEqual({
     code: '222000',
     name: 'Arts & Sciences, College of',
@@ -167,7 +168,7 @@ test('an area sums its units and its placed jobs, keeps its budget change, and l
     jobs: 14,
     spendCents: 70_000_000,
     medianRateCents: 5_000_000,
-    changes: { ...NO_CHANGES, budget: 0.5625 },
+    changes: { budget: 0.5625, jobs: -5 / 19, spend: -3 / 17, median: 0.25 },
   })
   expect(byCode(areas, '480000')).toMatchObject({
     jobs: 3,
