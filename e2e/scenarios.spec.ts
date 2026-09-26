@@ -112,10 +112,21 @@ test('rules are added, edited, moved, and removed in place, and held in the link
   await expect(page.getByRole('group', { name: /^3\./ })).toHaveAccessibleName(
     /hiring freeze/,
   )
+  await expect(
+    page.getByRole('heading', {
+      name: 'Hiring freezes, after the rules above',
+    }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Move rule 3 up' }),
+  ).toHaveAttribute('aria-disabled', 'true')
   await page.getByRole('button', { name: 'Move rule 2 up' }).click()
   await expect(page.getByRole('group', { name: /^1\./ })).toHaveAccessibleName(
     /% off pay$/,
   )
+  await expect(
+    page.getByRole('button', { name: 'Move rule 1 up' }),
+  ).toBeFocused()
   await page.reload()
   await expect(page.getByRole('group', { name: /^2\./ })).toHaveAccessibleName(
     /Pay capped/,

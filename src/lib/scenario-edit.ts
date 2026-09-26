@@ -71,15 +71,31 @@ export function sortByStage(rules: Rule[]): Rule[] {
   )
 }
 
-/** The rules with the one at `index` swapped with its neighbour; unchanged at either end of its stage. */
-export function moveRule(rules: Rule[], index: number, offset: -1 | 1): Rule[] {
-  const target = index + offset
+/** Whether the rule at `index` can swap with its neighbour at `offset`: both exist and share a stage. */
+export function canMoveRule(
+  rules: Rule[],
+  index: number,
+  offset: -1 | 1,
+): boolean {
   const moving = rules[index]
-  const other = rules[target]
-  if (moving === undefined || other === undefined) return rules
-  if (stageOf(moving) !== stageOf(other)) return rules
-  const moved = [...rules]
-  moved[index] = other
-  moved[target] = moving
-  return moved
+  const other = rules[index + offset]
+  return (
+    moving !== undefined &&
+    other !== undefined &&
+    stageOf(moving) === stageOf(other)
+  )
+}
+
+/** The items with the one at `index` swapped with the one at `index + offset`. */
+export function swapAt<T>(items: T[], index: number, offset: -1 | 1): T[] {
+  const moving = items[index]
+  const other = items[index + offset]
+  if (moving === undefined || other === undefined) return items
+  return items.with(index, other).with(index + offset, moving)
+}
+
+/** Where a new rule goes in stage-ordered rules: the end of its stage. */
+export function ruleInsertIndex(rules: Rule[], rule: Rule): number {
+  const rank = (listed: Rule) => RULE_STAGES.indexOf(stageOf(listed))
+  return rules.filter((listed) => rank(listed) <= rank(rule)).length
 }
