@@ -125,7 +125,6 @@ function takeNext<T>(results: T[]): T {
   return result
 }
 
-/** The eliminations' budget lines summed; `null` when there is no elimination. */
 function eliminatedTotal(
   budget: BudgetYear,
   results: EliminationResult[],
