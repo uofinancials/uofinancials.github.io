@@ -10,10 +10,11 @@ import {
   departmentYears,
   toDepartmentCensus,
 } from '../src/lib/department-jobs.ts'
+import { areaFigures } from '../src/lib/department-table.ts'
 import {
-  areaFigures,
   headlineFigures,
   jobsByCensus,
+  placementBases,
   topPaidJobs,
 } from '../src/lib/home.ts'
 import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
@@ -51,9 +52,9 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   () => {
     const { records, budget } = readFall2025()
     const census = toDepartmentCensus({ year: 2025, records }, budget)
-    const { areas, bases } = areaFigures(census, budget)
+    const areas = areaFigures(census, budget)
     // Classified temporaries included: 4,463, 1,645, and 183 without them.
-    expect(bases).toEqual({
+    expect(placementBases(census)).toEqual({
       published: 4_896,
       name: 1_746,
       hand: 198,
@@ -108,7 +109,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       6_111, 6_663, 6_542, 6_603, 6_892, 6_838, 6_681, 6_145, 6_450, 6_943,
       6_984, 6_840,
     ])
-    const top = topPaidJobs(records, 10)
+    const top = topPaidJobs({ year: 2025, records }, 10)
     expect(top.at(0)?.annualSalaryRateCents).toBe(940_000_000)
     expect(top.at(-1)?.annualSalaryRateCents).toBe(76_900_000)
   },

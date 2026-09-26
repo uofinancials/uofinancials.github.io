@@ -25,13 +25,14 @@ import {
 } from '@/data/queries'
 import { outlookSeries } from '@/lib/budget-outlook'
 import { toDepartmentCensus } from '@/lib/department-jobs'
+import { areaFigures } from '@/lib/department-table'
 import { formatCompactDollars, formatCount, formatDollars } from '@/lib/format'
 import {
-  areaFigures,
   exampleAnswers,
   type HeadlineFigures,
   headlineFigures,
   jobsByCensus,
+  placementBases,
   topPaidJobs,
 } from '@/lib/home'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/overview'
@@ -70,7 +71,8 @@ function useHomeData() {
         censusFiscalYear,
       }),
       areas: areaFigures(census, budget),
-      topPaid: topPaidJobs(fall.records, TOP_PAID_COUNT),
+      bases: placementBases(census),
+      topPaid: topPaidJobs({ year, records: fall.records }, TOP_PAID_COUNT),
       jobsByYear: jobsByCensus(manifest),
     }
   }, [
@@ -213,11 +215,7 @@ function JobsTrend({
   )
 }
 
-function AreaBases({
-  bases,
-}: {
-  bases: ReturnType<typeof areaFigures>['bases']
-}) {
+function AreaBases({ bases }: { bases: ReturnType<typeof placementBases> }) {
   return (
     <p className="text-sm text-muted-foreground">
       Areas: {formatCount(bases.published)} jobs placed by UO's published budget
@@ -241,7 +239,7 @@ function DepartmentsPreview({
   return (
     <PageSection title="Largest colleges and VP areas">
       <AreaBreakdown
-        areas={data.areas.areas}
+        areas={data.areas}
         measure={measure}
         labels={{
           budget: `${fiscal} budget`,
@@ -257,7 +255,7 @@ function DepartmentsPreview({
           See every area, unit, and pay department
         </Link>
       </p>
-      <AreaBases bases={data.areas.bases} />
+      <AreaBases bases={data.bases} />
       <SourceCitation
         source={{ kind: 'budget', fiscalYear: budget.fiscalYear }}
         computed="an area's budget is the Total Expenditure Budget summed over its units, as on the departments page."

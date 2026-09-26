@@ -15,7 +15,7 @@ import { TotalsTable } from '@/components/totals-table'
 import { type Matching, usePeople } from '@/components/use-people'
 import type { FallRecord } from '@/data/fall'
 import { formatCount, formatDollars } from '@/lib/format'
-import { categoryTotals, SPEND_METHOD } from '@/lib/overview'
+import { type CategoryTotals, SPEND_METHOD } from '@/lib/overview'
 import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people-list'
 import {
   type ListColumn,
@@ -150,8 +150,13 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
   )
 }
 
-function CategorySpend({ jobs, year }: { jobs: FallRecord[]; year: number }) {
-  const { byCategory, temps, totalSpendCents } = categoryTotals(jobs)
+function CategorySpend({
+  totals: { byCategory, temps, totalSpendCents },
+  year,
+}: {
+  totals: CategoryTotals
+  year: number
+}) {
   return (
     <section className="space-y-3">
       <h2 className="text-xl font-semibold">Salary spend by EEO category</h2>
@@ -249,10 +254,14 @@ export function PeoplePage() {
         <OtherCensusNames q={view.q} year={view.year} />
       )}
       {matching.jobs.length > 0 && (
-        <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
-      )}
-      {matching.jobs.length > 0 && (
-        <CategorySpend jobs={matching.jobs} year={view.year} />
+        <>
+          <JobsSection
+            sorted={matching.sorted}
+            view={view}
+            onSort={handleSort}
+          />
+          <CategorySpend totals={matching.categories} year={view.year} />
+        </>
       )}
       <SourceCitation
         source={{ kind: 'fall', year: view.year }}

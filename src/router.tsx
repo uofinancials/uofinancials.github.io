@@ -59,12 +59,18 @@ const homeRoute = createRoute({
   path: '/',
   validateSearch: homeSearchSchema,
   loader: async ({ context: { queryClient } }) => {
-    const { census, fiscalYear } = selectOverviewSources(
-      await queryClient.ensureQueryData(manifestQuery),
-    )
-    await Promise.all([
-      queryClient.ensureQueryData(fallYearQuery(census.year)),
-      queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
+    const loadCensus = async () => {
+      const sources = selectOverviewSources(
+        await queryClient.ensureQueryData(manifestQuery),
+      )
+      await Promise.all([
+        queryClient.ensureQueryData(fallYearQuery(sources.census.year)),
+        queryClient.ensureQueryData(budgetYearQuery(sources.fiscalYear)),
+      ])
+      return sources
+    }
+    const [{ census, fiscalYear }] = await Promise.all([
+      loadCensus(),
       queryClient.ensureQueryData(outlookQuery),
       queryClient.ensureQueryData(opeRatesQuery),
     ])

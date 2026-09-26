@@ -9,8 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { AreaFigure } from '@/lib/department-table'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
-import { type AreaFigure, areaBars, type HomeMeasure } from '@/lib/home'
+import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const SHOWN_AREAS = 10
@@ -30,41 +31,32 @@ export function AreaBreakdown({
 }) {
   const bars = areaBars(areas, measure, SHOWN_AREAS)
   const format = measure === 'jobs' ? formatCount : formatDollars
+  const title = `The ${SHOWN_AREAS} largest colleges and VP areas by ${labels[measure]}`
   return (
     <>
       <RadioField
         legend="Show"
         name="measure"
         value={measure}
-        options={[
-          ['budget', labels.budget],
-          ['spend', labels.spend],
-          ['jobs', labels.jobs],
-        ]}
+        options={HOME_MEASURES.map((option) => [option, labels[option]])}
         onSelect={onMeasure}
       />
       <TotalsChart
         bars={bars.map(({ name, value }) => ({ key: name, value }))}
         valueLabel={labels[measure]}
         format={format}
-        label={`The ${SHOWN_AREAS} largest colleges and VP areas by ${labels[measure]}`}
+        label={title}
       />
       <Table>
-        <caption className="sr-only">
-          The {SHOWN_AREAS} largest colleges and VP areas by {labels[measure]}
-        </caption>
+        <caption className="sr-only">{title}</caption>
         <TableHeader>
           <TableRow>
             <TableHead scope="col">Area</TableHead>
-            <TableHead scope="col" className="text-right">
-              {labels.budget}
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              {labels.spend}
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              {labels.jobs}
-            </TableHead>
+            {HOME_MEASURES.map((option) => (
+              <TableHead key={option} scope="col" className="text-right">
+                {labels[option]}
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
         <TableBody>

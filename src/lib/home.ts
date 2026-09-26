@@ -1,16 +1,15 @@
 import { z } from 'zod'
-import type { BudgetRow, BudgetYear } from '../data/budget.ts'
+import type { BudgetYear } from '../data/budget.ts'
 import type { FallRecord } from '../data/fall.ts'
 import type { Manifest } from '../data/manifest.ts'
 import type { OpeRates } from '../data/ope.ts'
 import type { Projection } from '../data/outlook.ts'
-import { type AreaAssignment, listAreas } from './areas.ts'
-import { sumBy } from './department-budget.ts'
-import { placeDepartments } from './department-index.ts'
+import type { AreaAssignment } from './areas.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
-import { unitSum } from './department-table.ts'
+import type { AreaFigure } from './department-table.ts'
 import { egShares } from './eg-share.ts'
-import { isClassifiedTemp, summarize, UNASSIGNED_AREA } from './overview.ts'
+import { isClassifiedTemp, summarize } from './overview.ts'
+import { sortJobs } from './people-list.ts'
 import type { Rule } from './scenario.ts'
 import { SCENARIO_EXAMPLES } from './scenario-examples.ts'
 import {
@@ -18,7 +17,7 @@ import {
   projectScenario,
   yearlySavings,
 } from './scenario-outlook.ts'
-import { measureJobs } from './trends.ts'
+import { compareKeys } from './sort.ts'
 
 /** The projection's run rate in the first projected year after the census. */
 function runRateAfter(projection: Projection, censusFiscalYear: number) {
@@ -118,58 +117,25 @@ export function jobsByCensus(
     }))
 }
 
-export type AreaFigure = {
-  /** `null` only for the jobs placed in no area. */
-  code: string | null
-  name: string
-  /** `null` for the jobs placed in no area. */
-  budgetCents: number | null
-  jobs: number
-  spendCents: number | null
-}
-
-/** Each area's budget and census jobs and spend, as the departments table figures them, and how the census's jobs were placed. */
-export function areaFigures(
+/** How each of a census's jobs was placed in an area. */
+export function placementBases(
   census: DepartmentCensus,
-  budget: BudgetYear,
-): {
-  areas: AreaFigure[]
-  bases: Record<AreaAssignment['basis'], number>
-} {
-  const totals = sumBy(budget.rows, (row: BudgetRow) => row.org)
-  const { areaJobs } = placeDepartments(census)
-  const figure = (code: string | null, name: string): AreaFigure => {
-    const { jobs, spendCents } = measureJobs(areaJobs.get(code) ?? [])
-    return {
-      code,
-      name,
-      budgetCents: unitSum(code, budget.orgs, totals),
-      jobs,
-      spendCents,
-    }
-  }
-  const areas = listAreas(census.orgs).map(({ code, name }) =>
-    figure(code, name),
-  )
-  if (areaJobs.has(null)) areas.push(figure(null, UNASSIGNED_AREA))
+): Record<AreaAssignment['basis'], number> {
   const bases = { published: 0, name: 0, hand: 0, unassigned: 0 }
   for (const record of census.records) bases[census.assign(record).basis] += 1
-  return { areas, bases }
+  return bases
 }
 
 /** The jobs with the highest published annual salary rates, ties by name; classified temporaries and possible students are left out. */
 export function topPaidJobs(
-  records: FallRecord[],
+  census: { year: number; records: FallRecord[] },
   count: number,
 ): FallRecord[] {
-  return records
-    .filter((record) => !isClassifiedTemp(record) && !record.possibleStudent)
-    .sort(
-      (a, b) =>
-        b.annualSalaryRateCents - a.annualSalaryRateCents ||
-        a.name.localeCompare(b.name),
-    )
-    .slice(0, count)
+  const { year, records } = census
+  const shown = records.filter(
+    (record) => !isClassifiedTemp(record) && !record.possibleStudent,
+  )
+  return sortJobs(shown, { sort: 'rate', dir: 'desc', year }).slice(0, count)
 }
 
 export const HOME_MEASURES = ['budget', 'spend', 'jobs'] as const
@@ -198,6 +164,6 @@ export function areaBars(
       const value = MEASURE_VALUES[measure](area)
       return value === null ? [] : [{ ...area, value }]
     })
-    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
+    .sort((a, b) => b.value - a.value || compareKeys(a.name, b.name))
     .slice(0, count)
 }

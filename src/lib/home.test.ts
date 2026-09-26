@@ -10,13 +10,14 @@ import {
   UNIT,
 } from '@/test/scenario-fixtures'
 import { toDepartmentCensus } from './department-jobs'
+import { areaFigures } from './department-table'
 import {
   areaBars,
-  areaFigures,
   exampleAnswers,
   HOME_EXAMPLES,
   headlineFigures,
   jobsByCensus,
+  placementBases,
   topPaidJobs,
 } from './home'
 import { UNASSIGNED_AREA } from './overview'
@@ -157,12 +158,9 @@ test('an area sums its units’ budget and its placed jobs, and each job’s pla
       payDepartment: { code: '999999', name: 'Zed Ops' },
     }),
   ]
-  const figures = areaFigures(
-    toDepartmentCensus({ year: 2025, records }, budget),
-    budget,
-  )
+  const census = toDepartmentCensus({ year: 2025, records }, budget)
   // Two jobs are under the three a spend needs.
-  expect(figures.areas).toEqual([
+  expect(areaFigures(census, budget)).toEqual([
     {
       code: AREA,
       name: 'Arts & Sciences',
@@ -178,7 +176,7 @@ test('an area sums its units’ budget and its placed jobs, and each job’s pla
       spendCents: null,
     },
   ])
-  expect(figures.bases).toEqual({
+  expect(placementBases(census)).toEqual({
     published: 1,
     name: 1,
     hand: 0,
@@ -190,13 +188,16 @@ test('the top-paid jobs are the highest rates, ties by name, without temporaries
   const rated = (name: string, cents: number, possibleStudent = false) =>
     unclassifiedJob({ name, annualSalaryRateCents: cents, possibleStudent })
   const top = topPaidJobs(
-    [
-      rated('Low, Al', 10_000_000),
-      rated('Zed, Zoe', 50_000_000),
-      TEMP,
-      rated('Student, Sam', 80_000_000, true),
-      rated('Abe, Ada', 50_000_000),
-    ],
+    {
+      year: 2025,
+      records: [
+        rated('Low, Al', 10_000_000),
+        rated('Zed, Zoe', 50_000_000),
+        TEMP,
+        rated('Student, Sam', 80_000_000, true),
+        rated('Abe, Ada', 50_000_000),
+      ],
+    },
     2,
   )
   expect(top.map(({ name }) => name)).toEqual(['Abe, Ada', 'Zed, Zoe'])
