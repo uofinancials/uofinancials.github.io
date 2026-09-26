@@ -103,10 +103,17 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reports for the years shown.
 - Fall 2015 classified temporaries, which the 2015 report publishes without a
   position class, are recognised as temporaries.
-- A Departments page (`/departments`) listing each college or VP area in the
-  FY26 budget with its budget units and the Fall 2025 pay departments placed in
-  it, each with its FY26 budget and Fall 2025 job count, and a filter by name or
-  code.
+- A Departments page (`/departments`) with a table of the FY26 budget's colleges
+  and VP areas, or of its units and the Fall 2025 pay departments, each with its
+  FY26 budget and its Fall 2025 jobs, salary spend, and median salary rate:
+  - each figure has its percent change from FY25 or Fall 2024 beside it. The
+    budget change compares beginning budgets, since FY26 is not at year-end. A
+    change is blank when the earlier year has fewer than 10 jobs, a beginning
+    budget under $100,000, or no such code, and an area's census changes are
+    blank because fewer Fall 2024 jobs are placed in areas;
+  - every column sorts, blanks last, opening on budget, largest first;
+  - the units view filters by area, and both views filter by name or code;
+  - the view, filters, and sort are kept in the link.
 - A page per department code (`/departments/<code>`). It shows the code's budget
   for FY21-FY27 by account group or fund type, with every account type in a
   table. The budget is UO's Total Expenditure Budget as published, labelled as
@@ -120,8 +127,13 @@ based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - To keep the page an aggregate, spend is left blank for any figure covering
   fewer than three paid jobs and median salary rate for fewer than three primary
   jobs, and ranks or classes with fewer than three jobs are shown together.
+- An area's page lists its units in the same table, and a department page links
+  to a scenario that eliminates it, where the scenario's budget has the code,
+  and a pay department's page to its pay changes on the Trends page. Its link to
+  the People page names the salary distribution it opens.
 - The department page's view is kept in its link: the budget breakdown, the
-  measure, classified or unclassified staff, and the census of the class table.
+  measure, classified or unclassified staff, the census of the class table, and
+  the units table's sort.
 - A People page (`/people`) listing one Fall census's jobs by name, the latest
   by default, 50 to a page, with every published job field in a table (Fall
   2025: 6,840 jobs, 6,268 names, from the reports retrieved 2026-09-24):

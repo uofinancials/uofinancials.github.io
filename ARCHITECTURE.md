@@ -70,23 +70,25 @@ flowchart LR
   report link, the page section, the source citation caption and cited-source
   line, the loading and error states, the select, radio, search, and draft text
   fields, the totals chart and table, the line chart, the stacked bar chart, the
-  trends table and controls, the department budget and jobs sections, the census
-  filter controls, the salary distribution figure, the removable filter, the pay
-  changes section with its lines, counts table, distribution, and raise
-  comparison, the people list's controls, table, sort controls, column picker,
-  and group figure, the person view with its computed figures, rate chart,
-  records table, and job history, the budget outlook's lines and cases tables,
-  the scenario rule list, rule editor, scope fields, savings, eliminations, and
-  raise rates tables, savings total, and outlook section, and the hooks and
-  query that load one census's placed jobs, the people list's matching jobs, the
-  pay changes of a Trends view, the name index, a scenario and its result, and
-  the censuses a hiring freeze reads.
+  trends table and controls, the department budget and jobs sections, the
+  department table, the sortable column header, the census filter controls, the
+  salary distribution figure, the removable filter, the pay changes section with
+  its lines, counts table, distribution, and raise comparison, the people list's
+  controls, table, sort controls, column picker, and group figure, the person
+  view with its computed figures, rate chart, records table, and job history,
+  the budget outlook's lines and cases tables, the scenario rule list, rule
+  editor, scope fields, savings, eliminations, and raise rates tables, savings
+  total, and outlook section, and the hooks and query that load one census's
+  placed jobs, the people list's matching jobs, the pay changes of a Trends
+  view, the name index, a scenario and its result, and the censuses a hiring
+  freeze reads.
 - `src/components/ui` - shadcn/ui components.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
   cross-year employee groups and their trends, budget account groups, a
-  department's budget and jobs, the department index, the salary rate
+  department's budget and jobs, the department index, the department table's
+  rows with their year-on-year changes, sort order for tables, the salary rate
   distribution, each page's URL state, source citations, number formatting, the
   person links between consecutive Fall years, the person lookup (name index,
   name matching, linked runs, and a record's published fields), the people
@@ -164,14 +166,17 @@ flowchart LR
   rank, with the view held in the URL; driven by `src/lib` groups, trends,
   person links, pay changes, and the raise comparison over every Fall year and
   the raise terms.
-- `/departments` - each college or VP area in the latest census's budget year,
-  with its budget units and the latest census's pay departments, filtered by
-  name or code; driven by the `src/lib` department index over one Fall year and
-  one budget year.
+- `/departments` - a sortable table of the colleges and VP areas in the latest
+  census's budget year, or of their units and pay departments, with budget,
+  jobs, spend, and median and each one's change from the year before, filtered
+  by area and by name or code; driven by the `src/lib` department table over the
+  latest two Fall years and their budget years.
 - `/departments/$code` - one code's budget by account group or fund type for
   every budget year, its jobs by group for every Fall census, its jobs by rank
-  and position class in one census, and for an area how its jobs were placed;
-  driven by the `src/lib` department modules over every Fall and budget year.
+  and position class in one census, for an area its units in the department
+  table and how its jobs were placed, and links to a scenario eliminating it and
+  to its Trends pay changes; driven by the `src/lib` department modules over
+  every Fall and budget year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   charts of the matching jobs by salary rate, with primary-job percentiles, and
   by group, and names from other censuses when a name has no job in it; not

@@ -28,7 +28,6 @@ export type DepartmentsSearch = z.infer<typeof departmentsSearchSchema>
 
 export type TableSort = { sort: DepartmentSort; dir: SortDirection }
 
-/** A table's sort, budget largest first unless the search asks otherwise. */
 function resolveSort({
   sort,
   dir,
@@ -42,7 +41,7 @@ function resolveSort({
 export type DepartmentsView = TableSort & {
   q: string
   level: DepartmentLevel
-  /** The area the units view is narrowed to. */
+  /** The area the units view is narrowed to; `null` for every area. */
   area: string | null
 }
 

@@ -203,7 +203,6 @@ function DepartmentHeader({
   )
 }
 
-/** The code's profile, jobs, and budget, and the views the search asks for. */
 function useDepartmentView(
   code: string,
   {
