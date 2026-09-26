@@ -11,7 +11,9 @@ import {
 import {
   addCost,
   BASIS,
+  BASIS_BIG,
   costOf,
+  divideHalfUp,
   emptySavings,
   type Job,
   type JobCost,
@@ -37,7 +39,7 @@ export type FreezeResult = {
 }
 
 export const FREEZE_METHOD =
-  "A hiring freeze is this site's estimate from past turnover, not a list of jobs. Its rate is the share of the scope's salary spend held by names that appear in one Fall census and in none of the next, averaged over the censuses given; that counts retirements, resignations, non-renewals, and name changes alike. In each year of the freeze, that share of the scope compounds: 1 - (1 - rate)^years. When it ends, positions are refilled at the departing jobs' pay, or stay eliminated, as the rule says. Each year of the freeze counts in full, as if it began on the first day of the fiscal year. No exceptions are assumed. A freeze applies after every other rule, to the jobs and rates they left; freezes over the same jobs apply in order."
+  "A hiring freeze is this site's estimate from past turnover, not a list of jobs. Its rate is the share of the scope's salary spend held by names that appear in one Fall census and in none of the next, averaged over the censuses given; that counts retirements, resignations, non-renewals, and name changes alike. In each year of the freeze, that share of the scope compounds: 1 - (1 - rate)^years. When it ends, positions are refilled at the departing jobs' pay, or stay eliminated, as the rule says. Each year of the freeze counts in full, as if it began on the first day of the fiscal year. No exceptions are assumed. Savings are in each year's pay, grown as the outlook grows census-rule savings. A freeze applies after every other rule, to the jobs and rates they left; freezes over the same jobs apply in order."
 
 /**
  * The censuses a freeze's turnover is averaged over, in census order: each
@@ -127,6 +129,19 @@ function subtractCost(cost: JobCost, part: JobCost): JobCost {
   }
 }
 
+/** A cost grown by `product`, the growth `years` years out scaled by `BASIS` to that power. */
+function growCost(cost: JobCost, product: bigint, years: number): JobCost {
+  const divisor = BASIS_BIG ** BigInt(years)
+  const grow = (cents: number) =>
+    Number(divideHalfUp(BigInt(cents) * product, divisor))
+  return {
+    salaryCents: grow(cost.salaryCents),
+    fullCostCents:
+      cost.fullCostCents === null ? null : grow(cost.fullCostCents),
+    egCents: grow(cost.egCents),
+  }
+}
+
 /** One freeze's scope and, per projected year, its share and what it has saved so far; `jobs` accumulates fractional positions. */
 type Tracker = {
   rateBasisPoints: number
@@ -134,24 +149,24 @@ type Tracker = {
   years: { share: number; savings: Savings }[]
 }
 
-/** Adds one job's savings to each freeze covering it, each year, each freeze on what the earlier ones left. */
-function saveJob(cost: JobCost, covering: Tracker[]): void {
-  const left = new Map<number, JobCost>()
-  const held = new Map<number, number>()
-  for (const tracker of covering) {
-    tracker.years.forEach(({ share, savings }, year) => {
-      const cents = left.get(year) ?? cost
-      const fraction = held.get(year) ?? 1
-      const saved = scaleCost(cents, share)
-      addCost(savings, saved, 1)
-      savings.jobs += (fraction * share) / BASIS
-      left.set(year, subtractCost(cents, saved))
-      held.set(year, fraction * (1 - share / BASIS))
-    })
-  }
+/** Adds one job's savings in each year's pay to each freeze covering it, each freeze on what the earlier ones left. */
+function saveJob(yearCosts: JobCost[], covering: Tracker[]): void {
+  yearCosts.forEach((yearCost, year) => {
+    let left = yearCost
+    let held = 1
+    for (const tracker of covering) {
+      const entry = tracker.years[year]
+      if (!entry) continue
+      const saved = scaleCost(left, entry.share)
+      addCost(entry.savings, saved, 1)
+      entry.savings.jobs += (held * entry.share) / BASIS
+      left = subtractCost(left, saved)
+      held *= 1 - entry.share / BASIS
+    }
+  })
 }
 
-/** Each freeze's savings per projected year, in stack order, over the jobs and rates every other rule left. */
+/** Each freeze's savings per projected year in that year's pay, in stack order, over the jobs and rates every other rule left. */
 export function freezeSavings(options: {
   census: DepartmentCensus
   history: DepartmentCensus[]
@@ -159,6 +174,8 @@ export function freezeSavings(options: {
   freezes: FreezeRule[]
   rates: Rates
   projectedYears: number
+  /** Each projected year's pay over a job's census pay, scaled by `BASIS` to the power of the year. */
+  payGrowthOf: (record: FallRecord) => bigint[]
 }): FreezeResult[] {
   const { census, history, jobs, rates, projectedYears } = options
   const trackers: Tracker[] = options.freezes.map((freeze) => {
@@ -175,7 +192,14 @@ export function freezeSavings(options: {
   for (const job of jobs) {
     if (job.isRemoved) continue
     const covering = trackers.filter(({ scope }) => scope.has(job.record))
-    if (covering.length > 0) saveJob(costOf(job, rates), covering)
+    if (covering.length === 0) continue
+    const cost = costOf(job, rates)
+    saveJob(
+      options
+        .payGrowthOf(job.record)
+        .map((product, index) => growCost(cost, product, index + 1)),
+      covering,
+    )
   }
   return trackers.map(({ rateBasisPoints, years }) => ({
     kind: 'freeze',

@@ -122,13 +122,8 @@ function growth(path: number[]): bigint[] {
   })
 }
 
-/** Each projected year's pay over census pay at a first-year raise, then 3% a year, scaled by `BASIS` to the power of the year. */
-export function payGrowth(firstBasisPoints: number, years: number): bigint[] {
-  return growth(schedule(firstBasisPoints, years))
-}
-
 /** A job's raise in the first savings year: its raise row's rate, or 3%. */
-export function firstRaiseOf(
+function firstRaiseOf(
   census: DepartmentCensus,
   raiseRates: RaiseRate[],
 ): (record: FallRecord) => number {
@@ -139,6 +134,22 @@ export function firstRaiseOf(
     rowRates.get(
       raiseRowOf(record, census.year, trendGroupOf(record, census.year)),
     ) ?? PROJECTED_RAISE_BASIS_POINTS
+}
+
+/** Each projected year's pay over a job's census pay: its first-year raise, then 3% a year, scaled by `BASIS` to the power of the year; jobs with the same first-year raise share one path. */
+export function payGrowthOf(
+  census: DepartmentCensus,
+  raiseRates: RaiseRate[],
+  years: number,
+): (record: FallRecord) => bigint[] {
+  const firstRaise = firstRaiseOf(census, raiseRates)
+  const paths = new Map<number, bigint[]>()
+  return (record) => {
+    const first = firstRaise(record)
+    const path = paths.get(first) ?? growth(schedule(first, years))
+    paths.set(first, path)
+    return path
+  }
 }
 
 /**

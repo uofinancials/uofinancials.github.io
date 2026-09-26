@@ -76,7 +76,8 @@ test("a freeze saves its share of the scope's cost each year, and nothing in the
     fullCostCents: 0,
     egCents: 0,
   })
-  // Avila's full cost is 4,000,000 x 0.9 x 1.9 = 6,840,000, all of it E&G.
+  // Avila's full cost is 4,000,000 x 0.9 x 1.9 = 6,840,000, all of it E&G, in each year's pay at 3% a year:
+  // 55% of 4,120,000 and 7,045,200, then 79.75% of 4,243,600 and 7,256,556 (5,787,103.41).
   expect(result.rules).toEqual([
     {
       kind: 'freeze',
@@ -84,15 +85,15 @@ test("a freeze saves its share of the scope's cost each year, and nothing in the
       byYear: [
         {
           jobs: 1,
-          salaryCents: 2_200_000,
-          fullCostCents: 3_762_000,
-          egCents: 3_762_000,
+          salaryCents: 2_266_000,
+          fullCostCents: 3_874_860,
+          egCents: 3_874_860,
         },
         {
           jobs: 1,
-          salaryCents: 3_190_000,
-          fullCostCents: 5_454_900,
-          egCents: 5_454_900,
+          salaryCents: 3_384_271,
+          fullCostCents: 5_787_103,
+          egCents: 5_787_103,
         },
         { jobs: 0, salaryCents: 0, fullCostCents: 0, egCents: 0 },
         { jobs: 0, salaryCents: 0, fullCostCents: 0, egCents: 0 },
@@ -111,8 +112,8 @@ test('a freeze applies after every other rule, and a second freeze to what the f
   if (first?.kind !== 'freeze' || second?.kind !== 'freeze') {
     throw new Error('The first and third rules are freezes')
   }
-  // After the cut, Avila's rate is 2,000,000: 55% of it, then 55% of the 45% left.
-  expect(first.byYear[0]?.salaryCents).toBe(1_100_000)
-  expect(second.byYear[0]?.salaryCents).toBe(495_000)
+  // After the cut, Avila's rate is 2,000,000, or 2,060,000 in FY27 pay: 55% of it, then 55% of the 927,000 left.
+  expect(first.byYear[0]?.salaryCents).toBe(1_133_000)
+  expect(second.byYear[0]?.salaryCents).toBe(509_850)
   expect(result.total.salaryCents).toBe(2_000_000)
 })

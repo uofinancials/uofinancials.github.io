@@ -49,7 +49,7 @@ function grow(cents: number, years: number): number {
   return Number(divideHalfUp(numerator, BASIS_BIG ** BigInt(years)))
 }
 
-/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year, and census rules and raise freezes are already in each year's pay. */
+/** E&G savings in each projected year from `firstFiscalYear`, the first at index 0; eliminations grow from their budget's year, and every other rule is already in each year's pay. */
 export function yearlySavings(
   result: ScenarioResult,
   options: { years: number; firstFiscalYear: number },
@@ -59,17 +59,15 @@ export function yearlySavings(
     ? Math.max(0, options.firstFiscalYear - eliminated.fiscalYear)
     : 0
   return Array.from({ length: options.years }, (_, index) => {
-    const yearCents = (kind: 'freeze' | 'raises') =>
-      result.rules.reduce(
-        (sum, rule) =>
-          rule.kind === kind ? sum + (rule.byYear[index]?.egCents ?? 0) : sum,
-        0,
-      )
+    const freezeCents = result.rules.reduce(
+      (sum, rule) =>
+        'byYear' in rule ? sum + (rule.byYear[index]?.egCents ?? 0) : sum,
+      0,
+    )
     return (
       (result.censusEgByYear[index] ?? 0) +
-      grow(yearCents('freeze'), index) +
-      grow(eliminated?.egCents ?? 0, eliminatedFrom + index) +
-      yearCents('raises')
+      freezeCents +
+      grow(eliminated?.egCents ?? 0, eliminatedFrom + index)
     )
   })
 }

@@ -29,8 +29,7 @@ import {
   toJobs,
 } from './scenario-jobs.ts'
 import {
-  firstRaiseOf,
-  payGrowth,
+  payGrowthOf,
   type RaiseFreezeResult,
   type RaiseFreezeRule,
   type RaiseRate,
@@ -174,28 +173,26 @@ function sumSavings(parts: Savings[], rates: Rates): Savings {
   return total
 }
 
-/** The E&G each job's census rules saved, grown to each projected year's pay by its first-year raise and 3% a year after. */
+/** The E&G each job's census rules saved, grown to each projected year's pay. */
 function censusEgByYear(options: {
-  census: DepartmentCensus
   jobs: Job[]
   egBefore: number[]
   rates: Rates
-  raiseRates: RaiseRate[]
+  payGrowthOf: (record: FallRecord) => bigint[]
   projectedYears: number
 }): number[] {
   const { jobs, projectedYears } = options
-  const firstRaise = firstRaiseOf(options.census, options.raiseRates)
-  const savedByRaise = new Map<number, bigint>()
+  const savedByPath = new Map<bigint[], bigint>()
   jobs.forEach((job, index) => {
     const saved =
       (options.egBefore[index] ?? 0) - costOf(job, options.rates).egCents
     if (saved === 0) return
-    const first = firstRaise(job.record)
-    savedByRaise.set(first, (savedByRaise.get(first) ?? 0n) + BigInt(saved))
+    const path = options.payGrowthOf(job.record)
+    savedByPath.set(path, (savedByPath.get(path) ?? 0n) + BigInt(saved))
   })
   const years = Array.from({ length: projectedYears }, () => 0)
-  for (const [first, saved] of savedByRaise) {
-    payGrowth(first, projectedYears).forEach((product, index) => {
+  for (const [path, saved] of savedByPath) {
+    path.forEach((product, index) => {
       years[index] =
         (years[index] ?? 0) +
         Number(divideHalfUp(saved * product, BASIS_BIG ** BigInt(index + 1)))
@@ -204,11 +201,37 @@ function censusEgByYear(options: {
   return years
 }
 
+/** Applies the census rules in order: each rule's savings, and their E&G in each projected year's pay. */
+function applyCensusRules(
+  options: Parameters<typeof runScenario>[0],
+  jobs: Job[],
+  rates: Rates,
+  payGrowthOf: (record: FallRecord) => bigint[],
+): { results: Savings[]; egByYear: number[] } {
+  const egBefore = jobs.map((job) => costOf(job, rates).egCents)
+  const results = options.rules
+    .filter(isCensusRule)
+    .map((rule) =>
+      applyRule(rule, jobs, scopeJobs(options.census, rule.scope), rates),
+    )
+  return {
+    results,
+    egByYear: censusEgByYear({
+      jobs,
+      egBefore,
+      rates,
+      payGrowthOf,
+      projectedYears: options.projectedYears,
+    }),
+  }
+}
+
 /** Each hiring and raise freeze's savings, in stack order of each kind. */
 function freezeResults(
   options: Parameters<typeof runScenario>[0],
   jobs: Job[],
   rates: Rates,
+  payGrowthOf: (record: FallRecord) => bigint[],
 ): { freezes: FreezeResult[]; raiseFreezes: RaiseFreezeResult[] } {
   const { census, rules, projectedYears } = options
   const freezeRules = rules.filter((rule) => rule.kind === 'freeze')
@@ -219,6 +242,7 @@ function freezeResults(
     freezes: freezeRules,
     rates,
     projectedYears,
+    payGrowthOf,
   })
   const raiseFreezes = raiseFreezeSavings({
     census,
@@ -265,15 +289,20 @@ export function runScenario(options: {
     eliminations: rules.filter((rule) => rule.kind === 'eliminate'),
   })
   const eliminated = eliminatedTotal(options.eliminationBudget, eliminations)
-  const egBefore = jobs.map((job) => costOf(job, yearRates).egCents)
-  const censusResults = rules
-    .filter(isCensusRule)
-    .map((rule) =>
-      applyRule(rule, jobs, scopeJobs(census, rule.scope), yearRates),
-    )
-  const { freezes, raiseFreezes } = freezeResults(options, jobs, yearRates)
+  const payGrowth = payGrowthOf(
+    census,
+    options.raiseRates,
+    options.projectedYears,
+  )
+  const censusRules = applyCensusRules(options, jobs, yearRates, payGrowth)
+  const { freezes, raiseFreezes } = freezeResults(
+    options,
+    jobs,
+    yearRates,
+    payGrowth,
+  )
   const queues = {
-    census: censusResults.map((savings) => ({
+    census: censusRules.results.map((savings) => ({
       kind: 'census' as const,
       savings,
     })),
@@ -286,15 +315,8 @@ export function runScenario(options: {
     rules: rules.map((rule) =>
       takeNext<RuleResult>(queues[isCensusRule(rule) ? 'census' : rule.kind]),
     ),
-    total: sumSavings(censusResults, yearRates),
-    censusEgByYear: censusEgByYear({
-      census,
-      jobs,
-      egBefore,
-      rates: yearRates,
-      raiseRates: options.raiseRates,
-      projectedYears: options.projectedYears,
-    }),
+    total: sumSavings(censusRules.results, yearRates),
+    censusEgByYear: censusRules.egByYear,
     eliminated,
     temporaries: census.records.length - jobs.length,
     opeFiscalYear: yearRates ? opeFiscalYear : null,

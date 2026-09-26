@@ -129,7 +129,7 @@ function SavingsSection({
 }) {
   const { result, resultRows, eliminations, history, firstYear } = scenario
   const usesRaiseRates = scenario.computedRules.some(
-    (rule) => rule.kind !== 'eliminate' && rule.kind !== 'freeze',
+    (rule) => rule.kind !== 'eliminate',
   )
   return (
     <PageSection title="Savings by rule">

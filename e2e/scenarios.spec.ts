@@ -52,10 +52,10 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   ).toContainText('turnover a year')
   const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
   await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
-    '$24,717,706',
+    '$26,526,996',
   )
   await expect(outlook.getByRole('row', { name: /^FY30/ })).toContainText(
-    '-1.0',
+    '-0.9',
   )
   await expect(page.getByRole('main')).toContainText(
     'first falls below zero in FY30',
@@ -65,7 +65,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   })
   await expect(page).toHaveURL(/case=.*State/)
   await expect(outlook.getByRole('row', { name: /^FY31/ })).toContainText(
-    '-$172,812,899',
+    '-$171,003,609',
   )
   await expect(page.getByRole('main')).toContainText(
     'Weeks of expenses are not computed for this case',

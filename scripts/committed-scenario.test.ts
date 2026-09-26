@@ -267,7 +267,7 @@ test('question 7: executives -10% saves $1.3M of E&G; then everyone -2% saves $9
   ])
 })
 
-test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 positions empty and saves $9.1M of E&G in FY27', () => {
+test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 positions empty and saves $9.3M of E&G in FY27', () => {
   const { result, rows } = runFall2025([
     {
       kind: 'freeze',
@@ -280,15 +280,27 @@ test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 pos
   if (freeze?.kind !== 'freeze') throw new Error('The rule is a freeze')
   expect(result.opeFiscalYear).toBe(2027)
   expect(freeze.rateBasisPoints).toBe(1_033)
+  // 10.33% of each classified job's E&G cost, in FY27 pay at its raise row's rate.
+  const classified = toJobs(FALL_2025, SHARES_2025).filter(
+    (job) => job.record.kind === 'classified',
+  )
+  const directCents = classified.reduce((sum, job) => {
+    const { egCents } = costOf(job, FY27_RATES)
+    const fy27Cents = (egCents * (10_000 + firstRaiseOf(job))) / 10_000
+    return sum + (fy27Cents * 1_033) / 10_000
+  }, 0)
+  expect(Math.abs((freeze.byYear[0]?.egCents ?? 0) - directCents)).toBeLessThan(
+    classified.length,
+  )
   expect(freeze.byYear.map(({ jobs, egCents }) => [jobs, egCents])).toEqual([
-    [189, 907_357_500],
+    [189, 934_578_209],
     [0, 0],
     [0, 0],
     [0, 0],
     [0, 0],
   ])
   expect(rows.map((row) => row.savingsCents)).toEqual([
-    0, 907_357_500, 0, 0, 0, 0,
+    0, 934_578_209, 0, 0, 0, 0,
   ])
 })
 
@@ -322,16 +334,16 @@ test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn 
     censusCents + (freeze.byYear[0]?.egCents ?? 0),
   )
   expect(rows.map((row) => row.savingsCents)).toEqual([
-    0, 4_748_829_914, 165_387_739, 170_349_372, 175_459_853, 180_723_650,
+    0, 4_929_758_927, 165_387_739, 170_349_372, 175_459_853, 180_723_650,
   ])
   expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
-    448_500_000, 2_471_770_614, -4_159_334_161, -5_509_099_928, -6_779_743_047,
+    448_500_000, 2_652_699_627, -4_159_334_161, -5_509_099_928, -6_779_743_047,
     -7_133_663_150,
   ])
   expect(
     rows.find((row) => row.remainingFundBalanceCents < 0)?.fiscalYear,
   ).toBe(2030)
-  expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_694_713_872)
+  expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_513_784_859)
 })
 
 test('question 13: the same stack against state funding $20M below projection leaves the balance negative from FY30', () => {
@@ -346,12 +358,12 @@ test('question 13: the same stack against state funding $20M below projection le
   ]
   const { rows } = runFall2025(stack, STATE_FUNDING_BELOW)
   expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
-    448_500_000, 2_471_770_614, -6_159_334_161, -7_619_099_928, -8_974_143_047,
+    448_500_000, 2_652_699_627, -6_159_334_161, -7_619_099_928, -8_974_143_047,
     -9_415_839_150,
   ])
   expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
-    12_415_355_700, 14_887_126_414, 8_727_792_253, 1_108_692_325,
-    -7_865_450_722, -17_281_289_872,
+    12_415_355_700, 15_068_055_427, 8_908_721_266, 1_289_621_338,
+    -7_684_521_709, -17_100_360_859,
   ])
   expect(rows.every((row) => row.remainingWeeks === null)).toBe(true)
 })
