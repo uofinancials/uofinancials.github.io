@@ -176,7 +176,8 @@ flowchart LR
   and position class in one census, for an area its units in the department
   table and how its jobs were placed, and links to a scenario eliminating it and
   to its Trends pay changes; driven by the `src/lib` department modules over
-  every Fall and budget year.
+  every Fall and budget year, and the outlook file for the scenario's budget
+  year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   charts of the matching jobs by salary rate, with primary-job percentiles, and
   by group, and names from other censuses when a name has no job in it; not
