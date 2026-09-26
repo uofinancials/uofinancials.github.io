@@ -20,7 +20,11 @@ import {
   type ScenarioResult,
 } from '../src/lib/scenario.ts'
 import { freezeHistoryCensuses } from '../src/lib/scenario-freeze.ts'
-import { baselines, scenarioOutlook } from '../src/lib/scenario-outlook.ts'
+import {
+  baselines,
+  outlookRows,
+  projectScenario,
+} from '../src/lib/scenario-outlook.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
 import {
   budgetDataPath,
@@ -144,16 +148,19 @@ const STATE_FUNDING_BELOW = BASELINES.findIndex(({ label }) =>
 function runFall2025(rules: Rule[], baselineIndex = 0) {
   const baseline = BASELINES[baselineIndex]
   if (!baseline) throw new Error(`No baseline ${baselineIndex}`)
-  return scenarioOutlook({
+  const options = {
     census: FALL_2025,
     censusFiscalYear: fiscalYearOf(FALL_2025_DATE),
+    fiscalYears: PROJECTION.fiscalYears,
+  }
+  const result = projectScenario({
+    ...options,
     rules,
     rates: RATES,
     egShares: SHARES_2025,
     history: HISTORY,
-    fiscalYears: PROJECTION.fiscalYears,
-    baseline,
   })
+  return { result, rows: outlookRows({ ...options, result, baseline }) }
 }
 
 test('with no rules, the outlook is the projection as published', () => {

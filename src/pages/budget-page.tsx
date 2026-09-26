@@ -1,9 +1,9 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 import { CitedLine } from '@/components/cited-line'
 import { OutlookCasesTable } from '@/components/outlook-cases-table'
 import { OutlookLinesTable } from '@/components/outlook-lines-table'
+import { PageSection } from '@/components/page-section'
 import { SeriesChart } from '@/components/series-chart'
 import {
   Table,
@@ -21,15 +21,6 @@ import { formatCompactDollars, formatDollars } from '@/lib/format'
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const GAP_HEADS = ['Revenue', 'Expenses', 'Run rate', 'Ending fund balance']
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      {children}
-    </section>
-  )
-}
 
 function ReportedNotes({
   reported,
@@ -156,7 +147,7 @@ export function BudgetPage() {
           .
         </p>
       </div>
-      <Section title="Projected gap by fiscal year">
+      <PageSection title="Projected gap by fiscal year">
         <SeriesChart
           labels={labels}
           series={series}
@@ -170,16 +161,16 @@ export function BudgetPage() {
           projection={projection}
         />
         <CitedLine source={projection.source} />
-      </Section>
-      <Section title="Every published line">
+      </PageSection>
+      <PageSection title="Every published line">
         <OutlookLinesTable projection={projection} />
         <CitedLine source={projection.source} />
-      </Section>
-      <Section title="Alternative cases">
+      </PageSection>
+      <PageSection title="Alternative cases">
         <OutlookCasesTable projection={projection} />
         <CitedLine source={projection.casesSource} />
-      </Section>
-      <Section
+      </PageSection>
+      <PageSection
         title={`The ${formatCompactDollars(projection.reductionTargetCents)} in reductions`}
       >
         <p>
@@ -190,11 +181,11 @@ export function BudgetPage() {
           not published. It is not the gap in any one year.
         </p>
         <CitedLine source={projection.reductionTargetSource} />
-      </Section>
-      <Section title="All funds">
+      </PageSection>
+      <PageSection title="All funds">
         <AllFunds allFunds={outlook.allFunds} />
-      </Section>
-      <Section title="Stated assumptions">
+      </PageSection>
+      <PageSection title="Stated assumptions">
         <ul className="list-disc space-y-2 pl-6">
           {projection.assumptions.map(({ text, location }) => (
             <li key={text}>
@@ -209,10 +200,10 @@ export function BudgetPage() {
             retrievedOn: projection.source.retrievedOn,
           }}
         />
-      </Section>
-      <Section title="Announced budget actions">
+      </PageSection>
+      <PageSection title="Announced budget actions">
         <Actions actions={outlook.actions} />
-      </Section>
+      </PageSection>
     </div>
   )
 }

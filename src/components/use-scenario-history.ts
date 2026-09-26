@@ -16,13 +16,15 @@ export type ScenarioHistory =
 
 const NO_HISTORY: [] = []
 
-/** Every query's data once all have it, `null` before, or `'error'` when one failed. */
-function allData<T>(results: QueryObserverResult<T>[]): T[] | null | 'error' {
-  if (results.some((result) => result.isError)) return 'error'
-  const data = results.flatMap((result) =>
-    result.data === undefined ? [] : [result.data],
-  )
-  return data.length === results.length ? data : null
+/** The queries' data in order, with whether any is still loading or failed. */
+function combineResults<T>(results: QueryObserverResult<T>[]) {
+  return {
+    data: results.flatMap((result) =>
+      result.data === undefined ? [] : [result.data],
+    ),
+    isPending: results.some((result) => result.isPending),
+    isError: results.some((result) => result.isError),
+  }
 }
 
 /** The censuses a freeze's turnover is read from, loaded only while `hasFreeze`. */
@@ -34,26 +36,28 @@ export function useScenarioHistory(
   const loaded = hasFreeze ? censuses : []
   const falls = useQueries({
     queries: loaded.map(({ year }) => fallYearQuery(year)),
-    combine: allData,
+    combine: combineResults,
   })
   const budgets = useQueries({
     queries: [...new Set(loaded.map(({ fiscalYear }) => fiscalYear))].map(
       budgetYearQuery,
     ),
-    combine: allData,
+    combine: combineResults,
   })
+  const isReady =
+    hasFreeze &&
+    !falls.isPending &&
+    !budgets.isPending &&
+    !falls.isError &&
+    !budgets.isError
   const history = useMemo(
     () =>
-      Array.isArray(falls) && Array.isArray(budgets)
-        ? toDepartmentCensuses(manifest, falls, budgets)
-        : null,
-    [manifest, falls, budgets],
+      isReady ? toDepartmentCensuses(manifest, falls.data, budgets.data) : null,
+    [isReady, manifest, falls.data, budgets.data],
   )
+  if (history) return { status: 'ready', history }
   if (!hasFreeze) return { status: 'idle', history: NO_HISTORY }
-  if (falls === 'error' || budgets === 'error') {
-    return { status: 'error', history: NO_HISTORY }
-  }
-  return history
-    ? { status: 'ready', history }
+  return falls.isError || budgets.isError
+    ? { status: 'error', history: NO_HISTORY }
     : { status: 'loading', history: NO_HISTORY }
 }

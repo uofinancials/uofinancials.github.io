@@ -1,6 +1,10 @@
 import { useId } from 'react'
 import { DraftInput } from '@/components/draft-input'
-import { SelectField } from '@/components/select-field'
+import {
+  CONTROL_CLASS,
+  FIELD_CLASS,
+  SelectField,
+} from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
 import type { IndexArea } from '@/lib/department-index'
 import { TERMS } from '@/lib/salary-distribution'
@@ -10,15 +14,10 @@ import {
   ALL_GROUPS,
   GROUP_OPTIONS,
   STAFF_KIND_OPTIONS,
+  TERM_OPTIONS,
 } from '@/lib/trends-search'
 
 const ALL = 'all'
-const TERM_OPTIONS: [string, string][] = [
-  [ALL, '9 and 12 months'],
-  ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
-]
-const FIELD_CLASS = 'flex w-fit max-w-full flex-col gap-1 text-sm'
-const CONTROL_CLASS = 'max-w-full rounded-md border bg-background px-2 py-1'
 
 function DeptField({
   dept,
@@ -70,11 +69,10 @@ function PositionField({
   onSelect,
 }: {
   position: string | null
-  positions: [string, string][]
+  positions: Map<string, string>
   onSelect: (position: string | null) => void
 }) {
   const listId = useId()
-  const keys = new Set(positions.map(([key]) => key))
   return (
     <>
       <DraftInput
@@ -85,12 +83,12 @@ function PositionField({
         parse={(text) => {
           const key = text.trim()
           if (key === '') return { position: null }
-          return keys.has(key) ? { position: key } : null
+          return positions.has(key) ? { position: key } : null
         }}
         onValue={(parsed) => onSelect(parsed.position)}
       />
       <datalist id={listId}>
-        {positions.map(([key, label]) => (
+        {[...positions].map(([key, label]) => (
           <option key={key} value={key}>
             {label}
           </option>
@@ -109,7 +107,7 @@ export function ScenarioScopeFields({
 }: {
   scope: ScenarioScope
   areas: IndexArea[]
-  positions: [string, string][]
+  positions: Map<string, string>
   onChange: (scope: ScenarioScope) => void
 }) {
   return (

@@ -138,7 +138,7 @@ export function ScenarioRuleEditor({
   position: number
   count: number
   areas: IndexArea[]
-  positions: [string, string][]
+  positions: Map<string, string>
   onChange: (rule: Rule) => void
   onMove: (offset: -1 | 1) => void
   onRemove: () => void

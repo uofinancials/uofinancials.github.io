@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 import { CitedLine } from '@/components/cited-line'
+import { PageSection } from '@/components/page-section'
 import { ScenarioOutlookSection } from '@/components/scenario-outlook-section'
 import { ScenarioResultsTable } from '@/components/scenario-results-table'
 import { ScenarioRuleList } from '@/components/scenario-rule-list'
@@ -14,7 +14,6 @@ import { SCENARIO_METHOD } from '@/lib/scenario'
 import { SCENARIO_EXAMPLES } from '@/lib/scenario-examples'
 import { FREEZE_METHOD } from '@/lib/scenario-freeze'
 import { FULL_COST_METHOD } from '@/lib/scenario-jobs'
-import { describeRule, describeScope } from '@/lib/scenario-labels'
 import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario-outlook'
 import { toSearchRules } from '@/lib/scenario-search'
 
@@ -26,15 +25,6 @@ const METHODS = [
   FREEZE_METHOD,
   SCENARIO_OUTLOOK_METHOD,
 ]
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      {children}
-    </section>
-  )
-}
 
 function Examples() {
   return (
@@ -83,7 +73,7 @@ function RulesSection({
   const { census, budget, rules, dropped, result, firstYear } = scenario
   const navigate = useNavigate({ from: '/scenarios' })
   return (
-    <Section title="Rules">
+    <PageSection title="Rules">
       {dropped > 0 && (
         <p role="status">
           {formatCount(dropped)} {dropped === 1 ? 'rule' : 'rules'} in the link
@@ -114,13 +104,13 @@ function RulesSection({
         {fiscalYearLabel(firstYear)} rates; {formatCount(result.temporaries)}{' '}
         classified temporaries are left out.
       </p>
-    </Section>
+    </PageSection>
   )
 }
 
 export function ScenariosPage() {
   const scenario = useScenario()
-  const { census, budget, rules, result, rows, history, firstYear } = scenario
+  const { census, computedRules, result, rows, history, firstYear } = scenario
   const navigate = useNavigate({ from: '/scenarios' })
   return (
     <div className="space-y-8">
@@ -137,60 +127,43 @@ export function ScenariosPage() {
           revenue a change would lose is counted.
         </p>
       </div>
-      <Section title="Examples">
+      <PageSection title="Examples">
         <Examples />
-      </Section>
+      </PageSection>
       <RulesSection scenario={scenario} />
-      {rules.length > 0 && (
-        <Section title="Savings by rule">
+      {computedRules.length > 0 && (
+        <PageSection title="Savings by rule">
           <ScenarioResultsTable
-            rows={rules.flatMap((rule, index) => {
-              const ruleResult = result.rules[index]
-              return ruleResult
-                ? [
-                    {
-                      key: `${index} ${rule.kind}`,
-                      label: describeRule(rule),
-                      scope: describeScope(rule.scope, census, budget),
-                      result: ruleResult,
-                    },
-                  ]
-                : []
-            })}
+            rows={scenario.resultRows}
             total={result.total}
             firstYear={firstYear}
             historyStatus={history.status}
             reductionTargetCents={scenario.projection.reductionTargetCents}
           />
-        </Section>
+        </PageSection>
       )}
-      <Section title="Against the projection">
+      <PageSection title="Against the projection">
         <ScenarioOutlookSection
           rows={rows}
           baselines={scenario.baselines}
-          baselineIndex={scenario.baselineIndex}
-          isHistoryPending={history.status === 'loading'}
-          onSelectBaseline={(index) =>
+          baseline={scenario.baseline}
+          historyStatus={history.status}
+          onSelectBaseline={(label) =>
             navigate({
-              search: (previous) => ({ ...previous, case: index }),
+              search: (previous) => ({ ...previous, case: label }),
               replace: true,
             })
           }
         />
-        {history.status === 'error' && (
-          <p role="alert">
-            The past censuses could not be loaded, so the freeze is not counted.
-          </p>
-        )}
-      </Section>
-      <Section title="How this is estimated">
+      </PageSection>
+      <PageSection title="How this is estimated">
         <ul className="list-disc space-y-2 pl-6 text-sm">
           {METHODS.map((method) => (
             <li key={method}>{method}</li>
           ))}
         </ul>
         <Sources scenario={scenario} />
-      </Section>
+      </PageSection>
     </div>
   )
 }

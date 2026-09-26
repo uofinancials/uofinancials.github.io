@@ -2,8 +2,6 @@ import type { BudgetRow, BudgetYear } from '@/data/budget'
 import type { OpeRates } from '@/data/ope'
 import type { ScenarioResult } from '@/lib/scenario'
 
-export { ANY_SCOPE } from '@/lib/scenario'
-
 export const AREA = '222000'
 export const UNIT = '223100'
 

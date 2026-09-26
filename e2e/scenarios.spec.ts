@@ -63,7 +63,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   await page.getByLabel('Set against').selectOption({
     label: 'State funding $20 million below projection from FY28',
   })
-  await expect(page).toHaveURL(/case=3/)
+  await expect(page).toHaveURL(/case=.*State/)
   await expect(outlook.getByRole('row', { name: /^FY31/ })).toContainText(
     '-$173,156,103',
   )

@@ -16,20 +16,13 @@ import {
   formatShare,
 } from '@/lib/format'
 import type { RuleResult, Savings } from '@/lib/scenario'
-import { smallReachNote } from '@/lib/scenario-labels'
+import { type ResultRow, smallReachNote } from '@/lib/scenario-labels'
 import { toPercent } from '@/lib/scenario-search'
 
 type HistoryStatus = ScenarioHistory['status']
 
 const NUMBER_CELL = 'text-right tabular-nums'
 const HEADS = ['Jobs', 'Salary', 'Full cost', 'E&G']
-
-export type ResultRow = {
-  key: string
-  label: string
-  scope: string
-  result: RuleResult
-}
 
 function SavingsCells({ savings }: { savings: Savings }) {
   return (
@@ -48,12 +41,6 @@ function SavingsCells({ savings }: { savings: Savings }) {
   )
 }
 
-const PENDING_TEXT: Record<Exclude<HistoryStatus, 'ready'>, string> = {
-  idle: 'No past censuses',
-  loading: 'Loading past censuses',
-  error: 'Past censuses not loaded',
-}
-
 function ResultCells({
   result,
   historyStatus,
@@ -66,9 +53,11 @@ function ResultCells({
   if (historyStatus !== 'ready' || !first) {
     return (
       <TableCell colSpan={HEADS.length}>
-        {historyStatus === 'ready'
-          ? 'No projected year'
-          : PENDING_TEXT[historyStatus]}
+        {historyStatus === 'error'
+          ? 'Past censuses not loaded'
+          : historyStatus === 'ready'
+            ? 'No projected year'
+            : 'Loading past censuses'}
       </TableCell>
     )
   }

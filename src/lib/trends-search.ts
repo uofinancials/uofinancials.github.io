@@ -3,6 +3,7 @@ import { orgCodeParam } from '../data/budget.ts'
 import { staffKindSchema } from '../data/fall.ts'
 import { resolveCensusYear } from './census-search.ts'
 import { formatCompactDollars, formatDollars, formatFte } from './format.ts'
+import { TERMS } from './salary-distribution.ts'
 import type { TrendGroup } from './trend-groups.ts'
 import { TREND_GROUPS } from './trend-groups.ts'
 import {
@@ -23,6 +24,12 @@ export const STAFF_KIND_OPTIONS: [string, string][] = [
   ['all', 'Classified and unclassified'],
   ['classified', 'Classified'],
   ['unclassified', 'Unclassified'],
+]
+
+/** The term select's options: `all` for both terms, then each term. */
+export const TERM_OPTIONS: [string, string][] = [
+  ['all', '9 and 12 months'],
+  ...TERMS.map((term): [string, string] => [String(term), `${term} months`]),
 ]
 
 /** The measures of one census's jobs, shared with the department page. */

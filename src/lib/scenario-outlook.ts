@@ -1,7 +1,11 @@
 import { fiscalYearLabel } from '../data/budget.ts'
 import type { OpeRates } from '../data/ope.ts'
 import type { Projection } from '../data/outlook.ts'
-import { sectionTotal } from './budget-outlook.ts'
+import {
+  FUND_BALANCE_SERIES,
+  RUN_RATE_SERIES,
+  sectionTotal,
+} from './budget-outlook.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { type Rule, runScenario, type ScenarioResult } from './scenario.ts'
 import { BASIS_BIG, divideHalfUp } from './scenario-jobs.ts'
@@ -30,7 +34,6 @@ export type OutlookRow = {
 /** The projection's own assumption for pay in later years. */
 export const SAVINGS_GROWTH_BASIS_POINTS = 300
 const WEEKS_PER_YEAR = 52
-const PROJECTION_LABEL = 'The projection as published'
 const TENTHS = 10
 
 export const SCENARIO_OUTLOOK_METHOD =
@@ -55,43 +58,30 @@ export function yearlySavings(result: ScenarioResult, years: number): number[] {
   })
 }
 
-function hasSameYears(a: number[], b: number[]): boolean {
-  return a.length === b.length && a.every((cents, index) => cents === b[index])
-}
-
 /**
- * The projection with its expenses, named after the case that matches it,
- * then every other published case.
+ * The projection with its expenses, named for its base case (the first
+ * published case, which the committed data test checks), then every other case.
  */
 export function baselines(projection: Projection): Baseline[] {
-  const isBase = (scenario: Projection['cases'][number]) =>
-    hasSameYears(scenario.runRateCents, projection.runRateCents) &&
-    hasSameYears(
-      scenario.endingFundBalanceCents,
-      projection.endingFundBalanceCents,
-    )
-  const base: Baseline = {
-    label: projection.cases.find(isBase)?.label ?? PROJECTION_LABEL,
-    runRateCents: projection.runRateCents,
-    endingFundBalanceCents: projection.endingFundBalanceCents,
-    expenseCents: sectionTotal(projection, 'expense'),
-  }
-  const others = projection.cases
-    .filter((scenario) => !isBase(scenario))
-    .map(({ label, runRateCents, endingFundBalanceCents }) => ({
+  const [base, ...others] = projection.cases
+  return [
+    {
+      label: base?.label ?? projection.title,
+      runRateCents: projection.runRateCents,
+      endingFundBalanceCents: projection.endingFundBalanceCents,
+      expenseCents: sectionTotal(projection, 'expense'),
+    },
+    ...others.map(({ label, runRateCents, endingFundBalanceCents }) => ({
       label,
       runRateCents,
       endingFundBalanceCents,
       expenseCents: null,
-    }))
-  return [base, ...others]
+    })),
+  ]
 }
 
-function weeksOf(
-  balanceCents: number,
-  expenseCents: number | undefined,
-): number | null {
-  if (expenseCents === undefined || expenseCents <= 0) return null
+function weeksOf(balanceCents: number, expenseCents: number): number | null {
+  if (expenseCents <= 0) return null
   return (
     Math.round(((balanceCents * WEEKS_PER_YEAR) / expenseCents) * TENTHS) /
     TENTHS
@@ -105,6 +95,14 @@ function firstSavingsIndex(
 ): number {
   const found = fiscalYears.findIndex((year) => year > censusFiscalYear)
   return found < 0 ? fiscalYears.length : found
+}
+
+/** The first projected fiscal year after the census, where savings and the OPE rates used start; the census's own year when none is. */
+export function firstSavingsYear(
+  fiscalYears: number[],
+  censusFiscalYear: number,
+): number {
+  return fiscalYears.find((year) => year > censusFiscalYear) ?? censusFiscalYear
 }
 
 /** The projection's years with a scenario's savings set against a baseline. */
@@ -132,20 +130,20 @@ export function outlookRows(options: {
       savingsCents,
       remainingRunRateCents: runRateCents + savingsCents,
       remainingFundBalanceCents,
-      remainingWeeks: weeksOf(
-        remainingFundBalanceCents,
-        expenseCents === undefined ? undefined : expenseCents - savingsCents,
-      ),
+      remainingWeeks:
+        expenseCents === undefined
+          ? null
+          : weeksOf(remainingFundBalanceCents, expenseCents - savingsCents),
     }
   })
 }
 
 /**
- * Runs a scenario against a baseline over the projection's years: at the OPE
- * rates of the first projected year after the census, with freezes laid over
- * every projected year from then.
+ * Runs a scenario over the projection's years: at the OPE rates of the first
+ * projected year after the census, with freezes laid over every projected
+ * year from then. `outlookRows` sets the result against a baseline.
  */
-export function scenarioOutlook(options: {
+export function projectScenario(options: {
   census: DepartmentCensus
   censusFiscalYear: number
   rules: Rule[]
@@ -153,16 +151,14 @@ export function scenarioOutlook(options: {
   egShares: Map<string, number>
   history: DepartmentCensus[]
   fiscalYears: number[]
-  baseline: Baseline
-}): { result: ScenarioResult; rows: OutlookRow[] } {
+}): ScenarioResult {
   const { fiscalYears, censusFiscalYear } = options
-  const firstIndex = firstSavingsIndex(fiscalYears, censusFiscalYear)
-  const result = runScenario({
+  return runScenario({
     ...options,
-    opeFiscalYear: fiscalYears[firstIndex] ?? censusFiscalYear,
-    projectedYears: fiscalYears.length - firstIndex,
+    opeFiscalYear: firstSavingsYear(fiscalYears, censusFiscalYear),
+    projectedYears:
+      fiscalYears.length - firstSavingsIndex(fiscalYears, censusFiscalYear),
   })
-  return { result, rows: outlookRows({ ...options, result }) }
 }
 
 /** The first fiscal year whose fund balance with savings is below zero, or `null`. */
@@ -184,9 +180,9 @@ export function scenarioSeries(rows: OutlookRow[]): {
   return {
     labels: rows.map((row) => fiscalYearLabel(row.fiscalYear)),
     series: [
-      line('Run rate', (row) => row.runRateCents),
+      line(RUN_RATE_SERIES, (row) => row.runRateCents),
       line('Run rate with savings', (row) => row.remainingRunRateCents),
-      line('Ending fund balance', (row) => row.endingFundBalanceCents),
+      line(FUND_BALANCE_SERIES, (row) => row.endingFundBalanceCents),
       line('Fund balance with savings', (row) => row.remainingFundBalanceCents),
     ],
   }

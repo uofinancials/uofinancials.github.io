@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
+import { ANY_SCOPE } from '@/lib/scenario'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { ANY_SCOPE, scenarioBudget, UNIT } from '@/test/scenario-fixtures'
+import { scenarioBudget, UNIT } from '@/test/scenario-fixtures'
 import { toDepartmentCensus } from './department-jobs'
 import {
   describeRule,
@@ -89,9 +90,11 @@ test('position options list each class and rank once, by label', () => {
       unclassifiedJob({ rank: 'Professor' }),
       unclassifiedJob({ rank: null }),
     ]),
-  ).toEqual([
-    ['C1487', 'C1487'],
-    ['E0104', 'Office Specialist 2 (E0104)'],
-    ['Professor', 'Professor'],
-  ])
+  ).toEqual(
+    new Map([
+      ['C1487', 'C1487'],
+      ['E0104', 'Office Specialist 2 (E0104)'],
+      ['Professor', 'Professor'],
+    ]),
+  )
 })

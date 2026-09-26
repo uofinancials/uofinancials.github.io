@@ -114,6 +114,14 @@ export function positionLabel(records: FallRecord[], position: string): string {
   )
   const title =
     classified?.kind === 'classified' ? classified.positionClass?.title : null
+  return formatPosition(position, title)
+}
+
+/** A position key as it reads: a class's title and code, or the key alone. */
+export function formatPosition(
+  position: string,
+  title: string | null | undefined,
+): string {
   return title ? `${title} (${position})` : position
 }
 

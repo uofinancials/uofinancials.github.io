@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { ScenarioHistory } from '@/components/use-scenario-history'
 import { fiscalYearLabel } from '@/data/budget'
 import {
   formatCompactDollars,
@@ -84,31 +85,42 @@ function balanceSentence(rows: OutlookRow[]): string {
     : ''
 }
 
+function HistoryNotice({ status }: { status: ScenarioHistory['status'] }) {
+  if (status === 'loading') {
+    return <p>Loading past censuses for the hiring freeze.</p>
+  }
+  return (
+    <p role="alert">
+      The past censuses could not be loaded, so the freeze cannot be counted.
+    </p>
+  )
+}
+
 /** The scenario's E&G savings set against the chosen baseline, year by year. */
 export function ScenarioOutlookSection({
   rows,
   baselines,
-  baselineIndex,
-  isHistoryPending,
+  baseline,
+  historyStatus,
   onSelectBaseline,
 }: {
   rows: OutlookRow[]
   baselines: Baseline[]
-  baselineIndex: number
-  isHistoryPending: boolean
-  onSelectBaseline: (index: number) => void
+  baseline: Baseline
+  historyStatus: ScenarioHistory['status']
+  onSelectBaseline: (label: string) => void
 }) {
-  const baseline = baselines[baselineIndex]
+  const isWaiting = historyStatus === 'loading' || historyStatus === 'error'
   return (
     <div className="space-y-4">
       <SelectField
         label="Set against"
-        value={String(baselineIndex)}
-        options={baselines.map(({ label }, index) => [String(index), label])}
-        onSelect={(value) => onSelectBaseline(Number(value))}
+        value={baseline.label}
+        options={baselines.map(({ label }) => [label, label])}
+        onSelect={onSelectBaseline}
       />
-      {isHistoryPending ? (
-        <p>Loading past censuses for the hiring freeze.</p>
+      {isWaiting ? (
+        <HistoryNotice status={historyStatus} />
       ) : (
         <>
           <p>{balanceSentence(rows)}</p>
@@ -119,7 +131,7 @@ export function ScenarioOutlookSection({
             label="E&G run rate and fund balance by fiscal year, published and with the scenario's savings"
           />
           <OutlookTable rows={rows} />
-          {baseline?.expenseCents === null && (
+          {baseline.expenseCents === null && (
             <p className="text-sm text-muted-foreground">
               Weeks of expenses are not computed for this case: its expenses are
               not published.

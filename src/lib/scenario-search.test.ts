@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { ANY_SCOPE as ALL, type Rule } from './scenario'
+import { ANY_SCOPE, type Rule } from './scenario'
 import {
   parseDollarsText,
   parsePercentText,
@@ -12,13 +12,17 @@ import {
 const RULES: Rule[] = [
   {
     kind: 'threshold',
-    scope: { ...ALL, group: 'Executives', dept: '222000' },
+    scope: { ...ANY_SCOPE, group: 'Executives', dept: '222000' },
     overCents: 20_000_000,
     cutBasisPoints: 1_250,
   },
-  { kind: 'remove', scope: { ...ALL, kind: 'classified', term: 12 } },
-  { kind: 'cut', scope: { ...ALL, position: 'Professor' }, cutBasisPoints: 5 },
-  { kind: 'freeze', scope: ALL, years: 2, afterFreeze: 'eliminate' },
+  { kind: 'remove', scope: { ...ANY_SCOPE, kind: 'classified', term: 12 } },
+  {
+    kind: 'cut',
+    scope: { ...ANY_SCOPE, position: 'Professor' },
+    cutBasisPoints: 5,
+  },
+  { kind: 'freeze', scope: ANY_SCOPE, years: 2, afterFreeze: 'eliminate' },
 ]
 
 test('rules round-trip through the URL form in dollars and percents, leaving out "any" scope fields', () => {
@@ -50,15 +54,16 @@ test('a malformed entry is dropped and counted, never read as a wider scope', ()
       { kind: 'remove', scope: { dept: 222000 } },
     ]),
   ).toEqual({
-    rules: [{ kind: 'remove', scope: { ...ALL, dept: '222000' } }],
+    rules: [{ kind: 'remove', scope: { ...ANY_SCOPE, dept: '222000' } }],
     dropped: 6,
   })
 })
 
-test('a case index out of range falls back to the first baseline', () => {
-  expect(resolveBaselineIndex(undefined, 6)).toBe(0)
-  expect(resolveBaselineIndex(3, 6)).toBe(3)
-  expect(resolveBaselineIndex(6, 6)).toBe(0)
+test('a case names its baseline by label, and one it does not name falls back to the first', () => {
+  const labels = ['Base', 'Less state funding', 'More students']
+  expect(resolveBaselineIndex(undefined, labels)).toBe(0)
+  expect(resolveBaselineIndex('More students', labels)).toBe(2)
+  expect(resolveBaselineIndex('Withdrawn case', labels)).toBe(0)
 })
 
 test('typed amounts parse as the URL form allows, and anything else is not a value', () => {

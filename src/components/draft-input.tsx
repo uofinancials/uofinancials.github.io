@@ -1,4 +1,6 @@
 import { type ComponentProps, useState } from 'react'
+import { CONTROL_CLASS, FIELD_CLASS } from '@/components/select-field'
+import { cn } from '@/lib/utils'
 
 /**
  * A text field over a parsed value: what is typed stays as typed while the
@@ -18,11 +20,11 @@ export function DraftInput<T>({
 } & Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'onBlur'>) {
   const [draft, setDraft] = useState<string | null>(null)
   return (
-    <label className="flex w-fit max-w-full flex-col gap-1 text-sm">
+    <label className={FIELD_CLASS}>
       <span className="text-muted-foreground">{label}</span>
       <input
         {...inputProps}
-        className="w-32 max-w-full rounded-md border bg-background px-2 py-1 aria-invalid:border-destructive"
+        className={cn(CONTROL_CLASS, 'w-32 aria-invalid:border-destructive')}
         value={draft ?? value}
         aria-invalid={draft !== null && parse(draft) === null}
         onChange={(event) => {

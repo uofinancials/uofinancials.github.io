@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useSearch } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useDeferredValue, useMemo } from 'react'
 import { useScenarioHistory } from '@/components/use-scenario-history'
 import {
   budgetYearQuery,
@@ -9,11 +9,21 @@ import {
   opeRatesQuery,
   outlookQuery,
 } from '@/data/queries'
-import { toDepartmentCensus } from '@/lib/department-jobs'
+import {
+  type DepartmentCensus,
+  toDepartmentCensus,
+} from '@/lib/department-jobs'
 import { egShares } from '@/lib/eg-share'
 import { fiscalYearOf } from '@/lib/overview'
+import type { Rule } from '@/lib/scenario'
 import { freezeHistoryCensuses } from '@/lib/scenario-freeze'
-import { baselines, scenarioOutlook } from '@/lib/scenario-outlook'
+import { scenarioResultRows } from '@/lib/scenario-labels'
+import {
+  baselines,
+  firstSavingsYear,
+  outlookRows,
+  projectScenario,
+} from '@/lib/scenario-outlook'
 import { parseRules, resolveBaselineIndex } from '@/lib/scenario-search'
 
 /** The route's census joined to its budget, with the rates, outlook, and E&G shares. */
@@ -38,9 +48,7 @@ function useScenarioData() {
   )
   const options = useMemo(() => baselines(projection), [projection])
   const censusFiscalYear = fiscalYearOf(censusDate)
-  const firstYear =
-    projection.fiscalYears.find((year) => year > censusFiscalYear) ??
-    censusFiscalYear
+  const firstYear = firstSavingsYear(projection.fiscalYears, censusFiscalYear)
   return {
     budget,
     rates,
@@ -54,52 +62,86 @@ function useScenarioData() {
   }
 }
 
-/** The latest census, the URL's rules and baseline, and what they save against it. */
-export function useScenario() {
-  const search = useSearch({ from: '/scenarios' })
-  const data = useScenarioData()
-  const { rates, projection, census, shares, options, censusFiscalYear } = data
-  const { rules, dropped } = useMemo(
-    () => parseRules(search.rules ?? []),
-    [search.rules],
-  )
-  const history = useScenarioHistory(
-    rules.some((rule) => rule.kind === 'freeze'),
-    data.historyCensuses,
-  )
-  const baselineIndex = resolveBaselineIndex(search.case, options.length)
-  const baseline = options[baselineIndex] ?? options[0]
-  if (!baseline) throw new Error('The projection has no baseline')
-  const outcome = useMemo(
+type ScenarioData = ReturnType<typeof useScenarioData>
+
+/** The engine's result over the rules, and each rule's row in the savings table. */
+function useScenarioResult(
+  data: ScenarioData,
+  rules: Rule[],
+  history: DepartmentCensus[],
+) {
+  const { census, censusFiscalYear, rates, shares, projection, budget } = data
+  const result = useMemo(
     () =>
-      scenarioOutlook({
+      projectScenario({
         census,
         censusFiscalYear,
         rules,
         rates,
         egShares: shares,
-        history: history.history,
+        history,
+        fiscalYears: projection.fiscalYears,
+      }),
+    [census, censusFiscalYear, rules, rates, shares, history, projection],
+  )
+  const resultRows = useMemo(
+    () => scenarioResultRows(rules, result, census, budget),
+    [rules, result, census, budget],
+  )
+  return { result, resultRows }
+}
+
+/**
+ * The latest census, the URL's rules and baseline, and what they save
+ * against it. The engine runs on `computedRules`, which trail `rules` while
+ * the reader types, so editing never waits on it.
+ */
+export function useScenario() {
+  const search = useSearch({ from: '/scenarios' })
+  const data = useScenarioData()
+  const { rules, dropped } = useMemo(
+    () => parseRules(search.rules ?? []),
+    [search.rules],
+  )
+  const computedRules = useDeferredValue(rules)
+  const history = useScenarioHistory(
+    computedRules.some((rule) => rule.kind === 'freeze'),
+    data.historyCensuses,
+  )
+  const { options, projection, censusFiscalYear } = data
+  const baseline =
+    options[
+      resolveBaselineIndex(
+        search.case,
+        options.map(({ label }) => label),
+      )
+    ]
+  if (!baseline) throw new Error('The projection has no baseline')
+  const { result, resultRows } = useScenarioResult(
+    data,
+    computedRules,
+    history.history,
+  )
+  const rows = useMemo(
+    () =>
+      outlookRows({
+        result,
         fiscalYears: projection.fiscalYears,
         baseline,
+        censusFiscalYear,
       }),
-    [
-      census,
-      censusFiscalYear,
-      rules,
-      rates,
-      shares,
-      history.history,
-      projection,
-      baseline,
-    ],
+    [result, projection, baseline, censusFiscalYear],
   )
   return {
     ...data,
     rules,
+    computedRules,
     dropped,
     history,
     baselines: options,
-    baselineIndex,
-    ...outcome,
+    baseline,
+    result,
+    resultRows,
+    rows,
   }
 }

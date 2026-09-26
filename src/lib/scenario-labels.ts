@@ -3,8 +3,17 @@ import type { FallRecord } from '../data/fall.ts'
 import { describePlace } from './census-search.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
-import { positionLabel, positionOf } from './salary-distribution.ts'
-import type { Rule, ScenarioScope } from './scenario.ts'
+import {
+  formatPosition,
+  positionLabel,
+  positionOf,
+} from './salary-distribution.ts'
+import type {
+  Rule,
+  RuleResult,
+  ScenarioResult,
+  ScenarioScope,
+} from './scenario.ts'
 import { BASIS } from './scenario-jobs.ts'
 import { toPercent } from './scenario-search.ts'
 
@@ -66,15 +75,45 @@ export function smallReachNote(jobs: number): string | null {
   return `This rule reaches ${reach}. A scenario is an estimate over job classes, groups, and thresholds, not a recommendation about anyone.`
 }
 
-/** Each class and rank in the census as `[key, label]`, by label: a class's title and code, or a rank. */
-export function positionOptions(records: FallRecord[]): [string, string][] {
+/** Each class and rank in the census, keyed as a scope holds it, with its label, in label order. */
+export function positionOptions(records: FallRecord[]): Map<string, string> {
   const labels = new Map<string, string>()
   for (const record of records) {
     const key = positionOf(record)
     if (key === null || labels.has(key)) continue
     const title =
       record.kind === 'classified' ? record.positionClass?.title : null
-    labels.set(key, title ? `${title} (${key})` : key)
+    labels.set(key, formatPosition(key, title))
   }
-  return [...labels].sort((a, b) => a[1].localeCompare(b[1]))
+  return new Map([...labels].sort((a, b) => a[1].localeCompare(b[1])))
+}
+
+/** One row of the savings table: a rule as it reads, and what it did. */
+export type ResultRow = {
+  key: string
+  label: string
+  scope: string
+  result: RuleResult
+}
+
+/** Each rule beside its result, in stack order. */
+export function scenarioResultRows(
+  rules: Rule[],
+  result: ScenarioResult,
+  census: DepartmentCensus,
+  budget: BudgetYear,
+): ResultRow[] {
+  return rules.flatMap((rule, index) => {
+    const ruleResult = result.rules[index]
+    return ruleResult
+      ? [
+          {
+            key: `${index} ${rule.kind}`,
+            label: describeRule(rule),
+            scope: describeScope(rule.scope, census, budget),
+            result: ruleResult,
+          },
+        ]
+      : []
+  })
 }

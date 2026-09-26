@@ -20,7 +20,7 @@ function renderEditor() {
       position={1}
       count={2}
       areas={[]}
-      positions={[['E0104', 'Office Specialist 2 (E0104)']]}
+      positions={new Map([['E0104', 'Office Specialist 2 (E0104)']])}
       onChange={onChange}
       onMove={onMove}
       onRemove={vi.fn()}

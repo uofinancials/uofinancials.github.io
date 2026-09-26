@@ -107,7 +107,7 @@ test('the baselines are the projection, named for the case that matches it, then
     },
   ])
   expect(baselines({ ...PROJECTION, cases: [] })[0]?.label).toBe(
-    'The projection as published',
+    'Test projection',
   )
 })
 
