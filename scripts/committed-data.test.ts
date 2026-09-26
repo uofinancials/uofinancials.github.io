@@ -301,7 +301,7 @@ function readDepartmentCensuses() {
   return toDepartmentCensuses(manifest, falls, budgets)
 }
 
-/** `main`'s published and name counts, with hand rows filling only jobs they left unplaced; classified temporaries included. */
+/** Each census's jobs by how they are placed, classified temporaries included. */
 const PLACEMENT_BASES = {
   2014: { published: 4_395, name: 1_375, hand: 311, unassigned: 30 },
   2015: { published: 4_715, name: 1_538, hand: 363, unassigned: 47 },
