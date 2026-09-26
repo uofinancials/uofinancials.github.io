@@ -41,7 +41,7 @@ const CHANGE_MIN_JOBS = 10
 /** A budget change is blank when the earlier beginning budget is smaller. */
 const CHANGE_MIN_BUDGET_CENTS = 10_000_000
 
-export const DEPARTMENT_TABLE_METHOD = `The budget is UO’s Total Expenditure Budget as published; an area’s is the sum of its units. Its change compares beginning budgets, set at the start of each year, since the total grows through a year and the later year is not at year-end. Jobs are Fall census jobs paid under the code, or, for an area, placed in it; ${SPEND_METHOD} Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Each change is the percent change from the year before. It is blank when the earlier year has fewer than ${CHANGE_MIN_JOBS} jobs or a beginning budget under ${formatDollars(CHANGE_MIN_BUDGET_CENTS)}, or does not publish the code. An area’s jobs, spend, and median changes are blank, since the site places fewer of the earlier census’s jobs in areas.`
+export const DEPARTMENT_TABLE_METHOD = `The budget is UO’s Total Expenditure Budget as published; an area’s is the sum of its units. Its change compares beginning budgets, set at the start of each year, since the total grows through a year and the later year is not at year-end. Jobs are Fall census jobs paid under the code, or, for an area, placed in it; ${SPEND_METHOD} Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Each change is the percent change from the year before. It is blank when the earlier year has fewer than ${CHANGE_MIN_JOBS} jobs or a beginning budget under ${formatDollars(CHANGE_MIN_BUDGET_CENTS)}, or does not publish the code.`
 
 type BudgetSums = {
   orgs: BudgetYear['orgs']
@@ -80,8 +80,8 @@ function changeOf(from: number | null, to: number | null): number | null {
 
 type RowInput = Pick<DepartmentRow, 'code' | 'name' | 'area'> & {
   records: FallRecord[]
-  /** The earlier census's jobs; `null` leaves the census changes blank. */
-  earlier: FallRecord[] | null
+  /** The earlier census's jobs. */
+  earlier: FallRecord[]
 }
 
 function toRow(
@@ -91,9 +91,9 @@ function toRow(
 ): DepartmentRow {
   const { code, name, area } = input
   const figures = measureJobs(input.records)
-  const earlier = input.earlier === null ? null : measureJobs(input.earlier)
+  const earlier = measureJobs(input.earlier)
   const censusChange = (pick: (point: typeof figures) => number | null) =>
-    earlier !== null && earlier.jobs >= CHANGE_MIN_JOBS
+    earlier.jobs >= CHANGE_MIN_JOBS
       ? changeOf(pick(earlier), pick(figures))
       : null
   const budgetBefore = unitSum(code, before.orgs, before.beginningCents)
@@ -161,7 +161,7 @@ export function areaFigures(
   })
 }
 
-/** The rows of both levels for one census, with changes from the one before; an area's census changes are blank. */
+/** The rows of both levels for one census, with changes from the one before. */
 export function departmentRows(
   now: TableYear,
   before: TableYear,
@@ -178,9 +178,14 @@ export function departmentRows(
   }
   const { orgs } = now.census
   const { units, areaJobs } = placeDepartments(now.census)
+  const earlierAreaJobs = placeDepartments(before.census).areaJobs
   return {
     areas: placedAreas(orgs, areaJobs).map((area) =>
-      row({ ...area, area: null, earlier: null }),
+      row({
+        ...area,
+        area: null,
+        earlier: earlierAreaJobs.get(area.code) ?? [],
+      }),
     ),
     units: units.map((unit) =>
       row({
