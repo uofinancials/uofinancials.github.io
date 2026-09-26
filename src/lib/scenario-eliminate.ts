@@ -3,6 +3,7 @@ import { type AccountGroup, accountGroupOf } from './account-groups.ts'
 import { listAreas, ORG_LEVEL_AREA } from './areas.ts'
 import { placeJobs } from './census-search.ts'
 import { unitsOf } from './department-budget.ts'
+import type { IndexArea } from './department-index.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { EG_FUND_TYPE, SALARY_ACCOUNT_TYPES } from './eg-share.ts'
 import { jobSpendCents } from './overview.ts'
@@ -136,16 +137,11 @@ export function eliminationFiscalYear(
   return year
 }
 
-type Named = { code: string; name: string }
-
-/** An area an elimination can name, with its units. */
-export type EliminationOption = Named & { units: Named[] }
-
 /** A budget year's areas by name, each with its units by name: what an elimination can name. */
-export function eliminationOptions(budget: BudgetYear): EliminationOption[] {
+export function eliminationOptions(budget: BudgetYear): IndexArea[] {
   return listAreas(budget.orgs).map((area) => ({
     ...area,
-    units: [...(unitsOf(area.code, budget.orgs) ?? [])]
+    entries: [...(unitsOf(area.code, budget.orgs) ?? [])]
       .map((code) => ({ code, name: budget.orgs[code]?.name ?? code }))
       .sort((a, b) => a.name.localeCompare(b.name)),
   }))

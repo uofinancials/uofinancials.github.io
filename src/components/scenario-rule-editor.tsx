@@ -1,16 +1,12 @@
 import { ArrowDown, ArrowUp, X } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { AreaSelect } from '@/components/area-select'
 import { DraftInput } from '@/components/draft-input'
 import { ScenarioScopeFields } from '@/components/scenario-scope-fields'
-import {
-  CONTROL_CLASS,
-  FIELD_CLASS,
-  SelectField,
-} from '@/components/select-field'
+import { SelectField } from '@/components/select-field'
 import type { IndexArea } from '@/lib/department-index'
 import { CENTS_PER_DOLLAR } from '@/lib/format'
 import type { Rule } from '@/lib/scenario'
-import type { EliminationOption } from '@/lib/scenario-eliminate'
 import { describeRule } from '@/lib/scenario-labels'
 import {
   parseCapText,
@@ -89,47 +85,13 @@ function RaiseFields({
   )
 }
 
-type EliminationOptions = EliminationOption[]
-
-function EliminateField({
-  code,
-  options,
-  onSelect,
-}: {
-  code: string
-  options: EliminationOptions
-  onSelect: (code: string) => void
-}) {
-  return (
-    <label className={FIELD_CLASS}>
-      <span className="text-muted-foreground">Department or area</span>
-      <select
-        className={CONTROL_CLASS}
-        value={code}
-        onChange={(event) => onSelect(event.target.value)}
-      >
-        {options.map((area) => (
-          <optgroup key={area.code} label={area.name}>
-            <option value={area.code}>All of {area.name}</option>
-            {area.units.map((unit) => (
-              <option key={unit.code} value={unit.code}>
-                {unit.name} ({unit.code})
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </label>
-  )
-}
-
 function AmountFields({
   rule,
   eliminations,
   onChange,
 }: {
   rule: Rule
-  eliminations: EliminationOptions
+  eliminations: IndexArea[]
   onChange: (rule: Rule) => void
 }) {
   switch (rule.kind) {
@@ -182,9 +144,9 @@ function AmountFields({
       return <RaiseFields rule={rule} onChange={onChange} />
     case 'eliminate':
       return (
-        <EliminateField
-          code={rule.code}
-          options={eliminations}
+        <AreaSelect
+          value={rule.code}
+          areas={eliminations}
           onSelect={(code) => onChange({ ...rule, code })}
         />
       )
@@ -232,7 +194,7 @@ export function ScenarioRuleEditor({
   count: number
   areas: IndexArea[]
   positions: Map<string, string>
-  eliminations: EliminationOptions
+  eliminations: IndexArea[]
   onChange: (rule: Rule) => void
   onMove: (offset: -1 | 1) => void
   onRemove: () => void
