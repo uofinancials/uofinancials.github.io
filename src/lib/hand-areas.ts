@@ -3,6 +3,7 @@ export type HandArea = { code: string; area: string; from: number; to: number }
 
 const ADMINISTRATIVE_SERVICES = '410211'
 const ARTS_AND_SCIENCES = '222000'
+const CAMPUS_SERVICES = '461000'
 const DESIGN = '221000'
 const EDUCATION = '226000'
 const FASS = '410210'
@@ -12,6 +13,7 @@ const LAW = '228000'
 const PRESIDENT = '100100'
 const PROVOST = '120000'
 const RESEARCH = '600000'
+const SAFETY_AND_RISK_SERVICES = '410800'
 
 /**
  * Each row beside the published unit it is assigned by. A title prefix names
@@ -20,7 +22,7 @@ const RESEARCH = '600000'
  */
 export const HAND_AREAS: readonly HandArea[] = [
   // FASS units 410202-410207, an area to FY23, then in 410211
-  { code: '410201', area: FASS, from: 2019, to: 2022 },
+  { code: '410201', area: FASS, from: 2018, to: 2022 },
   { code: '410201', area: ADMINISTRATIVE_SERVICES, from: 2023, to: 2025 },
   // 410211 Administrative Services
   { code: '410212', area: ADMINISTRATIVE_SERVICES, from: 2023, to: 2025 },
@@ -29,10 +31,10 @@ export const HAND_AREAS: readonly HandArea[] = [
   // PAST units 129105-129150
   { code: '129100', area: ADMINISTRATIVE_SERVICES, from: 2024, to: 2024 },
   // 267501 Counseling Center Ops
-  { code: '267500', area: HEALTH_SERVICES, from: 2019, to: 2025 },
+  { code: '267500', area: HEALTH_SERVICES, from: 2018, to: 2025 },
   // 266601 Mus of Nat & Cult Hist
-  { code: '266300', area: PROVOST, from: 2019, to: 2025 },
-  { code: '266600', area: PROVOST, from: 2019, to: 2025 },
+  { code: '266300', area: PROVOST, from: 2014, to: 2025 },
+  { code: '266600', area: PROVOST, from: 2014, to: 2025 },
   // 106310 US Office of Governmnt & Comm Relat
   { code: '106003', area: PRESIDENT, from: 2025, to: 2025 },
   // CASDAS: CAS administrative services
@@ -44,18 +46,64 @@ export const HAND_AREAS: readonly HandArea[] = [
   // 632400 Rsch Ctr Brain Injry RschTrng CBIRT
   { code: '223529', area: RESEARCH, from: 2019, to: 2022 },
   // 2211xx units are all College of Design
-  { code: '221130', area: DESIGN, from: 2019, to: 2019 },
+  { code: '221130', area: DESIGN, from: 2017, to: 2019 },
   // 226535 Ed EC Cares
-  { code: '226541', area: EDUCATION, from: 2019, to: 2023 },
+  { code: '226541', area: EDUCATION, from: 2017, to: 2023 },
   // 2269xx units are all Education
-  { code: '226920', area: EDUCATION, from: 2019, to: 2021 },
+  { code: '226906', area: EDUCATION, from: 2016, to: 2018 },
+  { code: '226920', area: EDUCATION, from: 2014, to: 2021 },
   // 228920 Wayne Morse Center Ops, from FY23
   { code: '210155', area: LAW, from: 2022, to: 2025 },
   // 228840 Law CRES
-  { code: '228841', area: LAW, from: 2019, to: 2025 },
+  { code: '228841', area: LAW, from: 2015, to: 2025 },
   // name only
-  { code: '611116', area: RESEARCH, from: 2019, to: 2025 },
+  { code: '611116', area: RESEARCH, from: 2015, to: 2025 },
   { code: '100000', area: PROVOST, from: 2024, to: 2025 },
+  // Pres: every FY21 Pres unit sits in 100100
+  { code: '110000', area: PRESIDENT, from: 2015, to: 2015 },
+  { code: '110300', area: PRESIDENT, from: 2016, to: 2018 },
+  { code: '211150', area: PRESIDENT, from: 2017, to: 2017 },
+  // 101200 Pres Investn & Civil Rights Comp Op
+  { code: '444000', area: PRESIDENT, from: 2014, to: 2016 },
+  // Prov and Acad Aff: every FY21 Prov unit sits in 120000, and 229300 is Prov
+  // in Fall 2014 and Acad Aff in Fall 2015; SOMD Bach units from FY21
+  { code: '229300', area: PROVOST, from: 2014, to: 2015 },
+  { code: '641601', area: PROVOST, from: 2014, to: 2015 },
+  // VPFA: 410207 VPFA FASS Executive
+  { code: '410440', area: FASS, from: 2016, to: 2017 },
+  // 450400 SRS Envtl Hlth & Safety (EHS)
+  { code: '450401', area: SAFETY_AND_RISK_SERVICES, from: 2014, to: 2015 },
+  // 460500 CS Transportation Services
+  { code: '460509', area: CAMPUS_SERVICES, from: 2014, to: 2018 },
+  // Rsch: every FY21 Rsch unit sits in 600000
+  { code: '602100', area: RESEARCH, from: 2015, to: 2016 },
+  { code: '611111', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '611112', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '611113', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '611114', area: RESEARCH, from: 2014, to: 2014 },
+  { code: '621000', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '630500', area: RESEARCH, from: 2014, to: 2015 },
+  { code: '630610', area: RESEARCH, from: 2015, to: 2016 },
+  { code: '630671', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '630672', area: RESEARCH, from: 2014, to: 2015 },
+  { code: '630800', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '630900', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '631410', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '631411', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '631710', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '631810', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '631910', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '632010', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '632110', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '632200', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '632401', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '632501', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '641251', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '641401', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '641511', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '660110', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '660200', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '660310', area: RESEARCH, from: 2014, to: 2015 },
   // 110402-110662 in the budget are all Knight Campus units
   { code: '110431', area: KNIGHT_CAMPUS, from: 2024, to: 2025 },
   { code: '110453', area: KNIGHT_CAMPUS, from: 2024, to: 2025 },

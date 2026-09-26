@@ -36,11 +36,11 @@ function readFall2025() {
 
 /** `main`'s published and name counts, with hand rows filling only jobs they left unplaced. */
 const PLACEMENT_BASES = {
-  2014: { published: 4_395, name: 1_375, hand: 0, unassigned: 341 },
-  2015: { published: 4_715, name: 1_538, hand: 0, unassigned: 410 },
-  2016: { published: 4_800, name: 1_453, hand: 0, unassigned: 289 },
-  2017: { published: 4_890, name: 1_572, hand: 0, unassigned: 141 },
-  2018: { published: 5_143, name: 1_607, hand: 0, unassigned: 142 },
+  2014: { published: 4_395, name: 1_375, hand: 311, unassigned: 30 },
+  2015: { published: 4_715, name: 1_538, hand: 363, unassigned: 47 },
+  2016: { published: 4_800, name: 1_453, hand: 289, unassigned: 0 },
+  2017: { published: 4_890, name: 1_572, hand: 141, unassigned: 0 },
+  2018: { published: 5_143, name: 1_607, hand: 142, unassigned: 0 },
   2019: { published: 5_091, name: 1_517, hand: 220, unassigned: 10 },
   2020: { published: 4_920, name: 1_528, hand: 226, unassigned: 7 },
   2021: { published: 4_433, name: 1_515, hand: 189, unassigned: 8 },
