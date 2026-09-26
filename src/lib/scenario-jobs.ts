@@ -11,6 +11,14 @@ import { trendGroupOf } from './trend-groups.ts'
 /** Which jobs a rule reaches: the /people filters. */
 export type ScenarioScope = JobFilter & { dept: string | null }
 
+export const ANY_SCOPE: ScenarioScope = {
+  group: null,
+  kind: 'all',
+  term: null,
+  position: null,
+  dept: null,
+}
+
 export type Savings = {
   jobs: number
   salaryCents: number

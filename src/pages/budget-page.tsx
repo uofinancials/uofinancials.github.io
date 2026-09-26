@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { CitedLine } from '@/components/cited-line'
 import { OutlookCasesTable } from '@/components/outlook-cases-table'
 import { OutlookLinesTable } from '@/components/outlook-lines-table'
 import { SeriesChart } from '@/components/series-chart'
@@ -12,7 +13,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
-import type { CitedSource } from '@/data/cited-source'
 import type { Outlook, Projection } from '@/data/outlook'
 import { outlookQuery } from '@/data/queries'
 import { type GapRow, gapRows, outlookSeries } from '@/lib/budget-outlook'
@@ -27,23 +27,6 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="text-xl font-semibold">{title}</h2>
       {children}
     </section>
-  )
-}
-
-/** A source line; the location is left out where each item gives its own page. */
-function Cited({
-  source: { url, document, location, retrievedOn },
-}: {
-  source: Omit<CitedSource, 'location'> & { location?: string }
-}) {
-  return (
-    <p className="text-sm text-muted-foreground">
-      Source:{' '}
-      <a className="underline" href={url}>
-        {document}
-      </a>
-      {location && `, ${location}`}, retrieved {retrievedOn}.
-    </p>
   )
 }
 
@@ -66,7 +49,7 @@ function ReportedNotes({
             `, against ${formatDollars(projected)} projected`}
           .
         </p>
-        <Cited source={source} />
+        <CitedLine source={source} />
       </div>
     )
   })
@@ -127,7 +110,7 @@ function AllFunds({ allFunds }: { allFunds: Outlook['allFunds'] }) {
         {formatDollars(allFunds.otherRevenueCents)} and are projected to cover
         their costs.
       </p>
-      <Cited source={allFunds.source} />
+      <CitedLine source={allFunds.source} />
     </>
   )
 }
@@ -138,7 +121,7 @@ function Actions({ actions }: { actions: Outlook['actions'] }) {
       {actions.map(({ date, text, source }) => (
         <li key={`${date} ${source.url}`}>
           <span className="font-medium">{date}:</span> {text}
-          <Cited source={source} />
+          <CitedLine source={source} />
         </li>
       ))}
     </ul>
@@ -178,15 +161,15 @@ export function BudgetPage() {
           reported={outlook.reportedRunRates}
           projection={projection}
         />
-        <Cited source={projection.source} />
+        <CitedLine source={projection.source} />
       </Section>
       <Section title="Every published line">
         <OutlookLinesTable projection={projection} />
-        <Cited source={projection.source} />
+        <CitedLine source={projection.source} />
       </Section>
       <Section title="Alternative cases">
         <OutlookCasesTable projection={projection} />
-        <Cited source={projection.casesSource} />
+        <CitedLine source={projection.casesSource} />
       </Section>
       <Section
         title={`The ${formatCompactDollars(projection.reductionTargetCents)} in reductions`}
@@ -198,7 +181,7 @@ export function BudgetPage() {
           {formatDollars(projection.presentValueCents)}; the discount rate is
           not published. It is not the gap in any one year.
         </p>
-        <Cited source={projection.reductionTargetSource} />
+        <CitedLine source={projection.reductionTargetSource} />
       </Section>
       <Section title="All funds">
         <AllFunds allFunds={outlook.allFunds} />
@@ -211,7 +194,7 @@ export function BudgetPage() {
             </li>
           ))}
         </ul>
-        <Cited
+        <CitedLine
           source={{
             url: projection.source.url,
             document: projection.source.document,

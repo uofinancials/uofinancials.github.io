@@ -119,7 +119,8 @@ function toScopeEntry(scope: ScenarioScope): ScopeEntry {
   }
 }
 
-const toPercent = (basisPoints: number) =>
+/** Basis points as a percent, e.g. `1250` as `12.5`. */
+export const toPercent = (basisPoints: number) =>
   basisPoints / BASIS_POINTS_PER_PERCENT
 
 function toSearchRule(rule: Rule): z.input<typeof ruleEntry> {

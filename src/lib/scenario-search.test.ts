@@ -1,18 +1,10 @@
 import { expect, test } from 'vitest'
-import type { Rule, ScenarioScope } from './scenario'
+import { ANY_SCOPE as ALL, type Rule } from './scenario'
 import {
   parseRules,
   resolveBaselineIndex,
   toSearchRules,
 } from './scenario-search'
-
-const ALL: ScenarioScope = {
-  group: null,
-  kind: 'all',
-  term: null,
-  position: null,
-  dept: null,
-}
 
 const RULES: Rule[] = [
   {

@@ -15,10 +15,10 @@ import {
   isClassifiedTemp,
   jobSpendCents,
 } from '../src/lib/overview.ts'
-import type {
-  Rule,
-  ScenarioResult,
-  ScenarioScope,
+import {
+  ANY_SCOPE as ALL,
+  type Rule,
+  type ScenarioResult,
 } from '../src/lib/scenario.ts'
 import { baselines, scenarioOutlook } from '../src/lib/scenario-outlook.ts'
 import { trendGroupOf } from '../src/lib/trend-groups.ts'
@@ -127,14 +127,6 @@ test('Fall 2025 against the FY26 budget: $504.8M of pay, $297.2M of it E&G, and 
   expect(SHARES_2025.get('470000')).toBe(0)
   expect(SHARES_2025.get('222000')).toBe(8_633)
 })
-
-const ALL: ScenarioScope = {
-  group: null,
-  kind: 'all',
-  term: null,
-  position: null,
-  dept: null,
-}
 
 function censusSavings(result: ScenarioResult) {
   return result.rules.map((rule) =>
