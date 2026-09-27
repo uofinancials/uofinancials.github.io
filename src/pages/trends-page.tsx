@@ -1,4 +1,4 @@
-import { useSuspenseQueries } from '@tanstack/react-query'
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { PayChangesSection } from '@/components/pay-changes-section'
@@ -16,11 +16,12 @@ import {
 import { useDepartmentCensuses } from '@/components/use-department-censuses'
 import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
-import { fallYearQuery, toData } from '@/data/queries'
+import { fallYearQuery, summaryQuery, toData } from '@/data/queries'
 import { areaTrendFilter } from '@/lib/department-index'
 import { AREA_PLACEMENT_METHOD } from '@/lib/department-jobs'
 import { SPEND_METHOD } from '@/lib/overview'
 import { peerKeyFor } from '@/lib/peer-group'
+import { sliceTrends } from '@/lib/summary'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,
@@ -36,8 +37,10 @@ import {
   type Trends,
 } from '@/lib/trends'
 import {
+  ALL_GROUPS,
   type CensusMetric,
   CHANGE_METRIC,
+  isSummaryView,
   linesLabel,
   METRIC_INFO,
   resolveTrendView,
@@ -58,6 +61,8 @@ const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
   'Classified staff': 'Every other classified job, whatever its category.',
   'Category not published': `Unclassified jobs with no category and no ${EXECUTIVE_GRADE} grade (Fall 2017).`,
 }
+
+const EMPTY_TRENDS: Trends = { series: [], total: [] }
 
 function GroupMapping() {
   return (
@@ -97,8 +102,10 @@ function useAreaJobs(area: string | null, falls: FallYear[]) {
 function useTrends() {
   const { years } = useLoaderData({ from: '/trends' })
   const search = useSearch({ from: '/trends' })
+  const isSummary = isSummaryView(search)
+  const { data: summary } = useSuspenseQuery(summaryQuery)
   const fallYears = useSuspenseQueries({
-    queries: years.map(fallYearQuery),
+    queries: isSummary ? [] : years.map(fallYearQuery),
     combine: toData,
   })
   const censuses = useMemo(
@@ -133,10 +140,12 @@ function useTrends() {
     [kind, group, dept, position, area, from, to],
   )
   const isChange = view.metric === CHANGE_METRIC
-  const trends = useMemo(
-    () => (isChange ? null : buildTrends(censuses, filter)),
-    [censuses, isChange, filter],
-  )
+  const trends = useMemo(() => {
+    if (isChange) return null
+    if (!isSummary) return buildTrends(censuses, filter)
+    const full = summary.trends[group ?? ALL_GROUPS]
+    return full ? sliceTrends(full, from, to) : EMPTY_TRENDS
+  }, [censuses, isChange, isSummary, filter, summary, group, from, to])
   const names = useMemo(
     () => ({
       ...filterNames(censuses, { dept, position }),

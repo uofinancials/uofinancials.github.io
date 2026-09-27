@@ -38,7 +38,7 @@ import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
 import { eliminationFiscalYear } from '@/lib/scenario-eliminate'
 import { firstSavingsYear } from '@/lib/scenario-outlook'
 import { scenarioSearchSchema } from '@/lib/scenario-search'
-import { trendsSearchSchema } from '@/lib/trends-search'
+import { isSummaryView, trendsSearchSchema } from '@/lib/trends-search'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -63,19 +63,6 @@ const homeRoute = createRoute({
   ),
 })
 
-async function loadFallYears({
-  context: { queryClient },
-}: {
-  context: { queryClient: QueryClient }
-}) {
-  const manifest = await queryClient.ensureQueryData(manifestQuery)
-  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-  await Promise.all(
-    years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
-  )
-  return { years }
-}
-
 async function loadBudgetYears(queryClient: QueryClient) {
   const manifest = await queryClient.ensureQueryData(manifestQuery)
   const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
@@ -91,15 +78,24 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
-  loaderDeps: ({ search }) => ({ area: search.area }),
-  loader: async (options) => {
-    const { queryClient } = options.context
-    const [loaded, fiscalYears] = await Promise.all([
-      loadFallYears(options),
-      options.deps.area === undefined ? [] : loadBudgetYears(queryClient),
+  loaderDeps: ({ search }) => ({
+    area: search.area,
+    isSummary: isSummaryView(search),
+  }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const manifest = await queryClient.ensureQueryData(manifestQuery)
+    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+    const [fiscalYears] = await Promise.all([
+      deps.area === undefined ? [] : loadBudgetYears(queryClient),
+      queryClient.ensureQueryData(summaryQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
+      ...(deps.isSummary
+        ? []
+        : years.map((year) =>
+            queryClient.ensureQueryData(fallYearQuery(year)),
+          )),
     ])
-    return { ...loaded, fiscalYears }
+    return { years, fiscalYears }
   },
   component: lazyRouteComponent(
     () => import('@/pages/trends-page'),

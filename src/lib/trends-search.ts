@@ -98,6 +98,20 @@ export const trendsSearchSchema = z.object({
 
 export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 
+/** Whether the search shows every job under a census measure, the view the summary holds. */
+export function isSummaryView({
+  metric,
+  kind,
+  dept,
+  area,
+  position,
+}: TrendsSearch): boolean {
+  return (
+    metric !== CHANGE_METRIC &&
+    [kind, dept, area, position].every((filter) => filter === undefined)
+  )
+}
+
 export type TrendView = Omit<TrendFilter, 'jobs'> & {
   metric: TrendMetric
   hide: string[]
