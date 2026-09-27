@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { budgetPeriodSchema } from './budget.ts'
 import { fallRecordSchema } from './fall.ts'
 
 const year = z.number().int()
@@ -43,7 +44,9 @@ const departmentRowSchema = z.strictObject({
 
 const homeSchema = z.strictObject({
   year,
+  censusDate: z.iso.date(),
   fiscalYear: year,
+  period: budgetPeriodSchema,
   headlines: z.strictObject({
     runRate: z.strictObject({ fiscalYear: year, cents }),
     budgetCents: cents,

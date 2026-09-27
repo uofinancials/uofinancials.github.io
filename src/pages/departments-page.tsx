@@ -1,15 +1,12 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
-import { useMemo } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { DepartmentTable } from '@/components/department-table'
 import { RadioField } from '@/components/radio-field'
 import { SearchField } from '@/components/search-field'
 import { SelectField } from '@/components/select-field'
 import { SourceCitation } from '@/components/source-citation'
-import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
-import { budgetYearQuery, fallYearQuery } from '@/data/queries'
-import { listAreas } from '@/lib/areas'
-import { toDepartmentCensus } from '@/lib/department-jobs'
+import { fiscalYearLabel } from '@/data/budget'
+import { summaryQuery } from '@/data/queries'
 import {
   type DepartmentsSearch,
   type DepartmentsView,
@@ -17,7 +14,6 @@ import {
 } from '@/lib/department-search'
 import {
   DEPARTMENT_TABLE_METHOD,
-  departmentRows,
   filterRows,
   sortRows,
 } from '@/lib/department-table'
@@ -30,31 +26,13 @@ const LEVEL_OPTIONS = [
 ] as const
 const ALL_AREAS = ''
 
-function useTableYear({
-  year,
-  fiscalYear,
-}: {
-  year: number
-  fiscalYear: number
-}) {
-  const { data: fall } = useSuspenseQuery(fallYearQuery(year))
-  const { data: budget } = useSuspenseQuery(budgetYearQuery(fiscalYear))
-  return useMemo(
-    () => ({
-      census: toDepartmentCensus({ year, records: fall.records }, budget),
-      budget,
-    }),
-    [year, fall, budget],
-  )
-}
-
 function TableControls({
   view,
-  orgs,
+  areas,
   onChange,
 }: {
   view: DepartmentsView
-  orgs: BudgetYear['orgs']
+  areas: { code: string; name: string }[]
   onChange: (patch: DepartmentsSearch) => void
 }) {
   return (
@@ -72,10 +50,7 @@ function TableControls({
           value={view.area ?? ALL_AREAS}
           options={[
             [ALL_AREAS, 'All areas'],
-            ...listAreas(orgs).map(({ code, name }): [string, string] => [
-              code,
-              name,
-            ]),
+            ...areas.map(({ code, name }): [string, string] => [code, name]),
           ]}
           onSelect={(area) =>
             onChange({ area: area === ALL_AREAS ? undefined : area })
@@ -92,15 +67,10 @@ function TableControls({
 }
 
 export function DepartmentsPage() {
-  const { now, before } = useLoaderData({ from: '/departments' })
+  const { data } = useSuspenseQuery(summaryQuery)
+  const { now, before, areas, rows } = data.departments
   const view = resolveDepartmentsView(useSearch({ from: '/departments' }))
   const navigate = useNavigate({ from: '/departments' })
-  const nowYear = useTableYear(now)
-  const beforeYear = useTableYear(before)
-  const rows = useMemo(
-    () => departmentRows(nowYear, beforeYear),
-    [nowYear, beforeYear],
-  )
   const isUnits = view.level === 'units'
   const shown = sortRows(
     filterRows(isUnits ? rows.units : rows.areas, {
@@ -126,11 +96,7 @@ export function DepartmentsPage() {
         unit’s page shows its budget by year; a pay department’s shows its jobs;
         a code both publish shows both.
       </p>
-      <TableControls
-        view={view}
-        orgs={nowYear.budget.orgs}
-        onChange={handleChange}
-      />
+      <TableControls view={view} areas={areas} onChange={handleChange} />
       {shown.length === 0 ? (
         <p>No area, unit, or department matches.</p>
       ) : (

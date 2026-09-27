@@ -21,13 +21,13 @@ import {
   opeRatesQuery,
   outlookQuery,
   raiseTermsQuery,
+  summaryQuery,
 } from '@/data/queries'
 import { resolveCensusYear } from '@/lib/census-search'
 import {
   departmentSearchSchema,
   departmentsSearchSchema,
 } from '@/lib/department-search'
-import { selectTableSources } from '@/lib/department-table'
 import { homeSearchSchema } from '@/lib/home'
 import {
   fiscalYearForCensus,
@@ -50,25 +50,13 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   validateSearch: homeSearchSchema,
-  loader: async ({ context: { queryClient } }) => {
-    const loadCensus = async () => {
-      const sources = selectOverviewSources(
-        await queryClient.ensureQueryData(manifestQuery),
-      )
-      await Promise.all([
-        queryClient.ensureQueryData(fallYearQuery(sources.census.year)),
-        queryClient.ensureQueryData(budgetYearQuery(sources.fiscalYear)),
-      ])
-      return sources
-    }
-    const [{ census, fiscalYear }] = await Promise.all([
-      loadCensus(),
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData(manifestQuery),
+      queryClient.ensureQueryData(summaryQuery),
       queryClient.ensureQueryData(outlookQuery),
-      queryClient.ensureQueryData(opeRatesQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
-    ])
-    return { year: census.year, fiscalYear, censusDate: census.censusDate }
-  },
+    ]),
   component: lazyRouteComponent(
     () => import('@/pages/overview-page'),
     'OverviewPage',
@@ -123,18 +111,8 @@ const departmentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/departments',
   validateSearch: departmentsSearchSchema,
-  loader: async ({ context: { queryClient } }) => {
-    const sources = selectTableSources(
-      await queryClient.ensureQueryData(manifestQuery),
-    )
-    await Promise.all(
-      [sources.now, sources.before].flatMap(({ year, fiscalYear }) => [
-        queryClient.ensureQueryData(fallYearQuery(year)),
-        queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
-      ]),
-    )
-    return sources
-  },
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(summaryQuery),
   component: lazyRouteComponent(
     () => import('@/pages/departments-page'),
     'DepartmentsPage',

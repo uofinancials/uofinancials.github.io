@@ -112,7 +112,9 @@ function summarizeHome(inputs: SummaryInputs): Summary['home'] {
   })
   return {
     year,
+    censusDate: entry.censusDate,
     fiscalYear,
+    period: budget.period,
     headlines: headlineFigures({
       records,
       budget,

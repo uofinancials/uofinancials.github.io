@@ -109,6 +109,16 @@ export function exampleAnswers(options: {
   })
 }
 
+/** The home examples joined to the summary's answers for them, which are in `HOME_EXAMPLES` order. */
+export function answersOf(
+  answers: Omit<ExampleAnswer, 'question' | 'rules'>[],
+): ExampleAnswer[] {
+  return HOME_EXAMPLES.flatMap(({ question, rules }, index) => {
+    const answer = answers[index]
+    return answer ? [{ question, rules, ...answer }] : []
+  })
+}
+
 /** Job records published per Fall census, oldest first, from the manifest's file counts. */
 export function jobsByCensus(
   manifest: Manifest,
