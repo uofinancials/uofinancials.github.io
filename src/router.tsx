@@ -21,13 +21,13 @@ import {
   opeRatesQuery,
   outlookQuery,
   raiseTermsQuery,
+  summaryQuery,
 } from '@/data/queries'
 import { resolveCensusYear } from '@/lib/census-search'
 import {
   departmentSearchSchema,
   departmentsSearchSchema,
 } from '@/lib/department-search'
-import { selectTableSources } from '@/lib/department-table'
 import { homeSearchSchema } from '@/lib/home'
 import {
   fiscalYearForCensus,
@@ -38,7 +38,7 @@ import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
 import { eliminationFiscalYear } from '@/lib/scenario-eliminate'
 import { firstSavingsYear } from '@/lib/scenario-outlook'
 import { scenarioSearchSchema } from '@/lib/scenario-search'
-import { trendsSearchSchema } from '@/lib/trends-search'
+import { isSummaryView, trendsSearchSchema } from '@/lib/trends-search'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -50,43 +50,18 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   validateSearch: homeSearchSchema,
-  loader: async ({ context: { queryClient } }) => {
-    const loadCensus = async () => {
-      const sources = selectOverviewSources(
-        await queryClient.ensureQueryData(manifestQuery),
-      )
-      await Promise.all([
-        queryClient.ensureQueryData(fallYearQuery(sources.census.year)),
-        queryClient.ensureQueryData(budgetYearQuery(sources.fiscalYear)),
-      ])
-      return sources
-    }
-    const [{ census, fiscalYear }] = await Promise.all([
-      loadCensus(),
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData(manifestQuery),
+      queryClient.ensureQueryData(summaryQuery),
       queryClient.ensureQueryData(outlookQuery),
-      queryClient.ensureQueryData(opeRatesQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
-    ])
-    return { year: census.year, fiscalYear, censusDate: census.censusDate }
-  },
+    ]),
   component: lazyRouteComponent(
     () => import('@/pages/overview-page'),
     'OverviewPage',
   ),
 })
-
-async function loadFallYears({
-  context: { queryClient },
-}: {
-  context: { queryClient: QueryClient }
-}) {
-  const manifest = await queryClient.ensureQueryData(manifestQuery)
-  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-  await Promise.all(
-    years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
-  )
-  return { years }
-}
 
 async function loadBudgetYears(queryClient: QueryClient) {
   const manifest = await queryClient.ensureQueryData(manifestQuery)
@@ -103,15 +78,28 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
-  loaderDeps: ({ search }) => ({ area: search.area }),
-  loader: async (options) => {
-    const { queryClient } = options.context
-    const [loaded, fiscalYears] = await Promise.all([
-      loadFallYears(options),
-      options.deps.area === undefined ? [] : loadBudgetYears(queryClient),
+  loaderDeps: ({ search }) => ({
+    area: search.area,
+    isSummary: isSummaryView(search),
+  }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const loadYears = async () => {
+      const manifest = await queryClient.ensureQueryData(manifestQuery)
+      const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+      if (!deps.isSummary) {
+        await Promise.all(
+          years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
+        )
+      }
+      return years
+    }
+    const [years, fiscalYears] = await Promise.all([
+      loadYears(),
+      deps.area === undefined ? [] : loadBudgetYears(queryClient),
+      queryClient.ensureQueryData(summaryQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
     ])
-    return { ...loaded, fiscalYears }
+    return { years, fiscalYears }
   },
   component: lazyRouteComponent(
     () => import('@/pages/trends-page'),
@@ -123,18 +111,8 @@ const departmentsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/departments',
   validateSearch: departmentsSearchSchema,
-  loader: async ({ context: { queryClient } }) => {
-    const sources = selectTableSources(
-      await queryClient.ensureQueryData(manifestQuery),
-    )
-    await Promise.all(
-      [sources.now, sources.before].flatMap(({ year, fiscalYear }) => [
-        queryClient.ensureQueryData(fallYearQuery(year)),
-        queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
-      ]),
-    )
-    return sources
-  },
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(summaryQuery),
   component: lazyRouteComponent(
     () => import('@/pages/departments-page'),
     'DepartmentsPage',
@@ -211,8 +189,16 @@ const personRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people/$name',
   validateSearch: personSearchSchema,
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(peopleIndexQuery),
+  loader: async ({ context: { queryClient }, params: { name } }) => {
+    const { people } = await queryClient.ensureQueryData(peopleIndexQuery)
+    const entry = people.find((person) => person.name === name) ?? null
+    await Promise.all(
+      (entry?.runs.flat() ?? []).map((year) =>
+        queryClient.ensureQueryData(fallYearQuery(year)),
+      ),
+    )
+    return { entry }
+  },
   component: lazyRouteComponent(
     () => import('@/pages/person-page'),
     'PersonPage',

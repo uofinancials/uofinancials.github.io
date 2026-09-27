@@ -129,6 +129,7 @@ test('jobs per census are the summed file records, oldest first', () => {
     fall: [entry(2025, [10, 5]), entry(2014, [3])],
     budget: [],
     rates: null,
+    summary: null,
   }
   expect(jobsByCensus(manifest)).toEqual([
     { year: 2014, jobs: 3 },

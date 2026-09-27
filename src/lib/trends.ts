@@ -153,9 +153,7 @@ export function buildTrends(
   years: { year: number; records: FallRecord[] }[],
   filter: TrendFilter,
 ): Trends {
-  const inRange = years
-    .filter(({ year }) => year >= filter.from && year <= filter.to)
-    .sort((a, b) => a.year - b.year)
+  const inRange = [...years].sort((a, b) => a.year - b.year)
   const lines = new Map<string, Map<number, FallRecord[]>>()
   const total: TrendPoint[] = []
   for (const { year, records } of inRange) {
@@ -181,5 +179,16 @@ export function buildTrends(
         measure(year, lines.get(key)?.get(year) ?? []),
       ),
     }))
-  return { series, total }
+  return sliceTrends({ series, total }, filter.from, filter.to)
+}
+
+/** The years `from` to `to` of trends, dropping the lines with no job in them. */
+export function sliceTrends(trends: Trends, from: number, to: number): Trends {
+  const isInRange = ({ year }: { year: number }) => year >= from && year <= to
+  return {
+    series: trends.series
+      .map(({ key, points }) => ({ key, points: points.filter(isInRange) }))
+      .filter(({ points }) => points.some(({ jobs }) => jobs > 0)),
+    total: trends.total.filter(isInRange),
+  }
 }

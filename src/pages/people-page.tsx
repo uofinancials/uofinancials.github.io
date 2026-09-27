@@ -25,7 +25,7 @@ import {
   type PeopleSearch,
   type PeopleSort,
 } from '@/lib/people-search'
-import { formatYearRanges, matchPeople, yearsOf } from '@/lib/person-lookup'
+import { formatYearRanges, matchPeople } from '@/lib/person-lookup'
 import { RATE_NOTE, type SalaryBin } from '@/lib/salary-distribution'
 import type { SortDirection } from '@/lib/sort'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
@@ -138,7 +138,7 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
               {person.name}
             </Link>
             <span className="text-sm text-muted-foreground">
-              Fall {formatYearRanges(yearsOf(person))}
+              Fall {formatYearRanges(person.runs.flat())}
             </span>
           </li>
         ))}

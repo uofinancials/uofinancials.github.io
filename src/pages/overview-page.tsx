@@ -2,11 +2,9 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import {
   Link,
   type LinkProps,
-  useLoaderData,
   useNavigate,
   useSearch,
 } from '@tanstack/react-router'
-import { useMemo } from 'react'
 import { AreaBreakdown } from '@/components/area-breakdown'
 import { CitedLine } from '@/components/cited-line'
 import { PageSection } from '@/components/page-section'
@@ -17,85 +15,45 @@ import { TopPaidTable } from '@/components/top-paid-table'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import {
-  budgetYearQuery,
-  fallYearQuery,
   manifestQuery,
-  opeRatesQuery,
   outlookQuery,
   raiseTermsQuery,
+  summaryQuery,
 } from '@/data/queries'
 import { outlookSeries } from '@/lib/budget-outlook'
-import { toDepartmentCensus } from '@/lib/department-jobs'
-import { areaFigures } from '@/lib/department-table'
 import { formatCompactDollars, formatCount, formatDollars } from '@/lib/format'
 import {
-  exampleAnswers,
+  answersOf,
   type HeadlineFigures,
-  headlineFigures,
   jobsByCensus,
-  placementBases,
-  topPaidJobs,
+  type placementBases,
+  TOP_PAID_COUNT,
 } from '@/lib/home'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/overview'
 import { firstSavingsYear } from '@/lib/scenario-outlook'
 import { raiseRates, raiseSources } from '@/lib/scenario-raises'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
-const TOP_PAID_COUNT = 10
 const COMPACT_CHART = 'h-64'
 
 function useHomeData() {
-  const { year, fiscalYear, censusDate } = useLoaderData({ from: '/' })
   const { data: manifest } = useSuspenseQuery(manifestQuery)
-  const { data: fall } = useSuspenseQuery(fallYearQuery(year))
-  const { data: budget } = useSuspenseQuery(budgetYearQuery(fiscalYear))
+  const { data: summary } = useSuspenseQuery(summaryQuery)
   const { data: outlook } = useSuspenseQuery(outlookQuery)
-  const { data: rates } = useSuspenseQuery(opeRatesQuery)
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
+  const { home } = summary
   const [projection] = outlook.projections
-  const censusFiscalYear = fiscalYearOf(censusDate)
-  return useMemo(() => {
-    const census = toDepartmentCensus({ year, records: fall.records }, budget)
-    const firstYearRaises = raiseRates(
-      raiseTerms.terms,
-      firstSavingsYear(projection.fiscalYears, censusFiscalYear),
-    )
-    return {
-      year,
-      censusDate,
-      budget,
-      projection,
-      headlines: headlineFigures({
-        records: fall.records,
-        budget,
-        projection,
-        censusFiscalYear,
-      }),
-      answers: exampleAnswers({
-        census,
-        budget,
-        rates,
-        projection,
-        censusFiscalYear,
-        raiseRates: firstYearRaises,
-      }),
-      raiseSources: raiseSources(firstYearRaises),
-      areas: areaFigures(census, budget),
-      bases: placementBases(census),
-      topPaid: topPaidJobs({ year, records: fall.records }, TOP_PAID_COUNT),
-      jobsByYear: jobsByCensus(manifest),
-    }
-  }, [
-    year,
-    censusDate,
-    fall,
-    budget,
+  const firstYearRaises = raiseRates(
+    raiseTerms.terms,
+    firstSavingsYear(projection.fiscalYears, fiscalYearOf(home.censusDate)),
+  )
+  return {
+    ...home,
     projection,
-    rates,
-    raiseTerms,
-    manifest,
-    censusFiscalYear,
-  ])
+    answers: answersOf(home.answers),
+    raiseSources: raiseSources(firstYearRaises),
+    jobsByYear: jobsByCensus(manifest),
+  }
 }
 
 function Headline({
@@ -245,8 +203,8 @@ function DepartmentsPreview({
 }) {
   const { measure = 'budget' } = useSearch({ from: '/' })
   const navigate = useNavigate({ from: '/' })
-  const { year, budget } = data
-  const fiscal = fiscalYearLabel(budget.fiscalYear)
+  const { year, fiscalYear } = data
+  const fiscal = fiscalYearLabel(fiscalYear)
   return (
     <PageSection title="Largest colleges and VP areas">
       <AreaBreakdown
@@ -268,7 +226,7 @@ function DepartmentsPreview({
       </p>
       <AreaBases bases={data.bases} />
       <SourceCitation
-        source={{ kind: 'budget', fiscalYear: budget.fiscalYear }}
+        source={{ kind: 'budget', fiscalYear }}
         computed="an area's budget is the Total Expenditure Budget summed over its units, as on the departments page."
       />
       <SourceCitation
@@ -303,12 +261,12 @@ function PeoplePreview({ data }: { data: ReturnType<typeof useHomeData> }) {
 }
 
 function Freshness({ data }: { data: ReturnType<typeof useHomeData> }) {
-  const { budget, projection } = data
+  const { fiscalYear, period, projection } = data
   return (
     <p className="text-sm text-muted-foreground">
       Data as of the Fall {data.year} census of {data.censusDate}, the{' '}
-      {fiscalYearLabel(budget.fiscalYear)} budget at period {budget.period}, and
-      “{projection.title}” in the {projection.source.document}.{' '}
+      {fiscalYearLabel(fiscalYear)} budget at period {period}, and “
+      {projection.title}” in the {projection.source.document}.{' '}
       <Link to="/sources" className="underline">
         Every source and when it was retrieved
       </Link>
@@ -319,7 +277,7 @@ function Freshness({ data }: { data: ReturnType<typeof useHomeData> }) {
 
 export function OverviewPage() {
   const data = useHomeData()
-  const { year, budget, headlines, projection } = data
+  const { year, fiscalYear, headlines, projection } = data
   return (
     <div className="space-y-10">
       <div className="space-y-4">
@@ -330,15 +288,11 @@ export function OverviewPage() {
           what pay rules would save, follow jobs and pay over twelve years, and
           look up a department or a person.
         </p>
-        <Headlines
-          figures={headlines}
-          year={year}
-          fiscalYear={budget.fiscalYear}
-        />
+        <Headlines figures={headlines} year={year} fiscalYear={fiscalYear} />
         <div className="space-y-1">
           <CitedLine source={projection.source} />
           <SourceCitation
-            source={{ kind: 'budget', fiscalYear: budget.fiscalYear }}
+            source={{ kind: 'budget', fiscalYear }}
             computed="the budget is the Total Expenditure Budget summed over every published line, all funds."
           />
           <SourceCitation
@@ -351,7 +305,7 @@ export function OverviewPage() {
       <ScenarioAnswers
         answers={data.answers}
         year={year}
-        fiscalYear={budget.fiscalYear}
+        fiscalYear={fiscalYear}
         projection={projection}
         raiseSources={data.raiseSources}
       />

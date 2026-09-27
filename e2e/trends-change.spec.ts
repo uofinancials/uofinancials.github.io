@@ -6,10 +6,12 @@ test('the change measure shows each census pair’s median by group, the change 
 }) => {
   await page.goto('/trends')
   const main = page.getByRole('main')
-  await page
-    .getByRole('radio', { name: 'Median change in salary rate' })
-    .check()
+  const change = page.getByRole('radio', {
+    name: 'Median change in salary rate',
+  })
+  await change.click()
   await expect(page).toHaveURL(/metric=change/)
+  await expect(change).toBeChecked()
   const lines = page.getByRole('table', {
     name: /^Median change in salary rate/,
   })

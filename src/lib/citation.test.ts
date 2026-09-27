@@ -51,6 +51,7 @@ const MANIFEST: Manifest = {
     leaveRates: 1,
     persRepayment: 1,
   },
+  summary: null,
 }
 
 test('a range of Fall years cites their shared reports page and the latest retrieval', () => {

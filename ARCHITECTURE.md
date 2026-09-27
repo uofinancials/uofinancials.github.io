@@ -6,7 +6,8 @@ UO Financials is a static single-page site built with Vite and React. GitHub
 Pages serves it from the `uofinancials.github.io` repository. An import script
 turns the University of Oregon's Fall Census salary report PDFs, its operational
 expenditure budget workbooks, and its blended OPE rate pages into JSON files
-committed under `public/data/`. Raise terms from collective bargaining
+committed under `public/data/`, then derives from those files a summary of the
+figures the pages show by default. Raise terms from collective bargaining
 agreements and the E&G fund projection from Board of Trustees materials are
 entered by hand. The site reads nothing but its bundle and those files.
 
@@ -39,8 +40,13 @@ entered by hand. The site reads nothing but its bundle and those files.
   published line, its alternative cases and assumptions, run rates reported
   since, the all-funds budget, and announced budget actions, each with its
   citation; edited by hand.
+- `public/data/summary.json` - the Trends series by group for every job, the
+  department table's rows, the home page's figures, and every name's census
+  years with the class and rank medians; derived from the other data files by
+  `scripts/scrape`.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
-  dates, and counts; written by `scripts/scrape`.
+  dates, and counts, and the files and date the summary was derived from;
+  written by `scripts/scrape`.
 
 ## Flow
 
@@ -53,6 +59,8 @@ flowchart LR
   board[Board materials] --> hand
   hand --> json[public/data]
   scrape --> json[public/data]
+  json --> summary[scripts/scrape summary]
+  summary --> json
   json --> site[src]
   site --> reader[Reader]
 ```
@@ -89,25 +97,26 @@ flowchart LR
   queries that fetch and parse them.
 - `src/lib` - census totals by group, college or VP area assignment, the
   cross-year employee groups and their trends, budget account groups, a
-  department's budget and jobs, the department index, the department table's
-  rows with their year-on-year changes and each area's figures, the home page's
-  headlines, example answers, jobs per census, area bars, and top-paid jobs,
-  sort order for tables, the salary rate distribution, each page's URL state,
-  source citations, number formatting, the person links between consecutive Fall
-  years, the person lookup (name index, name matching, linked runs, and a
-  record's published fields), the people list's filtering, sorting, and paging
-  of one census's jobs, a person's computed figures, rates by job, job history,
-  a job's class or rank and the medians beside it, continuing jobs' pay changes
-  with the rank renames and title abbreviations they use, a job's estimated
-  raise group, and each raise group's median change beside its compounded
-  across-the-board terms, the budget outlook's gap by year, chart series, and
-  cited sources, and scenarios: a job's estimated OPE rate group, each area's
-  estimated E&G share, rules over one census and the stage each runs in, the
-  hiring freeze and the censuses it reads, department and area eliminations by
-  budget line and the budget year they use, raise freezes and each raise group's
-  rate they forgo, savings against the projection or one of its cases, the
-  rules' and case's URL form, rule and scope labels, new rules and their order,
-  and example scenarios.
+  department's budget and jobs, the department index, the summary of the pages'
+  default figures, the department table's rows with their year-on-year changes
+  and each area's figures, the home page's headlines, example answers, jobs per
+  census, area bars, and top-paid jobs, sort order for tables, the salary rate
+  distribution, each page's URL state, source citations, number formatting, the
+  person links between consecutive Fall years, the person lookup (name index,
+  name matching, linked runs, a person's records from the censuses the index
+  lists, and a record's published fields), the people list's filtering, sorting,
+  and paging of one census's jobs, a person's computed figures, rates by job,
+  job history, a job's class or rank and the medians beside it, continuing jobs'
+  pay changes with the rank renames and title abbreviations they use, a job's
+  estimated raise group, and each raise group's median change beside its
+  compounded across-the-board terms, the budget outlook's gap by year, chart
+  series, and cited sources, and scenarios: a job's estimated OPE rate group,
+  each area's estimated E&G share, rules over one census and the stage each runs
+  in, the hiring freeze and the censuses it reads, department and area
+  eliminations by budget line and the budget year they use, raise freezes and
+  each raise group's rate they forgo, savings against the projection or one of
+  its cases, the rules' and case's URL form, rule and scope labels, new rules
+  and their order, and example scenarios.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
@@ -120,6 +129,8 @@ flowchart LR
   writes the year files.
 - `scripts/scrape/rates.ts` - the rates step: downloads the OPE pages and writes
   the rates file.
+- `scripts/scrape/summary.ts` - the summary step: derives the summary file from
+  the committed data files.
 - `scripts/scrape/fetch.ts` - network access: robots.txt, identification,
   request spacing, and the conditional download cache.
 - `scripts/scrape/robots.ts` - robots.txt rules.
@@ -147,6 +158,8 @@ flowchart LR
   scenario results on the committed data.
 - `scripts/committed-home.test.ts` - Fall 2025 totals, an area's figures, and
   the home page's figures on the committed data.
+- `scripts/committed-summary.test.ts` - the committed summary against a fresh
+  derivation from the committed data files.
 
 ### End-to-end tests (`e2e/`)
 
@@ -174,22 +187,22 @@ flowchart LR
   savings against the gap, job records per census, the largest colleges and VP
   areas by a measure held in the URL, the highest published salary rates, and
   the data's dates, each linking to its page; driven by the `src/lib` home
-  figures, department table, and scenarios over the latest Fall year, its budget
-  year, the outlook, the OPE rates, the raise terms, and the manifest.
+  figures over the summary, the outlook, the raise terms, and the manifest.
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
   every Fall census, or for continuing jobs in each pair of consecutive censuses
   the median change in salary rate, the counts of changed class, rank, and
   title, and one pair's distribution of changes and median change by raise group
   beside its across-the-board terms; filtered by pay department, college or VP
   area, or class or rank, with the view held in the URL; driven by `src/lib`
-  groups, trends, person links, pay changes, and the raise comparison over every
-  Fall year and the raise terms, and the department modules over every budget
-  year when filtered by area.
+  trends over the summary, or, for a filter by staff kind, department, area, or
+  class or rank, or the change measure, `src/lib` groups, trends, person links,
+  pay changes, and the raise comparison over every Fall year and the raise
+  terms, and the department modules over every budget year when filtered by
+  area.
 - `/departments` - a sortable table of the colleges and VP areas in the latest
   census's budget year, or of their units and pay departments, with budget,
   jobs, spend, and median and each one's change from the year before, filtered
-  by area and by name or code; driven by the `src/lib` department table over the
-  latest two Fall years and their budget years.
+  by area and by name or code; driven by the summary's department table rows.
 - `/departments/$code` - one code's budget by account group or fund type for
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, for an area its units in the department
@@ -201,11 +214,13 @@ flowchart LR
   charts of the matching jobs by salary rate, with primary-job percentiles, and
   by group, their salary spend by EEO category, and names from other censuses
   when a name has no job in it; not indexed by search engines; driven by the
-  `src/lib` people list and distribution over one Fall year and its budget year.
+  `src/lib` people list and distribution over one Fall year and its budget year,
+  and the summary's name index.
 - `/people/$name` - one name's computed figures, its rates by job over time, its
   records for one census at a time, and its job history, with a back button; not
-  indexed by search engines; driven by the `src/lib` person lookup and summary
-  over every Fall year.
+  indexed by search engines; driven by the `src/lib` person lookup and computed
+  figures over the summary's name index and medians and the Fall years the name
+  appears in.
 - `/budget` - the E&G fund projection: the gap and fund balance by fiscal year
   as a chart and table, every published line, the alternative cases, the
   reduction estimate, the all-funds budget, the stated assumptions, and the

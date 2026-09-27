@@ -6,6 +6,7 @@ import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
 import { raiseTermsSchema } from './raises.ts'
+import { summarySchema } from './summary.ts'
 
 const NETWORK_RETRIES = 2
 
@@ -39,6 +40,7 @@ export const manifestQuery = dataQuery('manifest.json', manifestSchema)
 export const opeRatesQuery = dataQuery('ope.json', opeRatesSchema)
 export const raiseTermsQuery = dataQuery('raises.json', raiseTermsSchema)
 export const outlookQuery = dataQuery('outlook.json', outlookSchema)
+export const summaryQuery = dataQuery('summary.json', summarySchema)
 
 export function fallYearQuery(year: number) {
   return dataQuery(`fall/${year}.json`, fallYearSchema)

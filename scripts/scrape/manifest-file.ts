@@ -8,7 +8,8 @@ import type { CachedSource } from './fetch.ts'
 export type StepResult = { manifest: Manifest; problems: string[] }
 
 export async function readManifest(): Promise<Manifest> {
-  if (!existsSync(MANIFEST_PATH)) return { fall: [], budget: [], rates: null }
+  if (!existsSync(MANIFEST_PATH))
+    return { fall: [], budget: [], rates: null, summary: null }
   return manifestSchema.parse(JSON.parse(await readFile(MANIFEST_PATH, 'utf8')))
 }
 

@@ -1,7 +1,8 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import {
   Link,
   useCanGoBack,
+  useLoaderData,
   useParams,
   useRouter,
   useSearch,
@@ -9,8 +10,9 @@ import {
 import { peopleIndexQuery } from '@/components/people-index-query'
 import { PersonView } from '@/components/person-view'
 import { SourceCitation } from '@/components/source-citation'
+import { fallYearQuery, toData } from '@/data/queries'
 import { resolveCensusYear } from '@/lib/census-search'
-import { yearsOf } from '@/lib/person-lookup'
+import { personOf, yearsOf } from '@/lib/person-lookup'
 
 const BACK_CLASS = 'text-sm underline'
 
@@ -37,8 +39,13 @@ function BackButton() {
 export function PersonPage() {
   const { name } = useParams({ from: '/people/$name' })
   const { year } = useSearch({ from: '/people/$name' })
+  const { entry } = useLoaderData({ from: '/people/$name' })
   const { data } = useSuspenseQuery(peopleIndexQuery)
-  const person = data.people.find((entry) => entry.name === name)
+  const falls = useSuspenseQueries({
+    queries: (entry?.runs.flat() ?? []).map(fallYearQuery),
+    combine: toData,
+  })
+  const person = entry && personOf(entry, falls)
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />

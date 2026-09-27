@@ -436,5 +436,32 @@
     "opeRates": 72,
     "leaveRates": 10,
     "persRepayment": 30
+  },
+  "summary": {
+    "derivedOn": "2026-09-26",
+    "files": [
+      "fall/2014.json",
+      "fall/2015.json",
+      "fall/2016.json",
+      "fall/2017.json",
+      "fall/2018.json",
+      "fall/2019.json",
+      "fall/2020.json",
+      "fall/2021.json",
+      "fall/2022.json",
+      "fall/2023.json",
+      "fall/2024.json",
+      "fall/2025.json",
+      "budget/FY21.json",
+      "budget/FY22.json",
+      "budget/FY23.json",
+      "budget/FY24.json",
+      "budget/FY25.json",
+      "budget/FY26.json",
+      "budget/FY27.json",
+      "outlook.json",
+      "ope.json",
+      "raises.json"
+    ]
   }
 }

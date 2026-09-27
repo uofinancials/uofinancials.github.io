@@ -24,6 +24,7 @@ const MANIFEST: Manifest = {
   ],
   budget: [],
   rates: null,
+  summary: null,
 }
 
 async function renderCitation(computed?: string) {
