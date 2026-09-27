@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { memo, useId } from 'react'
 import { RemovableFilter } from '@/components/removable-filter'
 import { SearchField } from '@/components/search-field'
 import { SelectField } from '@/components/select-field'
@@ -41,6 +41,22 @@ function DollarField({
   )
 }
 
+const TitleOptions = memo(function TitleOptions({
+  id,
+  titles,
+}: {
+  id: string
+  titles: string[]
+}) {
+  return (
+    <datalist id={id}>
+      {titles.map((title) => (
+        <option key={title} value={title} />
+      ))}
+    </datalist>
+  )
+})
+
 function TitleField({
   value,
   titles,
@@ -61,11 +77,7 @@ function TitleField({
         value={value}
         onChange={(event) => onSearch(event.target.value || undefined)}
       />
-      <datalist id={listId}>
-        {titles.map((title) => (
-          <option key={title} value={title} />
-        ))}
-      </datalist>
+      <TitleOptions id={listId} titles={titles} />
     </label>
   )
 }

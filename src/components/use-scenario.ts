@@ -135,7 +135,7 @@ export function useScenario() {
   const computedRules = useDeferredValue(rules)
   const history = useScenarioHistory(
     computedRules.some((rule) => rule.kind === 'freeze'),
-    data.historyCensuses,
+    data,
   )
   const { options, projection, censusFiscalYear } = data
   const baseline =
