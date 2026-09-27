@@ -4,6 +4,7 @@ import {
   type FallYear,
   isPrimaryJob,
 } from '../data/fall.ts'
+import type { NameEntry } from '../data/summary.ts'
 import { findPersonLinks } from './person-links.ts'
 
 export const MIN_QUERY_CHARS = 2
@@ -92,6 +93,34 @@ export function indexPeople(years: FallYear[]): Person[] {
     .sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
+/** A summary name entry, searchable by `matchPeople`. */
+export type IndexedName = NameEntry & { searchKey: string }
+
+export function indexNames(names: NameEntry[]): IndexedName[] {
+  return names.map((entry) => ({ ...entry, searchKey: normalize(entry.name) }))
+}
+
+/** The person an index entry names, with their records from the censuses it lists; a census not given is left out. */
+export function personOf(entry: IndexedName, years: FallYear[]): Person {
+  const byYear = new Map(
+    years.map((fall) => [censusYearOf(fall.censusDate), fall]),
+  )
+  const personYear = (year: number): PersonYear[] => {
+    const fall = byYear.get(year)
+    if (!fall) return []
+    const records = fall.records.filter(({ name }) => name === entry.name)
+    return [{ year, censusDate: fall.censusDate, records }]
+  }
+  return {
+    name: entry.name,
+    searchKey: entry.searchKey,
+    runs: entry.runs.map((run) => ({
+      years: run.flatMap(personYear),
+      isLinked: run.length > 1,
+    })),
+  }
+}
+
 /** The name's census years in order, each with its records. */
 export function personYearsOf(person: Person): PersonYear[] {
   return person.runs.flatMap((run) => run.years)
@@ -118,10 +147,10 @@ export function hasEveryWord(text: string, words: string[]): boolean {
 }
 
 /** People whose name holds every word of the query, or `null` for a query too short to search. */
-export function matchPeople(
-  people: Person[],
+export function matchPeople<T extends { searchKey: string }>(
+  people: T[],
   query: string,
-): { matches: Person[]; total: number } | null {
+): { matches: T[]; total: number } | null {
   if (normalize(query).length < MIN_QUERY_CHARS) return null
   const words = queryWords(query)
   const found = people.filter(({ searchKey }) =>

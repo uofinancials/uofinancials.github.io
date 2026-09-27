@@ -2,9 +2,11 @@ import { expect, test } from 'vitest'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
   formatYearRanges,
+  indexNames,
   indexPeople,
   matchPeople,
   type Person,
+  personOf,
   yearsOf,
 } from './person-lookup'
 
@@ -89,4 +91,23 @@ test('years are written as ranges', () => {
     '2014, 2016-2018, 2025',
   )
   expect(formatYearRanges([2020])).toBe('2020')
+})
+
+test('a person built from the censuses an index entry lists is the one the censuses index', () => {
+  const years = [
+    census(2014, [classifiedJob(), classifiedJob({ name: 'Roe, Bo' })]),
+    census(2015, [classifiedJob()]),
+    census(2017, [classifiedJob({ payDepartment: physics })]),
+  ]
+  const [ann] = indexPeople(years)
+  const [entry] = indexNames([
+    { name: 'Doe, Ann', runs: [[2014, 2015], [2017]], possibleStudent: false },
+  ])
+  expect(ann && entry && personOf(entry, years)).toEqual(ann)
+  expect(
+    entry &&
+      personOf(entry, years.slice(1)).runs.map((run) =>
+        run.years.map(({ year }) => year),
+      ),
+  ).toEqual([[2015], [2017]])
 })

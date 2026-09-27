@@ -185,8 +185,16 @@ const personRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/people/$name',
   validateSearch: personSearchSchema,
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(peopleIndexQuery),
+  loader: async ({ context: { queryClient }, params: { name } }) => {
+    const { people } = await queryClient.ensureQueryData(peopleIndexQuery)
+    const entry = people.find((person) => person.name === name) ?? null
+    await Promise.all(
+      (entry?.runs.flat() ?? []).map((year) =>
+        queryClient.ensureQueryData(fallYearQuery(year)),
+      ),
+    )
+    return { entry }
+  },
   component: lazyRouteComponent(
     () => import('@/pages/person-page'),
     'PersonPage',
