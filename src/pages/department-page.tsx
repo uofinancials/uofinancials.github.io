@@ -1,4 +1,4 @@
-import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQueries } from '@tanstack/react-query'
 import {
   Link,
   useLoaderData,
@@ -11,8 +11,9 @@ import { DepartmentBudgetSection } from '@/components/department-budget-section'
 import { DepartmentJobsSection } from '@/components/department-jobs-section'
 import { DepartmentTable } from '@/components/department-table'
 import { SourceCitation } from '@/components/source-citation'
+import { useDepartmentCensuses } from '@/components/use-department-censuses'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
-import { budgetYearQuery, fallYearQuery, manifestQuery } from '@/data/queries'
+import { fallYearQuery, toData } from '@/data/queries'
 import { departmentBudget } from '@/lib/department-budget'
 import { type CodeProfile, describeCode } from '@/lib/department-index'
 import {
@@ -20,7 +21,6 @@ import {
   departmentClasses,
   departmentTrends,
   departmentYears,
-  toDepartmentCensuses,
 } from '@/lib/department-jobs'
 import {
   type DepartmentSearch,
@@ -38,27 +38,15 @@ import { NotFoundPage } from '@/pages/not-found-page'
 const SPONSORED_NOTE =
   'The budget excludes sponsored research funds, so a unit’s budgeted salaries can fall well short of its jobs’ salary spend.'
 
-function toData<T>(results: { data: T }[]): T[] {
-  return results.map(({ data }) => data)
-}
-
 function useDepartmentData() {
   const { fiscalYears, fallYears, eliminationFiscalYear } = useLoaderData({
     from: '/departments/$code',
-  })
-  const { data: manifest } = useSuspenseQuery(manifestQuery)
-  const budgets = useSuspenseQueries({
-    queries: fiscalYears.map(budgetYearQuery),
-    combine: toData,
   })
   const falls = useSuspenseQueries({
     queries: fallYears.map(fallYearQuery),
     combine: toData,
   })
-  const censuses = useMemo(
-    () => toDepartmentCensuses(manifest, falls, budgets),
-    [manifest, falls, budgets],
-  )
+  const { budgets, censuses } = useDepartmentCensuses(fiscalYears, falls)
   const eliminationOrgs = budgets.find(
     ({ fiscalYear }) => fiscalYear === eliminationFiscalYear,
   )?.orgs
@@ -67,10 +55,12 @@ function useDepartmentData() {
 
 function DepartmentLinks({
   code,
+  isArea,
   canEliminate,
   hasPayChanges,
 }: {
   code: string
+  isArea: boolean
   canEliminate: boolean
   hasPayChanges: boolean
 }) {
@@ -90,7 +80,10 @@ function DepartmentLinks({
         <Link
           className="underline"
           to="/trends"
-          search={{ dept: code, metric: 'change' }}
+          search={{
+            ...(isArea ? { area: code } : { dept: code }),
+            metric: 'change',
+          }}
         >
           Pay changes
         </Link>
@@ -198,7 +191,7 @@ function DepartmentHeader({
       {hasBothSources && (
         <p className="text-sm text-muted-foreground">{SPONSORED_NOTE}</p>
       )}
-      <DepartmentLinks code={profile.code} {...links} />
+      <DepartmentLinks code={profile.code} isArea={profile.isArea} {...links} />
     </header>
   )
 }
@@ -250,7 +243,7 @@ export function DepartmentPage() {
         hasBothSources={profile.hasBudget && hasJobs}
         links={{
           canEliminate: eliminationOrgs?.[code] !== undefined,
-          hasPayChanges: !profile.isArea && hasJobs,
+          hasPayChanges: hasJobs,
         }}
       />
       {profile.hasBudget ? (

@@ -17,6 +17,7 @@ const ALL_JOBS: TrendFilter = {
   group: null,
   dept: null,
   position: null,
+  jobs: null,
   from: 2014,
   to: 2025,
 }
@@ -100,6 +101,10 @@ test('each line is the median of its pairs, blank below three', () => {
   const point = classified?.points[0]
   expect(point?.pairs).toBe(4)
   expect(point?.median).toBeCloseTo(0.03, 10)
+})
+
+test('a range without a pair year has no lines', () => {
+  expect(payChangeTrends([], [], null)).toEqual([])
 })
 
 test('changes fall in whole-point bins from -5% to 20%, with open bins either side', () => {

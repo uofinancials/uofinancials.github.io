@@ -91,15 +91,18 @@ export const trendsSearchSchema = z.object({
   from: z.number().int().optional().catch(undefined),
   to: z.number().int().optional().catch(undefined),
   dept: orgCodeParam.optional().catch(undefined),
+  area: orgCodeParam.optional().catch(undefined),
   position: z.string().min(1).optional().catch(undefined),
   pair: z.number().int().optional().catch(undefined),
 })
 
 export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 
-export type TrendView = TrendFilter & {
+export type TrendView = Omit<TrendFilter, 'jobs'> & {
   metric: TrendMetric
   hide: string[]
+  /** A college or VP area code; its jobs are placed as its department page places them. */
+  area: string | null
   /** The earlier census of each pair in the range. */
   fromYears: number[]
   pair: number
@@ -125,6 +128,7 @@ export function resolveTrendView(
     hide: search.hide ?? [],
     kind: search.kind ?? 'all',
     dept: search.dept ?? null,
+    area: search.area ?? null,
     position: search.position ?? null,
     from,
     to,

@@ -10,33 +10,37 @@ import {
   payChangeTrends,
 } from '@/lib/pay-changes'
 import { viewRaiseComparison } from '@/lib/raise-comparison'
+import type { TrendFilter } from '@/lib/trends'
 import { CHANGE_METRIC, type TrendView } from '@/lib/trends-search'
 
-/** The change measure's figures for the view; `null` under any other measure, so the continuing pairs are built only for it. */
-export function usePayChanges(fallYears: FallYear[], view: TrendView) {
+/** The change measure's figures for the view and its filter; `null` under any other measure, so the continuing pairs are built only for it. */
+export function usePayChanges(
+  fallYears: FallYear[],
+  view: TrendView,
+  filter: TrendFilter,
+) {
   const isChange = view.metric === CHANGE_METRIC
   const pairs = useMemo(
     () => (isChange ? continuingPairs(fallYears) : null),
     [fallYears, isChange],
   )
-  const { kind, group, dept, position, from, to, fromYears, pair } = view
+  const { group, fromYears, pair } = view
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
   const raises = useMemo(
     () =>
       pairs &&
       viewRaiseComparison({
         pairs,
-        filter: { kind, group, dept, position, from, to },
+        filter,
         fromYear: pair,
         years: fallYears,
         raises: raiseTerms,
       }),
-    [pairs, fallYears, raiseTerms, kind, group, dept, position, from, to, pair],
+    [pairs, fallYears, raiseTerms, filter, pair],
   )
   const shown = useMemo(
-    () =>
-      pairs && filterPairs(pairs, { kind, group, dept, position, from, to }),
-    [pairs, kind, group, dept, position, from, to],
+    () => pairs && filterPairs(pairs, filter),
+    [pairs, filter],
   )
   return useMemo(
     () =>

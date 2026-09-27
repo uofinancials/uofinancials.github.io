@@ -50,3 +50,7 @@ export function budgetYearQuery(fiscalYear: number) {
     budgetYearSchema,
   )
 }
+
+export function toData<T>(results: { data: T }[]): T[] {
+  return results.map(({ data }) => data)
+}

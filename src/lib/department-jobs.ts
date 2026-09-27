@@ -20,6 +20,9 @@ import {
   type Trends,
 } from './trends.ts'
 
+export const AREA_PLACEMENT_METHOD =
+  'An area’s jobs are those whose pay department the site places in it: by UO’s budget hierarchy for the census’s fiscal year, by a department-name prefix every placed department shares, or by hand.'
+
 /** One census with the budget hierarchy that names its areas, and the area assigner built from them. */
 export type DepartmentCensus = {
   year: number
@@ -143,6 +146,7 @@ export function departmentTrends(
     group: null,
     dept: null,
     position: null,
+    jobs: null,
     from: yearsWithJobs[0] ?? 0,
     to: yearsWithJobs.at(-1) ?? 0,
   })

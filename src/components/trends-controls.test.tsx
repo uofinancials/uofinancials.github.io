@@ -9,6 +9,7 @@ const VIEW = {
   hide: ['Overloads'],
   kind: 'all',
   dept: null,
+  area: null,
   position: null,
   from: 2014,
   to: 2025,
@@ -23,7 +24,7 @@ test('each control asks for a new search, and opening a group shows every line a
       view={{ ...VIEW, hide: [...VIEW.hide], fromYears: [...VIEW.fromYears] }}
       years={[2014, 2025]}
       lines={['Faculty', 'Overloads']}
-      names={{ dept: null, position: null }}
+      names={{ dept: null, area: null, position: null }}
       onChange={handleChange}
     />,
   )

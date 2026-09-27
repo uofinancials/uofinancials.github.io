@@ -104,6 +104,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       group: null,
       dept: null,
       position: null,
+      jobs: null,
       from: 2014,
       to: 2025,
     })
@@ -155,6 +156,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       group: 'Unclassified staff',
       dept: null,
       position: null,
+      jobs: null,
       from: 2014,
       to: 2025,
     }).series

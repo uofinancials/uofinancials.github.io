@@ -1,4 +1,5 @@
 import type { FallRecord } from '../data/fall.ts'
+import { positionOf } from './peer-group.ts'
 import { type PeerMedians, peerMedianFor } from './peer-median.ts'
 import { historyValues } from './person-fields.ts'
 import {
@@ -8,7 +9,7 @@ import {
   personYearsOf,
   primaryJobOf,
 } from './person-lookup.ts'
-import { positionLabel, positionOf } from './salary-distribution.ts'
+import { positionLabel } from './salary-distribution.ts'
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000
 

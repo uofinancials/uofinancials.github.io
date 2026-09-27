@@ -139,8 +139,17 @@ test('an area lists its units, states how its jobs were placed, and does not scr
   await expect(
     page.getByRole('table', { name: 'How the area’s jobs were placed' }),
   ).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Pay changes' })).toHaveCount(0)
   expect(await pageWidth(page)).toBeLessThanOrEqual(360)
+  await page.getByRole('link', { name: 'Pay changes' }).click()
+  await expect(page).toHaveURL(/\/trends\?.*area=.*222000/)
+  const main = page.getByRole('main')
+  await expect(main).toContainText('Area: Arts & Sciences, College of')
+  await expect(main).toContainText('whose pay department the site places in it')
+  const areaPairs = page.getByRole('row', { name: /^2024-25 938 / })
+  await expect(areaPairs).toBeVisible()
+  await page.getByRole('button', { name: 'Remove' }).click()
+  await expect(page).not.toHaveURL(/area=/)
+  await expect(areaPairs).toHaveCount(0)
 })
 
 test('a unit in the scenario budget opens a scenario that eliminates it', async ({

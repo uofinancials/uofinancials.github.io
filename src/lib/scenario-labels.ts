@@ -3,11 +3,8 @@ import type { FallRecord } from '../data/fall.ts'
 import { describePlace } from './census-search.ts'
 import type { DepartmentCensus } from './department-jobs.ts'
 import { formatDollars } from './format.ts'
-import {
-  formatPosition,
-  positionLabel,
-  positionOf,
-} from './salary-distribution.ts'
+import { positionOf } from './peer-group.ts'
+import { formatPosition, positionLabel } from './salary-distribution.ts'
 import type {
   EliminationResult,
   Rule,

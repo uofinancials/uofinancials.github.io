@@ -135,15 +135,15 @@ test('each group with a job gives its count, and its median from three primary j
   ])
 })
 
-test('the chart keeps the bins that overlap the rate range', () => {
+test('the chart keeps the bins that overlap the rate range, less empty ones at either end', () => {
+  const jobs = [ann, classifiedJob({ annualSalaryRateCents: 7_500_000 })]
   const floors = (search: Parameters<typeof resolvePeopleView>[0]) =>
-    binsInRange(buildDistribution([], 2025), view(search)).bins.map(
+    binsInRange(buildDistribution(jobs, 2025), view(search)).bins.map(
       ({ floorCents }) => floorCents / 100_000,
     )
-  expect(floors({ min: 45_000, max: 60_000 })).toEqual([40, 50, 60])
-  expect(floors({ min: 250_000 })).toEqual([250])
-  expect(floors({ max: 9_999 })).toEqual([0])
-  expect(floors({})).toHaveLength(26)
+  expect(floors({})).toEqual([50, 60, 70])
+  expect(floors({ min: 45_000, max: 60_000 })).toEqual([50])
+  expect(floors({ min: 250_000 })).toEqual([])
 })
 
 test('a bin’s range is its floor to its last whole dollar, and the top bin has no maximum', () => {

@@ -128,6 +128,7 @@ test('the view comparison keeps one pair year and leaves out the opened group, b
         group: 'Faculty',
         dept: null,
         position: null,
+        jobs: null,
         from: 2014,
         to: 2025,
         ...filter,
