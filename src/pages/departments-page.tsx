@@ -68,7 +68,10 @@ function TableControls({
 
 export function DepartmentsPage() {
   const { data } = useSuspenseQuery(summaryQuery)
-  const { now, before, areas, rows } = data.departments
+  const { now, before, rows } = data.departments
+  const areas = rows.areas.flatMap(({ code, name }) =>
+    code === null ? [] : [{ code, name }],
+  )
   const view = resolveDepartmentsView(useSearch({ from: '/departments' }))
   const navigate = useNavigate({ from: '/departments' })
   const isUnits = view.level === 'units'

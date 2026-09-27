@@ -66,5 +66,4 @@ export const manifestSchema = z.strictObject({
 
 export type FallEntry = z.infer<typeof fallEntrySchema>
 export type BudgetEntry = z.infer<typeof budgetEntrySchema>
-export type SummaryEntry = z.infer<typeof summaryEntrySchema>
 export type Manifest = z.infer<typeof manifestSchema>

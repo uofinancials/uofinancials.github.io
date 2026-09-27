@@ -210,3 +210,19 @@ test('a filter names its department and class or rank from the first job with th
     position: null,
   })
 })
+
+test('a range drops the lines with no job in it and keeps the others in order', () => {
+  const years = [
+    {
+      year: 2016,
+      records: [unclassifiedJob({ eeoCategory: null }), classifiedJob()],
+    },
+    { year: 2017, records: [unclassifiedJob(), classifiedJob()] },
+  ]
+  const keys = (from: number) =>
+    buildTrends(years, { ...ALL, from, to: 2017 }).series.map(({ key }) => key)
+  expect(keys(2017)).toEqual(
+    keys(2016).filter((key) => key !== 'Category not published'),
+  )
+  expect(keys(2016)).toContain('Category not published')
+})

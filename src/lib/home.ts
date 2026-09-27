@@ -109,13 +109,15 @@ export function exampleAnswers(options: {
   })
 }
 
-/** The home examples joined to the summary's answers for them, which are in `HOME_EXAMPLES` order. */
+/** The summary's answers with the rules of the home examples they answer. */
 export function answersOf(
-  answers: Omit<ExampleAnswer, 'question' | 'rules'>[],
+  answers: Omit<ExampleAnswer, 'rules'>[],
 ): ExampleAnswer[] {
-  return HOME_EXAMPLES.flatMap(({ question, rules }, index) => {
-    const answer = answers[index]
-    return answer ? [{ question, rules, ...answer }] : []
+  return answers.flatMap((answer) => {
+    const example = HOME_EXAMPLES.find(
+      ({ question }) => question === answer.question,
+    )
+    return example ? [{ ...answer, rules: example.rules }] : []
   })
 }
 

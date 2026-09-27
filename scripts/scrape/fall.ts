@@ -10,7 +10,7 @@ import {
   type Manifest,
   SALARY_REPORTS_PAGE,
 } from '../../src/data/manifest.ts'
-import { DATA_DIR, FALL_SOURCE_DIR, listPdfs } from './cache.ts'
+import { DATA_DIR, FALL_SOURCE_DIR, fallDataPath, listPdfs } from './cache.ts'
 import { type FallFile, parseFallFile } from './fall-file.ts'
 import { type StepResult, sha256Hex, today } from './manifest-file.ts'
 
@@ -118,10 +118,7 @@ ${SALARY_REPORTS_PAGE} into ${FALL_SOURCE_DIR}`)
     }
     const entry = toManifestEntry(censusDate, sources)
     const yearFile = toYearFile(censusDate, sources)
-    await writeFile(
-      path.join(DATA_DIR, 'fall', `${entry.year}.json`),
-      JSON.stringify(yearFile),
-    )
+    await writeFile(fallDataPath(entry.year), JSON.stringify(yearFile))
     written.set(entry.year, entry)
     console.log(`fall ${entry.year}: ${yearFile.records.length} records`)
   }

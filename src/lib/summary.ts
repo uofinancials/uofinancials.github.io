@@ -5,12 +5,14 @@ import type { OpeRates } from '../data/ope.ts'
 import type { Outlook } from '../data/outlook.ts'
 import type { RaiseTerms } from '../data/raises.ts'
 import type { Summary } from '../data/summary.ts'
-import { listAreas } from './areas.ts'
-import { toDepartmentCensus } from './department-jobs.ts'
+import {
+  type DepartmentCensus,
+  toDepartmentCensuses,
+} from './department-jobs.ts'
 import {
   areaFigures,
   departmentRows,
-  selectTableSources,
+  latestTableYears,
 } from './department-table.ts'
 import {
   exampleAnswers,
@@ -25,7 +27,7 @@ import { indexPeople, personYearsOf } from './person-lookup.ts'
 import { firstSavingsYear } from './scenario-outlook.ts'
 import { raiseRates } from './scenario-raises.ts'
 import { TREND_GROUPS, type TrendGroup } from './trend-groups.ts'
-import { buildTrends, type Trends } from './trends.ts'
+import { buildTrends } from './trends.ts'
 import { ALL_GROUPS } from './trends-search.ts'
 
 /** The committed data files a summary is derived from. */
@@ -38,16 +40,13 @@ export type SummaryInputs = {
   raiseTerms: RaiseTerms
 }
 
-function censusFor(falls: FallYear[], year: number) {
-  const fall = falls.find(({ censusDate }) => censusYearOf(censusDate) === year)
-  if (!fall) throw new Error(`No Fall ${year} census to summarize`)
-  return { year, records: fall.records }
-}
+type TableYear = { census: DepartmentCensus; budget: BudgetYear }
 
-function budgetFor(budgets: BudgetYear[], fiscalYear: number): BudgetYear {
-  const budget = budgets.find((entry) => entry.fiscalYear === fiscalYear)
-  if (!budget) throw new Error(`No FY${fiscalYear} budget to summarize`)
-  return budget
+function latestYears({ manifest, falls, budgets }: SummaryInputs) {
+  const censuses = toDepartmentCensuses(manifest, falls, budgets)
+  const years = latestTableYears(censuses, budgets)
+  if (!years) throw new Error('The summary needs two Fall censuses')
+  return years
 }
 
 function summarizeTrends(falls: FallYear[]): Summary['trends'] {
@@ -72,33 +71,29 @@ function summarizeTrends(falls: FallYear[]): Summary['trends'] {
   ])
 }
 
-function summarizeDepartments({
-  manifest,
-  falls,
-  budgets,
-}: SummaryInputs): Summary['departments'] {
-  const { now, before } = selectTableSources(manifest)
-  const tableYear = (source: { year: number; fiscalYear: number }) => {
-    const budget = budgetFor(budgets, source.fiscalYear)
-    const census = toDepartmentCensus(censusFor(falls, source.year), budget)
-    return { census, budget }
-  }
-  const nowYear = tableYear(now)
+function summarizeDepartments(years: {
+  now: TableYear
+  before: TableYear
+}): Summary['departments'] {
+  const tableYear = ({ census }: TableYear) => ({
+    year: census.year,
+    fiscalYear: census.fiscalYear,
+  })
   return {
-    now,
-    before,
-    areas: listAreas(nowYear.budget.orgs),
-    rows: departmentRows(nowYear, tableYear(before)),
+    now: tableYear(years.now),
+    before: tableYear(years.before),
+    rows: departmentRows(years.now, years.before),
   }
 }
 
-function summarizeHome(inputs: SummaryInputs): Summary['home'] {
-  const { census: entry, fiscalYear } = selectOverviewSources(inputs.manifest)
-  const { year, records } = censusFor(inputs.falls, entry.year)
-  const budget = budgetFor(inputs.budgets, fiscalYear)
+function summarizeHome(
+  inputs: SummaryInputs,
+  { census, budget }: TableYear,
+): Summary['home'] {
+  const { year, records, fiscalYear } = census
+  const { censusDate } = selectOverviewSources(inputs.manifest).census
   const [projection] = inputs.outlook.projections
-  const censusFiscalYear = fiscalYearOf(entry.censusDate)
-  const census = toDepartmentCensus({ year, records }, budget)
+  const censusFiscalYear = fiscalYearOf(censusDate)
   const answers = exampleAnswers({
     census,
     budget,
@@ -112,7 +107,7 @@ function summarizeHome(inputs: SummaryInputs): Summary['home'] {
   })
   return {
     year,
-    censusDate: entry.censusDate,
+    censusDate,
     fiscalYear,
     period: budget.period,
     headlines: headlineFigures({
@@ -121,11 +116,7 @@ function summarizeHome(inputs: SummaryInputs): Summary['home'] {
       projection,
       censusFiscalYear,
     }),
-    answers: answers.map(({ fiscalYear, savingsCents, gapShare }) => ({
-      fiscalYear,
-      savingsCents,
-      gapShare,
-    })),
+    answers: answers.map(({ rules, ...answer }) => answer),
     areas: areaFigures(census, budget),
     bases: placementBases(census),
     topPaid: topPaidJobs({ year, records }, TOP_PAID_COUNT),
@@ -147,21 +138,11 @@ function summarizePeople(falls: FallYear[]): Summary['people'] {
 
 /** The figures the pages show by default, derived as the pages derive them. */
 export function buildSummary(inputs: SummaryInputs): Summary {
+  const years = latestYears(inputs)
   return {
     trends: summarizeTrends(inputs.falls),
-    departments: summarizeDepartments(inputs),
-    home: summarizeHome(inputs),
+    departments: summarizeDepartments(years),
+    home: summarizeHome(inputs, years.now),
     people: summarizePeople(inputs.falls),
-  }
-}
-
-/** The years `from` to `to` of full-range trends, dropping lines with no job in them, as `buildTrends` gives that range. */
-export function sliceTrends(trends: Trends, from: number, to: number): Trends {
-  const isInRange = ({ year }: { year: number }) => year >= from && year <= to
-  return {
-    series: trends.series
-      .map(({ key, points }) => ({ key, points: points.filter(isInRange) }))
-      .filter(({ points }) => points.some(({ jobs }) => jobs > 0)),
-    total: trends.total.filter(isInRange),
   }
 }

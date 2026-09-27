@@ -21,7 +21,6 @@ import { areaTrendFilter } from '@/lib/department-index'
 import { AREA_PLACEMENT_METHOD } from '@/lib/department-jobs'
 import { SPEND_METHOD } from '@/lib/overview'
 import { peerKeyFor } from '@/lib/peer-group'
-import { sliceTrends } from '@/lib/summary'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,
@@ -33,6 +32,7 @@ import {
   buildTrends,
   filterNames,
   MIN_JOBS_SHOWN,
+  sliceTrends,
   type TrendFilter,
   type Trends,
 } from '@/lib/trends'

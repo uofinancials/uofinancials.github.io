@@ -83,17 +83,21 @@ const trendsRoute = createRoute({
     isSummary: isSummaryView(search),
   }),
   loader: async ({ context: { queryClient }, deps }) => {
-    const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-    const [fiscalYears] = await Promise.all([
+    const loadYears = async () => {
+      const manifest = await queryClient.ensureQueryData(manifestQuery)
+      const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+      if (!deps.isSummary) {
+        await Promise.all(
+          years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
+        )
+      }
+      return years
+    }
+    const [years, fiscalYears] = await Promise.all([
+      loadYears(),
       deps.area === undefined ? [] : loadBudgetYears(queryClient),
       queryClient.ensureQueryData(summaryQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
-      ...(deps.isSummary
-        ? []
-        : years.map((year) =>
-            queryClient.ensureQueryData(fallYearQuery(year)),
-          )),
     ])
     return { years, fiscalYears }
   },

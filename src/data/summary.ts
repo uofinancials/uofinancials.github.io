@@ -53,9 +53,9 @@ const homeSchema = z.strictObject({
     spendCents: cents,
     people: count,
   }),
-  /** One per home example, in order. */
   answers: z.array(
     z.strictObject({
+      question: z.string(),
       fiscalYear: year,
       savingsCents: cents,
       gapShare: fraction,
@@ -94,7 +94,6 @@ export const summarySchema = z.strictObject({
   departments: z.strictObject({
     now: tableYearSchema,
     before: tableYearSchema,
-    areas: z.array(areaSchema),
     rows: z.strictObject({
       areas: z.array(departmentRowSchema),
       units: z.array(departmentRowSchema),
