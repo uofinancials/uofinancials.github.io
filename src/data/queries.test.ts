@@ -2,7 +2,12 @@ import { expect, test, vi } from 'vitest'
 import { testQueryClient } from '@/test/query-client'
 import { budgetYearQuery, manifestQuery } from './queries'
 
-const EMPTY_MANIFEST = { fall: [], budget: [], rates: null }
+const EMPTY_MANIFEST = {
+  fall: [],
+  budget: [],
+  rates: null,
+  summary: null,
+}
 
 function serve(status: number, body: unknown) {
   const fetchMock = vi.fn(async () => Response.json(body, { status }))

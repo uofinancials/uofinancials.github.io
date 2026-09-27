@@ -36,6 +36,12 @@ export function readJson(file: string): unknown {
 export const MANIFEST_PATH = path.join(DATA_DIR, 'manifest.json')
 export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
 export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')
+export const OUTLOOK_DATA_PATH = path.join(DATA_DIR, 'outlook.json')
+export const SUMMARY_DATA_PATH = path.join(DATA_DIR, 'summary.json')
+
+export function fallDataPath(year: number): string {
+  return path.join(DATA_DIR, 'fall', `${year}.json`)
+}
 
 export function budgetDataPath(fiscalYear: number): string {
   return path.join(DATA_DIR, 'budget', `${fiscalYearLabel(fiscalYear)}.json`)

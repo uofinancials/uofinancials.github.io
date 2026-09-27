@@ -56,6 +56,8 @@ export function headlineFigures(options: {
 
 const HOME_EXAMPLE_COUNT = 2
 
+export const TOP_PAID_COUNT = 10
+
 /** The scenario examples the home page answers; each is census rules only, so no history or elimination budget is read. */
 export const HOME_EXAMPLES = SCENARIO_EXAMPLES.slice(0, HOME_EXAMPLE_COUNT)
 

@@ -51,12 +51,20 @@ const ratesEntrySchema = z.strictObject({
   persRepayment: z.number().int().nonnegative(),
 })
 
+const summaryEntrySchema = z.strictObject({
+  derivedOn: isoDate,
+  /** The data files the summary was derived from, relative to the data directory. */
+  files: z.array(z.string().min(1)),
+})
+
 export const manifestSchema = z.strictObject({
   fall: z.array(fallEntrySchema),
   budget: z.array(budgetEntrySchema),
   rates: ratesEntrySchema.nullable(),
+  summary: summaryEntrySchema.nullable(),
 })
 
 export type FallEntry = z.infer<typeof fallEntrySchema>
 export type BudgetEntry = z.infer<typeof budgetEntrySchema>
+export type SummaryEntry = z.infer<typeof summaryEntrySchema>
 export type Manifest = z.infer<typeof manifestSchema>

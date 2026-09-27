@@ -117,6 +117,7 @@ test('the overview uses the latest census and the budget of its fiscal year, or 
       fall: fall.map(census),
       budget: budgets.map(budget),
       rates: null,
+      summary: null,
     })
     return [entry.year, fiscalYear]
   }

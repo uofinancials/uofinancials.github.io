@@ -34,6 +34,7 @@ import {
   headlineFigures,
   jobsByCensus,
   placementBases,
+  TOP_PAID_COUNT,
   topPaidJobs,
 } from '@/lib/home'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/overview'
@@ -41,7 +42,6 @@ import { firstSavingsYear } from '@/lib/scenario-outlook'
 import { raiseRates, raiseSources } from '@/lib/scenario-raises'
 import { MIN_JOBS_SHOWN } from '@/lib/trends'
 
-const TOP_PAID_COUNT = 10
 const COMPACT_CHART = 'h-64'
 
 function useHomeData() {

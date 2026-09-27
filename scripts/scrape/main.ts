@@ -7,11 +7,13 @@ import {
   writeManifest,
 } from './manifest-file.ts'
 import { runRates } from './rates.ts'
+import { runSummary } from './summary.ts'
 
 const STEPS: Record<string, (manifest: Manifest) => Promise<StepResult>> = {
   fall: runFall,
   budget: runBudget,
   rates: runRates,
+  summary: runSummary,
 }
 
 async function main(requested: string[]): Promise<void> {
