@@ -32,17 +32,29 @@ export type DepartmentCensus = {
   assign: (record: FallRecord) => AreaAssignment
 }
 
+const joinedCensuses = new WeakMap<
+  FallRecord[],
+  WeakMap<BudgetYear, DepartmentCensus>
+>()
+
+/** One census joined to a budget year; the same records and budget give back the same join. */
 export function toDepartmentCensus(
   { year, records }: { year: number; records: FallRecord[] },
   budget: BudgetYear,
 ): DepartmentCensus {
-  return {
+  const byBudget = joinedCensuses.get(records) ?? new WeakMap()
+  joinedCensuses.set(records, byBudget)
+  const cached = byBudget.get(budget)
+  if (cached?.year === year) return cached
+  const census = {
     year,
     records,
     fiscalYear: budget.fiscalYear,
     orgs: budget.orgs,
     assign: createAreaAssigner(records, budget.orgs, year),
   }
+  byBudget.set(budget, census)
+  return census
 }
 
 /** Each census joined to the budget year that names its areas. */

@@ -1,12 +1,14 @@
 import { expect, test } from 'vitest'
 import type { BudgetYear } from '@/data/budget'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { scenarioBudget } from '@/test/scenario-fixtures'
 import { createAreaAssigner } from './areas'
 import {
   type DepartmentCensus,
   departmentClasses,
   departmentTrends,
   departmentYears,
+  toDepartmentCensus,
 } from './department-jobs'
 
 const ORGS: BudgetYear['orgs'] = {
@@ -160,4 +162,15 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
   expect(
     departmentTrends(jobs, 'classified').total.map(({ jobs: count }) => count),
   ).toEqual([0, 0])
+})
+
+test('the same records and budget give back the same join, and another year a new one', () => {
+  const records = [unclassifiedJob({ payDepartment: biology })]
+  const budget = scenarioBudget([])
+  const joined = toDepartmentCensus({ year: 2025, records }, budget)
+  expect(toDepartmentCensus({ year: 2025, records }, budget)).toBe(joined)
+  expect(toDepartmentCensus({ year: 2025, records }, { ...budget })).not.toBe(
+    joined,
+  )
+  expect(toDepartmentCensus({ year: 2024, records }, budget).year).toBe(2024)
 })

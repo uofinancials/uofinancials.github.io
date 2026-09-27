@@ -26,31 +26,13 @@ function combineResults<T>(results: QueryObserverResult<T>[]) {
   }
 }
 
-function withJoined(
-  others: DepartmentCensus[],
-  censuses: { year: number }[],
-  joined: DepartmentCensus,
-): DepartmentCensus[] {
-  return censuses.some(({ year }) => year === joined.year)
-    ? [...others, joined].sort((a, b) => a.year - b.year)
-    : others
-}
-
-/** The censuses a freeze's turnover is read from, loaded only while `hasFreeze`; the page's `census` stands in for its own year. */
+/** The censuses a freeze's turnover is read from, loaded only while `hasFreeze`. */
 export function useScenarioHistory(
   hasFreeze: boolean,
-  {
-    historyCensuses: censuses,
-    census: joined,
-  }: {
-    historyCensuses: { year: number; fiscalYear: number }[]
-    census: DepartmentCensus
-  },
+  censuses: { year: number; fiscalYear: number }[],
 ): ScenarioHistory {
   const { data: manifest } = useSuspenseQuery(manifestQuery)
-  const loaded = hasFreeze
-    ? censuses.filter(({ year }) => year !== joined.year)
-    : []
+  const loaded = hasFreeze ? censuses : []
   const falls = useQueries({
     queries: loaded.map(({ year }) => fallYearQuery(year)),
     combine: combineResults,
@@ -69,14 +51,8 @@ export function useScenarioHistory(
     !budgets.isError
   const history = useMemo(
     () =>
-      isReady
-        ? withJoined(
-            toDepartmentCensuses(manifest, falls.data, budgets.data),
-            censuses,
-            joined,
-          )
-        : null,
-    [isReady, manifest, falls.data, budgets.data, censuses, joined],
+      isReady ? toDepartmentCensuses(manifest, falls.data, budgets.data) : null,
+    [isReady, manifest, falls.data, budgets.data],
   )
   if (history) return { status: 'ready', history }
   if (!hasFreeze) return { status: 'idle', history: NO_HISTORY }

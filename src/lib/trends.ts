@@ -1,5 +1,9 @@
 import { type FallRecord, isPrimaryJob, type StaffKind } from '../data/fall.ts'
-import { isClassifiedTemp, jobSpendCents } from './overview.ts'
+import {
+  isClassifiedTemp,
+  sumFteHundredths,
+  sumSpendCents,
+} from './overview.ts'
 import { type PeerGroup, peerGroupOf } from './peer-group.ts'
 import { department } from './person-fields.ts'
 import {
@@ -133,14 +137,8 @@ export function measureJobs(records: FallRecord[]): Omit<TrendPoint, 'year'> {
     .map((record) => record.annualSalaryRateCents)
   return {
     jobs: records.length,
-    spendCents:
-      paid.length < MIN_JOBS_SHOWN
-        ? null
-        : paid.reduce((sum, record) => sum + jobSpendCents(record), 0),
-    fteHundredths:
-      records.length === 0
-        ? null
-        : records.reduce((sum, record) => sum + record.apptPercent, 0),
+    spendCents: paid.length < MIN_JOBS_SHOWN ? null : sumSpendCents(paid),
+    fteHundredths: records.length === 0 ? null : sumFteHundredths(records),
     medianRateCents:
       rates.length < MIN_JOBS_SHOWN ? null : medianRateCents(rates),
   }
