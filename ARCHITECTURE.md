@@ -63,8 +63,8 @@ flowchart LR
 
 - `src/main.tsx` - creates the query client and router and mounts the app.
 - `src/app.tsx` - the query and router providers.
-- `src/router.tsx` - the route tree, each route's data loading, and the default
-  loading, error, and not-found pages.
+- `src/router.tsx` - the route tree, each route's data loading, each page's code
+  loaded on demand, and the default loading, error, and not-found pages.
 - `src/pages` - one component per route.
 - `src/components` - the shared layout with the independence notice, the error
   report link, and the source and license links, the page section, the source

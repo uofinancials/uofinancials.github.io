@@ -47,12 +47,20 @@ export function jobSpendCents(record: FallRecord): number {
   )
 }
 
+export function sumSpendCents(records: FallRecord[]): number {
+  return records.reduce((sum, record) => sum + jobSpendCents(record), 0)
+}
+
+export function sumFteHundredths(records: FallRecord[]): number {
+  return records.reduce((sum, record) => sum + record.apptPercent, 0)
+}
+
 export function summarize(records: FallRecord[]): Totals {
   return {
     people: new Set(records.map((record) => record.name)).size,
     jobs: records.length,
-    fteHundredths: records.reduce((sum, record) => sum + record.apptPercent, 0),
-    spendCents: records.reduce((sum, record) => sum + jobSpendCents(record), 0),
+    fteHundredths: sumFteHundredths(records),
+    spendCents: sumSpendCents(records),
   }
 }
 

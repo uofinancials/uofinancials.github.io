@@ -3,6 +3,7 @@ import {
   createRootRouteWithContext,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   notFound,
   type RouterHistory,
   redirect,
@@ -38,16 +39,7 @@ import { eliminationFiscalYear } from '@/lib/scenario-eliminate'
 import { firstSavingsYear } from '@/lib/scenario-outlook'
 import { scenarioSearchSchema } from '@/lib/scenario-search'
 import { trendsSearchSchema } from '@/lib/trends-search'
-import { BudgetPage } from '@/pages/budget-page'
-import { DepartmentPage } from '@/pages/department-page'
-import { DepartmentsPage } from '@/pages/departments-page'
 import { NotFoundPage } from '@/pages/not-found-page'
-import { OverviewPage } from '@/pages/overview-page'
-import { PeoplePage } from '@/pages/people-page'
-import { PersonPage } from '@/pages/person-page'
-import { ScenariosPage } from '@/pages/scenarios-page'
-import { SourcesPage } from '@/pages/sources-page'
-import { TrendsPage } from '@/pages/trends-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: SiteLayout,
@@ -77,7 +69,10 @@ const homeRoute = createRoute({
     ])
     return { year: census.year, fiscalYear, censusDate: census.censusDate }
   },
-  component: OverviewPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/overview-page'),
+    'OverviewPage',
+  ),
 })
 
 async function loadFallYears({
@@ -118,7 +113,10 @@ const trendsRoute = createRoute({
     ])
     return { ...loaded, fiscalYears }
   },
-  component: TrendsPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/trends-page'),
+    'TrendsPage',
+  ),
 })
 
 const departmentsRoute = createRoute({
@@ -137,7 +135,10 @@ const departmentsRoute = createRoute({
     )
     return sources
   },
-  component: DepartmentsPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/departments-page'),
+    'DepartmentsPage',
+  ),
 })
 
 const departmentRoute = createRoute({
@@ -157,7 +158,10 @@ const departmentRoute = createRoute({
     ])
     return { fiscalYears, fallYears, eliminationFiscalYear }
   },
-  component: DepartmentPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/department-page'),
+    'DepartmentPage',
+  ),
 })
 
 /** The census a search asks for, or the latest, with the budget year that names its areas. */
@@ -197,7 +201,10 @@ const peopleRoute = createRoute({
   },
   loaderDeps: ({ search }) => ({ year: search.year }),
   loader: loadCensus,
-  component: PeoplePage,
+  component: lazyRouteComponent(
+    () => import('@/pages/people-page'),
+    'PeoplePage',
+  ),
 })
 
 const personRoute = createRoute({
@@ -206,7 +213,10 @@ const personRoute = createRoute({
   validateSearch: personSearchSchema,
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(peopleIndexQuery),
-  component: PersonPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/person-page'),
+    'PersonPage',
+  ),
 })
 
 const budgetRoute = createRoute({
@@ -214,7 +224,10 @@ const budgetRoute = createRoute({
   path: '/budget',
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(outlookQuery),
-  component: BudgetPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/budget-page'),
+    'BudgetPage',
+  ),
 })
 
 /** The budget year a scenario's eliminations read. */
@@ -264,7 +277,10 @@ const scenariosRoute = createRoute({
   path: '/scenarios',
   validateSearch: scenarioSearchSchema,
   loader: loadScenario,
-  component: ScenariosPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/scenarios-page'),
+    'ScenariosPage',
+  ),
 })
 
 const sourcesRoute = createRoute({
@@ -276,7 +292,10 @@ const sourcesRoute = createRoute({
       queryClient.ensureQueryData(raiseTermsQuery),
       queryClient.ensureQueryData(outlookQuery),
     ]),
-  component: SourcesPage,
+  component: lazyRouteComponent(
+    () => import('@/pages/sources-page'),
+    'SourcesPage',
+  ),
 })
 
 const routeTree = rootRoute.addChildren([
