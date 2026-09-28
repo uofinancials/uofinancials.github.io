@@ -87,8 +87,8 @@ flowchart LR
     and loading and error states.
   - `fields` - form fields, the department or area picker, the removable filter,
     and the sortable column header.
-  - `charts` - line and stacked bar charts, index figures with ranked bars for
-    narrow screens, bars in table cells, the charts' tables, and series colors.
+  - `charts` - line, index, and stacked bar charts, ranked bars of a change,
+    bars in table cells, the charts' tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
     table.
   - `trends` - the Trends report's sections and group table, the pay changes
@@ -175,11 +175,12 @@ flowchart LR
   summary, the outlook, the raise terms, and the manifest.
 - `/trends` - a report of the Fall censuses over a year range held in the URL:
   spend, jobs, median rate, and admins and executives per 100 faculty since the
-  first census; each group's growth indexed to it; each group's share of spend
-  and of its change; the change in spend split into FTE and pay per FTE;
-  continuing jobs' median raises by group and census pair; and one unit against
-  its college or VP area and the university; driven by `src/lib/trends` over the
-  summary and, for a picked area, that area's trends file.
+  first census; each group's growth as ranked bars or indexed over time; each
+  group's share of spend and of its change; the change in spend split into FTE
+  and pay per FTE; continuing jobs' median raises by group and census pair; and
+  one unit against its college or VP area and the university; driven by
+  `src/lib/trends` over the summary and, for a picked area, that area's trends
+  file.
 - `/trends/pay-changes` - for continuing jobs in each pair of consecutive
   censuses, the median change in salary rate by group, the counts of changed
   class, rank, and title, and one pair's distribution of changes and median

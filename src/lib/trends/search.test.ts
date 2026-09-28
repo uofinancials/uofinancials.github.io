@@ -61,6 +61,7 @@ test('the report reads its years as the pay changes page does, and shows jobs by
     to: 2025,
     fromYears: [],
     growth: 'jobs',
+    view: 'bars',
     compare: 'fte',
   })
   expect(resolveReportView({ growth: 'median' }, YEARS).growth).toBe('median')

@@ -44,6 +44,15 @@ export type CensusMetric = (typeof CENSUS_METRICS)[number]
 export const REPORT_METRICS = ['jobs', ...CENSUS_METRICS] as const
 export type ReportMetric = (typeof REPORT_METRICS)[number]
 
+/** How the report shows each group's growth: its change as a ranked bar, or its index over time. */
+export const GROWTH_VIEWS = ['bars', 'chart'] as const
+export type GrowthView = (typeof GROWTH_VIEWS)[number]
+
+export const GROWTH_VIEW_OPTIONS = [
+  ['bars', 'Change'],
+  ['chart', 'Over time'],
+] as const satisfies readonly (readonly [GrowthView, string])[]
+
 /** The measure of a link made before the pay changes page, which redirects there. */
 export const CHANGE_METRIC = 'change'
 
@@ -110,6 +119,7 @@ export const reportSearchSchema = z.object({
   from: z.number().int().optional().catch(undefined),
   to: z.number().int().optional().catch(undefined),
   growth: z.enum(REPORT_METRICS).optional().catch(undefined),
+  view: z.enum(GROWTH_VIEWS).optional().catch(undefined),
   compare: z.enum(REPORT_METRICS).optional().catch(undefined),
   area: orgCodeParam.optional().catch(undefined),
   unit: orgCodeParam.optional().catch(undefined),
@@ -190,6 +200,7 @@ export function resolveReportView(search: ReportSearch, years: number[]) {
   return {
     ...resolveRange(search, years),
     growth: search.growth ?? 'jobs',
+    view: search.view ?? 'bars',
     compare: search.compare ?? 'fte',
   }
 }

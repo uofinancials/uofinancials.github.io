@@ -98,9 +98,11 @@ function CompareFigure({
     <>
       <p>{compareAnswer(codes, metric, range.from)}</p>
       <IndexFigure
+        view="chart"
         labels={labels}
         lines={lines}
         changes={lineChanges(codes, metric)}
+        emphasis={codes.at(-1)?.name}
         label={`${METRIC_INFO[metric].label}, Fall ${range.from} = 100`}
         barsLabel={`Change in ${METRIC_INFO[metric].noun}, Fall ${range.from} to Fall ${range.to}`}
       />

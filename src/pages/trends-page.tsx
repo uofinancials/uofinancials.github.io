@@ -73,7 +73,7 @@ export function TrendsPage() {
   const { years, fiscalYears } = useLoaderData({ from: '/trends' })
   const search = useSearch({ from: '/trends' })
   const { data: summary } = useSuspenseQuery(summaryQuery)
-  const { from, to, fromYears, growth, compare } = resolveReportView(
+  const { from, to, fromYears, growth, view, compare } = resolveReportView(
     search,
     years,
   )
@@ -112,7 +112,8 @@ export function TrendsPage() {
         ratios={ratios}
         range={range}
         metric={growth}
-        onMetric={(metric) => handleChange({ growth: metric })}
+        view={view}
+        onChange={handleChange}
       />
       <MoneySection trends={trends} range={range} />
       <SplitSection trends={trends} range={range} />

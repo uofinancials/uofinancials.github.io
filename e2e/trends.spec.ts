@@ -12,6 +12,11 @@ test('the report answers each question from the Fall censuses, with the exact fi
   ).toBeVisible()
   await expect(main).toContainText('$504,812,068, from $295,679,251')
   await expect(main).toContainText('+14.8 per 100')
+  await expect(
+    page.getByRole('list', {
+      name: 'Change in jobs by group, Fall 2014 to Fall 2025',
+    }),
+  ).toContainText('Admins and professionals+27.0%')
   await expect(main).toContainText(
     'Jobs since Fall 2014: +11.9% for all jobs. Admins and professionals changed most, +27.0%, and Faculty least, +0.4%.',
   )
@@ -69,6 +74,14 @@ test('the measure and years are held in the link, and every section compares aga
   await expect(
     page.getByRole('heading', { name: 'What changed since Fall 2018' }),
   ).toBeVisible()
+  const growth = page.locator('#groups-grew')
+  await expect(
+    growth.getByRole('list', {
+      name: 'Change in median salary rate by group, Fall 2018 to Fall 2025',
+    }),
+  ).toBeVisible()
+  await growth.getByRole('radio', { name: 'Over time' }).check()
+  await expect(page).toHaveURL(/view=chart/)
   await expect(
     page.getByRole('figure', {
       name: 'Median salary rate by group, Fall 2018 = 100',

@@ -19,7 +19,7 @@ export function growthAnswer(
   from: number,
 ): string | null {
   const all = rows.find(({ key }) => key === ALL_JOBS)?.[metric] ?? null
-  const ranked = rankByChange(
+  const { ranked } = rankByChange(
     rows
       .filter(({ key }) => key !== ALL_JOBS)
       .map((row) => ({ key: row.key, change: row[metric] })),
@@ -32,7 +32,7 @@ export function growthAnswer(
   return `${METRIC_INFO[metric].label} since Fall ${from}: ${formatChange(all)} for all jobs. ${largest.key} changed most, ${formatChange(largest.change)}, and ${smallest.key} least, ${formatChange(smallest.change)}.`
 }
 
-/** Why some lines are not drawn: they have no value in the first census to index from. */
+/** Why some groups are not charted: they have no value in the first census to measure from. */
 export function unindexedNote(
   keys: string[],
   metric: ReportMetric,
@@ -40,7 +40,7 @@ export function unindexedNote(
 ): string | null {
   if (keys.length === 0) return null
   const isOne = keys.length === 1
-  return `${LIST.format(keys)} ${isOne ? 'has' : 'have'} no ${METRIC_INFO[metric].noun} shown in Fall ${from}, so ${isOne ? 'it has' : 'they have'} no index; the table has ${isOne ? 'its' : 'their'} figures.`
+  return `${LIST.format(keys)} ${isOne ? 'has' : 'have'} no ${METRIC_INFO[metric].noun} shown in Fall ${from}, so ${isOne ? 'it is' : 'they are'} not charted; the table has ${isOne ? 'its' : 'their'} figures.`
 }
 
 export function ratioAnswer(

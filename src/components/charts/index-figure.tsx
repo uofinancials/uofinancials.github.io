@@ -1,41 +1,46 @@
-import { formatIndex } from '@/lib/shared/format'
-import { INDEX_BASE, type IndexedLine } from '@/lib/trends/report'
+import type { ChartMarker } from '@/lib/shared/series'
+import type { IndexedLine } from '@/lib/trends/report'
+import type { GrowthView } from '@/lib/trends/search'
+import { IndexChart } from './index-chart'
 import { RankedBars } from './ranked-bars'
-import { SeriesChart } from './series-chart'
 
-/** Lines indexed to their first value, named at their ends, and on a phone each line's change as ranked bars instead. */
+/** Each line's change as ranked bars, or the lines over time as an index chart; a phone always shows the bars. */
 export function IndexFigure({
+  view,
   labels,
   lines,
   hidden,
   changes,
+  emphasis,
   label,
   barsLabel,
   marker,
 }: {
+  view: GrowthView
   labels: string[]
   lines: IndexedLine[]
   hidden?: string[]
   changes: { key: string; change: number | null }[]
+  /** The bar drawn as the reference the others are read against. */
+  emphasis?: string
   label: string
   barsLabel: string
-  marker?: { x: string; label: string }
+  marker?: ChartMarker
 }) {
+  const bars = (
+    <RankedBars items={changes} emphasis={emphasis} label={barsLabel} />
+  )
+  if (view === 'bars') return bars
   return (
     <>
-      <RankedBars items={changes} label={barsLabel} className="md:hidden" />
+      <div className="md:hidden">{bars}</div>
       <div className="hidden md:block">
-        <SeriesChart
+        <IndexChart
           labels={labels}
-          series={lines}
+          lines={lines}
           hidden={hidden}
-          format={formatIndex}
-          formatAxis={formatIndex}
           label={label}
           marker={marker}
-          referenceY={INDEX_BASE}
-          hasEndLabels
-          isZeroBased={false}
         />
       </div>
     </>

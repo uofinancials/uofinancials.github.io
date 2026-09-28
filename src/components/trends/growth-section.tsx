@@ -16,10 +16,13 @@ import {
 } from '@/lib/trends/report'
 import { growthAnswer, unindexedNote } from '@/lib/trends/report-text'
 import {
+  GROWTH_VIEW_OPTIONS,
+  type GrowthView,
   METRIC_INFO,
   REPORT_METRIC_OPTIONS,
   REPORT_METRICS,
   type ReportMetric,
+  type ReportSearch,
   type YearRange,
 } from '@/lib/trends/search'
 import { MIN_JOBS_SHOWN, type Trends } from '@/lib/trends/trends'
@@ -33,36 +36,69 @@ const METHOD = `Each line is a group’s figure in each census over its figure i
 
 const RATIO_METHOD = `${RATIO_GROUPS.join(' and ')} jobs over ${RATIO_BASE_GROUP} jobs in each census, times 100, counting jobs rather than people or FTE.`
 
+function GrowthControls({
+  metric,
+  view,
+  onChange,
+}: {
+  metric: ReportMetric
+  view: GrowthView
+  onChange: (patch: ReportSearch) => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-x-8 gap-y-4">
+      <RadioField
+        legend="Measure"
+        name="growth"
+        value={metric}
+        options={REPORT_METRIC_OPTIONS}
+        onSelect={(value) => onChange({ growth: value })}
+      />
+      <div className="hidden md:block">
+        <RadioField
+          legend="Show"
+          name="view"
+          value={view}
+          options={GROWTH_VIEW_OPTIONS}
+          onSelect={(value) => onChange({ view: value })}
+        />
+      </div>
+    </div>
+  )
+}
+
 /** Each group's growth since the first census, indexed, with the change table and the staffing ratio. */
 export function GrowthSection({
   trends,
   ratios,
   range: { from, to },
   metric,
-  onMetric,
+  view,
+  onChange,
 }: {
   trends: Trends
   ratios: RatioRow[]
   range: YearRange
   metric: ReportMetric
-  onMetric: (metric: ReportMetric) => void
+  view: GrowthView
+  onChange: (patch: ReportSearch) => void
 }) {
   const { lines, hidden, unindexed } = indexedGroups(trends, metric)
   const rows = changeTable(trends)
   const charted = rows.filter(({ key }) => !hidden.includes(key))
-  const note = unindexedNote(unindexed, metric, from)
+  const note = unindexedNote(
+    unindexed.filter((key) => key !== UNPAID_GROUP),
+    metric,
+    from,
+  )
   const isRestructureShown = from < RESTRUCTURE_YEAR && to >= RESTRUCTURE_YEAR
   return (
     <PageSection id="groups-grew" title="Which groups grew?">
       <p>{growthAnswer(charted, metric, from)}</p>
-      <RadioField
-        legend="Measure"
-        name="growth"
-        value={metric}
-        options={REPORT_METRIC_OPTIONS}
-        onSelect={onMetric}
-      />
+      <GrowthControls metric={metric} view={view} onChange={onChange} />
       <IndexFigure
+        view={view}
+        emphasis={ALL_JOBS}
         labels={trends.total.map(({ year }) => String(year))}
         lines={lines}
         hidden={hidden}

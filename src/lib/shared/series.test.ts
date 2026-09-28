@@ -64,17 +64,24 @@ test('labels spread to keep a gap, in their given order, and stay within the ran
   expect(spreadLabels([-5], 10, [0, 100])).toEqual([0])
 })
 
-test('changes rank largest first, sized against the largest size, without the missing', () => {
-  expect(
-    rankByChange([
-      { key: 'A', change: 0.1 },
-      { key: 'B', change: null },
-      { key: 'C', change: -0.4 },
-      { key: 'D', change: 0.2 },
-    ]),
-  ).toEqual([
-    { key: 'D', change: 0.2, share: 0.5 },
-    { key: 'A', change: 0.1, share: 0.25 },
-    { key: 'C', change: -0.4, share: 1 },
+test('changes rank largest first on one axis from the largest fall to the largest rise, without the missing', () => {
+  const { zero, ranked } = rankByChange([
+    { key: 'A', change: 0.1 },
+    { key: 'B', change: null },
+    { key: 'C', change: -0.2 },
+    { key: 'D', change: 0.6 },
   ])
+  expect(zero).toBeCloseTo(0.25)
+  expect(ranked.map(({ key }) => key)).toEqual(['D', 'A', 'C'])
+  expect(ranked[0]?.offset).toBeCloseTo(0.25)
+  expect(ranked[0]?.width).toBeCloseTo(0.75)
+  expect(ranked[1]?.offset).toBeCloseTo(0.25)
+  expect(ranked[1]?.width).toBeCloseTo(0.125)
+  expect(ranked[2]).toMatchObject({ offset: 0, width: 0.25 })
+  const rises = rankByChange([
+    { key: 'A', change: 0.5 },
+    { key: 'B', change: 0.25 },
+  ])
+  expect(rises.zero).toBe(0)
+  expect(rises.ranked.map(({ width }) => width)).toEqual([1, 0.5])
 })

@@ -19,37 +19,18 @@ import {
   sparseNote,
 } from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
-import { type EndLabel, EndLabels } from './end-labels'
+import { chartRows, markerLine, seriesKey } from './chart-parts'
 import { lineColor } from './line-color'
 
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
-const MARKER_DASH = '4 4'
-const END_LABELS_WIDTH_PX = 210
 
 type ChartSeries = {
   key: string
   values: (number | null)[]
   /** Drawn thin and grey, as the reference the colored lines are read against. */
   isBaseline?: boolean
-}
-
-/** Recharts resolves a string data key as a path, and series keys are data, so each series gets a positional field. */
-function seriesKey(index: number) {
-  return `series${index}`
-}
-
-function chartRows(labels: string[], series: ChartSeries[]) {
-  return labels.map((x, index) => ({
-    x,
-    ...Object.fromEntries(
-      series.map(({ values }, position) => [
-        seriesKey(position),
-        values[index] ?? null,
-      ]),
-    ),
-  }))
 }
 
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
@@ -70,33 +51,6 @@ function lineStyle({ isBaseline }: ChartSeries, index: number) {
       }
 }
 
-function markerLine(marker: ChartMarker) {
-  return (
-    <ReferenceLine
-      x={marker.x}
-      stroke="var(--foreground)"
-      strokeDasharray={MARKER_DASH}
-      label={{
-        value: marker.label,
-        position: 'insideBottomRight',
-        fill: 'var(--foreground)',
-        fontSize: 12,
-      }}
-    />
-  )
-}
-
-function endLabelsOf(
-  shown: { line: ChartSeries; index: number }[],
-): EndLabel[] {
-  return shown.flatMap(({ line, index }) => {
-    const value = line.values.findLast((point) => point !== null)
-    return value === undefined || value === null
-      ? []
-      : [{ key: line.key, value, stroke: lineStyle(line, index).stroke }]
-  })
-}
-
 /** One line per series over the x labels, with zero marked when a line goes below it; the table beside it carries the numbers. Below two valued labels it says so in a sentence instead. */
 export function SeriesChart({
   labels,
@@ -106,9 +60,6 @@ export function SeriesChart({
   formatAxis,
   label,
   marker,
-  hasEndLabels = false,
-  isZeroBased = true,
-  referenceY,
   className,
 }: {
   labels: string[]
@@ -119,12 +70,6 @@ export function SeriesChart({
   label: string
   /** A dashed vertical line at one x label, with its text. */
   marker?: ChartMarker
-  /** Names each line at its end instead of in a legend. */
-  hasEndLabels?: boolean
-  /** Whether the y axis starts at zero, or near the lowest value. */
-  isZeroBased?: boolean
-  /** A value marked with a horizontal line, such as an index's base. */
-  referenceY?: number
   /** Overrides the chart's height classes. */
   className?: string
 }) {
@@ -146,11 +91,7 @@ export function SeriesChart({
         config={{}}
         className={cn('aspect-auto h-96 w-full', className)}
       >
-        <LineChart
-          data={data}
-          margin={hasEndLabels ? { right: END_LABELS_WIDTH_PX } : undefined}
-          accessibilityLayer
-        >
+        <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} />
           {isBelowZero && (
             <ReferenceArea y1={0} fill="var(--muted)" fillOpacity={1} />
@@ -158,7 +99,6 @@ export function SeriesChart({
           <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />
           <YAxis
             width={AXIS_WIDTH_PX}
-            domain={isZeroBased ? undefined : ['auto', 'auto']}
             tickLine={false}
             tickFormatter={(value) => formatAxis(Number(value))}
           />
@@ -173,13 +113,7 @@ export function SeriesChart({
               />
             }
           />
-          {referenceY !== undefined && (
-            <ReferenceLine y={referenceY} stroke="var(--foreground)" />
-          )}
-          {hasEndLabels && (
-            <EndLabels labels={endLabelsOf(shown)} format={format} />
-          )}
-          {!hasEndLabels && shown.length > 1 && <Legend itemSorter={null} />}
+          {shown.length > 1 && <Legend itemSorter={null} />}
           {shown.map(({ line, dataKey, index }) => (
             <Line
               key={line.key}

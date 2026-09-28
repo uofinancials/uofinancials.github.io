@@ -81,16 +81,24 @@ export function spreadLabels(
   return spread
 }
 
-/** Items with a change, largest first, each with its change's size as a fraction of the largest size; items without one are left out. */
-export function rankByChange(
-  items: { key: string; change: number | null }[],
-): { key: string; change: number; share: number }[] {
+/** Items with a change, largest first, each placed on one axis from the smallest change (or zero) to the largest (or zero): `offset` is where its bar starts and `width` its length, both fractions of the axis, and `zero` is where zero falls on it. Items without a change are left out. */
+export function rankByChange(items: { key: string; change: number | null }[]): {
+  zero: number
+  ranked: { key: string; change: number; offset: number; width: number }[]
+} {
   const ranked = items
     .flatMap(({ key, change }) => (change === null ? [] : [{ key, change }]))
     .sort((a, b) => b.change - a.change)
-  const largest = Math.max(0, ...ranked.map(({ change }) => Math.abs(change)))
-  return ranked.map((item) => ({
-    ...item,
-    share: largest === 0 ? 0 : Math.abs(item.change) / largest,
-  }))
+  const low = Math.min(0, ...ranked.map(({ change }) => change))
+  const high = Math.max(0, ...ranked.map(({ change }) => change))
+  const span = high - low
+  const at = (value: number) => (span === 0 ? 0 : (value - low) / span)
+  return {
+    zero: at(0),
+    ranked: ranked.map((item) => ({
+      ...item,
+      offset: at(Math.min(item.change, 0)),
+      width: span === 0 ? 0 : Math.abs(item.change) / span,
+    })),
+  }
 }

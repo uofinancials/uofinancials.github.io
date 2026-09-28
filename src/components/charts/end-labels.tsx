@@ -5,6 +5,7 @@ const GAP_PX = 16
 const SWATCH_PX = 12
 const OFFSET_PX = 8
 const FONT_PX = 12
+const DIMMED = 0.35
 
 export type EndLabel = { key: string; value: number; stroke: string }
 
@@ -12,9 +13,12 @@ export type EndLabel = { key: string; value: number; stroke: string }
 export function EndLabels({
   labels,
   format,
+  active = null,
 }: {
   labels: EndLabel[]
   format: (value: number) => string
+  /** The line pointed at; its label is bold and the others dimmed. */
+  active?: string | null
 }) {
   const yScale = useYAxisScale()
   const plot = usePlotArea()
@@ -30,7 +34,11 @@ export function EndLabels({
       {labels.map(({ key, value, stroke }, index) => {
         const y = ys[index] ?? plot.y
         return (
-          <g key={key}>
+          <g
+            key={key}
+            opacity={active === null || active === key ? 1 : DIMMED}
+            fontWeight={active === key ? 600 : undefined}
+          >
             <line
               x1={x}
               x2={x + SWATCH_PX}

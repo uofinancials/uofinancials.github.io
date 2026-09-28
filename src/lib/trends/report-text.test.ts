@@ -28,10 +28,10 @@ test('the growth answer names all jobs’ change and the groups that changed mos
 test('lines without a first value are listed with their verb agreeing', () => {
   expect(unindexedNote([], 'jobs', 2014)).toBeNull()
   expect(unindexedNote(['Overloads'], 'spend', 2014)).toBe(
-    'Overloads has no salary spend shown in Fall 2014, so it has no index; the table has its figures.',
+    'Overloads has no salary spend shown in Fall 2014, so it is not charted; the table has its figures.',
   )
   expect(unindexedNote(['A', 'B', 'C'], 'fte', 2014)).toBe(
-    'A, B, and C have no FTE shown in Fall 2014, so they have no index; the table has their figures.',
+    'A, B, and C have no FTE shown in Fall 2014, so they are not charted; the table has their figures.',
   )
 })
 
