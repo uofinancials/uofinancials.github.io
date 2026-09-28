@@ -16,11 +16,11 @@ export function SourceCitation({
   return (
     <p className="text-xs text-muted-foreground">
       Source:{' '}
-      <a className="underline" href={citation.href}>
+      <a className="link" href={citation.href}>
         {citation.dataset}
       </a>
       , {citation.publisher} -{' '}
-      <Link className="underline" to="/sources" hash={citation.anchor}>
+      <Link className="link" to="/sources" hash={citation.anchor}>
         retrieved {citation.retrievedOn}
       </Link>
       {computed && (

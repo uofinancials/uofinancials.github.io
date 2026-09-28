@@ -42,7 +42,7 @@ function Examples() {
           <Link
             to="/scenarios"
             search={{ rules: toSearchRules(rules) }}
-            className="underline"
+            className="link"
           >
             {question}
           </Link>
@@ -168,7 +168,7 @@ export function ScenariosPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-title font-semibold">Scenarios</h1>
+        <h1 className="text-title">Scenarios</h1>
         <p>
           Stack rules over the Fall {census.year} census and see what each would
           save, and what the savings would do to the E&G fund projected in “

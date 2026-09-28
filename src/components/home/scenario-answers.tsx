@@ -31,7 +31,7 @@ function Answer({ answer }: { answer: ExampleAnswer }) {
       <Link
         to="/scenarios"
         search={{ rules: toSearchRules(answer.rules) }}
-        className="underline"
+        className="link"
       >
         {answer.question}
       </Link>{' '}
@@ -71,7 +71,7 @@ export function ScenarioAnswers({
         ))}
       </ul>
       <p>
-        <Link to="/scenarios" className="underline">
+        <Link to="/scenarios" className="link">
           Build your own scenario
         </Link>{' '}
         from pay cuts, thresholds, hiring and raise freezes, and department

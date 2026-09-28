@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { LINE_COLORS } from '@/components/charts/line-color'
 import CSS from './index.css?raw'
 
 type Oklab = { lightness: number; a: number; b: number }
@@ -13,8 +14,8 @@ const TEXT_TOKENS = ['foreground', 'muted-foreground', 'primary']
 const TEXT_SURFACES = ['background', 'card', 'muted']
 const GRAPHIC_TOKENS = [
   'ring',
-  ...Array.from({ length: 8 }, (_, index) => `line-${index + 1}`),
-  ...Array.from({ length: 5 }, (_, index) => `chart-${index + 1}`),
+  'chart',
+  ...Array.from({ length: LINE_COLORS }, (_, index) => `line-${index + 1}`),
 ]
 const UO_COLORS = { green: '#154733', yellow: '#fee123' }
 const MIN_UO_DISTANCE = 0.15
@@ -52,11 +53,8 @@ function relativeLuminance({ lightness, a, b }: Oklab): number {
 }
 
 function contrast(first: Oklab, second: Oklab): number {
-  const [darker, lighter] = [
-    relativeLuminance(first),
-    relativeLuminance(second),
-  ].sort()
-  return ((lighter ?? 0) + 0.05) / ((darker ?? 0) + 0.05)
+  const [one, other] = [relativeLuminance(first), relativeLuminance(second)]
+  return (Math.max(one, other) + 0.05) / (Math.min(one, other) + 0.05)
 }
 
 function hexToOklab(hex: string): Oklab {
@@ -96,12 +94,6 @@ describe.each(Object.entries(THEMES))('the %s theme', (_, tokens) => {
   )('sets --%s on --%s at AA text contrast', (text, surface) => {
     expect(
       contrast(token(tokens, text), token(tokens, surface)),
-    ).toBeGreaterThanOrEqual(TEXT_CONTRAST)
-  })
-
-  it('sets --primary-foreground on --primary at AA text contrast', () => {
-    expect(
-      contrast(token(tokens, 'primary-foreground'), token(tokens, 'primary')),
     ).toBeGreaterThanOrEqual(TEXT_CONTRAST)
   })
 

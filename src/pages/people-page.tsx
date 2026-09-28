@@ -100,7 +100,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
       <span className="text-muted-foreground">{text}</span>
     ) : (
       <Link
-        className="underline"
+        className="link"
         from="/people"
         to="/people"
         search={(previous) => ({ ...previous, page: to })}
@@ -131,7 +131,7 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
         {found.matches.map((person) => (
           <li key={person.name} className="flex flex-wrap gap-x-2">
             <Link
-              className="underline"
+              className="link"
               to="/people/$name"
               params={{ name: person.name }}
             >
@@ -221,7 +221,7 @@ export function PeoplePage() {
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
-      <h1 className="text-title font-semibold">People, Fall {view.year}</h1>
+      <h1 className="text-title">People, Fall {view.year}</h1>
       <p className="text-sm text-muted-foreground">
         Every job the Fall {view.year} Census salary reports publish, by name,
         as published. {RATE_NOTE}

@@ -11,7 +11,7 @@ export function PageSection({
 }) {
   return (
     <section id={id} className="space-y-3">
-      <h2 className="text-section font-semibold">{title}</h2>
+      <h2 className="text-section">{title}</h2>
       {children}
     </section>
   )

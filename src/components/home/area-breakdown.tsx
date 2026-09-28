@@ -70,7 +70,7 @@ export function AreaBreakdown({
                   area.name
                 ) : (
                   <Link
-                    className="underline"
+                    className="link"
                     to="/departments/$code"
                     params={{ code: area.code }}
                   >

@@ -59,18 +59,18 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
       <SourceCitation source={{ kind: 'fall', year: entry.year }} />
       {[...departments].map(([code, department]) => (
         <p key={code} className="flex flex-wrap gap-x-4 text-sm">
-          <Link className="underline" to="/departments/$code" params={{ code }}>
+          <Link className="link" to="/departments/$code" params={{ code }}>
             {department} ({code})
           </Link>
           <Link
-            className="underline"
+            className="link"
             to="/trends"
             search={{ metric: 'change', dept: code, pair: entry.year }}
           >
             Pay changes, {department}
           </Link>
           <Link
-            className="underline"
+            className="link"
             to="/people"
             search={{ dept: code, year: entry.year }}
           >
@@ -81,7 +81,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
       {positionsOf(entry.records).map(({ position, label }) => (
         <p key={position} className="flex flex-wrap gap-x-4 text-sm">
           <Link
-            className="underline"
+            className="link"
             to="/people"
             search={{ position, year: entry.year }}
           >
@@ -92,7 +92,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
       {group && (
         <p className="text-sm">
           <Link
-            className="underline"
+            className="link"
             to="/trends"
             search={{ metric: 'change', position: group.key, pair: entry.year }}
           >
@@ -118,7 +118,7 @@ export function PersonView({
   const entry = run?.years.find((candidate) => candidate.year === year)
   return (
     <section className="space-y-6">
-      <h1 className="text-title font-semibold">{person.name}</h1>
+      <h1 className="text-title">{person.name}</h1>
       <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />

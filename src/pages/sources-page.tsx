@@ -112,7 +112,7 @@ function BudgetSources({ budget }: { budget: Manifest['budget'] }) {
               <TableCell>{label}</TableCell>
               <TableCell>{entry.period}</TableCell>
               <TableCell>
-                <a className="underline" href={entry.url}>
+                <a className="link" href={entry.url}>
                   {entry.fileName}
                 </a>
               </TableCell>
@@ -147,7 +147,7 @@ function RateSources({ rates }: { rates: NonNullable<Manifest['rates']> }) {
           {rates.pages.map((page) => (
             <TableRow key={page.url}>
               <TableCell>
-                <a className="underline" href={page.url}>
+                <a className="link" href={page.url}>
                   {page.url}
                 </a>
               </TableCell>
@@ -171,7 +171,7 @@ function RaiseSources() {
           (document) => (
             <TableRow key={document.url}>
               <TableCell>
-                <a className="underline" href={document.url}>
+                <a className="link" href={document.url}>
                   {document.document}
                 </a>
               </TableCell>
@@ -195,7 +195,7 @@ function OutlookSources() {
         {listCitedDocuments(outlookSources(data)).map((document) => (
           <TableRow key={document.url}>
             <TableCell>
-              <a className="underline" href={document.url}>
+              <a className="link" href={document.url}>
                 {document.document}
               </a>
             </TableCell>
@@ -214,7 +214,7 @@ export function SourcesPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-title font-semibold">Sources</h1>
+        <h1 className="text-title">Sources</h1>
         <p>
           Every figure on this site comes from reports the University of Oregon
           publishes for public consumption. The site extracts the figures into
@@ -226,7 +226,7 @@ export function SourcesPage() {
         {firstFall && (
           <p>
             Published by the UO Office of Data Enablement on its{' '}
-            <a className="underline" href={firstFall.sourcePage}>
+            <a className="link" href={firstFall.sourcePage}>
               salary reports page
             </a>
             , one classified and one unclassified report per census.
@@ -238,7 +238,7 @@ export function SourcesPage() {
         {firstBudget && (
           <p>
             Published by UO Budget and Resource Planning on its{' '}
-            <a className="underline" href={firstBudget.sourcePage}>
+            <a className="link" href={firstBudget.sourcePage}>
               budget reports page
             </a>
             .

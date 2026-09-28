@@ -203,9 +203,7 @@ export function TrendsPage() {
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
     <div className="space-y-8">
-      <h1 className="text-title font-semibold">
-        University of Oregon employees over time
-      </h1>
+      <h1 className="text-title">University of Oregon employees over time</h1>
       <TrendsControls
         view={view}
         years={years}

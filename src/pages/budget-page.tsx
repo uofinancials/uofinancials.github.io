@@ -132,7 +132,7 @@ export function BudgetPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-title font-semibold">Budget outlook</h1>
+        <h1 className="text-title">Budget outlook</h1>
         <p>
           The E&G fund as projected in “{projection.title}”, in the{' '}
           {projection.source.document}.
@@ -145,7 +145,7 @@ export function BudgetPage() {
         </p>
         <p className="text-sm">
           To set this site's estimate of pay changes against the projection, see{' '}
-          <Link to="/scenarios" className="underline">
+          <Link to="/scenarios" className="link">
             Scenarios
           </Link>
           .

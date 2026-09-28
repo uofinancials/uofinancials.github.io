@@ -14,7 +14,7 @@ import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { resolveCensusYear } from '@/lib/census/search'
 import { personOf, yearsOf } from '@/lib/people/person-lookup'
 
-const BACK_CLASS = 'text-sm underline'
+const BACK_CLASS = 'text-sm link'
 
 function BackButton() {
   const router = useRouter()

@@ -8,7 +8,7 @@ export function CitedSourceText({
 }) {
   return (
     <>
-      <a className="underline" href={url}>
+      <a className="link" href={url}>
         {document}
       </a>
       {location && `, ${location}`}, retrieved {retrievedOn}

@@ -25,7 +25,7 @@ export function TotalsChart({
   label: string
 }) {
   const config = {
-    [VALUE]: { label: valueLabel, color: 'var(--chart-3)' },
+    [VALUE]: { label: valueLabel, color: 'var(--chart)' },
   } satisfies ChartConfig
   return (
     <figure aria-label={label}>
