@@ -1,4 +1,4 @@
-import { TotalsChart } from '@/components/charts/totals-chart'
+import { BarCell } from '@/components/charts/bar-cell'
 import {
   Table,
   TableBody,
@@ -9,9 +9,10 @@ import {
 } from '@/components/ui/table'
 import type { GroupRow } from '@/lib/people/list'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
+import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
 
-/** Jobs per group as bars, and a table of each group's jobs and median rate. */
+/** Each group's jobs, with bars, and median rate, as a table. */
 export function GroupJobsFigure({
   rows,
   label,
@@ -19,40 +20,34 @@ export function GroupJobsFigure({
   rows: GroupRow[]
   label: string
 }) {
+  const shares = shareOfLargest(rows.map(({ jobs }) => jobs))
   return (
-    <section className="space-y-4">
-      <TotalsChart
-        bars={rows.map(({ group, jobs }) => ({ key: group, value: jobs }))}
-        valueLabel="Jobs"
-        format={formatCount}
-        label={label}
-      />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead scope="col">Group</TableHead>
-            <TableHead scope="col" className="text-right">
-              Jobs
+    <Table>
+      <caption className="sr-only">{label}</caption>
+      <TableHeader>
+        <TableRow>
+          <TableHead scope="col">Group</TableHead>
+          <TableHead scope="col" className="text-right">
+            Jobs
+          </TableHead>
+          <TableHead scope="col" className="text-right">
+            Median rate, primary jobs
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map(({ group, jobs, medianRateCents }, index) => (
+          <TableRow key={group}>
+            <TableHead scope="row" className="font-normal">
+              {group}
             </TableHead>
-            <TableHead scope="col" className="text-right">
-              Median rate, primary jobs
-            </TableHead>
+            <BarCell share={shares[index] ?? 0}>{formatCount(jobs)}</BarCell>
+            <TableCell className={NUMBER_CELL}>
+              {formatOrBlank(medianRateCents, formatDollars)}
+            </TableCell>
           </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map(({ group, jobs, medianRateCents }) => (
-            <TableRow key={group}>
-              <TableHead scope="row" className="font-normal">
-                {group}
-              </TableHead>
-              <TableCell className={NUMBER_CELL}>{formatCount(jobs)}</TableCell>
-              <TableCell className={NUMBER_CELL}>
-                {formatOrBlank(medianRateCents, formatDollars)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </section>
+        ))}
+      </TableBody>
+    </Table>
   )
 }

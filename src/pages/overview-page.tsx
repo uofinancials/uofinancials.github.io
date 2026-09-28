@@ -20,7 +20,7 @@ import {
   raiseTermsQuery,
   summaryQuery,
 } from '@/data/queries'
-import { outlookSeries } from '@/lib/budget/outlook'
+import { fundBalanceMarker, outlookSeries } from '@/lib/budget/outlook'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/census/totals'
 import {
   answersOf,
@@ -144,6 +144,7 @@ function GapSection({
         format={formatDollars}
         formatAxis={formatCompactDollars}
         label="Projected E&G run rate and ending fund balance by fiscal year"
+        marker={fundBalanceMarker(projection)}
         className={COMPACT_CHART}
       />
       <Sources sources={[{ kind: 'document', source: projection.source }]} />

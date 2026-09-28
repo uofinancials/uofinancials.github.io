@@ -14,7 +14,9 @@ import {
   formatFte,
   formatShare,
 } from '@/lib/shared/format'
+import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
+import { BarCell } from './bar-cell'
 
 const NUMBER_HEADS = ['People', 'Jobs', 'FTE', 'Salary spend', 'Share']
 
@@ -44,6 +46,7 @@ export function TotalsTable({
   totalSpendCents: number
   temps: Totals
 }) {
+  const shares = shareOfLargest(groups.map(({ totals }) => totals.spendCents))
   return (
     <Table>
       <TableHeader>
@@ -57,15 +60,15 @@ export function TotalsTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {groups.map(({ key, totals }) => (
+        {groups.map(({ key, totals }, index) => (
           <TableRow key={key}>
             <TableHead scope="row" className="font-normal">
               {key}
             </TableHead>
             <CountCells totals={totals} />
-            <TableCell className={NUMBER_CELL}>
+            <BarCell share={shares[index] ?? 0}>
               {formatDollars(totals.spendCents)}
-            </TableCell>
+            </BarCell>
             <TableCell className={NUMBER_CELL}>
               {formatShare(totals.spendCents, totalSpendCents)}
             </TableCell>

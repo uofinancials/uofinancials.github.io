@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import type { Projection } from '@/data/outlook'
 import {
   FUND_BALANCE_SERIES,
+  fundBalanceMarker,
   gapRows,
   outlookSeries,
   RUN_RATE_SERIES,
@@ -62,4 +63,14 @@ test('the chart has a run-rate and an ending fund balance line over the fiscal y
       { key: FUND_BALANCE_SERIES, values: [150, 50] },
     ],
   })
+})
+
+test('the fund balance marker is at the first fiscal year below zero', () => {
+  expect(fundBalanceMarker(PROJECTION)).toBeUndefined()
+  expect(
+    fundBalanceMarker({ ...PROJECTION, endingFundBalanceCents: [-1, -2] }),
+  ).toEqual({ x: 'FY26', label: 'Fund balance below zero from FY26' })
+  expect(
+    fundBalanceMarker({ ...PROJECTION, endingFundBalanceCents: [0, -1] }),
+  ).toEqual({ x: 'FY27', label: 'Fund balance below zero from FY27' })
 })

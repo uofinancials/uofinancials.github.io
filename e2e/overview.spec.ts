@@ -123,8 +123,8 @@ test('people shows salary spend by EEO category for the matching jobs', async ({
     page.getByRole('rowheader', { name: 'Classified temporaries' }),
   ).toBeVisible()
   await expect(
-    page
-      .getByRole('figure', { name: 'Salary spend by EEO category' })
-      .locator('path'),
-  ).toHaveCount(13)
+    page.getByRole('row').filter({
+      has: page.getByRole('rowheader', { name: 'Faculty', exact: true }),
+    }),
+  ).toContainText(/\$[\d,]+/)
 })

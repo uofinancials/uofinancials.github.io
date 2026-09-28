@@ -1,6 +1,7 @@
 import { fiscalYearLabel } from '../../data/budget.ts'
 import type { CitedSource } from '../../data/cited-source.ts'
 import type { Outlook, Projection, ProjectionLine } from '../../data/outlook.ts'
+import { belowZeroMarker, type ChartMarker } from '../shared/series.ts'
 
 /** A section's total line by fiscal year; the schema requires exactly one. */
 export function sectionTotal(
@@ -56,6 +57,17 @@ export function outlookSeries(projection: Projection): {
       { key: FUND_BALANCE_SERIES, values: projection.endingFundBalanceCents },
     ],
   }
+}
+
+/** Marks the first fiscal year whose published ending fund balance is below zero, if any. */
+export function fundBalanceMarker(
+  projection: Projection,
+): ChartMarker | undefined {
+  return belowZeroMarker(
+    projection.fiscalYears.map(fiscalYearLabel),
+    projection.endingFundBalanceCents,
+    'Fund balance',
+  )
 }
 
 /** Every source the outlook cites, in the order the budget page shows them. */

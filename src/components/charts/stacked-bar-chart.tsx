@@ -72,6 +72,7 @@ export function StackedBarChart({
               dataKey={stackKey(index)}
               stackId={STACK}
               fill={lineColor(position)}
+              isAnimationActive={false}
             />
           ))}
         </BarChart>

@@ -1,10 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { TotalsChart } from '@/components/charts/totals-chart'
+import { BarCell } from '@/components/charts/bar-cell'
 import { RadioField } from '@/components/fields/radio-field'
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -12,11 +11,11 @@ import {
 import type { AreaFigure } from '@/lib/departments/table'
 import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home/home'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
-import { NUMBER_CELL } from '@/lib/utils'
+import { shareOfLargest } from '@/lib/shared/series'
 
 const SHOWN_AREAS = 10
 
-/** The largest colleges and VP areas by one measure, as bars and as a table whose names link to each area's page. */
+/** The largest colleges and VP areas by one measure, as a table with bars whose names link to each area's page. */
 export function AreaBreakdown({
   areas,
   measure,
@@ -30,7 +29,9 @@ export function AreaBreakdown({
   onMeasure: (measure: HomeMeasure) => void
 }) {
   const bars = areaBars(areas, measure, SHOWN_AREAS)
-  const format = measure === 'jobs' ? formatCount : formatDollars
+  const shares = shareOfLargest(bars.map(({ value }) => value))
+  const shareIn = (column: HomeMeasure, index: number) =>
+    column === measure ? shares[index] : undefined
   const title = `The ${SHOWN_AREAS} largest colleges and VP areas by ${labels[measure]}`
   return (
     <>
@@ -40,12 +41,6 @@ export function AreaBreakdown({
         value={measure}
         options={HOME_MEASURES.map((option) => [option, labels[option]])}
         onSelect={onMeasure}
-      />
-      <TotalsChart
-        bars={bars.map(({ name, value }) => ({ key: name, value }))}
-        valueLabel={labels[measure]}
-        format={format}
-        label={title}
       />
       <Table>
         <caption className="sr-only">{title}</caption>
@@ -60,7 +55,7 @@ export function AreaBreakdown({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {bars.map((area) => (
+          {bars.map((area, index) => (
             <TableRow key={area.code ?? 'unassigned'}>
               <TableHead
                 scope="row"
@@ -78,15 +73,15 @@ export function AreaBreakdown({
                   </Link>
                 )}
               </TableHead>
-              <TableCell className={NUMBER_CELL}>
+              <BarCell share={shareIn('budget', index)}>
                 {formatOrBlank(area.budgetCents, formatDollars)}
-              </TableCell>
-              <TableCell className={NUMBER_CELL}>
+              </BarCell>
+              <BarCell share={shareIn('spend', index)}>
                 {formatOrBlank(area.spendCents, formatDollars)}
-              </TableCell>
-              <TableCell className={NUMBER_CELL}>
+              </BarCell>
+              <BarCell share={shareIn('jobs', index)}>
                 {formatCount(area.jobs)}
-              </TableCell>
+              </BarCell>
             </TableRow>
           ))}
         </TableBody>
