@@ -33,14 +33,14 @@ export function RaisesSection({
   payChanges,
   fromYears,
   range,
-  scope,
+  payChangesSearch,
   scopeSources,
 }: {
   payChanges: Summary['trends']['payChanges']
   fromYears: number[]
   range: YearRange
   /** The pay changes page's filter for the report's area or unit. */
-  scope: PayChangesSearch
+  payChangesSearch: PayChangesSearch
   scopeSources: SectionSource[]
 }) {
   const rows = raiseRows(payChanges, fromYears)
@@ -74,7 +74,11 @@ export function RaisesSection({
         </>
       )}
       <p className="text-sm">
-        <Link className="link" to="/trends/pay-changes" search={scope}>
+        <Link
+          className="link"
+          to="/trends/pay-changes"
+          search={payChangesSearch}
+        >
           Pay changes by department, area, or class or rank, one pair’s
           distribution, and raises beside the contract terms
         </Link>

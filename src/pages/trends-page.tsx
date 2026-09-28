@@ -13,9 +13,8 @@ import { SplitSection } from '@/components/trends/split-section'
 import { areaTrendsQuery, summaryQuery, toData } from '@/data/queries'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import type { SectionSource } from '@/lib/shared/citation'
-import { ALL_OF_UO } from '@/lib/trends/compare'
 import { staffingRows } from '@/lib/trends/report'
-import { reportScope } from '@/lib/trends/scope'
+import { payChangesSearchOf, reportScope } from '@/lib/trends/scope'
 import {
   MEASURED_TABS,
   type ReportSearch,
@@ -54,20 +53,9 @@ function useReport() {
     summary,
     view,
     scope,
-    units: areaFile?.units ?? [],
     trends,
     ratios: staffingRows(trends),
     scopeSources,
-    university: {
-      code: '',
-      name: ALL_OF_UO,
-      points: summary.trends.all.total,
-    },
-    payChangesFilter: scope.unit
-      ? { dept: scope.unit.code }
-      : scope.area
-        ? { area: scope.area.code }
-        : {},
   }
 }
 
@@ -121,7 +109,7 @@ function TabPanel({
           payChanges={report.scope.payChanges}
           fromYears={view.fromYears}
           range={range}
-          scope={report.payChangesFilter}
+          payChangesSearch={payChangesSearchOf(report.scope)}
           scopeSources={report.scopeSources}
         />
       )
@@ -129,9 +117,7 @@ function TabPanel({
       return (
         <CompareSection
           areas={report.summary.trends.areas}
-          university={report.university}
           scope={report.scope}
-          units={report.units}
           metric={view.measure}
           range={range}
           scopeSources={report.scopeSources}
@@ -146,7 +132,7 @@ function TabPanel({
 export function TrendsPage() {
   const navigate = useNavigate({ from: '/trends' })
   const report = useReport()
-  const { years, summary, view, scope, units, trends, ratios } = report
+  const { years, summary, view, scope, trends, ratios } = report
   const first = trends.total[0]
   const last = trends.total.at(-1)
   const handleChange = (patch: ReportSearch) =>
@@ -170,9 +156,7 @@ export function TrendsPage() {
         years={years}
         range={{ from: view.from, to: view.to }}
         areas={summary.trends.areas}
-        area={scope.area?.code ?? null}
-        units={units}
-        unit={scope.unit?.code ?? null}
+        scope={scope}
         measure={MEASURED_TABS.includes(view.tab) ? view.measure : null}
         onChange={handleChange}
       />

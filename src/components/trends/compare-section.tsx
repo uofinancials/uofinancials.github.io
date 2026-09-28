@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { IndexFigure } from '@/components/charts/index-figure'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
-import type { CodeTrend, ScopeTrends } from '@/data/summary'
+import type { CodeTrend } from '@/data/summary'
 import { SPEND_METHOD } from '@/lib/census/totals'
 import type { SectionSource } from '@/lib/shared/citation'
 import { formatChange, formatCount, formatOrBlank } from '@/lib/shared/format'
@@ -108,24 +108,19 @@ function CompareFigure({
 /** The picked area, or unit against its area, charted against the university, then the area's units, or every area when none is picked; the codes are given over every census and shown over the range. */
 export function CompareSection({
   areas,
-  university,
   scope,
-  units,
   metric,
   range,
   scopeSources,
 }: {
   areas: CodeTrend[]
-  university: CodeTrend
   scope: ReportScope
-  /** The picked area's units, empty without one. */
-  units: ScopeTrends[]
   metric: ReportMetric
   range: YearRange
   scopeSources: SectionSource[]
 }) {
-  const [all = university, ...shownAreas] = inRange(
-    [university, ...areas],
+  const [all = scope.university, ...shownAreas] = inRange(
+    [scope.university, ...areas],
     range,
   )
   const area = scope.area && inRange([totalsOf(scope.area)], range)[0]
@@ -140,7 +135,7 @@ export function CompareSection({
             range={range}
           />
           <CompareTable
-            codes={inRange(units.map(totalsOf), range)}
+            codes={inRange(scope.units.map(totalsOf), range)}
             totals={[area, all]}
             caption={`Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`}
             selected={unit?.code}

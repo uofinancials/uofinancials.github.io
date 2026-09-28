@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { SelectField } from '@/components/fields/select-field'
 import { YearRangeFields } from '@/components/fields/year-range-fields'
 import type { CodeTrend, ScopeTrends } from '@/data/summary'
-import { ALL_OF_UO } from '@/lib/trends/compare'
+import { ALL_OF_UO, type ReportScope } from '@/lib/trends/scope'
 import {
   REPORT_METRIC_OPTIONS,
   type ReportMetric,
@@ -13,14 +13,6 @@ import {
 import { cn } from '@/lib/utils'
 
 const EVERY = ''
-
-const MEASURE_OPTIONS = REPORT_METRIC_OPTIONS.map(
-  ([value, text]): [string, string] => [value, text],
-)
-
-function byName<T extends { name: string }>(codes: T[]): T[] {
-  return [...codes].sort((a, b) => a.name.localeCompare(b.name))
-}
 
 function FiltersToggle({
   isOpen,
@@ -66,10 +58,7 @@ function ScopeFields({
         value={area ?? EVERY}
         options={[
           [EVERY, ALL_OF_UO],
-          ...byName(areas).map(({ code, name }): [string, string] => [
-            code,
-            name,
-          ]),
+          ...areas.map(({ code, name }): [string, string] => [code, name]),
         ]}
         onSelect={(value) =>
           onChange({ area: value || undefined, unit: undefined })
@@ -81,10 +70,7 @@ function ScopeFields({
           value={unit ?? EVERY}
           options={[
             [EVERY, 'The whole area'],
-            ...byName(units).map(({ code, name }): [string, string] => [
-              code,
-              name,
-            ]),
+            ...units.map(({ code, name }): [string, string] => [code, name]),
           ]}
           onSelect={(value) => onChange({ unit: value || undefined })}
         />
@@ -98,32 +84,27 @@ export function ReportFilters({
   years,
   range,
   areas,
-  area,
-  units,
-  unit,
+  scope,
   measure,
   onChange,
 }: {
   years: number[]
   range: YearRange
   areas: CodeTrend[]
-  area: string | null
-  /** The picked area's units, empty without one. */
-  units: ScopeTrends[]
-  unit: string | null
+  scope: ReportScope
   /** `null` on a tab no measure applies to. */
   measure: ReportMetric | null
   onChange: (patch: ReportSearch) => void
 }) {
   const [isOpen, setOpen] = useState(false)
-  const areaName = areas.find(({ code }) => code === area)?.name
-  const unitName = units.find(({ code }) => code === unit)?.name
-  const scope = [areaName ?? ALL_OF_UO, unitName].filter(Boolean).join(' › ')
+  const picked = [scope.area?.name ?? ALL_OF_UO, scope.unit?.name]
+    .filter(Boolean)
+    .join(' › ')
   return (
     <div className="z-10 rounded-xl border bg-muted p-3 md:sticky md:top-2 md:p-4">
       <FiltersToggle
         isOpen={isOpen}
-        summary={`Fall ${range.from}-${range.to} · ${scope}`}
+        summary={`Fall ${range.from}-${range.to} · ${picked}`}
         onToggle={() => setOpen(!isOpen)}
       />
       <div
@@ -140,16 +121,16 @@ export function ReportFilters({
         />
         <ScopeFields
           areas={areas}
-          area={area}
-          units={units}
-          unit={unit}
+          area={scope.area?.code ?? null}
+          units={scope.units}
+          unit={scope.unit?.code ?? null}
           onChange={onChange}
         />
         {measure && (
           <SelectField
             label="Measure"
             value={measure}
-            options={MEASURE_OPTIONS}
+            options={REPORT_METRIC_OPTIONS}
             onSelect={(value) =>
               onChange({ measure: reportMetricSchema.safeParse(value).data })
             }

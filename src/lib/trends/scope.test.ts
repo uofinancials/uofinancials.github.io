@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { AreaTrends } from '@/data/summary'
-import { reportScope } from './scope'
+import { payChangesSearchOf, reportScope } from './scope'
 
 const EMPTY = { trends: { series: [], total: [] }, payChanges: [] }
 const ALL = {
@@ -43,4 +43,24 @@ test('the scope is all of UO without an area, the area, or the unit within it', 
     unit: { code: '222050' },
   })
   expect(reportScope(ALL, AREA, '999999').name).toBe('Arts & Sciences')
+})
+
+test('the pay changes filter names the unit’s pay department, or the area, or nothing for all of UO', () => {
+  expect(payChangesSearchOf(reportScope(ALL, null, null))).toEqual({})
+  expect(payChangesSearchOf(reportScope(ALL, AREA, null))).toEqual({
+    area: '222000',
+  })
+  expect(payChangesSearchOf(reportScope(ALL, AREA, '222050'))).toEqual({
+    dept: '222050',
+  })
+})
+
+test('the scope carries the area’s units and all of UO’s totals', () => {
+  const scope = reportScope(ALL, AREA, null)
+  expect(scope.units.map(({ code }) => code)).toEqual(['222050'])
+  expect(scope.university).toEqual({
+    code: '',
+    name: 'All of UO',
+    points: ALL.trends.total,
+  })
 })

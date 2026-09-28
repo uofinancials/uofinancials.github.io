@@ -3,8 +3,6 @@ import { formatChange } from '../shared/format.ts'
 import { changeOver, type IndexedLine, indexValues } from './report.ts'
 import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
 
-export const ALL_OF_UO = 'All of UO'
-
 /** A scope's totals in each census, the figures the comparison reads. */
 export function totalsOf({ code, name, trends }: ScopeTrends): CodeTrend {
   return { code, name, points: trends.total }

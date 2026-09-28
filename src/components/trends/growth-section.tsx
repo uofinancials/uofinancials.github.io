@@ -64,7 +64,7 @@ export function GrowthSection({
   )
   const isRestructureShown = from < RESTRUCTURE_YEAR && to >= RESTRUCTURE_YEAR
   return (
-    <PageSection id="groups-grew" title="Which groups grew?">
+    <PageSection title="Which groups grew?">
       <p>{growthAnswer(charted, metric, from)}</p>
       <div className="hidden md:block">
         <RadioField
