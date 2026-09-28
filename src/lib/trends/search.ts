@@ -7,6 +7,7 @@ import { TERMS } from '../census/salary-distribution.ts'
 import { resolveCensusYear } from '../census/search.ts'
 import {
   formatCompactDollars,
+  formatCount,
   formatDollars,
   formatFte,
 } from '../shared/format.ts'
@@ -39,6 +40,10 @@ export const TERM_OPTIONS: [string, string][] = [
 export const CENSUS_METRICS = ['spend', 'fte', 'median'] as const
 export type CensusMetric = (typeof CENSUS_METRICS)[number]
 
+/** The census measures and a count of jobs, for the trends report. */
+export const REPORT_METRICS = ['jobs', ...CENSUS_METRICS] as const
+export type ReportMetric = (typeof REPORT_METRICS)[number]
+
 export const CHANGE_METRIC = 'change'
 /** The census measures and the change in continuing jobs' rates between census pairs. */
 export const TREND_METRICS = [...CENSUS_METRICS, CHANGE_METRIC] as const
@@ -47,7 +52,7 @@ export type TrendMetric = (typeof TREND_METRICS)[number]
 export const CHANGE_LABEL = 'Median change in salary rate'
 
 export const METRIC_INFO: Record<
-  CensusMetric,
+  ReportMetric,
   {
     label: string
     pick: (point: TrendPoint) => number | null
@@ -55,6 +60,12 @@ export const METRIC_INFO: Record<
     formatAxis: (value: number) => string
   }
 > = {
+  jobs: {
+    label: 'Jobs',
+    pick: (point) => point.jobs,
+    format: formatCount,
+    formatAxis: formatCount,
+  },
   spend: {
     label: 'Salary spend',
     pick: (point) => point.spendCents,
@@ -78,7 +89,7 @@ export const METRIC_INFO: Record<
 /** The series that have a value for the metric in at least one census. */
 export function seriesWithMetric(
   series: TrendSeries[],
-  metric: CensusMetric,
+  metric: ReportMetric,
 ): TrendSeries[] {
   const { pick } = METRIC_INFO[metric]
   return series.filter(({ points }) =>
@@ -163,7 +174,7 @@ export const METRIC_OPTIONS = CENSUS_METRICS.map(
 /** Each series' metric value per census, `null` where it has none. */
 export function metricValues(
   series: TrendSeries[],
-  metric: CensusMetric,
+  metric: ReportMetric,
 ): { key: string; values: (number | null)[] }[] {
   const { pick } = METRIC_INFO[metric]
   return series.map(({ key, points }) => ({ key, values: points.map(pick) }))
