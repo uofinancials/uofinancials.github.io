@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { TotalsChart } from '@/components/charts/totals-chart'
+import { BarCell } from '@/components/charts/bar-cell'
 import { RadioField } from '@/components/fields/radio-field'
 import {
   Table,
@@ -12,11 +12,33 @@ import {
 import type { AreaFigure } from '@/lib/departments/table'
 import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home/home'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
+import { shareOfLargest } from '@/lib/shared/share'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const SHOWN_AREAS = 10
 
-/** The largest colleges and VP areas by one measure, as bars and as a table whose names link to each area's page. */
+const MEASURE_TEXT: Record<HomeMeasure, (area: AreaFigure) => string> = {
+  budget: (area) => formatOrBlank(area.budgetCents, formatDollars),
+  spend: (area) => formatOrBlank(area.spendCents, formatDollars),
+  jobs: (area) => formatCount(area.jobs),
+}
+
+/** The chosen measure's cell carries a bar; the others are plain. */
+function MeasureCell({
+  share,
+  children,
+}: {
+  share: number | undefined
+  children: string
+}) {
+  return share === undefined ? (
+    <TableCell className={NUMBER_CELL}>{children}</TableCell>
+  ) : (
+    <BarCell share={share}>{children}</BarCell>
+  )
+}
+
+/** The largest colleges and VP areas by one measure, as a table with bars whose names link to each area's page. */
 export function AreaBreakdown({
   areas,
   measure,
@@ -30,7 +52,7 @@ export function AreaBreakdown({
   onMeasure: (measure: HomeMeasure) => void
 }) {
   const bars = areaBars(areas, measure, SHOWN_AREAS)
-  const format = measure === 'jobs' ? formatCount : formatDollars
+  const shares = shareOfLargest(bars.map(({ value }) => value))
   const title = `The ${SHOWN_AREAS} largest colleges and VP areas by ${labels[measure]}`
   return (
     <>
@@ -40,12 +62,6 @@ export function AreaBreakdown({
         value={measure}
         options={HOME_MEASURES.map((option) => [option, labels[option]])}
         onSelect={onMeasure}
-      />
-      <TotalsChart
-        bars={bars.map(({ name, value }) => ({ key: name, value }))}
-        valueLabel={labels[measure]}
-        format={format}
-        label={title}
       />
       <Table>
         <caption className="sr-only">{title}</caption>
@@ -60,7 +76,7 @@ export function AreaBreakdown({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {bars.map((area) => (
+          {bars.map((area, index) => (
             <TableRow key={area.code ?? 'unassigned'}>
               <TableHead
                 scope="row"
@@ -78,15 +94,14 @@ export function AreaBreakdown({
                   </Link>
                 )}
               </TableHead>
-              <TableCell className={NUMBER_CELL}>
-                {formatOrBlank(area.budgetCents, formatDollars)}
-              </TableCell>
-              <TableCell className={NUMBER_CELL}>
-                {formatOrBlank(area.spendCents, formatDollars)}
-              </TableCell>
-              <TableCell className={NUMBER_CELL}>
-                {formatCount(area.jobs)}
-              </TableCell>
+              {HOME_MEASURES.map((option) => (
+                <MeasureCell
+                  key={option}
+                  share={option === measure ? shares[index] : undefined}
+                >
+                  {MEASURE_TEXT[option](area)}
+                </MeasureCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>

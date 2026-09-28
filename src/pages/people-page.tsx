@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { TotalsChart } from '@/components/charts/totals-chart'
 import { TotalsTable } from '@/components/charts/totals-table'
 import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
 import { PageSection } from '@/components/layout/page-section'
@@ -26,7 +25,7 @@ import {
   type PeopleSearch,
   type PeopleSort,
 } from '@/lib/people/search'
-import { formatCount, formatDollars } from '@/lib/shared/format'
+import { formatCount } from '@/lib/shared/format'
 import type { SortDirection } from '@/lib/shared/sort'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
@@ -159,15 +158,6 @@ function CategorySpend({
 }) {
   return (
     <PageSection title="Salary spend by EEO category">
-      <TotalsChart
-        bars={byCategory.map(({ key, totals }) => ({
-          key,
-          value: totals.spendCents,
-        }))}
-        valueLabel="Salary spend"
-        format={formatDollars}
-        label="Salary spend by EEO category"
-      />
       <TotalsTable
         groupLabel="EEO category"
         groups={byCategory}
