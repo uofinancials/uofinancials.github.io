@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+import { point, TRENDS } from '@/test/trends'
 import {
   chainedChange,
   changeTable,
@@ -8,7 +9,6 @@ import {
   raiseRows,
   staffingRows,
 } from './report'
-import { point, TRENDS } from './report.fixture'
 import type { Trends } from './trends'
 
 test('an index is each value over the first times 100, and a line without a first value above zero has none', () => {

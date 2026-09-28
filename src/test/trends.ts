@@ -1,4 +1,4 @@
-import type { TrendPoint, Trends } from './trends'
+import type { TrendPoint, Trends } from '@/lib/trends/trends'
 
 export function point(
   year: number,

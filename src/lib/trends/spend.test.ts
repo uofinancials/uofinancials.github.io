@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { point, TRENDS } from './report.fixture'
+import { point, TRENDS } from '@/test/trends'
 import {
   spendContributions,
   spendShares,
