@@ -1,6 +1,12 @@
 import { expect, test } from 'vitest'
 import type { AreaTrends } from '@/data/summary'
-import { payChangesSearchOf, reportScope } from './scope'
+import {
+  areaOfCode,
+  comparedCodes,
+  payChangesSearchOf,
+  reportScope,
+  resolveCompared,
+} from './scope'
 
 const EMPTY = { trends: { series: [], total: [] }, payChanges: [] }
 const ALL = {
@@ -63,4 +69,42 @@ test('the scope carries the area’s units and all of UO’s totals', () => {
     name: 'All of UO',
     points: ALL.trends.total,
   })
+})
+
+const AREAS = [
+  {
+    code: '222000',
+    name: 'Arts & Sciences',
+    points: [],
+    units: [{ code: '222050', name: 'CAS English' }],
+  },
+  { code: '480000', name: 'Athletics', points: [], units: [] },
+]
+
+test('the comparison adds what is asked, or by default a picked unit’s area', () => {
+  expect(comparedCodes(reportScope(ALL, AREA, '222050'), undefined)).toEqual([
+    '222000',
+  ])
+  expect(comparedCodes(reportScope(ALL, AREA, '222050'), [])).toEqual([])
+  expect(comparedCodes(reportScope(ALL, AREA, null), undefined)).toEqual([])
+  expect(comparedCodes(reportScope(ALL, null, null), ['480000'])).toEqual([
+    '480000',
+  ])
+})
+
+test('a code’s trends file is its own for an area and its area’s for a unit', () => {
+  expect(areaOfCode(AREAS, '480000')).toBe('480000')
+  expect(areaOfCode(AREAS, '222050')).toBe('222000')
+  expect(areaOfCode(AREAS, '999999')).toBeNull()
+})
+
+test('compared codes resolve to totals from the summary or their area’s file, unknown ones left out', () => {
+  expect(
+    resolveCompared(['480000', '222050', '999999'], AREAS, [AREA]).map(
+      ({ code, name }) => [code, name],
+    ),
+  ).toEqual([
+    ['480000', 'Athletics'],
+    ['222050', 'CAS English'],
+  ])
 })

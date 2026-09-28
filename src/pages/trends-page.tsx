@@ -13,8 +13,15 @@ import { SplitSection } from '@/components/trends/split-section'
 import { areaTrendsQuery, summaryQuery, toData } from '@/data/queries'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import type { SectionSource } from '@/lib/shared/citation'
+import { compareOptions } from '@/lib/trends/compare'
 import { staffingRows } from '@/lib/trends/report'
-import { payChangesSearchOf, reportScope } from '@/lib/trends/scope'
+import {
+  areaOfCode,
+  comparedCodes,
+  payChangesSearchOf,
+  reportScope,
+  resolveCompared,
+} from '@/lib/trends/scope'
 import {
   MEASURED_TABS,
   type ReportSearch,
@@ -28,14 +35,23 @@ function useReport() {
   const search = useSearch({ from: '/trends' })
   const { data: summary } = useSuspenseQuery(summaryQuery)
   const view = resolveReportView(search, years)
-  const area = summary.trends.areas.find(({ code }) => code === search.area)
-  const [areaFile = null] = useSuspenseQueries({
-    queries: (area ? [area.code] : []).map(areaTrendsQuery),
+  const { areas } = summary.trends
+  const area = areas.find(({ code }) => code === search.area)
+  const fileCodes = [
+    ...new Set(
+      [
+        area?.code,
+        ...(search.with ?? []).map((code) => areaOfCode(areas, code)),
+      ].filter((code) => code !== undefined && code !== null),
+    ),
+  ]
+  const files = useSuspenseQueries({
+    queries: fileCodes.map(areaTrendsQuery),
     combine: toData,
   })
   const scope = reportScope(
     { trends: summary.trends.all, payChanges: summary.trends.payChanges },
-    areaFile,
+    files.find(({ code }) => code === area?.code) ?? null,
     search.unit ?? null,
   )
   const trends = sliceTrends(scope.trends, view.from, view.to)
@@ -56,6 +72,8 @@ function useReport() {
     trends,
     ratios: staffingRows(trends),
     scopeSources,
+    compared: resolveCompared(comparedCodes(scope, search.with), areas, files),
+    options: compareOptions(areas),
   }
 }
 
@@ -118,6 +136,9 @@ function TabPanel({
         <CompareSection
           areas={report.summary.trends.areas}
           scope={report.scope}
+          compared={report.compared}
+          options={report.options}
+          onChange={onChange}
           metric={view.measure}
           range={range}
           scopeSources={report.scopeSources}

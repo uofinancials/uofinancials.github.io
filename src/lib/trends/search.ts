@@ -129,6 +129,9 @@ export const payChangesSearchSchema = z.object({
 
 export type PayChangesSearch = z.infer<typeof payChangesSearchSchema>
 
+/** The most areas or units a comparison adds to its pick. */
+export const MAX_COMPARED = 3
+
 /** The trends report's URL search params: the year range, measure, college or VP area and unit every tab follows, the growth view, and the tab. */
 export const reportSearchSchema = z.object({
   from: z.number().int().optional().catch(undefined),
@@ -138,6 +141,8 @@ export const reportSearchSchema = z.object({
   area: orgCodeParam.optional().catch(undefined),
   unit: orgCodeParam.optional().catch(undefined),
   tab: z.enum(REPORT_TABS).optional().catch(undefined),
+  /** The areas and units added to the comparison; absent means its default. */
+  with: z.array(orgCodeParam).max(MAX_COMPARED).optional().catch(undefined),
 })
 
 export type ReportSearch = z.infer<typeof reportSearchSchema>

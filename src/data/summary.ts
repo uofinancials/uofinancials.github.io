@@ -124,8 +124,12 @@ export const summarySchema = z.strictObject({
     all: trendsSchema,
     /** Continuing jobs' median change in salary rate for every census pair, all of them then by group. */
     payChanges: z.array(changeSeriesSchema),
-    /** Each area's jobs in every census. */
-    areas: z.array(codeTrendSchema),
+    /** Each area's jobs in every census, and the units and pay departments its trends file holds. */
+    areas: z.array(
+      codeTrendSchema.extend({
+        units: z.array(z.strictObject({ code: z.string(), name: z.string() })),
+      }),
+    ),
   }),
   departments: z.strictObject({
     now: tableYearSchema,
@@ -147,6 +151,7 @@ export const summarySchema = z.strictObject({
 
 export type Summary = z.infer<typeof summarySchema>
 export type CodeTrend = z.infer<typeof codeTrendSchema>
+export type SummaryArea = Summary['trends']['areas'][number]
 export type ScopeTrends = z.infer<typeof scopeTrendsSchema>
 export type AreaTrends = z.infer<typeof areaTrendsSchema>
 export type NameEntry = z.infer<typeof nameEntrySchema>

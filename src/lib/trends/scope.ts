@@ -1,4 +1,10 @@
-import type { AreaTrends, CodeTrend, ScopeTrends } from '../../data/summary.ts'
+import type {
+  AreaTrends,
+  CodeTrend,
+  ScopeTrends,
+  SummaryArea,
+} from '../../data/summary.ts'
+import { totalsOf } from './compare.ts'
 import type { ChangeSeries } from './pay-changes.ts'
 import type { PayChangesSearch } from './search.ts'
 import type { Trends } from './trends.ts'
@@ -56,4 +62,38 @@ export function payChangesSearchOf({
 }: ReportScope): PayChangesSearch {
   if (unit) return { dept: unit.code }
   return area ? { area: area.code } : {}
+}
+
+/** The codes the comparison adds to its pick: those asked for, or, when none are asked for and a unit is picked, the unit's area. */
+export function comparedCodes(
+  { area, unit }: ReportScope,
+  asked: string[] | undefined,
+): string[] {
+  if (asked) return asked
+  return unit && area ? [area.code] : []
+}
+
+/** The area whose trends file holds a code: the code itself for an area, the area listing it for a unit; `null` for a code no area lists. */
+export function areaOfCode(areas: SummaryArea[], code: string): string | null {
+  const area = areas.find(
+    (listed) =>
+      listed.code === code || listed.units.some((unit) => unit.code === code),
+  )
+  return area?.code ?? null
+}
+
+/** Each code's totals, from the summary for an area and from its area's file for a unit; a code not found is left out. */
+export function resolveCompared(
+  codes: string[],
+  areas: SummaryArea[],
+  files: AreaTrends[],
+): CodeTrend[] {
+  return codes.flatMap((code) => {
+    const area = areas.find((listed) => listed.code === code)
+    if (area) return [{ code, name: area.name, points: area.points }]
+    const unit = files
+      .flatMap(({ units }) => units)
+      .find((listed) => listed.code === code)
+    return unit ? [totalsOf(unit)] : []
+  })
 }

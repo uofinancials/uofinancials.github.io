@@ -49,6 +49,8 @@ const TENTHS = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
+const LIST = new Intl.ListFormat('en-US', { type: 'conjunction' })
+
 const COMPACT_DOLLARS = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -129,6 +131,11 @@ export function formatRatio(value: number): string {
 /** Formats a signed difference to a tenth, e.g. `+14.9`. */
 export function formatSigned(value: number): string {
   return POINTS.format(value)
+}
+
+/** Joins items as prose, e.g. `A, B, and C`. */
+export function formatList(items: string[]): string {
+  return LIST.format(items)
 }
 
 export function formatYears(years: number): string {

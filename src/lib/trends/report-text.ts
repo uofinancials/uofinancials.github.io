@@ -1,6 +1,7 @@
 import {
   formatChange,
   formatDollars,
+  formatList,
   formatRatio,
   formatShare,
 } from '../shared/format.ts'
@@ -9,8 +10,6 @@ import { pairLabel } from './pay-change-labels.ts'
 import { ALL_JOBS, type ChangeRow, type RaiseRow } from './report.ts'
 import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
 import type { SpendContribution, VolumeAndPay } from './spend.ts'
-
-const LIST = new Intl.ListFormat('en-US', { type: 'conjunction' })
 
 /** All jobs' change in a measure since the first census, and the groups among the rows with the largest and smallest change. */
 export function growthAnswer(
@@ -40,7 +39,7 @@ export function unindexedNote(
 ): string | null {
   if (keys.length === 0) return null
   const isOne = keys.length === 1
-  return `${LIST.format(keys)} ${isOne ? 'has' : 'have'} no ${METRIC_INFO[metric].noun} shown in Fall ${from}, so ${isOne ? 'it is' : 'they are'} not charted; the table has ${isOne ? 'its' : 'their'} figures.`
+  return `${formatList(keys)} ${isOne ? 'has' : 'have'} no ${METRIC_INFO[metric].noun} shown in Fall ${from}, so ${isOne ? 'it is' : 'they are'} not charted; the table has ${isOne ? 'its' : 'their'} figures.`
 }
 
 export function ratioAnswer(

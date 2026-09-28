@@ -1,5 +1,5 @@
-import type { CodeTrend, ScopeTrends } from '../../data/summary.ts'
-import { formatChange } from '../shared/format.ts'
+import type { CodeTrend, ScopeTrends, SummaryArea } from '../../data/summary.ts'
+import { formatChange, formatList } from '../shared/format.ts'
 import { changeOver, type IndexedLine, indexValues } from './report.ts'
 import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
 
@@ -92,5 +92,42 @@ export function compareAnswer(
   const base = `${subject.key}: ${METRIC_INFO[metric].noun} ${formatChange(subject.change)} since Fall ${from}`
   return against.length === 0
     ? `${base}.`
-    : `${base}, against ${against.join(' and ')}.`
+    : `${base}, against ${formatList(against)}.`
+}
+
+/** An area or unit a reader can add to the comparison; `area` names a unit's area and is `null` for an area. */
+export type CompareOption = { code: string; name: string; area: string | null }
+
+/** Every area, then every unit and pay department under its area's name. */
+export function compareOptions(areas: SummaryArea[]): CompareOption[] {
+  return [
+    ...areas.map(({ code, name }) => ({ code, name, area: null })),
+    ...areas.flatMap(({ name: area, units }) =>
+      units.map(({ code, name }) => ({ code, name, area })),
+    ),
+  ]
+}
+
+const MATCH_LIMIT = 8
+
+/** The options whose name and area hold every word of the query, ignoring case, those whose name starts with the query first; none for an empty query, and none already chosen. */
+export function matchOptions(
+  options: CompareOption[],
+  query: string,
+  chosen: string[],
+): CompareOption[] {
+  const needle = query.trim().toLowerCase()
+  if (needle === '') return []
+  const words = needle.split(/\s+/)
+  const starts = (option: CompareOption) =>
+    option.name.toLowerCase().startsWith(needle) ? 0 : 1
+  return options
+    .filter(({ code, name, area }) => {
+      const text = `${name} ${area ?? ''}`.toLowerCase()
+      return (
+        !chosen.includes(code) && words.every((word) => text.includes(word))
+      )
+    })
+    .sort((a, b) => starts(a) - starts(b))
+    .slice(0, MATCH_LIMIT)
 }

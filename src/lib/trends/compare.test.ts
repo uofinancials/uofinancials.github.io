@@ -2,9 +2,11 @@ import { expect, test } from 'vitest'
 import {
   compareAnswer,
   compareLines,
+  compareOptions,
   compareRows,
   inRange,
   lineChanges,
+  matchOptions,
 } from './compare'
 import type { TrendPoint } from './trends'
 
@@ -108,4 +110,42 @@ test('the answer sets the unit’s change against its area’s and the universit
   expect(compareAnswer([ALL], 'spend', 2014)).toBe(
     'All of UO: salary spend +71.0% since Fall 2014.',
   )
+})
+
+test('options list every area, then every unit under its area, and match every word typed', () => {
+  const options = compareOptions([
+    {
+      code: '222000',
+      name: 'Arts & Sciences',
+      points: [],
+      units: [
+        { code: '222050', name: 'CAS English' },
+        { code: '222100', name: 'CAS Romance Languages' },
+      ],
+    },
+    {
+      code: '260000',
+      name: 'Education, College of',
+      points: [],
+      units: [{ code: '260100', name: 'Education Studies' }],
+    },
+  ])
+  expect(options.map(({ code }) => code)).toEqual([
+    '222000',
+    '260000',
+    '222050',
+    '222100',
+    '260100',
+  ])
+  expect(matchOptions(options, 'english', []).map(({ code }) => code)).toEqual([
+    '222050',
+  ])
+  expect(matchOptions(options, 'educ', []).map(({ code }) => code)).toEqual([
+    '260000',
+    '260100',
+  ])
+  expect(
+    matchOptions(options, 'cas arts', ['222050']).map(({ code }) => code),
+  ).toEqual(['222100'])
+  expect(matchOptions(options, '  ', [])).toEqual([])
 })

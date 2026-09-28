@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { IndexFigure } from '@/components/charts/index-figure'
+import { OptionSearch } from '@/components/fields/option-search'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import type { CodeTrend } from '@/data/summary'
@@ -7,6 +8,7 @@ import { SPEND_METHOD } from '@/lib/census/totals'
 import type { SectionSource } from '@/lib/shared/citation'
 import { formatChange, formatCount, formatOrBlank } from '@/lib/shared/format'
 import {
+  type CompareOption,
   type CompareRow,
   compareAnswer,
   compareLines,
@@ -18,8 +20,10 @@ import {
 import { unindexedNote } from '@/lib/trends/report-text'
 import type { ReportScope } from '@/lib/trends/scope'
 import {
+  MAX_COMPARED,
   METRIC_INFO,
   type ReportMetric,
+  type ReportSearch,
   type YearRange,
 } from '@/lib/trends/search'
 import { type GroupRow, GroupTable } from './group-table'
@@ -29,8 +33,8 @@ function compareRow(
   { isTotal, selected }: { isTotal: boolean; selected: string | null },
 ): GroupRow {
   return {
-    key: `${code} ${name}`,
-    label: isTotal ? (
+    key: `${isTotal ? 'total' : 'row'} ${code} ${name}`,
+    label: !code ? (
       name
     ) : (
       <Link className="link" to="/departments/$code" params={{ code }}>
@@ -68,9 +72,9 @@ function CompareTable({
           ...compareRows(totals).map((row) =>
             compareRow(row, { isTotal: true, selected }),
           ),
-          ...compareRows(codes).map((row) =>
-            compareRow(row, { isTotal: false, selected }),
-          ),
+          ...compareRows(codes)
+            .filter(({ code }) => !totals.some((total) => total.code === code))
+            .map((row) => compareRow(row, { isTotal: false, selected })),
         ]}
       />
     </div>
@@ -105,55 +109,112 @@ function CompareFigure({
   )
 }
 
-/** The picked area, or unit against its area, charted against the university, then the area's units, or every area when none is picked; the codes are given over every census and shown over the range. */
+function CompareWith({
+  options,
+  pick,
+  compared,
+  onChange,
+}: {
+  options: CompareOption[]
+  pick: CodeTrend | undefined
+  compared: CodeTrend[]
+  onChange: (patch: ReportSearch) => void
+}) {
+  const codes = compared.map(({ code }) => code)
+  return (
+    <div className="flex flex-wrap items-end gap-3">
+      {compared.map(({ code, name }) => (
+        <span
+          key={code}
+          className="flex items-center gap-1 rounded-full border py-1 pr-1 pl-3 text-sm"
+        >
+          {name}
+          <button
+            type="button"
+            aria-label={`Remove ${name}`}
+            className="rounded-full px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            onClick={() =>
+              onChange({ with: codes.filter((listed) => listed !== code) })
+            }
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      {codes.length < MAX_COMPARED ? (
+        <OptionSearch
+          label="Compare with"
+          options={options}
+          chosen={pick ? [pick.code, ...codes] : codes}
+          onAdd={(code) => onChange({ with: [...codes, code] })}
+        />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Remove one to add another.
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** The pick and up to three more areas or units from anywhere, charted against the university, then the picked area's units, or every area without one; the codes are given over every census and shown over the range. */
 export function CompareSection({
   areas,
   scope,
+  compared,
+  options,
   metric,
   range,
   scopeSources,
+  onChange,
 }: {
   areas: CodeTrend[]
   scope: ReportScope
+  /** The areas and units added to the pick. */
+  compared: CodeTrend[]
+  options: CompareOption[]
   metric: ReportMetric
   range: YearRange
   scopeSources: SectionSource[]
+  onChange: (patch: ReportSearch) => void
 }) {
-  const [all = scope.university, ...shownAreas] = inRange(
-    [scope.university, ...areas],
+  const picked = scope.unit ?? scope.area
+  const [all = scope.university, ...lines] = inRange(
+    [scope.university, ...(picked ? [totalsOf(picked)] : []), ...compared],
     range,
   )
+  const pick = picked ? lines[0] : undefined
   const area = scope.area && inRange([totalsOf(scope.area)], range)[0]
-  const unit = scope.unit && inRange([totalsOf(scope.unit)], range)[0]
   return (
     <PageSection title="How does it compare?">
-      {area ? (
-        <>
-          <CompareFigure
-            codes={unit ? [unit, area, all] : [area, all]}
-            metric={metric}
-            range={range}
-          />
-          <CompareTable
-            codes={inRange(scope.units.map(totalsOf), range)}
-            totals={[area, all]}
-            caption={`Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`}
-            selected={unit?.code}
-          />
-        </>
+      <CompareWith
+        options={options}
+        pick={pick}
+        compared={compared}
+        onChange={onChange}
+      />
+      {lines.length > 0 ? (
+        <CompareFigure codes={[...lines, all]} metric={metric} range={range} />
       ) : (
-        <>
-          <p>
-            Choose a college or VP area in the filters to chart it, or one of
-            its units, against the university.
-          </p>
-          <CompareTable
-            codes={shownAreas}
-            totals={[all]}
-            caption={`Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`}
-          />
-        </>
+        <p>
+          Choose a college or VP area in the filters, or add areas or units
+          here, to chart them against the university.
+        </p>
       )}
+      <CompareTable
+        codes={
+          area
+            ? inRange(scope.units.map(totalsOf), range)
+            : inRange(areas, range)
+        }
+        totals={[...lines, all]}
+        caption={
+          area
+            ? `Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`
+            : `Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`
+        }
+        selected={pick?.code}
+      />
       <Sources
         sources={[
           {

@@ -93,10 +93,11 @@ function summarizeTrends(
       to: Math.max(...years),
     }),
     payChanges: scopes.payChanges,
-    areas: scopes.areas.map(({ code, name, trends }) => ({
+    areas: scopes.areas.map(({ code, name, trends, units }) => ({
       code,
       name,
       points: trends.total,
+      units: units.map((unit) => ({ code: unit.code, name: unit.name })),
     })),
   }
 }

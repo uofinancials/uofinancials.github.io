@@ -201,3 +201,50 @@ test('on a phone the filters fold behind one button, the growth tab is ranked ba
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })
+
+test('areas and units from anywhere can be added to the comparison by typing, and are held in the link', async ({
+  page,
+}) => {
+  await page.goto('/trends?tab=compare&measure=fte')
+  const search = page.getByRole('combobox', { name: 'Compare with' })
+  const suggestions = page.getByRole('listbox', { name: 'Compare with' })
+  await search.fill('athlet')
+  await expect(
+    suggestions.getByRole('option', { name: /^Athletics/ }),
+  ).toBeVisible()
+  await search.press('Enter')
+  await expect(page).toHaveURL(/with=.*480000/)
+  await search.fill('romance')
+  await suggestions
+    .getByRole('option', { name: /^CAS Romance Languages/ })
+    .click()
+  await expect(page).toHaveURL(/with=.*480000.*222100/)
+  await page.reload()
+  await expect(page.getByRole('main')).toContainText(
+    'Athletics: FTE +42.5% since Fall 2014, against -47.2% for CAS Romance Languages and +16.1% for All of UO.',
+  )
+  await expect(
+    page.getByRole('figure', { name: 'FTE, Fall 2014 = 100' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Remove Athletics' }).click()
+  await expect(page).not.toHaveURL(/480000/)
+  await expect(page.getByRole('main')).toContainText(
+    'CAS Romance Languages: FTE -47.2% since Fall 2014, against +16.1% for All of UO.',
+  )
+})
+
+test('a picked unit is compared with its area by default, and the area can be removed', async ({
+  page,
+}) => {
+  await page.goto('/trends?tab=compare&area=222000&unit=222050&measure=fte')
+  await expect(page.getByRole('main')).toContainText(
+    'CAS English: FTE -28.8% since Fall 2014, against -4.1% for Arts & Sciences, College of and +16.1% for All of UO.',
+  )
+  await page
+    .getByRole('button', { name: 'Remove Arts & Sciences, College of' })
+    .click()
+  await expect(page).toHaveURL(/with=/)
+  await expect(page.getByRole('main')).toContainText(
+    'CAS English: FTE -28.8% since Fall 2014, against +16.1% for All of UO.',
+  )
+})

@@ -39,6 +39,7 @@ import { peopleSearchSchema, personSearchSchema } from '@/lib/people/search'
 import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
 import { scenarioSearchSchema } from '@/lib/scenario/search'
+import { areaOfCode } from '@/lib/trends/scope'
 import {
   CHANGE_METRIC,
   payChangesSearchSchema,
@@ -98,13 +99,19 @@ const trendsRoute = createRoute({
       throw redirect({ to: '/trends', search: kept, replace: true })
     }
   },
-  loaderDeps: ({ search }) => ({ area: search.area }),
+  loaderDeps: ({ search }) => ({ area: search.area, with: search.with }),
   loader: async ({ context: { queryClient }, deps }) => {
-    const [manifest] = await Promise.all([
+    const [manifest, summary] = await Promise.all([
       queryClient.ensureQueryData(manifestQuery),
       queryClient.ensureQueryData(summaryQuery),
       deps.area && queryClient.prefetchQuery(areaTrendsQuery(deps.area)),
     ])
+    await Promise.all(
+      (deps.with ?? []).flatMap((code) => {
+        const area = areaOfCode(summary.trends.areas, code)
+        return area ? [queryClient.prefetchQuery(areaTrendsQuery(area))] : []
+      }),
+    )
     const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     return {
       years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
