@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import {
+  pickReportParams,
   resolveReportView,
   resolveTrendView,
   type TrendsSearch,
@@ -60,6 +61,21 @@ test('the report reads its years as the pay changes page does, and shows jobs by
     to: 2025,
     fromYears: [],
     growth: 'jobs',
+    compare: 'fte',
   })
   expect(resolveReportView({ growth: 'median' }, YEARS).growth).toBe('median')
+})
+
+test('a report link keeps its years, measures, area, and unit, and nothing else', () => {
+  expect(
+    pickReportParams({
+      from: 2018,
+      compare: 'spend',
+      area: '222000',
+      unit: '222050',
+      dept: '223100',
+      metric: 'fte',
+      hide: ['Faculty'],
+    }),
+  ).toEqual({ from: 2018, compare: 'spend', area: '222000', unit: '222050' })
 })

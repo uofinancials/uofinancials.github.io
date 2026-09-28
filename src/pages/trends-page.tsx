@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { SelectField } from '@/components/fields/select-field'
 import { PageSection } from '@/components/layout/page-section'
+import { CompareSection } from '@/components/trends/compare-section'
 import { GroupMapping } from '@/components/trends/group-mapping'
 import { GrowthSection } from '@/components/trends/growth-section'
 import { MoneySection } from '@/components/trends/money-section'
@@ -19,6 +20,7 @@ const QUESTIONS = [
   ['money', 'Where did the money go?'],
   ['pay-or-people', 'More people or higher pay?'],
   ['raises', 'What raises did people get?'],
+  ['compare', 'How does my unit compare?'],
   ['groups', 'How are groups defined?'],
 ] as const
 
@@ -80,10 +82,13 @@ function YearRange({
 /** The trends report: sections that each answer one question about the Fall censuses, over one year range. */
 export function TrendsPage() {
   const navigate = useNavigate({ from: '/trends' })
-  const { years } = useLoaderData({ from: '/trends' })
+  const { years, fiscalYears } = useLoaderData({ from: '/trends' })
   const search = useSearch({ from: '/trends' })
   const { data: summary } = useSuspenseQuery(summaryQuery)
-  const { from, to, fromYears, growth } = resolveReportView(search, years)
+  const { from, to, fromYears, growth, compare } = resolveReportView(
+    search,
+    years,
+  )
   const trends = sliceTrends(summary.trends.all, from, to)
   const ratios = staffingRatio(trends)
   const first = trends.total[0]
@@ -124,6 +129,16 @@ export function TrendsPage() {
         fromYears={fromYears}
         from={from}
         to={to}
+      />
+      <CompareSection
+        areas={summary.trends.areas}
+        total={summary.trends.all.total}
+        area={search.area ?? null}
+        unit={search.unit ?? null}
+        metric={compare}
+        range={{ from, to }}
+        fiscalYears={fiscalYears}
+        onChange={handleChange}
       />
       <PageSection id="groups" title="How are groups defined?">
         <p className="text-sm text-muted-foreground">

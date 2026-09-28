@@ -111,6 +111,8 @@ export type PayChangesSearch = z.infer<typeof payChangesSearchSchema>
 export const trendsSearchSchema = payChangesSearchSchema.extend({
   metric: z.enum(TREND_METRICS).optional().catch(undefined),
   growth: z.enum(REPORT_METRICS).optional().catch(undefined),
+  compare: z.enum(REPORT_METRICS).optional().catch(undefined),
+  unit: orgCodeParam.optional().catch(undefined),
 })
 
 /** The params of a trends search the report reads; any other is from a link made before it. */
@@ -118,10 +120,12 @@ export function pickReportParams({
   from,
   to,
   growth,
+  compare,
   area,
+  unit,
 }: TrendsSearch): TrendsSearch {
   return Object.fromEntries(
-    Object.entries({ from, to, growth, area }).filter(
+    Object.entries({ from, to, growth, compare, area, unit }).filter(
       ([, value]) => value !== undefined,
     ),
   )
@@ -170,7 +174,13 @@ export function resolveTrendView(
 /** The report's year range and pairs, as the pay changes page resolves them, and section 2's measure. */
 export function resolveReportView(search: TrendsSearch, years: number[]) {
   const { from, to, fromYears } = resolveTrendView(search, years)
-  return { from, to, fromYears, growth: search.growth ?? 'jobs' }
+  return {
+    from,
+    to,
+    fromYears,
+    growth: search.growth ?? 'jobs',
+    compare: search.compare ?? 'fte',
+  }
 }
 
 export const METRIC_OPTIONS = CENSUS_METRICS.map(

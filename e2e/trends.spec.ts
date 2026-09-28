@@ -53,8 +53,16 @@ test('the measure and years are held in the link, and every section compares aga
   page,
 }) => {
   await page.goto('/trends')
-  await page.getByRole('radio', { name: 'Median salary rate' }).check()
+  await page
+    .locator('#groups-grew')
+    .getByRole('radio', { name: 'Median salary rate' })
+    .check()
   await expect(page).toHaveURL(/growth=median/)
+  await page
+    .locator('#compare')
+    .getByRole('radio', { name: 'Salary spend' })
+    .check()
+  await expect(page).toHaveURL(/compare=spend/)
   await page.getByRole('combobox', { name: 'From' }).selectOption('2018')
   await expect(page).toHaveURL(/from=2018/)
   await page.reload()
@@ -101,4 +109,43 @@ test('the question links jump to their sections, and the page does not scroll si
   ).toBeInViewport()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+})
+
+test('a unit is charted against its area and the university, held in the link', async ({
+  page,
+}) => {
+  await page.goto('/trends')
+  const section = page.locator('#compare')
+  await expect(
+    section.getByRole('row', {
+      name: /^Arts & Sciences, College of [\d,]+ -4\.1% \+40\.\d%$/,
+    }),
+  ).toBeVisible()
+  await section
+    .getByRole('combobox', { name: 'College or VP area' })
+    .selectOption({ label: 'Arts & Sciences, College of' })
+  await expect(page).toHaveURL(/area=.*222000/)
+  await section
+    .getByRole('combobox', { name: 'Unit' })
+    .selectOption({ label: 'CAS English' })
+  await expect(page).toHaveURL(/unit=.*222050/)
+  await page.reload()
+  await expect(section).toContainText(
+    'CAS English: FTE -28.8% since Fall 2014, against -4.1% for Arts & Sciences, College of and +16.1% for All of UO.',
+  )
+  await expect(
+    section.getByRole('row', { name: 'CAS English 72 -28.8% +7.6%' }),
+  ).toBeVisible()
+  await expect(
+    section.getByRole('link', { name: 'CAS English' }),
+  ).toHaveAttribute('href', '/departments/222050')
+})
+
+test('an old area link opens the comparison on that area', async ({ page }) => {
+  await page.goto('/trends?area=222000&metric=fte')
+  await expect(page).toHaveURL(/\/trends\?area=.*222000.*$/)
+  await expect(page).not.toHaveURL(/metric/)
+  await expect(
+    page.getByRole('combobox', { name: 'College or VP area' }),
+  ).toHaveValue('222000')
 })

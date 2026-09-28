@@ -14,6 +14,7 @@ import { SiteLayout } from '@/components/layout/site-layout'
 import { orgCode } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import {
+  areaTrendsQuery,
   budgetYearQuery,
   fallYearQuery,
   manifestQuery,
@@ -96,13 +97,21 @@ const trendsRoute = createRoute({
       throw redirect({ to: '/trends', search: kept, replace: true })
     }
   },
-  loader: async ({ context: { queryClient } }) => {
-    const [manifest] = await Promise.all([
+  loaderDeps: ({ search }) => ({ area: search.area }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const [manifest, summary] = await Promise.all([
       queryClient.ensureQueryData(manifestQuery),
       queryClient.ensureQueryData(summaryQuery),
     ])
+    const area = summary.trends.areas.find(({ code }) => code === deps.area)
+    if (area) await queryClient.ensureQueryData(areaTrendsQuery(area.code))
+    const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     return {
       years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
+      fiscalYears: {
+        from: Math.min(...fiscalYears),
+        to: Math.max(...fiscalYears),
+      },
     }
   },
   component: lazyRouteComponent(
