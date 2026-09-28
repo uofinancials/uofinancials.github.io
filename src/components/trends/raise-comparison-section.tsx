@@ -15,7 +15,7 @@ import {
   formatOrBlank,
   formatPoints,
 } from '@/lib/shared/format'
-import { pairLabel } from '@/lib/trends/pay-changes'
+import { pairLabel } from '@/lib/trends/pay-change-labels'
 import type { RaiseComparison } from '@/lib/trends/raise-comparison'
 import { RAISE_ROW_METHOD, UNPLACED_JOBS } from '@/lib/trends/raise-groups'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'

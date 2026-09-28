@@ -22,5 +22,5 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect(listAreaTrendsFiles().filter((file) => !texts.has(file))).toEqual([])
     expect(manifest.summary?.files).toEqual(files)
   },
-  60_000,
+  30_000,
 )

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import { useMediaQuery } from '@/hooks/use-media-query'
+import { useEffect, useState } from 'react'
 
 /** Tailwind's `md` breakpoint. */
 const WIDE = '(min-width: 48rem)'
 
-/** A page section whose heading opens and closes it, open on wide screens and, unless asked open, closed on a phone. */
+/** A page section whose heading opens and closes it: open at first on a wide screen, when asked, or when the URL names it; the reader's choice after that. */
 export function CollapsibleSection({
   id,
   title,
@@ -16,9 +16,26 @@ export function CollapsibleSection({
   isOpen?: boolean
   children: ReactNode
 }) {
-  const isWide = useMediaQuery(WIDE)
+  const [open, setOpen] = useState(
+    () =>
+      isOpen ||
+      window.matchMedia(WIDE).matches ||
+      window.location.hash === `#${id}`,
+  )
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === `#${id}`) setOpen(true)
+    }
+    window.addEventListener('hashchange', handleHash)
+    return () => window.removeEventListener('hashchange', handleHash)
+  }, [id])
   return (
-    <details id={id} open={isWide || isOpen} className="space-y-4">
+    <details
+      id={id}
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+      className="space-y-4"
+    >
       <summary className="cursor-pointer list-inside marker:text-muted-foreground">
         <h2 className="inline text-section">{title}</h2>
       </summary>

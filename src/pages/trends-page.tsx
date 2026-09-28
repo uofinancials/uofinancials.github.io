@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
-import { SelectField } from '@/components/fields/select-field'
+import { YearRangeFields } from '@/components/fields/year-range-fields'
 import { CollapsibleSection } from '@/components/layout/collapsible-section'
 import { CompareSection } from '@/components/trends/compare-section'
 import { GroupMapping } from '@/components/trends/group-mapping'
@@ -10,8 +10,13 @@ import { RaisesSection } from '@/components/trends/raises-section'
 import { SinceSection } from '@/components/trends/since-section'
 import { SplitSection } from '@/components/trends/split-section'
 import { summaryQuery } from '@/data/queries'
-import { staffingRatio } from '@/lib/trends/report'
-import { resolveReportView, type TrendsSearch } from '@/lib/trends/search'
+import { ALL_OF_UO } from '@/lib/trends/compare'
+import { staffingRows } from '@/lib/trends/report'
+import {
+  type ReportSearch,
+  resolveReportView,
+  type YearRange,
+} from '@/lib/trends/search'
 import { sliceTrends } from '@/lib/trends/trends'
 
 const QUESTIONS = [
@@ -24,12 +29,6 @@ const QUESTIONS = [
   ['groups', 'How are groups defined?'],
 ] as const
 
-/** Opens a section a phone shows closed, so a link to it lands on its contents. */
-function openSection(id: string) {
-  const section = document.getElementById(id)
-  if (section instanceof HTMLDetailsElement) section.open = true
-}
-
 function QuestionLinks() {
   return (
     <nav aria-label="Questions on this page">
@@ -39,7 +38,6 @@ function QuestionLinks() {
             <a
               href={`#${id}`}
               className="block rounded-full border px-3 py-1.5 hover:bg-muted"
-              onClick={() => openSection(id)}
             >
               {question}
             </a>
@@ -50,35 +48,18 @@ function QuestionLinks() {
   )
 }
 
-function YearRange({
+function YearRangePanel({
   years,
-  from,
-  to,
+  range: { from, to },
   onChange,
 }: {
   years: number[]
-  from: number
-  to: number
-  onChange: (patch: TrendsSearch) => void
+  range: YearRange
+  onChange: (patch: ReportSearch) => void
 }) {
-  const options = years.map((year): [string, string] => [
-    String(year),
-    `Fall ${year}`,
-  ])
   return (
     <div className="flex flex-wrap items-end gap-4 rounded-xl bg-muted p-4">
-      <SelectField
-        label="From"
-        value={String(from)}
-        options={options}
-        onSelect={(value) => onChange({ from: Number(value) })}
-      />
-      <SelectField
-        label="To"
-        value={String(to)}
-        options={options}
-        onSelect={(value) => onChange({ to: Number(value) })}
-      />
+      <YearRangeFields years={years} from={from} to={to} onChange={onChange} />
       <p className="text-sm text-muted-foreground">
         Every section compares Fall {to} with Fall {from}.
       </p>
@@ -96,11 +77,12 @@ export function TrendsPage() {
     search,
     years,
   )
+  const range = { from, to }
   const trends = sliceTrends(summary.trends.all, from, to)
-  const ratios = staffingRatio(trends)
+  const ratios = staffingRows(trends)
   const first = trends.total[0]
   const last = trends.total.at(-1)
-  const handleChange = (patch: TrendsSearch) =>
+  const handleChange = (patch: ReportSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
     <div className="space-y-10">
@@ -114,36 +96,42 @@ export function TrendsPage() {
         </p>
       </div>
       <QuestionLinks />
-      <YearRange years={years} from={from} to={to} onChange={handleChange} />
+      <YearRangePanel years={years} range={range} onChange={handleChange} />
       {first && last && (
         <SinceSection
           first={first}
           last={last}
-          ratios={{ first: ratios[0] ?? null, last: ratios.at(-1) ?? null }}
+          ratios={{
+            first: ratios[0]?.ratio ?? null,
+            last: ratios.at(-1)?.ratio ?? null,
+          }}
         />
       )}
       <GrowthSection
         trends={trends}
-        from={from}
-        to={to}
+        ratios={ratios}
+        range={range}
         metric={growth}
         onMetric={(metric) => handleChange({ growth: metric })}
       />
-      <MoneySection trends={trends} from={from} to={to} />
-      <SplitSection trends={trends} from={from} to={to} />
+      <MoneySection trends={trends} range={range} />
+      <SplitSection trends={trends} range={range} />
       <RaisesSection
         payChanges={summary.trends.payChanges}
         fromYears={fromYears}
-        from={from}
-        to={to}
+        range={range}
       />
       <CompareSection
         areas={summary.trends.areas}
-        total={summary.trends.all.total}
+        university={{
+          code: '',
+          name: ALL_OF_UO,
+          points: summary.trends.all.total,
+        }}
         area={search.area ?? null}
         unit={search.unit ?? null}
         metric={compare}
-        range={{ from, to }}
+        range={range}
         fiscalYears={fiscalYears}
         onChange={handleChange}
       />

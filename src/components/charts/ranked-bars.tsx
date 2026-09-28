@@ -1,8 +1,6 @@
 import { formatChange } from '@/lib/shared/format'
 import { rankByChange } from '@/lib/shared/series'
-import { cn } from '@/lib/utils'
-
-const PERCENT = 100
+import { cn, widthOf } from '@/lib/utils'
 
 /** Each item's change as a bar, largest first, for screens too narrow for a line chart; a fall is drawn in the muted color. */
 export function RankedBars({
@@ -28,7 +26,7 @@ export function RankedBars({
                 'block h-full rounded-sm',
                 change < 0 ? 'bg-muted-foreground/50' : 'bg-chart',
               )}
-              style={{ width: `${share * PERCENT}%` }}
+              style={{ width: widthOf(share) }}
             />
           </span>
         </li>

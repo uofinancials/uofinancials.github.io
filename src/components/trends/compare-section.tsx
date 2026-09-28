@@ -1,156 +1,109 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { RankedBars } from '@/components/charts/ranked-bars'
-import { SeriesChart } from '@/components/charts/series-chart'
+import { IndexFigure } from '@/components/charts/index-figure'
 import { RadioField } from '@/components/fields/radio-field'
 import { SelectField } from '@/components/fields/select-field'
 import { CollapsibleSection } from '@/components/layout/collapsible-section'
 import { Sources } from '@/components/layout/sources'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { areaTrendsQuery } from '@/data/queries'
+import type { CodeTrend } from '@/data/summary'
 import { SPEND_METHOD } from '@/lib/census/totals'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
+import { formatChange, formatCount, formatOrBlank } from '@/lib/shared/format'
 import {
-  formatChange,
-  formatCount,
-  formatIndex,
-  formatOrBlank,
-} from '@/lib/shared/format'
-import type { CodeTrend } from '@/lib/trends/area-trends'
-import {
-  ALL_OF_UO,
-  type CompareLine,
   type CompareRow,
   compareAnswer,
   compareLines,
   compareRows,
+  inRange,
   lineChanges,
 } from '@/lib/trends/compare'
 import { unindexedNote } from '@/lib/trends/report-text'
 import {
   METRIC_INFO,
-  REPORT_METRICS,
+  REPORT_METRIC_OPTIONS,
   type ReportMetric,
-  type TrendsSearch,
+  type ReportSearch,
+  type YearRange,
 } from '@/lib/trends/search'
-import type { TrendPoint } from '@/lib/trends/trends'
-import { cn, NUMBER_CELL } from '@/lib/utils'
+import { type GroupRow, GroupTable } from './group-table'
 
 const EVERY = ''
 
-const METRIC_OPTIONS = REPORT_METRICS.map(
-  (metric) => [metric, METRIC_INFO[metric].label] as const,
-)
-
-type Range = { from: number; to: number }
+function compareRow(
+  { code, name, jobs, fte, spend }: CompareRow,
+  { isTotal, selected }: { isTotal: boolean; selected: string | null },
+): GroupRow {
+  return {
+    key: `${code} ${name}`,
+    label: isTotal ? (
+      name
+    ) : (
+      <Link className="link" to="/departments/$code" params={{ code }}>
+        {name}
+      </Link>
+    ),
+    isTotal,
+    isHighlighted: code === selected,
+    cells: [
+      { value: formatCount(jobs) },
+      { value: formatOrBlank(fte, formatChange) },
+      { value: formatOrBlank(spend, formatChange) },
+    ],
+  }
+}
 
 function CompareTable({
-  rows,
+  codes,
   totals,
   caption,
-  selected,
+  selected = null,
 }: {
-  rows: CompareRow[]
-  totals: CompareRow[]
+  codes: CodeTrend[]
+  totals: CodeTrend[]
   caption: string
-  selected: string | null
+  selected?: string | null
 }) {
-  const row = (entry: CompareRow, isTotal: boolean) => (
-    <TableRow
-      key={`${entry.code} ${entry.name}`}
-      className={cn(entry.code === selected && 'bg-muted')}
-    >
-      <TableHead scope="row" className={isTotal ? '' : 'font-normal'}>
-        {isTotal ? (
-          entry.name
-        ) : (
-          <Link
-            className="link"
-            to="/departments/$code"
-            params={{ code: entry.code }}
-          >
-            {entry.name}
-          </Link>
-        )}
-      </TableHead>
-      <TableCell className={NUMBER_CELL}>{formatCount(entry.jobs)}</TableCell>
-      <TableCell className={NUMBER_CELL}>
-        {formatOrBlank(entry.fte, formatChange)}
-      </TableCell>
-      <TableCell className={NUMBER_CELL}>
-        {formatOrBlank(entry.spend, formatChange)}
-      </TableCell>
-    </TableRow>
-  )
   return (
     <div className="max-h-[32rem] overflow-y-auto">
-      <Table>
-        <caption className="sr-only">{caption}</caption>
-        <TableHeader>
-          <TableRow>
-            <TableHead scope="col">Name</TableHead>
-            <TableHead scope="col" className="text-right">
-              Jobs, last census
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              FTE
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              Salary spend
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {totals.map((entry) => row(entry, true))}
-          {rows.map((entry) => row(entry, false))}
-        </TableBody>
-      </Table>
+      <GroupTable
+        caption={caption}
+        heading="Name"
+        columns={['Jobs, last census', 'FTE', 'Salary spend']}
+        rows={[
+          ...compareRows(totals).map((row) =>
+            compareRow(row, { isTotal: true, selected }),
+          ),
+          ...compareRows(codes).map((row) =>
+            compareRow(row, { isTotal: false, selected }),
+          ),
+        ]}
+      />
     </div>
   )
 }
 
-function CompareChart({
-  lines,
+function CompareFigure({
+  codes,
   metric,
   range,
 }: {
-  lines: CompareLine[]
+  codes: CodeTrend[]
   metric: ReportMetric
-  range: Range
+  range: YearRange
 }) {
-  const indexed = compareLines(lines, metric, range)
-  const labels = lines
-    .at(-1)
-    ?.points.filter(({ year }) => year >= range.from && year <= range.to)
-    .map(({ year }) => String(year))
-  const note = unindexedNote(indexed.unindexed, metric, range.from)
+  const { labels, lines, unindexed } = compareLines(codes, metric)
+  const note = unindexedNote(unindexed, metric, range.from)
   return (
     <>
-      <p>{compareAnswer(lines, metric, range)}</p>
-      <RankedBars
-        items={lineChanges(lines, metric, range)}
-        label={`Change in ${METRIC_INFO[metric].noun}, Fall ${range.from} to Fall ${range.to}`}
-        className="md:hidden"
+      <p>{compareAnswer(codes, metric, range.from)}</p>
+      <IndexFigure
+        labels={labels}
+        lines={lines}
+        changes={lineChanges(codes, metric)}
+        label={`${METRIC_INFO[metric].label}, Fall ${range.from} = 100`}
+        barsLabel={`Change in ${METRIC_INFO[metric].noun}, Fall ${range.from} to Fall ${range.to}`}
       />
-      <div className="hidden md:block">
-        <SeriesChart
-          labels={labels ?? []}
-          series={indexed.lines}
-          format={formatIndex}
-          formatAxis={formatIndex}
-          label={`${METRIC_INFO[metric].label}, Fall ${range.from} = 100`}
-          hasEndLabels
-          isZeroBased={false}
-          className="h-80"
-        />
-      </div>
       {note && <p className="text-sm text-muted-foreground">{note}</p>}
     </>
   )
@@ -159,25 +112,22 @@ function CompareChart({
 function AreaCompare({
   area,
   unit,
-  all,
+  university,
   metric,
   range,
   onChange,
 }: {
   area: CodeTrend
   unit: string | null
-  all: CompareLine
+  university: CodeTrend
   metric: ReportMetric
-  range: Range
-  onChange: (patch: TrendsSearch) => void
+  range: YearRange
+  onChange: (patch: ReportSearch) => void
 }) {
   const { data } = useSuspenseQuery(areaTrendsQuery(area.code))
-  const units = [...data.units].sort((a, b) => a.name.localeCompare(b.name))
+  const units = inRange(data.units, range)
   const picked = units.find(({ code }) => code === unit) ?? null
-  const areaLine = { key: area.name, points: area.points }
-  const lines = picked
-    ? [{ key: picked.name, points: picked.points }, areaLine, all]
-    : [areaLine, all]
+  const byName = [...units].sort((a, b) => a.name.localeCompare(b.name))
   return (
     <>
       <SelectField
@@ -185,56 +135,29 @@ function AreaCompare({
         value={picked?.code ?? EVERY}
         options={[
           [EVERY, 'The whole area'],
-          ...units.map(({ code, name }): [string, string] => [code, name]),
+          ...byName.map(({ code, name }): [string, string] => [code, name]),
         ]}
         onSelect={(value) => onChange({ unit: value || undefined })}
       />
-      <CompareChart lines={lines} metric={metric} range={range} />
+      <CompareFigure
+        codes={picked ? [picked, area, university] : [area, university]}
+        metric={metric}
+        range={range}
+      />
       <CompareTable
-        rows={compareRows(data.units, range)}
-        totals={compareRows(
-          [area, { code: '', name: ALL_OF_UO, points: all.points }],
-          range,
-        )}
+        codes={units}
+        totals={[area, university]}
         caption={`Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`}
-        selected={picked?.code ?? null}
+        selected={picked?.code}
       />
     </>
   )
 }
 
-function EveryAreaCompare({
-  areas,
-  total,
-  range,
-}: {
-  areas: CodeTrend[]
-  total: TrendPoint[]
-  range: Range
-}) {
-  return (
-    <>
-      <p>
-        Choose a college or VP area to chart it, or one of its units, against
-        the university.
-      </p>
-      <CompareTable
-        rows={compareRows(areas, range)}
-        totals={compareRows(
-          [{ code: '', name: ALL_OF_UO, points: total }],
-          range,
-        )}
-        caption={`Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`}
-        selected={null}
-      />
-    </>
-  )
-}
-
-/** One unit against its college or VP area and the university, and the area's units, or every area when none is picked. */
+/** One unit against its college or VP area and the university, and the area's units, or every area when none is picked; the codes are given over every census and shown over the range. */
 export function CompareSection({
   areas,
-  total,
+  university,
   area,
   unit,
   metric,
@@ -243,17 +166,18 @@ export function CompareSection({
   onChange,
 }: {
   areas: CodeTrend[]
-  total: TrendPoint[]
+  university: CodeTrend
   area: string | null
   unit: string | null
   metric: ReportMetric
-  range: Range
-  fiscalYears: Range
-  onChange: (patch: TrendsSearch) => void
+  range: YearRange
+  fiscalYears: YearRange
+  onChange: (patch: ReportSearch) => void
 }) {
-  const picked = areas.find(({ code }) => code === area) ?? null
-  const all = { key: ALL_OF_UO, points: total }
-  const byName = [...areas].sort((a, b) => a.name.localeCompare(b.name))
+  const shown = inRange([university, ...areas], range)
+  const [all = university, ...shownAreas] = shown
+  const picked = shownAreas.find(({ code }) => code === area) ?? null
+  const byName = [...shownAreas].sort((a, b) => a.name.localeCompare(b.name))
   return (
     <CollapsibleSection
       id="compare"
@@ -276,7 +200,7 @@ export function CompareSection({
           legend="Measure"
           name="compare"
           value={metric}
-          options={METRIC_OPTIONS}
+          options={REPORT_METRIC_OPTIONS}
           onSelect={(value) => onChange({ compare: value })}
         />
       </div>
@@ -284,13 +208,23 @@ export function CompareSection({
         <AreaCompare
           area={picked}
           unit={unit}
-          all={all}
+          university={all}
           metric={metric}
           range={range}
           onChange={onChange}
         />
       ) : (
-        <EveryAreaCompare areas={areas} total={total} range={range} />
+        <>
+          <p>
+            Choose a college or VP area to chart it, or one of its units,
+            against the university.
+          </p>
+          <CompareTable
+            codes={shownAreas}
+            totals={[all]}
+            caption={`Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`}
+          />
+        </>
       )}
       <Sources
         sources={[

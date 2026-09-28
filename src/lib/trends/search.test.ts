@@ -74,8 +74,11 @@ test('a report link keeps its years, measures, area, and unit, and nothing else'
       area: '222000',
       unit: '222050',
       dept: '223100',
-      metric: 'fte',
+      metric: 'change',
       hide: ['Faculty'],
     }),
   ).toEqual({ from: 2018, compare: 'spend', area: '222000', unit: '222050' })
+  expect(trendsSearchSchema.parse({ metric: 'fte' })).toEqual({
+    metric: undefined,
+  })
 })

@@ -4,7 +4,7 @@ import type { Manifest } from '../../data/manifest.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { Outlook } from '../../data/outlook.ts'
 import type { RaiseTerms } from '../../data/raises.ts'
-import type { Summary } from '../../data/summary.ts'
+import type { AreaTrends, Summary } from '../../data/summary.ts'
 import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
 import {
   type DepartmentCensus,
@@ -26,7 +26,7 @@ import { peerMedians } from '../people/peer-median.ts'
 import { indexPeople, personYearsOf } from '../people/person-lookup.ts'
 import { firstSavingsYear } from '../scenario/outlook.ts'
 import { raiseRates } from '../scenario/raises.ts'
-import { type AreaTrends, areaTrends } from '../trends/area-trends.ts'
+import { areaTrends } from '../trends/area-trends.ts'
 import { continuingPairs, payChangeTrends } from '../trends/pay-changes.ts'
 import { buildTrends, pairYears } from '../trends/trends.ts'
 
@@ -58,7 +58,10 @@ export function buildAreaTrends({
   return areaTrends(toDepartmentCensuses(manifest, falls, budgets))
 }
 
-function summarizeTrends(inputs: SummaryInputs): Summary['trends'] {
+function summarizeTrends(
+  inputs: SummaryInputs,
+  areas: AreaTrends[],
+): Summary['trends'] {
   const censuses = inputs.falls.map(({ censusDate, records }) => ({
     year: censusYearOf(censusDate),
     records,
@@ -81,7 +84,7 @@ function summarizeTrends(inputs: SummaryInputs): Summary['trends'] {
       pairYears(years, from, to),
       null,
     ),
-    areas: buildAreaTrends(inputs).map(({ units, ...area }) => area),
+    areas: areas.map(({ units, ...area }) => area),
   }
 }
 
@@ -150,11 +153,14 @@ function summarizePeople(falls: FallYear[]): Summary['people'] {
   }
 }
 
-/** The figures the pages show by default, derived as the pages derive them. */
-export function buildSummary(inputs: SummaryInputs): Summary {
+/** The figures the pages show by default, derived as the pages derive them; `areas` is `buildAreaTrends` of the same inputs. */
+export function buildSummary(
+  inputs: SummaryInputs,
+  areas: AreaTrends[],
+): Summary {
   const years = latestYears(inputs)
   return {
-    trends: summarizeTrends(inputs),
+    trends: summarizeTrends(inputs, areas),
     departments: summarizeDepartments(years),
     home: summarizeHome(inputs, years.now),
     people: summarizePeople(inputs.falls),

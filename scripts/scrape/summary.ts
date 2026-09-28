@@ -7,6 +7,7 @@ import type { Manifest } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
+import type { AreaTrends } from '../../src/data/summary.ts'
 import {
   areaTrendsSchema,
   type Summary,
@@ -17,7 +18,6 @@ import {
   buildSummary,
   type SummaryInputs,
 } from '../../src/lib/summary/summary.ts'
-import type { AreaTrends } from '../../src/lib/trends/area-trends.ts'
 import {
   AREA_TRENDS_DIR,
   areaTrendsPath,
@@ -57,11 +57,8 @@ export function deriveSummary(manifest: Manifest): {
     OPE_DATA_PATH,
     RAISES_DATA_PATH,
   ].map((file) => path.relative(DATA_DIR, file))
-  return {
-    summary: buildSummary(inputs),
-    areas: buildAreaTrends(inputs),
-    files,
-  }
+  const areas = buildAreaTrends(inputs)
+  return { summary: buildSummary(inputs, areas), areas, files }
 }
 
 /** Each derived file's text by its path: the summary, then one file per area. */
@@ -78,7 +75,6 @@ export function serializeDerived(
   ])
 }
 
-/** The area trends files on disk. */
 export function listAreaTrendsFiles(): string[] {
   return existsSync(AREA_TRENDS_DIR)
     ? readdirSync(AREA_TRENDS_DIR).map((name) =>

@@ -8,7 +8,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatChange, formatOrBlank } from '@/lib/shared/format'
-import { type ChangeSeries, pairLabel } from '@/lib/trends/pay-changes'
+import { pairLabel } from '@/lib/trends/pay-change-labels'
+import type { ChangeSeries } from '@/lib/trends/pay-changes'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** Each line's median change per census pair, as a chart and a table. */

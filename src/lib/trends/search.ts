@@ -44,10 +44,8 @@ export type CensusMetric = (typeof CENSUS_METRICS)[number]
 export const REPORT_METRICS = ['jobs', ...CENSUS_METRICS] as const
 export type ReportMetric = (typeof REPORT_METRICS)[number]
 
+/** The measure of a link made before the pay changes page, which redirects there. */
 export const CHANGE_METRIC = 'change'
-/** The census measures and the change in continuing jobs' rates between census pairs. */
-export const TREND_METRICS = [...CENSUS_METRICS, CHANGE_METRIC] as const
-export type TrendMetric = (typeof TREND_METRICS)[number]
 
 export const CHANGE_LABEL = 'Median change in salary rate'
 
@@ -107,31 +105,39 @@ export const payChangesSearchSchema = z.object({
 
 export type PayChangesSearch = z.infer<typeof payChangesSearchSchema>
 
-/** The trends report's URL search params: the year range and each section's measure. The pay changes page's params are read only to redirect a link made before the report. */
-export const trendsSearchSchema = payChangesSearchSchema.extend({
-  metric: z.enum(TREND_METRICS).optional().catch(undefined),
+/** The trends report's URL search params: the year range, each section's measure, and the compared area and unit. */
+export const reportSearchSchema = z.object({
+  from: z.number().int().optional().catch(undefined),
+  to: z.number().int().optional().catch(undefined),
   growth: z.enum(REPORT_METRICS).optional().catch(undefined),
   compare: z.enum(REPORT_METRICS).optional().catch(undefined),
+  area: orgCodeParam.optional().catch(undefined),
   unit: orgCodeParam.optional().catch(undefined),
 })
 
-/** The params of a trends search the report reads; any other is from a link made before it. */
-export function pickReportParams({
-  from,
-  to,
-  growth,
-  compare,
-  area,
-  unit,
-}: TrendsSearch): TrendsSearch {
-  return Object.fromEntries(
-    Object.entries({ from, to, growth, compare, area, unit }).filter(
-      ([, value]) => value !== undefined,
+export type ReportSearch = z.infer<typeof reportSearchSchema>
+
+/** What a `/trends` link may carry: the report's params, and those of a link made before the report, read only to redirect it. */
+export const trendsSearchSchema = payChangesSearchSchema.extend({
+  ...reportSearchSchema.shape,
+  metric: z.literal(CHANGE_METRIC).optional().catch(undefined),
+})
+
+export type TrendsSearch = z.infer<typeof trendsSearchSchema>
+
+/** The report's params of a `/trends` search, without those it leaves empty. */
+export function pickReportParams(search: TrendsSearch): ReportSearch {
+  return reportSearchSchema.parse(
+    Object.fromEntries(
+      Object.entries(search).filter(
+        ([key, value]) =>
+          value !== undefined && key in reportSearchSchema.shape,
+      ),
     ),
   )
 }
 
-export type TrendsSearch = z.infer<typeof trendsSearchSchema>
+export type YearRange = { from: number; to: number }
 
 export type TrendView = Omit<TrendFilter, 'jobs'> & {
   hide: string[]
@@ -146,16 +152,24 @@ export function linesLabel(group: TrendGroup | null): string {
   return group ? `EEO category in ${group}` : 'group'
 }
 
+/** The years a search asks for, clamped to those listed, and the earlier census of each pair in them. */
+export function resolveRange(
+  search: { from?: number; to?: number },
+  years: number[],
+): YearRange & { fromYears: number[] } {
+  const first = Math.min(...years)
+  const last = Math.max(...years)
+  const from = Math.min(Math.max(search.from ?? first, first), last)
+  const to = Math.min(Math.max(search.to ?? last, from), last)
+  return { from, to, fromYears: pairYears(years, from, to) }
+}
+
 /** The view a search asks for, with the census years clamped to those listed and a pair not in the range falling back to its latest. */
 export function resolveTrendView(
   search: PayChangesSearch,
   years: number[],
 ): TrendView {
-  const first = Math.min(...years)
-  const last = Math.max(...years)
-  const from = Math.min(Math.max(search.from ?? first, first), last)
-  const to = Math.min(Math.max(search.to ?? last, from), last)
-  const fromYears = pairYears(years, from, to)
+  const { from, to, fromYears } = resolveRange(search, years)
   return {
     group: search.group ?? null,
     hide: search.hide ?? [],
@@ -171,19 +185,20 @@ export function resolveTrendView(
   }
 }
 
-/** The report's year range and pairs, as the pay changes page resolves them, and section 2's measure. */
-export function resolveReportView(search: TrendsSearch, years: number[]) {
-  const { from, to, fromYears } = resolveTrendView(search, years)
+/** The report's year range and its pairs, and the measures of its growth and comparison sections. */
+export function resolveReportView(search: ReportSearch, years: number[]) {
   return {
-    from,
-    to,
-    fromYears,
+    ...resolveRange(search, years),
     growth: search.growth ?? 'jobs',
     compare: search.compare ?? 'fte',
   }
 }
 
 export const METRIC_OPTIONS = CENSUS_METRICS.map(
+  (metric) => [metric, METRIC_INFO[metric].label] as const,
+)
+
+export const REPORT_METRIC_OPTIONS = REPORT_METRICS.map(
   (metric) => [metric, METRIC_INFO[metric].label] as const,
 )
 

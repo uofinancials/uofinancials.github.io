@@ -4,39 +4,28 @@ import {
   formatRatio,
   formatShare,
 } from '../shared/format.ts'
-import { pairLabel } from './pay-changes.ts'
-import {
-  ALL_JOBS,
-  type ChangeRow,
-  type RaiseRow,
-  type SpendContribution,
-  UNPAID_GROUP,
-  type VolumeAndPay,
-} from './report.ts'
-import { METRIC_INFO, type ReportMetric } from './search.ts'
+import { rankByChange } from '../shared/series.ts'
+import { pairLabel } from './pay-change-labels.ts'
+import { ALL_JOBS, type ChangeRow, type RaiseRow } from './report.ts'
+import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
+import type { SpendContribution, VolumeAndPay } from './spend.ts'
 
-function listOf(items: string[]): string {
-  if (items.length <= 2) return items.join(' and ')
-  return `${items.slice(0, -1).join(', ')}, and ${items.at(-1)}`
-}
+const LIST = new Intl.ListFormat('en-US', { type: 'conjunction' })
 
-/** All jobs' change in a measure since the first census, and the charted groups with the largest and smallest change. */
+/** All jobs' change in a measure since the first census, and the groups among the rows with the largest and smallest change. */
 export function growthAnswer(
   rows: ChangeRow[],
   metric: ReportMetric,
   from: number,
 ): string | null {
   const all = rows.find(({ key }) => key === ALL_JOBS)?.[metric] ?? null
-  const groups = rows
-    .flatMap((row) => {
-      const change = row[metric]
-      return row.key === ALL_JOBS || row.key === UNPAID_GROUP || change === null
-        ? []
-        : [{ key: row.key, change }]
-    })
-    .sort((a, b) => b.change - a.change)
-  const largest = groups[0]
-  const smallest = groups.at(-1)
+  const ranked = rankByChange(
+    rows
+      .filter(({ key }) => key !== ALL_JOBS)
+      .map((row) => ({ key: row.key, change: row[metric] })),
+  )
+  const largest = ranked[0]
+  const smallest = ranked.at(-1)
   if (all === null || !largest || !smallest || largest === smallest) {
     return null
   }
@@ -51,12 +40,12 @@ export function unindexedNote(
 ): string | null {
   if (keys.length === 0) return null
   const isOne = keys.length === 1
-  return `${listOf(keys)} ${isOne ? 'has' : 'have'} no ${METRIC_INFO[metric].noun} shown in Fall ${from}, so ${isOne ? 'it has' : 'they have'} no index; the table has ${isOne ? 'its' : 'their'} figures.`
+  return `${LIST.format(keys)} ${isOne ? 'has' : 'have'} no ${METRIC_INFO[metric].noun} shown in Fall ${from}, so ${isOne ? 'it has' : 'they have'} no index; the table has ${isOne ? 'its' : 'their'} figures.`
 }
 
 export function ratioAnswer(
   ratios: (number | null)[],
-  { from, to }: { from: number; to: number },
+  { from, to }: YearRange,
 ): string | null {
   const first = ratios[0]
   const last = ratios.at(-1)
@@ -74,7 +63,7 @@ export function ratioAnswer(
 /** The change in all spend, and the group with the largest share of a rise. */
 export function moneyAnswer(
   contributions: SpendContribution[],
-  { from, to }: { from: number; to: number },
+  { from, to }: YearRange,
 ): string | null {
   const whole = contributions.find(({ key }) => key === ALL_JOBS)?.changeCents
   if (whole === undefined || whole === null) return null

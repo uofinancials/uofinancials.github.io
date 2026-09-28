@@ -1,31 +1,34 @@
+import type { CodeTrend } from '../../data/summary.ts'
 import { formatChange } from '../shared/format.ts'
-import { changeOf } from '../shared/series.ts'
-import type { CodeTrend } from './area-trends.ts'
-import { type IndexedLine, indexValues } from './report.ts'
-import { METRIC_INFO, type ReportMetric } from './search.ts'
-import type { TrendPoint } from './trends.ts'
+import { changeOver, type IndexedLine, indexValues } from './report.ts'
+import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
 
 export const ALL_OF_UO = 'All of UO'
 
-export type CompareLine = { key: string; points: TrendPoint[] }
-
-function inRange(points: TrendPoint[], from: number, to: number) {
-  return points.filter(({ year }) => year >= from && year <= to)
+/** Each code's points in the range. */
+export function inRange(
+  codes: CodeTrend[],
+  { from, to }: YearRange,
+): CodeTrend[] {
+  return codes.map((code) => ({
+    ...code,
+    points: code.points.filter(({ year }) => year >= from && year <= to),
+  }))
 }
 
-/** The unit, its area, and the university, each indexed to the first census in the range; a line with no index is left out and named in `unindexed`. */
+/** The codes indexed to their first census, the last as the baseline; a code with no index is left out and named in `unindexed`. The labels are the last code's censuses. */
 export function compareLines(
-  lines: CompareLine[],
+  codes: CodeTrend[],
   metric: ReportMetric,
-  { from, to }: { from: number; to: number },
-): { lines: IndexedLine[]; unindexed: string[] } {
+): { labels: string[]; lines: IndexedLine[]; unindexed: string[] } {
   const { pick } = METRIC_INFO[metric]
-  const indexed = lines.map(({ key, points }, index) => ({
-    key,
-    values: indexValues(inRange(points, from, to).map(pick)),
-    isBaseline: index === lines.length - 1,
+  const indexed = codes.map(({ name, points }, index) => ({
+    key: name,
+    values: indexValues(points.map(pick)),
+    isBaseline: index === codes.length - 1,
   }))
   return {
+    labels: codes.at(-1)?.points.map(({ year }) => String(year)) ?? [],
     lines: indexed.flatMap(({ key, values, isBaseline }) =>
       values ? [{ key, values, isBaseline }] : [],
     ),
@@ -43,60 +46,48 @@ export type CompareRow = {
   spend: number | null
 }
 
-/** Each code's jobs in the last census and its change in FTE and spend over the range, most jobs first; a code with no job in the range is left out. */
-export function compareRows(
-  codes: CodeTrend[],
-  { from, to }: { from: number; to: number },
-): CompareRow[] {
+/** Each code's jobs in its last census and its change in FTE and spend, most jobs first; a code with no job is left out. */
+export function compareRows(codes: CodeTrend[]): CompareRow[] {
   return codes
-    .flatMap(({ code, name, points }) => {
-      const shown = inRange(points, from, to)
-      const first = shown[0]
-      const last = shown.at(-1)
-      if (!first || !last || shown.every(({ jobs }) => jobs === 0)) return []
-      return [
-        {
-          code,
-          name,
-          jobs: last.jobs,
-          fte: changeOf(first.fteHundredths, last.fteHundredths),
-          spend: changeOf(first.spendCents, last.spendCents),
-        },
-      ]
-    })
+    .flatMap(({ code, name, points }) =>
+      points.every(({ jobs }) => jobs === 0)
+        ? []
+        : [
+            {
+              code,
+              name,
+              jobs: points.at(-1)?.jobs ?? 0,
+              fte: changeOver(points, ({ fteHundredths }) => fteHundredths),
+              spend: changeOver(points, ({ spendCents }) => spendCents),
+            },
+          ],
+    )
     .sort((a, b) => b.jobs - a.jobs || a.name.localeCompare(b.name))
 }
 
-/** Each line's change in the measure from the first census in the range to the last. */
+/** Each code's change in the measure from its first census to its last. */
 export function lineChanges(
-  lines: CompareLine[],
+  codes: CodeTrend[],
   metric: ReportMetric,
-  { from, to }: { from: number; to: number },
 ): { key: string; change: number | null }[] {
-  const { pick } = METRIC_INFO[metric]
-  return lines.map(({ key, points }) => {
-    const shown = inRange(points, from, to)
-    const first = shown[0]
-    const last = shown.at(-1)
-    return {
-      key,
-      change: first && last ? changeOf(pick(first), pick(last)) : null,
-    }
-  })
+  return codes.map(({ name, points }) => ({
+    key: name,
+    change: changeOver(points, METRIC_INFO[metric].pick),
+  }))
 }
 
-/** The first line's change in the measure over the range, against the others'. */
+/** The first code's change in the measure, against the others'. */
 export function compareAnswer(
-  lines: CompareLine[],
+  codes: CodeTrend[],
   metric: ReportMetric,
-  range: { from: number; to: number },
+  from: number,
 ): string | null {
-  const [subject, ...others] = lineChanges(lines, metric, range)
+  const [subject, ...others] = lineChanges(codes, metric)
   if (!subject || subject.change === null) return null
   const against = others.flatMap(({ key, change }) =>
     change === null ? [] : [`${formatChange(change)} for ${key}`],
   )
-  const base = `${subject.key}: ${METRIC_INFO[metric].noun} ${formatChange(subject.change)} since Fall ${range.from}`
+  const base = `${subject.key}: ${METRIC_INFO[metric].noun} ${formatChange(subject.change)} since Fall ${from}`
   return against.length === 0
     ? `${base}.`
     : `${base}, against ${against.join(' and ')}.`

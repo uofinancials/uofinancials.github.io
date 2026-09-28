@@ -1,5 +1,6 @@
 import { RemovableFilter } from '@/components/fields/removable-filter'
 import { SelectField } from '@/components/fields/select-field'
+import { YearRangeFields } from '@/components/fields/year-range-fields'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/census/groups'
 import {
@@ -93,10 +94,6 @@ export function TrendsControls({
   names: FilterNames
   onChange: (search: PayChangesSearch) => void
 }) {
-  const yearOptions = years.map((year): [string, string] => [
-    String(year),
-    String(year),
-  ])
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4">
@@ -121,17 +118,11 @@ export function TrendsControls({
             })
           }
         />
-        <SelectField
-          label="From"
-          value={String(view.from)}
-          options={yearOptions}
-          onSelect={(value) => onChange({ from: Number(value) })}
-        />
-        <SelectField
-          label="To"
-          value={String(view.to)}
-          options={yearOptions}
-          onSelect={(value) => onChange({ to: Number(value) })}
+        <YearRangeFields
+          years={years}
+          from={view.from}
+          to={view.to}
+          onChange={onChange}
         />
       </div>
       <JobFilters names={names} onChange={onChange} />

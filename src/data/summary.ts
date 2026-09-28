@@ -138,4 +138,6 @@ export const summarySchema = z.strictObject({
 })
 
 export type Summary = z.infer<typeof summarySchema>
+export type CodeTrend = z.infer<typeof codeTrendSchema>
+export type AreaTrends = z.infer<typeof areaTrendsSchema>
 export type NameEntry = z.infer<typeof nameEntrySchema>

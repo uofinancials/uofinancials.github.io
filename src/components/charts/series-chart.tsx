@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -109,8 +108,8 @@ export function SeriesChart({
   marker,
   hasEndLabels = false,
   isZeroBased = true,
+  referenceY,
   className,
-  children,
 }: {
   labels: string[]
   series: ChartSeries[]
@@ -124,10 +123,10 @@ export function SeriesChart({
   hasEndLabels?: boolean
   /** Whether the y axis starts at zero, or near the lowest value. */
   isZeroBased?: boolean
+  /** A value marked with a horizontal line, such as an index's base. */
+  referenceY?: number
   /** Overrides the chart's height classes. */
   className?: string
-  /** Further reference lines or areas. */
-  children?: ReactNode
 }) {
   const shown = series
     .map((line, index) => ({ line, dataKey: seriesKey(index), index }))
@@ -174,7 +173,9 @@ export function SeriesChart({
               />
             }
           />
-          {children}
+          {referenceY !== undefined && (
+            <ReferenceLine y={referenceY} stroke="var(--foreground)" />
+          )}
           {hasEndLabels && (
             <EndLabels labels={endLabelsOf(shown)} format={format} />
           )}

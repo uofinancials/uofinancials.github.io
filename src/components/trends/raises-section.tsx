@@ -1,21 +1,18 @@
 import { Link } from '@tanstack/react-router'
 import { CollapsibleSection } from '@/components/layout/collapsible-section'
 import { Sources } from '@/components/layout/sources'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import type { Summary } from '@/data/summary'
 import { formatChange, formatOrBlank } from '@/lib/shared/format'
-import { ALL_PAIRS, pairLabel } from '@/lib/trends/pay-changes'
+import {
+  ALL_PAIRS,
+  CONTINUING_JOB_METHOD,
+  pairLabel,
+  RATE_NOTE,
+} from '@/lib/trends/pay-change-labels'
 import { heatLevel, raiseRows } from '@/lib/trends/report'
 import { raisesAnswer } from '@/lib/trends/report-text'
-import { cn, NUMBER_CELL } from '@/lib/utils'
-import { CONTINUING_JOB_METHOD, RATE_NOTE } from './pay-changes-section'
+import type { YearRange } from '@/lib/trends/search'
+import { GroupTable } from './group-table'
 
 /** Each shading level's cell classes, from no change to the largest. */
 const HEAT_CLASSES = [
@@ -34,13 +31,11 @@ const CHAINED_METHOD =
 export function RaisesSection({
   payChanges,
   fromYears,
-  from,
-  to,
+  range,
 }: {
   payChanges: Summary['trends']['payChanges']
   fromYears: number[]
-  from: number
-  to: number
+  range: YearRange
 }) {
   const rows = raiseRows(payChanges, fromYears)
   return (
@@ -54,51 +49,25 @@ export function RaisesSection({
         <>
           <p>{raisesAnswer(rows, fromYears)}</p>
           <p className="text-sm text-muted-foreground">{RATE_NOTE}</p>
-          <Table>
-            <caption className="sr-only">
-              Median change in salary rate, continuing jobs, by group and census
-              pair
-            </caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead scope="col">Group</TableHead>
-                {fromYears.map((year) => (
-                  <TableHead key={year} scope="col" className="text-right">
-                    {pairLabel(year)}
-                  </TableHead>
-                ))}
-                <TableHead scope="col" className="text-right">
-                  Chained
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map(({ key, medians, chained }) => (
-                <TableRow key={key}>
-                  <TableHead
-                    scope="row"
-                    className={key === ALL_PAIRS ? '' : 'font-normal'}
-                  >
-                    {key}
-                  </TableHead>
-                  {medians.map((median, index) => (
-                    <TableCell
-                      key={fromYears[index]}
-                      className={cn(
-                        NUMBER_CELL,
-                        median !== null && HEAT_CLASSES[heatLevel(median)],
-                      )}
-                    >
-                      {formatOrBlank(median, formatChange)}
-                    </TableCell>
-                  ))}
-                  <TableCell className={cn(NUMBER_CELL, 'font-semibold')}>
-                    {formatOrBlank(chained, formatChange)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <GroupTable
+            caption="Median change in salary rate, continuing jobs, by group and census pair"
+            columns={[...fromYears.map(pairLabel), 'Chained']}
+            rows={rows.map(({ key, medians, chained }) => ({
+              key,
+              isTotal: key === ALL_PAIRS,
+              cells: [
+                ...medians.map((median) => ({
+                  value: formatOrBlank(median, formatChange),
+                  className:
+                    median === null ? '' : HEAT_CLASSES[heatLevel(median)],
+                })),
+                {
+                  value: formatOrBlank(chained, formatChange),
+                  className: 'font-semibold',
+                },
+              ],
+            }))}
+          />
         </>
       )}
       <p className="text-sm">
@@ -109,12 +78,7 @@ export function RaisesSection({
       </p>
       <Sources
         sources={[
-          {
-            kind: 'fall-range',
-            from,
-            to,
-            computed: CONTINUING_JOB_METHOD,
-          },
+          { kind: 'fall-range', ...range, computed: CONTINUING_JOB_METHOD },
         ]}
         methods={[CHAINED_METHOD]}
       />

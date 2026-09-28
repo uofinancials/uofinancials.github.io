@@ -1,13 +1,8 @@
 import type { FallRecord } from '../../data/fall.ts'
+import type { AreaTrends, CodeTrend } from '../../data/summary.ts'
 import { departmentIndex } from '../departments/codes.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
-import { measureJobs, type TrendPoint } from './trends.ts'
-
-/** A code's figures in each census. */
-export type CodeTrend = { code: string; name: string; points: TrendPoint[] }
-
-/** An area's figures in each census, and each of its units' and pay departments' with a job in any. */
-export type AreaTrends = CodeTrend & { units: CodeTrend[] }
+import { measureJobs } from './trends.ts'
 
 function groupBy(
   records: FallRecord[],

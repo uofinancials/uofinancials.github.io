@@ -40,6 +40,7 @@ import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
 import { scenarioSearchSchema } from '@/lib/scenario/search'
 import {
+  CHANGE_METRIC,
   payChangesSearchSchema,
   pickReportParams,
   trendsSearchSchema,
@@ -85,7 +86,7 @@ const trendsRoute = createRoute({
   validateSearch: trendsSearchSchema,
   beforeLoad: ({ search }) => {
     const { metric, ...filters } = search
-    if (metric === 'change') {
+    if (metric === CHANGE_METRIC) {
       throw redirect({
         to: '/trends/pay-changes',
         search: filters,
@@ -99,12 +100,11 @@ const trendsRoute = createRoute({
   },
   loaderDeps: ({ search }) => ({ area: search.area }),
   loader: async ({ context: { queryClient }, deps }) => {
-    const [manifest, summary] = await Promise.all([
+    const [manifest] = await Promise.all([
       queryClient.ensureQueryData(manifestQuery),
       queryClient.ensureQueryData(summaryQuery),
+      deps.area && queryClient.prefetchQuery(areaTrendsQuery(deps.area)),
     ])
-    const area = summary.trends.areas.find(({ code }) => code === deps.area)
-    if (area) await queryClient.ensureQueryData(areaTrendsQuery(area.code))
     const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     return {
       years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),

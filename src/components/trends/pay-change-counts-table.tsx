@@ -7,7 +7,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatCount, formatShare, NO_VALUE } from '@/lib/shared/format'
-import { type ChangeCounts, pairLabel } from '@/lib/trends/pay-changes'
+import { pairLabel } from '@/lib/trends/pay-change-labels'
+import type { ChangeCounts } from '@/lib/trends/pay-changes'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 

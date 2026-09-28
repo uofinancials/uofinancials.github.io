@@ -95,6 +95,11 @@ export function formatFte(hundredths: number): string {
   return FTE.format(hundredths / HUNDREDTHS)
 }
 
+/** Formats a fraction as a percent to a tenth, e.g. `40.1%`. */
+export function formatPercent(fraction: number): string {
+  return SHARE.format(fraction)
+}
+
 export function formatShare(part: number, whole: number): string {
   return SHARE.format(whole === 0 ? 0 : part / whole)
 }

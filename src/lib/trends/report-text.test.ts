@@ -12,13 +12,6 @@ const ROWS = [
   { key: 'Faculty', jobs: 0.004, fte: 0.05, spend: 0.5, median: 0.42 },
   { key: 'Executives', jobs: 0.2, fte: 0.2, spend: 1.2, median: null },
   { key: 'Overloads', jobs: null, fte: null, spend: -0.36, median: null },
-  {
-    key: 'Classified temporaries',
-    jobs: 0.35,
-    fte: 0.5,
-    spend: null,
-    median: null,
-  },
   { key: 'All jobs', jobs: 0.12, fte: 0.16, spend: 0.71, median: 0.47 },
 ]
 
@@ -72,6 +65,7 @@ test('the split answer names the larger part', () => {
   expect(
     splitAnswer(
       {
+        firstCents: 150_000,
         fteChange: 0.2,
         perFteChange: 0.4,
         volumeCents: 30_000,
