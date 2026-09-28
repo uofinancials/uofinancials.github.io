@@ -42,6 +42,13 @@ const COMPACT_DOLLARS = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
+const ROUNDED_DOLLARS = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  notation: 'compact',
+  maximumSignificantDigits: 3,
+})
+
 export const CENTS_PER_DOLLAR = 100
 const HUNDREDTHS = 100
 
@@ -53,6 +60,11 @@ export function formatDollars(cents: number): string {
 /** Formats integer cents for a chart axis, e.g. `$18.8B`. */
 export function formatCompactDollars(cents: number): string {
   return COMPACT_DOLLARS.format(cents / CENTS_PER_DOLLAR)
+}
+
+/** Formats integer cents to three significant digits, e.g. `$1.77B`. */
+export function formatRoundedDollars(cents: number): string {
+  return ROUNDED_DOLLARS.format(cents / CENTS_PER_DOLLAR)
 }
 
 export function formatCount(count: number): string {

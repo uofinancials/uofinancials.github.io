@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { TotalsChart } from '@/components/charts/totals-chart'
 import { TotalsTable } from '@/components/charts/totals-table'
+import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
 import { PageSection } from '@/components/layout/page-section'
 import { SourceCitation } from '@/components/layout/source-citation'
-import { tabLinkClass } from '@/components/layout/tab-link-class'
 import { CensusControls } from '@/components/people/census-controls'
 import { ColumnPicker } from '@/components/people/column-picker'
 import { PeopleControls } from '@/components/people/controls'
@@ -48,7 +48,7 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
               search={(previous) => ({ ...previous, chart: option })}
               replace
               aria-current={option === chart ? 'page' : undefined}
-              className={tabLinkClass(option === chart)}
+              className={TAB_LINK_CLASS}
             >
               {CHART_LABELS[option]}
             </Link>

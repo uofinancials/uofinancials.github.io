@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { StatCard } from '@/components/layout/stat-card'
 import type { PersonRun } from '@/lib/people/person-lookup'
 import { runCards } from '@/lib/people/person-summary'
 import {
@@ -18,17 +18,9 @@ function Figure({
   method: string
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-normal text-muted-foreground">
-          {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-1">
-        <p className="text-figure tabular-nums">{value}</p>
-        <p className="text-xs text-muted-foreground">{method}</p>
-      </CardContent>
-    </Card>
+    <StatCard label={label} value={value}>
+      <p className="mt-1 text-xs text-muted-foreground">{method}</p>
+    </StatCard>
   )
 }
 

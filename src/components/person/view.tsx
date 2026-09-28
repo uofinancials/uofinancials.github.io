@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
 import { SourceCitation } from '@/components/layout/source-citation'
-import { tabLinkClass } from '@/components/layout/tab-link-class'
 import { PersonCards } from '@/components/person/cards'
 import { PersonHistoryTable } from '@/components/person/history-table'
 import { PersonRatesFigure } from '@/components/person/rates-figure'
@@ -34,7 +34,7 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
               params={{ name: person.name }}
               search={{ year: entry.year }}
               aria-current={entry.year === year ? 'page' : undefined}
-              className={cn(tabLinkClass(entry.year === year), 'tabular-nums')}
+              className={cn(TAB_LINK_CLASS, 'tabular-nums')}
             >
               {entry.year}
             </Link>

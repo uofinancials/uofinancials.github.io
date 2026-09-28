@@ -12,6 +12,7 @@ import { TopPaidTable } from '@/components/home/top-paid-table'
 import { CitedLine } from '@/components/layout/cited-line'
 import { PageSection } from '@/components/layout/page-section'
 import { SourceCitation } from '@/components/layout/source-citation'
+import { StatCard } from '@/components/layout/stat-card'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import {
@@ -35,6 +36,7 @@ import {
   formatCompactDollars,
   formatCount,
   formatDollars,
+  formatRoundedDollars,
 } from '@/lib/shared/format'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
@@ -60,20 +62,21 @@ function useHomeData() {
   }
 }
 
-function Headline({
+function DollarCard({
   label,
-  value,
+  cents,
   to,
 }: {
   label: string
-  value: string
+  cents: number
   to: LinkProps['to']
 }) {
   return (
-    <Link to={to} className="rounded-xl border p-4 hover:bg-muted">
-      <span className="block text-sm text-muted-foreground">{label}</span>
-      <span className="block text-figure tabular-nums">{value}</span>
-    </Link>
+    <StatCard label={label} value={formatRoundedDollars(cents)} to={to}>
+      <span className="block text-sm text-muted-foreground tabular-nums">
+        {formatDollars(cents)}
+      </span>
+    </StatCard>
   )
 }
 
@@ -89,22 +92,22 @@ function Headlines({
   const { runRate } = figures
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <Headline
+      <DollarCard
         label={`${fiscalYearLabel(runRate.fiscalYear)} projected E&G run rate`}
-        value={formatDollars(runRate.cents)}
+        cents={runRate.cents}
         to="/budget"
       />
-      <Headline
+      <DollarCard
         label={`${fiscalYearLabel(fiscalYear)} budget, all funds`}
-        value={formatDollars(figures.budgetCents)}
+        cents={figures.budgetCents}
         to="/departments"
       />
-      <Headline
+      <DollarCard
         label={`Fall ${year} salary spend`}
-        value={formatDollars(figures.spendCents)}
+        cents={figures.spendCents}
         to="/people"
       />
-      <Headline
+      <StatCard
         label={`Fall ${year} people`}
         value={formatCount(figures.people)}
         to="/people"
