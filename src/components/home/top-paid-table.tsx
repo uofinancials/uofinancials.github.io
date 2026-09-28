@@ -44,7 +44,7 @@ export function TopPaidTable({
               className="min-w-36 font-normal whitespace-normal"
             >
               <Link
-                className="underline"
+                className="link"
                 to="/people/$name"
                 params={{ name: job.name }}
                 search={{ year }}

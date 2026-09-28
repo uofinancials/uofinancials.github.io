@@ -69,7 +69,7 @@ function DepartmentLinks({
     <p className="flex flex-wrap gap-x-4 text-sm">
       {canEliminate && (
         <Link
-          className="underline"
+          className="link"
           to="/scenarios"
           search={{ rules: [{ kind: 'eliminate', code }] }}
         >
@@ -78,7 +78,7 @@ function DepartmentLinks({
       )}
       {hasPayChanges && (
         <Link
-          className="underline"
+          className="link"
           to="/trends"
           search={{
             ...(isArea ? { area: code } : { dept: code }),
@@ -160,7 +160,7 @@ function DepartmentHeader({
 }) {
   return (
     <header className="space-y-2">
-      <h1 className="text-2xl font-semibold">
+      <h1 className="text-title">
         {profile.name}{' '}
         <span className="text-muted-foreground">{profile.code}</span>
       </h1>
@@ -170,7 +170,7 @@ function DepartmentHeader({
           <>
             {' in '}
             <Link
-              className="underline"
+              className="link"
               to="/departments/$code"
               params={{ code: profile.area.code }}
             >
@@ -179,7 +179,7 @@ function DepartmentHeader({
           </>
         )}
         .{' '}
-        <Link className="underline" to="/departments">
+        <Link className="link" to="/departments">
           All departments
         </Link>
       </p>

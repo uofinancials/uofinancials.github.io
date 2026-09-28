@@ -66,7 +66,7 @@ function CodeLink({ code, name }: { code: string | null; name: string }) {
   return code === null ? (
     name
   ) : (
-    <Link className="underline" to="/departments/$code" params={{ code }}>
+    <Link className="link" to="/departments/$code" params={{ code }}>
       {name}
     </Link>
   )

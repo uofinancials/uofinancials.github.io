@@ -58,7 +58,7 @@ export function PeopleTable({
               className="min-w-36 font-normal whitespace-normal"
             >
               <Link
-                className="underline"
+                className="link"
                 to="/people/$name"
                 params={{ name: record.name }}
                 search={{ year: view.year }}

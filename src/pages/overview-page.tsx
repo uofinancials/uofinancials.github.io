@@ -70,12 +70,9 @@ function Headline({
   to: LinkProps['to']
 }) {
   return (
-    <Link
-      to={to}
-      className="rounded-xl border p-4 hover:bg-muted focus-visible:ring-2"
-    >
+    <Link to={to} className="rounded-xl border p-4 hover:bg-muted">
       <span className="block text-sm text-muted-foreground">{label}</span>
-      <span className="block text-2xl font-semibold tabular-nums">{value}</span>
+      <span className="block text-figure tabular-nums">{value}</span>
     </Link>
   )
 }
@@ -134,7 +131,7 @@ function GapSection({
         and {formatDollars(projection.runRateCents.at(-1) ?? 0)} in{' '}
         {fiscalYearLabel(lastYear)}. The run rate is revenue less expenses, as
         published.{' '}
-        <Link to="/budget" className="underline">
+        <Link to="/budget" className="link">
           See the budget outlook
         </Link>
         .
@@ -165,7 +162,7 @@ function JobsTrend({
       <p>
         The Fall census published {formatCount(first.jobs)} job records in{' '}
         {first.year} and {formatCount(last.jobs)} in {last.year}.{' '}
-        <Link to="/trends" className="underline">
+        <Link to="/trends" className="link">
           See trends by group
         </Link>
         .
@@ -224,7 +221,7 @@ function DepartmentsPreview({
         }
       />
       <p>
-        <Link to="/departments" className="underline">
+        <Link to="/departments" className="link">
           See every area, unit, and pay department
         </Link>
       </p>
@@ -252,7 +249,7 @@ function PeoplePreview({ data }: { data: ReturnType<typeof useHomeData> }) {
         <Link
           to="/people"
           search={{ sort: 'rate', dir: 'desc' }}
-          className="underline"
+          className="link"
         >
           See every job by rate
         </Link>
@@ -271,7 +268,7 @@ function Freshness({ data }: { data: ReturnType<typeof useHomeData> }) {
       Data as of the Fall {data.year} census of {data.censusDate}, the{' '}
       {fiscalYearLabel(fiscalYear)} budget at period {period}, and “
       {projection.title}” in the {projection.source.document}.{' '}
-      <Link to="/sources" className="underline">
+      <Link to="/sources" className="link">
         Every source and when it was retrieved
       </Link>
       .
@@ -285,7 +282,7 @@ export function OverviewPage() {
   return (
     <div className="space-y-10">
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">UO Financials</h1>
+        <h1 className="text-title">UO Financials</h1>
         <p>
           An independent look at the salary, headcount, and budget data the
           University of Oregon publishes: see the projected budget gap, test

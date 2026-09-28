@@ -48,22 +48,22 @@ export function SiteLayout() {
         </p>
         <p>
           Found an error?{' '}
-          <a className="underline" href={ISSUES_URL}>
+          <a className="link" href={ISSUES_URL}>
             Report it
           </a>
           .
         </p>
         <p>
           Source on{' '}
-          <a className="underline" href={REPO_URL}>
+          <a className="link" href={REPO_URL}>
             GitHub
           </a>
           . Code is{' '}
-          <a className="underline" href={CODE_LICENSE_URL}>
+          <a className="link" href={CODE_LICENSE_URL}>
             MIT licensed
           </a>
           ; data is{' '}
-          <a className="underline" href={DATA_LICENSE_URL}>
+          <a className="link" href={DATA_LICENSE_URL}>
             CC0
           </a>
           .

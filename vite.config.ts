@@ -17,6 +17,7 @@ export default defineConfig({
           environment: 'jsdom',
           unstubGlobals: true,
           setupFiles: ['./src/test-setup.ts'],
+          css: { include: [/index\.css/] },
           include: ['src/**/*.test.{ts,tsx}'],
         },
       },

@@ -196,7 +196,7 @@ export function DepartmentJobsSection({
           />
           <p className="flex flex-wrap gap-x-4 text-sm">
             <Link
-              className="underline"
+              className="link"
               to="/people"
               search={{ dept: code, year: view.year }}
             >
