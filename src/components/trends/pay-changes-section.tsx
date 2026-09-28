@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { PayChanges } from '@/hooks/use-pay-changes'
+import type { SectionSource } from '@/lib/shared/citation'
 import {
   RANK_RENAMES,
   TITLE_ABBREVIATIONS,
@@ -86,10 +87,12 @@ function LabelTables() {
 export function PayChangesSection({
   changes: { fromYears, series, counts, distribution, raises },
   view,
+  filterSources,
   onChange,
 }: {
   changes: PayChanges
   view: TrendView
+  filterSources: SectionSource[]
   onChange: (search: TrendsSearch) => void
 }) {
   const first = fromYears[0]
@@ -114,6 +117,17 @@ export function PayChangesSection({
           rows={counts}
           caption={`Continuing jobs with a changed class, rank, or title, ${span}`}
         />
+        <Sources
+          sources={[
+            {
+              kind: 'fall-range',
+              from: first,
+              to: last + 1,
+              computed: COMPUTED,
+            },
+            ...filterSources,
+          ]}
+        />
       </PageSection>
       {raises && (
         <RaiseComparisonSection
@@ -127,16 +141,6 @@ export function PayChangesSection({
         pair={view.pair}
         fromYears={fromYears}
         onPair={(pair) => onChange({ pair })}
-      />
-      <Sources
-        sources={[
-          {
-            kind: 'fall-range',
-            from: first,
-            to: last + 1,
-            computed: COMPUTED,
-          },
-        ]}
       />
       <LabelTables />
     </>

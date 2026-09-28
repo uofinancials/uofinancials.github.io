@@ -39,11 +39,17 @@ function DatasetCitation({
 }
 
 /** A section's sources and methods, closed under a summary that says whether any figure is computed. */
-export function Sources({ sources }: { sources: SectionSource[] }) {
+export function Sources({
+  sources,
+  methods = [],
+}: {
+  sources: SectionSource[]
+  methods?: string[]
+}) {
   return (
     <details className="text-xs text-muted-foreground">
       <summary className="w-fit cursor-pointer text-sm hover:text-foreground">
-        {sourcesSummary(sources)}
+        {sourcesSummary(sources, methods.length > 0)}
       </summary>
       <ul className="mt-2 space-y-2">
         {sources.map((source) => (
@@ -54,6 +60,9 @@ export function Sources({ sources }: { sources: SectionSource[] }) {
               <DatasetCitation source={source} computed={source.computed} />
             )}
           </li>
+        ))}
+        {methods.map((method) => (
+          <li key={method}>Method: {method}</li>
         ))}
       </ul>
     </details>

@@ -77,15 +77,8 @@ export function ScenarioAnswers({
         from pay cuts, thresholds, hiring and raise freezes, and department
         eliminations.
       </p>
-      <details className="text-sm">
-        <summary>How these are estimated</summary>
-        <ul className="mt-2 list-disc space-y-2 pl-6">
-          {METHODS.map((method) => (
-            <li key={method}>{method}</li>
-          ))}
-        </ul>
-      </details>
       <Sources
+        methods={METHODS}
         sources={[
           { kind: 'fall', year },
           { kind: 'budget', fiscalYear },

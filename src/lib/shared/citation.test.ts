@@ -182,8 +182,11 @@ test('summarizes a section sources by count and whether one is computed', () => 
       retrievedOn: '2026-09-24',
     },
   } as const
-  expect(sourcesSummary([fall])).toBe('Source')
-  expect(sourcesSummary([computed])).toBe('Source and method')
-  expect(sourcesSummary([fall, document, fall])).toBe('Sources (3)')
-  expect(sourcesSummary([document, computed])).toBe('Sources and method (2)')
+  expect(sourcesSummary([fall], false)).toBe('Source')
+  expect(sourcesSummary([computed], false)).toBe('Source and method')
+  expect(sourcesSummary([fall, document, fall], false)).toBe('Sources (3)')
+  expect(sourcesSummary([fall, document], true)).toBe('Sources and method (2)')
+  expect(sourcesSummary([document, computed], false)).toBe(
+    'Sources and method (2)',
+  )
 })

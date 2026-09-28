@@ -40,12 +40,12 @@ const DOCUMENT: SectionSource = {
   },
 }
 
-async function renderSources(sources: SectionSource[]) {
+async function renderSources(sources: SectionSource[], methods?: string[]) {
   const queryClient = testQueryClient()
   queryClient.setQueryData(manifestQuery.queryKey, MANIFEST)
   const router = createRouter({
     routeTree: createRootRoute({
-      component: () => <Sources sources={sources} />,
+      component: () => <Sources sources={sources} methods={methods} />,
     }),
     history: createMemoryHistory({ initialEntries: ['/'] }),
   })
@@ -87,4 +87,10 @@ test('labels a computed figure in the summary and says how under its source', as
   expect(
     screen.getByText(/Computed: sum of salary rate x FTE\./),
   ).toBeInTheDocument()
+})
+
+test('lists a section method under its sources and says so in the summary', async () => {
+  await renderSources([FALL, DOCUMENT], ['Savings are gross.'])
+  expect(screen.getByText('Sources and method (2)')).toBeInTheDocument()
+  expect(screen.getByText('Method: Savings are gross.')).toBeInTheDocument()
 })

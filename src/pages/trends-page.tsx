@@ -29,6 +29,7 @@ import { SPEND_METHOD } from '@/lib/census/totals'
 import { areaTrendFilter } from '@/lib/departments/codes'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import { peerKeyFor } from '@/lib/people/peer-group'
+import type { SectionSource } from '@/lib/shared/citation'
 import {
   ALL_GROUPS,
   type CensusMetric,
@@ -162,10 +163,12 @@ function CensusSection({
   trends,
   view,
   metric,
+  filterSources,
 }: {
   trends: Trends
   view: TrendView
   metric: CensusMetric
+  filterSources: SectionSource[]
 }) {
   const title = `${METRIC_INFO[metric].label} by ${linesLabel(view.group)}, Fall ${view.from}-${view.to}`
   return (
@@ -184,6 +187,7 @@ function CensusSection({
             to: view.to,
             computed: COMPUTED,
           },
+          ...filterSources,
         ]}
       />
     </PageSection>
@@ -205,6 +209,15 @@ export function TrendsPage() {
         }
       : null
   const lines = changes?.series ?? census?.trends.series ?? []
+  const filterSources: SectionSource[] = area
+    ? [
+        {
+          kind: 'budget-range',
+          ...area.fiscalYears,
+          computed: AREA_PLACEMENT_METHOD,
+        },
+      ]
+    : []
   const handleChange = (patch: TrendsSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
@@ -217,25 +230,17 @@ export function TrendsPage() {
         names={names}
         onChange={handleChange}
       />
-      {area && (
-        <Sources
-          sources={[
-            {
-              kind: 'budget-range',
-              ...area.fiscalYears,
-              computed: AREA_PLACEMENT_METHOD,
-            },
-          ]}
-        />
-      )}
       {changes && (
         <PayChangesSection
           changes={changes}
           view={view}
+          filterSources={filterSources}
           onChange={handleChange}
         />
       )}
-      {census && <CensusSection {...census} view={view} />}
+      {census && (
+        <CensusSection {...census} view={view} filterSources={filterSources} />
+      )}
       <PageSection title="Groups">
         <p className="text-sm text-muted-foreground">
           UO restructured its EEO categories in 2018, 2019, and 2021. This site

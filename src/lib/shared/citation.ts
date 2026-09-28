@@ -170,13 +170,16 @@ export function listCitedDocuments(sources: CitedSource[]): CitedDocument[] {
   return [...documents.values()]
 }
 
-/** A section's sources summary: "Source" or "Sources (n)", saying "and method" when one is computed. */
-export function sourcesSummary(sources: SectionSource[]): string {
-  const method = sources.some(
-    (source) => source.kind !== 'document' && source.computed,
-  )
-    ? ' and method'
-    : ''
+/** A section's sources summary: "Source" or "Sources (n)", saying "and method" when a method is given or one source is computed. */
+export function sourcesSummary(
+  sources: SectionSource[],
+  hasMethods: boolean,
+): string {
+  const method =
+    hasMethods ||
+    sources.some((source) => source.kind !== 'document' && source.computed)
+      ? ' and method'
+      : ''
   return sources.length === 1
     ? `Source${method}`
     : `Sources${method} (${sources.length})`
