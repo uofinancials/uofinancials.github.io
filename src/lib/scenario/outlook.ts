@@ -2,6 +2,7 @@ import { type BudgetYear, fiscalYearLabel } from '../../data/budget.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
 import {
+  type ChartMarker,
   FUND_BALANCE_SERIES,
   RUN_RATE_SERIES,
   sectionTotal,
@@ -184,21 +185,30 @@ export function firstShortfallYear(rows: OutlookRow[]): number | null {
   )
 }
 
-/** The outlook chart's fiscal-year labels and its published and with-savings lines. */
+/** Marks the first fiscal year the fund balance with savings is below zero, if any. */
+export function shortfallMarker(rows: OutlookRow[]): ChartMarker | undefined {
+  const fiscalYear = firstShortfallYear(rows)
+  if (fiscalYear === null) return undefined
+  const x = fiscalYearLabel(fiscalYear)
+  return { x, label: `With savings, below zero from ${x}` }
+}
+
+/** The outlook chart's fiscal-year labels, its published lines as baselines, and its with-savings lines. */
 export function scenarioSeries(rows: OutlookRow[]): {
   labels: string[]
-  series: { key: string; values: number[] }[]
+  series: { key: string; values: number[]; isBaseline: boolean }[]
 } {
-  const line = (key: string, pick: (row: OutlookRow) => number) => ({
-    key,
-    values: rows.map(pick),
-  })
+  const line = (
+    key: string,
+    pick: (row: OutlookRow) => number,
+    isBaseline = false,
+  ) => ({ key, values: rows.map(pick), isBaseline })
   return {
     labels: rows.map((row) => fiscalYearLabel(row.fiscalYear)),
     series: [
-      line(RUN_RATE_SERIES, (row) => row.runRateCents),
+      line(RUN_RATE_SERIES, (row) => row.runRateCents, true),
       line('Run rate with savings', (row) => row.remainingRunRateCents),
-      line(FUND_BALANCE_SERIES, (row) => row.endingFundBalanceCents),
+      line(FUND_BALANCE_SERIES, (row) => row.endingFundBalanceCents, true),
       line('Fund balance with savings', (row) => row.remainingFundBalanceCents),
     ],
   }

@@ -4,6 +4,7 @@ import {
   baselines,
   firstShortfallYear,
   outlookRows,
+  shortfallMarker,
   yearlySavings,
 } from './outlook'
 import type { Savings, ScenarioResult } from './scenario'
@@ -182,4 +183,9 @@ test('the shortfall year is the first with a fund balance below zero', () => {
     2028,
   )
   expect(firstShortfallYear([row(2027, 0)])).toBeNull()
+  expect(shortfallMarker([row(2027, 0), row(2028, -1)])).toEqual({
+    x: 'FY28',
+    label: 'With savings, below zero from FY28',
+  })
+  expect(shortfallMarker([row(2027, 0)])).toBeUndefined()
 })

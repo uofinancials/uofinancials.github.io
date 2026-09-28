@@ -18,6 +18,7 @@ import { fiscalYearLabel } from '@/data/budget'
 import type { Outlook, Projection } from '@/data/outlook'
 import { outlookQuery } from '@/data/queries'
 import {
+  fundBalanceMarker,
   type GapRow,
   gapRows,
   outlookSeries,
@@ -159,6 +160,7 @@ export function BudgetPage() {
           format={formatDollars}
           formatAxis={formatCompactDollars}
           label="Projected E&G run rate and ending fund balance by fiscal year"
+          marker={fundBalanceMarker(projection)}
         />
         <GapTable rows={rows} />
         <ReportedNotes

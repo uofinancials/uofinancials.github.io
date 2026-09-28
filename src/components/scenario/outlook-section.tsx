@@ -15,6 +15,7 @@ import {
   firstShortfallYear,
   type OutlookRow,
   scenarioSeries,
+  shortfallMarker,
 } from '@/lib/scenario/outlook'
 import {
   formatCompactDollars,
@@ -129,6 +130,7 @@ export function ScenarioOutlookSection({
             format={formatDollars}
             formatAxis={formatCompactDollars}
             label="E&G run rate and fund balance by fiscal year, published and with the scenario's savings"
+            marker={shortfallMarker(rows)}
           />
           <OutlookTable rows={rows} />
           {baseline.expenseCents === null && (

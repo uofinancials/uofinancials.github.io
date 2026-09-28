@@ -58,6 +58,22 @@ export function outlookSeries(projection: Projection): {
   }
 }
 
+/** A labelled vertical mark at one of a chart's x labels. */
+export type ChartMarker = { x: string; label: string }
+
+/** Marks the first fiscal year whose published ending fund balance is below zero, if any. */
+export function fundBalanceMarker(
+  projection: Projection,
+): ChartMarker | undefined {
+  const index = projection.endingFundBalanceCents.findIndex(
+    (cents) => cents < 0,
+  )
+  const fiscalYear = projection.fiscalYears[index]
+  if (fiscalYear === undefined) return undefined
+  const x = fiscalYearLabel(fiscalYear)
+  return { x, label: `Fund balance below zero from ${x}` }
+}
+
 /** Every source the outlook cites, in the order the budget page shows them. */
 export function outlookSources(outlook: Outlook): CitedSource[] {
   return [

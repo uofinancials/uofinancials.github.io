@@ -1,27 +1,54 @@
-import { CartesianGrid, Legend, Line, LineChart, XAxis, YAxis } from 'recharts'
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ReferenceArea,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
+import type { ChartMarker } from '@/lib/budget/outlook'
 import { cn } from '@/lib/utils'
 import { lineColor } from './line-color'
 
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
+const MARKER_DASH = '4 4'
+const MIN_POINTS = 2
 
-type ChartSeries = { key: string; values: (number | null)[] }
-
-/** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
-function lineStyle(index: number) {
-  return {
-    stroke: lineColor(index),
-    strokeDasharray: LINE_DASHES[index % LINE_DASHES.length],
-  }
+type ChartSeries = {
+  key: string
+  values: (number | null)[]
+  /** Drawn thin and grey, as the reference the colored lines are read against. */
+  isBaseline?: boolean
 }
 
-/** One line per series over the x labels; the table beside it carries the numbers. */
+/** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
+function lineStyle({ isBaseline }: ChartSeries, index: number) {
+  const strokeDasharray = LINE_DASHES[index % LINE_DASHES.length]
+  return isBaseline
+    ? {
+        stroke: 'var(--muted-foreground)',
+        strokeDasharray,
+        strokeWidth: 1.5,
+        dot: false,
+      }
+    : {
+        stroke: lineColor(index),
+        strokeDasharray,
+        strokeWidth: 2,
+        dot: { r: 3 },
+      }
+}
+
+/** One line per series over the x labels, with zero marked when a line goes below it; the table beside it carries the numbers. Draws nothing for fewer than two labels. */
 export function SeriesChart({
   labels,
   series,
@@ -29,6 +56,7 @@ export function SeriesChart({
   format,
   formatAxis,
   label,
+  marker,
   className,
 }: {
   labels: string[]
@@ -37,9 +65,16 @@ export function SeriesChart({
   format: (value: number) => string
   formatAxis: (value: number) => string
   label: string
+  /** A dashed vertical line at one x label, with its text. */
+  marker?: ChartMarker
   /** Overrides the chart's height classes. */
   className?: string
 }) {
+  if (labels.length < MIN_POINTS) return null
+  const shown = series.filter(({ key }) => !hidden.includes(key))
+  const isBelowZero = shown.some(({ values }) =>
+    values.some((value) => value !== null && value < 0),
+  )
   const data = labels.map((x, index) => ({
     x,
     values: Object.fromEntries(
@@ -54,12 +89,31 @@ export function SeriesChart({
       >
         <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} />
+          {isBelowZero && (
+            <ReferenceArea y1={0} fill="var(--muted)" fillOpacity={1} />
+          )}
           <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />
           <YAxis
             width={AXIS_WIDTH_PX}
             tickLine={false}
             tickFormatter={(value) => formatAxis(Number(value))}
           />
+          {isBelowZero && (
+            <ReferenceLine y={0} stroke="var(--foreground)" strokeWidth={1.5} />
+          )}
+          {marker && (
+            <ReferenceLine
+              x={marker.x}
+              stroke="var(--foreground)"
+              strokeDasharray={MARKER_DASH}
+              label={{
+                value: marker.label,
+                position: 'insideBottomRight',
+                fill: 'var(--foreground)',
+                fontSize: 12,
+              }}
+            />
+          )}
           <ChartTooltip
             content={
               <ChartTooltipContent
@@ -68,16 +122,15 @@ export function SeriesChart({
             }
           />
           <Legend itemSorter={null} />
-          {series.map(({ key }, index) =>
-            hidden.includes(key) ? null : (
+          {series.map((line, index) =>
+            hidden.includes(line.key) ? null : (
               <Line
-                key={key}
-                name={key}
-                dataKey={(row: (typeof data)[number]) => row.values[key]}
-                {...lineStyle(index)}
-                strokeWidth={2}
-                dot={{ r: 3 }}
+                key={line.key}
+                name={line.key}
+                dataKey={(row: (typeof data)[number]) => row.values[line.key]}
+                {...lineStyle(line, index)}
                 type="linear"
+                isAnimationActive={false}
               />
             ),
           )}
