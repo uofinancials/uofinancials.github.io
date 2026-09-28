@@ -3,7 +3,7 @@ import {
   type BudgetRow,
   type BudgetYear,
   budgetYearSchema,
-} from '../../src/data/budget.ts'
+} from '../../../src/data/budget.ts'
 
 export const DATA_SHEET = '_5_BCs_External'
 export const HEADER = [

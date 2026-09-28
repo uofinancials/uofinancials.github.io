@@ -1,15 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { BudgetEntry, Manifest } from '../../src/data/manifest.ts'
-import { parseBudgetWorkbook, totalExpenditureCents } from './budget-file.ts'
+import type { BudgetEntry, Manifest } from '../../../src/data/manifest.ts'
+import { BUDGET_SOURCE_DIR, budgetDataPath, DATA_DIR } from '../cache.ts'
+import { fetchedFile, type StepResult } from '../manifest-file.ts'
+import { fetchCached, politeFetch } from '../net/fetch.ts'
+import { parseBudgetWorkbook, totalExpenditureCents } from './file.ts'
 import {
   BUDGET_REPORTS_PAGE,
   type BudgetLink,
   readBudgetLinks,
-} from './budget-links.ts'
-import { BUDGET_SOURCE_DIR, budgetDataPath, DATA_DIR } from './cache.ts'
-import { fetchCached, politeFetch } from './fetch.ts'
-import { fetchedFile, type StepResult } from './manifest-file.ts'
+} from './links.ts'
 
 const MAX_FAILURES_LISTED = 20
 

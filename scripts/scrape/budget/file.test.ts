@@ -7,7 +7,7 @@ import {
   parseBudgetWorkbook,
   splitCode,
   toCents,
-} from './budget-file.ts'
+} from './file.ts'
 
 const DIMENSIONS = [
   '900000-Invented College',

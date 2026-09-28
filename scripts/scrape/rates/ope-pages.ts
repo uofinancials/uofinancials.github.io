@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio'
-import type { OpeRates } from '../../src/data/ope.ts'
+import type { OpeRates } from '../../../src/data/ope.ts'
 
 type Row = string[]
 const CENTURY = 2000

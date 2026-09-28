@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { readFallBlocks } from './fall-blocks.ts'
+import { readFallBlocks } from './blocks.ts'
 import { line, page } from './test-lines.ts'
 
 const LEFT = 10

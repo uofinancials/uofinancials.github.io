@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { z } from 'zod'
-import { today } from './manifest-file.ts'
+import { today } from '../manifest-file.ts'
 import {
   ALLOW_EVERYTHING,
   DISALLOW_EVERYTHING,

@@ -5,9 +5,9 @@ import type {
   FallClassified,
   FallRecord,
   FallUnclassified,
-} from '../../src/data/fall.ts'
-import { FALL_SOURCE_DIR, hasFallSources } from './cache.ts'
-import { parseFallFile } from './fall-file.ts'
+} from '../../../src/data/fall.ts'
+import { FALL_SOURCE_DIR, hasFallSources } from '../cache.ts'
+import { parseFallFile } from './file.ts'
 
 // Expected values are read from the rendered PDF pages, not from parser output.
 

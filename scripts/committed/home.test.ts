@@ -1,23 +1,27 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { budgetYearSchema } from '../src/data/budget.ts'
-import { fallYearSchema } from '../src/data/fall.ts'
-import { manifestSchema } from '../src/data/manifest.ts'
-import { outlookSchema } from '../src/data/outlook.ts'
+import { budgetYearSchema } from '../../src/data/budget.ts'
+import { fallYearSchema } from '../../src/data/fall.ts'
+import { manifestSchema } from '../../src/data/manifest.ts'
+import { outlookSchema } from '../../src/data/outlook.ts'
 import {
   departmentYears,
   toDepartmentCensus,
-} from '../src/lib/department-jobs.ts'
-import { areaFigures } from '../src/lib/department-table.ts'
-import { headlineFigures, jobsByCensus, topPaidJobs } from '../src/lib/home.ts'
-import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
+} from '../../src/lib/department-jobs.ts'
+import { areaFigures } from '../../src/lib/department-table.ts'
+import {
+  headlineFigures,
+  jobsByCensus,
+  topPaidJobs,
+} from '../../src/lib/home.ts'
+import { isClassifiedTemp, summarize } from '../../src/lib/overview.ts'
 import {
   budgetDataPath,
   DATA_DIR,
   MANIFEST_PATH,
   readJson,
-} from './scrape/cache.ts'
+} from '../scrape/cache.ts'
 
 function readFall2025() {
   const { records } = fallYearSchema.parse(

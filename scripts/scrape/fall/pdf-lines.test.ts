@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { FALL_SOURCE_DIR, hasFallSources } from './cache.ts'
+import { FALL_SOURCE_DIR, hasFallSources } from '../cache.ts'
 import { groupIntoLines, lineText, readPdfPages } from './pdf-lines.ts'
 
 const PDF_PARSE_TIMEOUT_MS = 60_000

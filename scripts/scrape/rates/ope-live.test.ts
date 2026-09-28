@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { expect, test } from 'vitest'
-import { hasRatesSources, ratesSourcePath } from './cache.ts'
+import { hasRatesSources, ratesSourcePath } from '../cache.ts'
 import { combineOpePages } from './ope-pages.ts'
 
 // Values read from the BRP pages during research on 2026-09-24.

@@ -3,8 +3,8 @@ import {
   type FallRecord,
   fallRecordSchema,
   type StaffKind,
-} from '../../src/data/fall.ts'
-import type { FallLabel, RawBlock } from './fall-blocks.ts'
+} from '../../../src/data/fall.ts'
+import type { FallLabel, RawBlock } from './blocks.ts'
 import { repairMojibake } from './mojibake.ts'
 import { isPossibleStudent } from './possible-student.ts'
 

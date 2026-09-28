@@ -4,15 +4,15 @@ import {
   censusYearOf,
   type FallYear,
   staffKindSchema,
-} from '../../src/data/fall.ts'
+} from '../../../src/data/fall.ts'
 import {
   type FallEntry,
   type Manifest,
   SALARY_REPORTS_PAGE,
-} from '../../src/data/manifest.ts'
-import { DATA_DIR, FALL_SOURCE_DIR, fallDataPath, listPdfs } from './cache.ts'
-import { type FallFile, parseFallFile } from './fall-file.ts'
-import { type StepResult, sha256Hex, today } from './manifest-file.ts'
+} from '../../../src/data/manifest.ts'
+import { DATA_DIR, FALL_SOURCE_DIR, fallDataPath, listPdfs } from '../cache.ts'
+import { type StepResult, sha256Hex, today } from '../manifest-file.ts'
+import { type FallFile, parseFallFile } from './file.ts'
 
 type SourcePdf = FallFile & {
   fileName: string

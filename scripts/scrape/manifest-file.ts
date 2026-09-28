@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { type Manifest, manifestSchema } from '../../src/data/manifest.ts'
 import { MANIFEST_PATH } from './cache.ts'
-import type { CachedSource } from './fetch.ts'
+import type { CachedSource } from './net/fetch.ts'
 
 export type StepResult = { manifest: Manifest; problems: string[] }
 

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { readBudgetLinks } from './budget-links.ts'
+import { readBudgetLinks } from './links.ts'
 
 const PAGE = 'https://example.org/content/Budget-Reports'
 

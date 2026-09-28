@@ -1,8 +1,8 @@
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { outlookSchema, type ProjectionLine } from '../src/data/outlook.ts'
-import { sectionTotal } from '../src/lib/budget-outlook.ts'
-import { DATA_DIR, readJson } from './scrape/cache.ts'
+import { outlookSchema, type ProjectionLine } from '../../src/data/outlook.ts'
+import { sectionTotal } from '../../src/lib/budget-outlook.ts'
+import { DATA_DIR, readJson } from '../scrape/cache.ts'
 
 /** The published tables round each figure to the dollar, so their sums can be a dollar off. */
 const ROUNDING_CENTS = 100

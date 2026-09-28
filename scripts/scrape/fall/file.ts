@@ -1,13 +1,13 @@
-import type { FallRecord, StaffKind } from '../../src/data/fall.ts'
+import type { FallRecord, StaffKind } from '../../../src/data/fall.ts'
 import {
   CENSUS_LINE,
   FOOTER_LINE,
   type PageFailure,
   readFallBlocks,
   TITLE_LINE,
-} from './fall-blocks.ts'
-import { isoDate, parseDate, toFallRecord } from './fall-record.ts'
+} from './blocks.ts'
 import { lineText, type PdfPage, readPdfPages } from './pdf-lines.ts'
+import { isoDate, parseDate, toFallRecord } from './record.ts'
 
 export type FallFile = {
   kind: StaffKind

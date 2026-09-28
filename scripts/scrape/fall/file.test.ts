@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { beforeAll, describe, expect, test } from 'vitest'
-import { FALL_SOURCE_DIR, hasFallSources, listPdfs } from './cache.ts'
-import { type FallFile, parseFallFile } from './fall-file.ts'
+import { FALL_SOURCE_DIR, hasFallSources, listPdfs } from '../cache.ts'
+import { type FallFile, parseFallFile } from './file.ts'
 
 const PARSE_ALL_TIMEOUT_MS = 300_000
 const PDFTOTEXT_MAX_BYTES = 64 * 1024 * 1024

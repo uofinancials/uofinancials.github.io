@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
-import type { FallLabel, RawBlock } from './fall-blocks.ts'
-import { toFallRecord } from './fall-record.ts'
+import type { FallLabel, RawBlock } from './blocks.ts'
+import { toFallRecord } from './record.ts'
 
 const COMMON: [FallLabel, string][] = [
   ['JOB TYPE', 'Primary'],

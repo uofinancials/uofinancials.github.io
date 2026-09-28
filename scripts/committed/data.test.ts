@@ -1,47 +1,50 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { budgetYearSchema } from '../src/data/budget.ts'
-import { fallYearSchema } from '../src/data/fall.ts'
-import { manifestSchema } from '../src/data/manifest.ts'
-import { opeRatesSchema } from '../src/data/ope.ts'
-import { raiseTermsSchema } from '../src/data/raises.ts'
-import { ORG_LEVEL_AREA } from '../src/lib/areas.ts'
-import { departmentBudget } from '../src/lib/department-budget.ts'
+import { budgetYearSchema } from '../../src/data/budget.ts'
+import { fallYearSchema } from '../../src/data/fall.ts'
+import { manifestSchema } from '../../src/data/manifest.ts'
+import { opeRatesSchema } from '../../src/data/ope.ts'
+import { raiseTermsSchema } from '../../src/data/raises.ts'
+import { ORG_LEVEL_AREA } from '../../src/lib/areas.ts'
+import { departmentBudget } from '../../src/lib/department-budget.ts'
 import {
   departmentYears,
   toDepartmentCensuses,
-} from '../src/lib/department-jobs.ts'
+} from '../../src/lib/department-jobs.ts'
 import {
   HAND_AREAS,
   type HandArea,
   handAreasFor,
-} from '../src/lib/hand-areas.ts'
-import { placementBases } from '../src/lib/home.ts'
-import { isClassifiedTemp, summarize } from '../src/lib/overview.ts'
+} from '../../src/lib/hand-areas.ts'
+import { placementBases } from '../../src/lib/home.ts'
+import { isClassifiedTemp, summarize } from '../../src/lib/overview.ts'
 import {
   changeCounts,
   continuingPairs,
   payChangeTrends,
-} from '../src/lib/pay-changes.ts'
-import { peerMedianFor, peerMedians } from '../src/lib/peer-median.ts'
+} from '../../src/lib/pay-changes.ts'
+import { peerMedianFor, peerMedians } from '../../src/lib/peer-median.ts'
 import {
   countNames,
   filterPeopleJobs,
   pageOf,
   resolvePeopleView,
   sortJobs,
-} from '../src/lib/people-list.ts'
-import { findPersonLinks } from '../src/lib/person-links.ts'
-import { indexPeople } from '../src/lib/person-lookup.ts'
-import { runCards } from '../src/lib/person-summary.ts'
-import { censusWindow, raiseComparison } from '../src/lib/raise-comparison.ts'
-import { buildDistribution } from '../src/lib/salary-distribution.ts'
-import { buildTrends } from '../src/lib/trends.ts'
+} from '../../src/lib/people-list.ts'
+import { findPersonLinks } from '../../src/lib/person-links.ts'
+import { indexPeople } from '../../src/lib/person-lookup.ts'
+import { runCards } from '../../src/lib/person-summary.ts'
+import {
+  censusWindow,
+  raiseComparison,
+} from '../../src/lib/raise-comparison.ts'
+import { buildDistribution } from '../../src/lib/salary-distribution.ts'
+import { buildTrends } from '../../src/lib/trends.ts'
 import {
   identityProblems,
   totalExpenditureCents,
-} from './scrape/budget-file.ts'
+} from '../scrape/budget/file.ts'
 import {
   budgetDataPath,
   DATA_DIR,
@@ -49,7 +52,7 @@ import {
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
   readJson,
-} from './scrape/cache.ts'
+} from '../scrape/cache.ts'
 
 /** Parsing and linking every census takes about five seconds alone, more beside other test files. */
 const ALL_YEARS_TIMEOUT_MS = 20_000
