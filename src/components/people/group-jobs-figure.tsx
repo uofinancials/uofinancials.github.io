@@ -12,7 +12,7 @@ import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
 import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
 
-/** A table of each group's jobs, with bars, and median rate. */
+/** Each group's jobs, with bars, and median rate, as a table. */
 export function GroupJobsFigure({
   rows,
   label,

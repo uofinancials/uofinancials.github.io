@@ -38,7 +38,6 @@ function seriesKey(index: number) {
   return `series${index}`
 }
 
-/** One row per x label, each series' value under its positional key. */
 function chartRows(labels: string[], series: ChartSeries[]) {
   return labels.map((x, index) => ({
     x,

@@ -1,4 +1,3 @@
-/** The fewest values a line needs to be drawn. */
 export const MIN_LINE_POINTS = 2
 
 /** A labelled vertical mark at one of a chart's x labels. */
@@ -16,7 +15,6 @@ export function sparseNote(
   return valued.length === 0 ? 'No figures.' : `Only in ${valued.join(', ')}.`
 }
 
-/** Whether any value in any series is below zero. */
 export function isAnyBelowZero(series: (number | null)[][]): boolean {
   return series.some((values) =>
     values.some((value) => value !== null && value < 0),
