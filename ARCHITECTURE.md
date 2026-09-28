@@ -69,7 +69,10 @@ flowchart LR
 
 ### Site (`src/`)
 
-- `src/main.tsx` - creates the query client and router and mounts the app.
+- `src/main.tsx` - loads the typeface and stylesheet, creates the query client
+  and router, and mounts the app.
+- `src/index.css` - the theme: color tokens for light and dark schemes, the type
+  scale, radius, and the focus and link styles.
 - `src/app.tsx` - the query and router providers.
 - `src/router.tsx` - the route tree, each route's data loading, each page's code
   loaded on demand, and the default loading, error, and not-found pages.
