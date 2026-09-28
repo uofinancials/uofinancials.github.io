@@ -19,7 +19,7 @@ export function SiteLayout() {
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
         <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 md:px-6">
-          <Link to="/" className="font-semibold">
+          <Link to="/" className="font-semibold text-foreground">
             UO Financials
           </Link>
           <nav aria-label="Main">

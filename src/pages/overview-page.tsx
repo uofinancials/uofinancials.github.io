@@ -72,7 +72,7 @@ function Headline({
   return (
     <Link
       to={to}
-      className="rounded-xl border p-4 hover:bg-muted focus-visible:ring-2"
+      className="rounded-xl border p-4 text-foreground hover:bg-muted"
     >
       <span className="block text-sm text-muted-foreground">{label}</span>
       <span className="block text-2xl font-semibold tabular-nums">{value}</span>
