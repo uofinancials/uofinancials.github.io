@@ -38,7 +38,11 @@ import { peopleSearchSchema, personSearchSchema } from '@/lib/people/search'
 import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
 import { scenarioSearchSchema } from '@/lib/scenario/search'
-import { isSummaryView, trendsSearchSchema } from '@/lib/trends/search'
+import {
+  isSummaryView,
+  payChangesSearchSchema,
+  trendsSearchSchema,
+} from '@/lib/trends/search'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -78,6 +82,15 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
+  beforeLoad: ({ search: { metric, ...filters } }) => {
+    if (metric === 'change') {
+      throw redirect({
+        to: '/trends/pay-changes',
+        search: filters,
+        replace: true,
+      })
+    }
+  },
   loaderDeps: ({ search }) => ({
     area: search.area,
     isSummary: isSummaryView(search),
@@ -104,6 +117,33 @@ const trendsRoute = createRoute({
   component: lazyRouteComponent(
     () => import('@/pages/trends-page'),
     'TrendsPage',
+  ),
+})
+
+const payChangesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/trends/pay-changes',
+  validateSearch: payChangesSearchSchema,
+  loaderDeps: ({ search }) => ({ area: search.area }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const loadYears = async () => {
+      const manifest = await queryClient.ensureQueryData(manifestQuery)
+      const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+      await Promise.all(
+        years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
+      )
+      return years
+    }
+    const [years, fiscalYears] = await Promise.all([
+      loadYears(),
+      deps.area === undefined ? [] : loadBudgetYears(queryClient),
+      queryClient.ensureQueryData(raiseTermsQuery),
+    ])
+    return { years, fiscalYears }
+  },
+  component: lazyRouteComponent(
+    () => import('@/pages/pay-changes-page'),
+    'PayChangesPage',
   ),
 })
 
@@ -287,6 +327,7 @@ const sourcesRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   homeRoute,
   trendsRoute,
+  payChangesRoute,
   departmentsRoute,
   departmentRoute,
   peopleRoute,

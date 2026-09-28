@@ -63,8 +63,8 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
           <Link
             className="link"
-            to="/trends"
-            search={{ metric: 'change', dept: code, pair: entry.year }}
+            to="/trends/pay-changes"
+            search={{ dept: code, pair: entry.year }}
           >
             Pay changes, {department}
           </Link>
@@ -92,8 +92,8 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         <p className="text-sm">
           <Link
             className="link"
-            to="/trends"
-            search={{ metric: 'change', position: group.key, pair: entry.year }}
+            to="/trends/pay-changes"
+            search={{ position: group.key, pair: entry.year }}
           >
             Pay changes, {group.label}
           </Link>

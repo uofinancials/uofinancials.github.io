@@ -5,10 +5,11 @@ import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/census/groups'
 import {
   ALL_GROUPS,
+  type CensusMetric,
   GROUP_OPTIONS,
+  METRIC_OPTIONS,
+  type PayChangesSearch,
   STAFF_KIND_OPTIONS,
-  TREND_METRIC_OPTIONS,
-  type TrendsSearch,
   type TrendView,
 } from '@/lib/trends/search'
 
@@ -19,7 +20,7 @@ function LineToggles({
 }: {
   lines: string[]
   hidden: string[]
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
   return (
     <fieldset className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
@@ -55,7 +56,7 @@ function JobFilters({
   onChange,
 }: {
   names: FilterNames
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
   return (
     <>
@@ -84,16 +85,19 @@ function JobFilters({
 /** The trends view's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
 export function TrendsControls({
   view,
+  metric,
   years,
   lines,
   names,
   onChange,
 }: {
   view: TrendView
+  /** The census measure, when the view shows one. */
+  metric?: { value: CensusMetric; onSelect: (metric: CensusMetric) => void }
   years: number[]
   lines: string[]
   names: FilterNames
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
   const yearOptions = years.map((year): [string, string] => [
     String(year),
@@ -101,13 +105,15 @@ export function TrendsControls({
   ])
   return (
     <div className="space-y-4">
-      <RadioField
-        legend="Measure"
-        name="metric"
-        value={view.metric}
-        options={TREND_METRIC_OPTIONS}
-        onSelect={(metric) => onChange({ metric })}
-      />
+      {metric && (
+        <RadioField
+          legend="Measure"
+          name="metric"
+          value={metric.value}
+          options={METRIC_OPTIONS}
+          onSelect={metric.onSelect}
+        />
+      )}
       <div className="flex flex-wrap gap-4">
         <SelectField
           label="Group"

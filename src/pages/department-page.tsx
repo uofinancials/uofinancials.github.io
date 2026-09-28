@@ -80,11 +80,8 @@ function DepartmentLinks({
       {hasPayChanges && (
         <Link
           className="link"
-          to="/trends"
-          search={{
-            ...(isArea ? { area: code } : { dept: code }),
-            metric: 'change',
-          }}
+          to="/trends/pay-changes"
+          search={isArea ? { area: code } : { dept: code }}
         >
           Pay changes
         </Link>

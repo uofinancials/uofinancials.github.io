@@ -11,6 +11,7 @@ test('home page loads', async ({ page }) => {
 for (const path of [
   '/',
   '/trends',
+  '/trends/pay-changes',
   '/departments',
   '/departments/223100',
   '/people',

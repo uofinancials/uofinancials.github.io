@@ -86,9 +86,8 @@ export function seriesWithMetric(
   )
 }
 
-/** The trends page's URL search params; `pair` is the earlier census of the change measure's pair shown. A malformed value falls back to its default. */
-export const trendsSearchSchema = z.object({
-  metric: z.enum(TREND_METRICS).optional().catch(undefined),
+/** The pay changes page's URL search params; `pair` is the earlier census of the pair whose distribution is shown. A malformed value falls back to its default. */
+export const payChangesSearchSchema = z.object({
   group: z.enum(TREND_GROUPS).optional().catch(undefined),
   hide: z.array(z.string()).optional().catch(undefined),
   kind: staffKindSchema.optional().catch(undefined),
@@ -100,24 +99,26 @@ export const trendsSearchSchema = z.object({
   pair: z.number().int().optional().catch(undefined),
 })
 
+export type PayChangesSearch = z.infer<typeof payChangesSearchSchema>
+
+/** The trends page's URL search params: the pay changes page's and a measure; the change measure redirects to the pay changes page. */
+export const trendsSearchSchema = payChangesSearchSchema.extend({
+  metric: z.enum(TREND_METRICS).optional().catch(undefined),
+})
+
 export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 
 /** Whether the search shows every job under a census measure, the view the summary holds. */
 export function isSummaryView({
-  metric,
   kind,
   dept,
   area,
   position,
 }: TrendsSearch): boolean {
-  return (
-    metric !== CHANGE_METRIC &&
-    [kind, dept, area, position].every((filter) => filter === undefined)
-  )
+  return [kind, dept, area, position].every((filter) => filter === undefined)
 }
 
 export type TrendView = Omit<TrendFilter, 'jobs'> & {
-  metric: TrendMetric
   hide: string[]
   /** A college or VP area code; its jobs are placed as its department page places them. */
   area: string | null
@@ -132,7 +133,7 @@ export function linesLabel(group: TrendGroup | null): string {
 
 /** The view a search asks for, with the census years clamped to those listed and a pair not in the range falling back to its latest. */
 export function resolveTrendView(
-  search: TrendsSearch,
+  search: PayChangesSearch,
   years: number[],
 ): TrendView {
   const first = Math.min(...years)
@@ -141,7 +142,6 @@ export function resolveTrendView(
   const to = Math.min(Math.max(search.to ?? last, from), last)
   const fromYears = pairYears(years, from, to)
   return {
-    metric: search.metric ?? 'spend',
     group: search.group ?? null,
     hide: search.hide ?? [],
     kind: search.kind ?? 'all',
@@ -159,11 +159,6 @@ export function resolveTrendView(
 export const METRIC_OPTIONS = CENSUS_METRICS.map(
   (metric) => [metric, METRIC_INFO[metric].label] as const,
 )
-
-export const TREND_METRIC_OPTIONS = [
-  ...METRIC_OPTIONS,
-  [CHANGE_METRIC, CHANGE_LABEL] as const,
-]
 
 /** Each series' metric value per census, `null` where it has none. */
 export function metricValues(

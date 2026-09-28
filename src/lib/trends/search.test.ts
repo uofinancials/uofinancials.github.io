@@ -9,9 +9,8 @@ import {
 
 const YEARS = [2014, 2015, 2025]
 
-test('an empty search is every listed census, by group, in spend', () => {
+test('an empty search is every listed census, by group', () => {
   expect(resolveTrendView({}, YEARS)).toEqual({
-    metric: 'spend',
     group: null,
     hide: [],
     kind: 'all',
@@ -74,7 +73,6 @@ test('the summary holds every job under a census measure, whatever the group, ye
   expect(
     isSummaryView({ metric: 'fte', group: 'Faculty', from: 2018, hide: ['x'] }),
   ).toBe(true)
-  expect(isSummaryView({ metric: 'change' })).toBe(false)
   expect(isSummaryView({ kind: 'classified' })).toBe(false)
   expect(isSummaryView({ dept: '223100' })).toBe(false)
   expect(isSummaryView({ area: '222000' })).toBe(false)

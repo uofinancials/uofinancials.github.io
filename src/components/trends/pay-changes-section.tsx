@@ -22,7 +22,7 @@ import { pairLabel } from '@/lib/trends/pay-changes'
 import {
   CHANGE_LABEL,
   linesLabel,
-  type TrendsSearch,
+  type PayChangesSearch,
   type TrendView,
 } from '@/lib/trends/search'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
@@ -93,7 +93,7 @@ export function PayChangesSection({
   changes: PayChanges
   view: TrendView
   filterSources: SectionSource[]
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
   const first = fromYears[0]
   const last = fromYears.at(-1)
