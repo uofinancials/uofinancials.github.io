@@ -8,6 +8,7 @@ import {
   UNASSIGNED_AREA,
 } from '../census/totals.ts'
 import { formatDollars } from '../shared/format.ts'
+import { changeOf } from '../shared/series.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
 import { MIN_JOBS_SHOWN, measureJobs } from '../trends/trends.ts'
 import { sumBy, unitsOf } from './budget.ts'
@@ -71,11 +72,6 @@ function unitSum(
   const units = code === null ? null : unitsOf(code, orgs)
   if (!units) return null
   return [...units].reduce((sum, unit) => sum + (amounts.get(unit) ?? 0), 0)
-}
-
-function changeOf(from: number | null, to: number | null): number | null {
-  if (from === null || to === null || from <= 0) return null
-  return (to - from) / from
 }
 
 type RowInput = Pick<DepartmentRow, 'code' | 'name' | 'area'> & {

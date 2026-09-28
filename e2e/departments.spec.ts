@@ -63,7 +63,7 @@ test('the units view narrows by area and by text, and a pay department links to 
     page.getByRole('link', { name: 'Eliminate in a scenario' }),
   ).toHaveCount(0)
   await page.getByRole('link', { name: 'Pay changes' }).click()
-  await expect(page).toHaveURL(/\/trends\?.*metric=change/)
+  await expect(page).toHaveURL(/\/trends\/pay-changes\?dept=/)
   await expect(main).toContainText('SOMD Music')
 })
 
@@ -143,7 +143,7 @@ test('an area lists its units, states how its jobs were placed, and does not scr
   ).toBeVisible()
   expect(await pageWidth(page)).toBeLessThanOrEqual(360)
   await page.getByRole('link', { name: 'Pay changes' }).click()
-  await expect(page).toHaveURL(/\/trends\?.*area=.*222000/)
+  await expect(page).toHaveURL(/\/trends\/pay-changes\?area=.*222000/)
   const main = page.getByRole('main')
   await expect(main).toContainText('Area: Arts & Sciences, College of')
   await expect(main).toContainText('whose pay department the site places in it')

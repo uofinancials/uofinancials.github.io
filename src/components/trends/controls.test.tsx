@@ -4,7 +4,6 @@ import { expect, test, vi } from 'vitest'
 import { TrendsControls } from './controls'
 
 const VIEW = {
-  metric: 'spend',
   group: null,
   hide: ['Overloads'],
   kind: 'all',
@@ -29,7 +28,6 @@ test('each control asks for a new search, and opening a group shows every line a
     />,
   )
   const user = userEvent.setup()
-  await user.click(screen.getByRole('radio', { name: 'FTE' }))
   await user.selectOptions(
     screen.getByRole('combobox', { name: 'Group' }),
     'Faculty',
@@ -45,7 +43,6 @@ test('each control asks for a new search, and opening a group shows every line a
   await user.click(screen.getByRole('checkbox', { name: 'Faculty' }))
   await user.click(screen.getByRole('checkbox', { name: 'Overloads' }))
   expect(handleChange.mock.calls.map(([search]) => search)).toEqual([
-    { metric: 'fte' },
     { group: 'Faculty', hide: undefined },
     { kind: 'classified' },
     { from: 2025 },

@@ -1,17 +1,16 @@
 import { expect, test } from 'vitest'
 import {
-  isSummaryView,
+  pickReportParams,
+  resolveReportView,
   resolveTrendView,
-  seriesWithMetric,
   type TrendsSearch,
   trendsSearchSchema,
 } from './search'
 
 const YEARS = [2014, 2015, 2025]
 
-test('an empty search is every listed census, by group, in spend', () => {
+test('an empty search is every listed census, by group', () => {
   expect(resolveTrendView({}, YEARS)).toEqual({
-    metric: 'spend',
     group: null,
     hide: [],
     kind: 'all',
@@ -56,27 +55,38 @@ test('malformed params fall back to their defaults', () => {
   ).toEqual({ group: 'Faculty' })
 })
 
-test('a metric keeps only the series with a value for it', () => {
-  const point = {
-    year: 2025,
-    spendCents: null,
-    jobs: 1,
-    fteHundredths: 10,
-    medianRateCents: null,
-  }
-  const series = [{ key: 'Classified temporaries', points: [point] }]
-  expect(seriesWithMetric(series, 'fte')).toEqual(series)
-  expect(seriesWithMetric(series, 'spend')).toEqual([])
+test('the report reads its years as the pay changes page does, and shows jobs by default', () => {
+  expect(resolveReportView({ from: 2015 }, YEARS)).toEqual({
+    from: 2015,
+    to: 2025,
+    fromYears: [],
+    measure: 'jobs',
+    view: 'bars',
+    tab: 'grew',
+  })
+  expect(resolveReportView({ measure: 'median' }, YEARS).measure).toBe('median')
 })
 
-test('the summary holds every job under a census measure, whatever the group, years, or hidden lines', () => {
-  expect(isSummaryView({})).toBe(true)
+test('a report link keeps its years, measures, area, and unit, and nothing else', () => {
   expect(
-    isSummaryView({ metric: 'fte', group: 'Faculty', from: 2018, hide: ['x'] }),
-  ).toBe(true)
-  expect(isSummaryView({ metric: 'change' })).toBe(false)
-  expect(isSummaryView({ kind: 'classified' })).toBe(false)
-  expect(isSummaryView({ dept: '223100' })).toBe(false)
-  expect(isSummaryView({ area: '222000' })).toBe(false)
-  expect(isSummaryView({ position: 'E0104' })).toBe(false)
+    pickReportParams({
+      from: 2018,
+      measure: 'spend',
+      tab: 'raises',
+      area: '222000',
+      unit: '222050',
+      dept: '223100',
+      metric: 'change',
+      hide: ['Faculty'],
+    }),
+  ).toEqual({
+    from: 2018,
+    measure: 'spend',
+    tab: 'raises',
+    area: '222000',
+    unit: '222050',
+  })
+  expect(trendsSearchSchema.parse({ metric: 'fte' })).toEqual({
+    metric: undefined,
+  })
 })

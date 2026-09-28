@@ -107,6 +107,7 @@ function RulesSection({
               rules: toSearchRules(changed),
             }),
             replace: true,
+            resetScroll: false,
           })
         }
       />
@@ -194,6 +195,7 @@ export function ScenariosPage() {
             navigate({
               search: (previous) => ({ ...previous, case: label }),
               replace: true,
+              resetScroll: false,
             })
           }
         />

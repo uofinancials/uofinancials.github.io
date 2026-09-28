@@ -4,11 +4,11 @@ import { SelectField } from '@/components/fields/select-field'
 import { PageSection } from '@/components/layout/page-section'
 import { stackedCounts } from '@/lib/census/groups'
 import { formatCount } from '@/lib/shared/format'
+import { pairLabel } from '@/lib/trends/pay-change-labels'
 import {
   type ChangeDistribution,
   changeBinLabel,
   changeBinRange,
-  pairLabel,
 } from '@/lib/trends/pay-changes'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 

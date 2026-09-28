@@ -19,35 +19,18 @@ import {
   sparseNote,
 } from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
+import { chartRows, markerLine, seriesKey } from './chart-parts'
 import { lineColor } from './line-color'
 
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
-const MARKER_DASH = '4 4'
 
 type ChartSeries = {
   key: string
   values: (number | null)[]
   /** Drawn thin and grey, as the reference the colored lines are read against. */
   isBaseline?: boolean
-}
-
-/** Recharts resolves a string data key as a path, and series keys are data, so each series gets a positional field. */
-function seriesKey(index: number) {
-  return `series${index}`
-}
-
-function chartRows(labels: string[], series: ChartSeries[]) {
-  return labels.map((x, index) => ({
-    x,
-    ...Object.fromEntries(
-      series.map(({ values }, position) => [
-        seriesKey(position),
-        values[index] ?? null,
-      ]),
-    ),
-  }))
 }
 
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
@@ -122,19 +105,7 @@ export function SeriesChart({
           {isBelowZero && (
             <ReferenceLine y={0} stroke="var(--foreground)" strokeWidth={1.5} />
           )}
-          {marker && (
-            <ReferenceLine
-              x={marker.x}
-              stroke="var(--foreground)"
-              strokeDasharray={MARKER_DASH}
-              label={{
-                value: marker.label,
-                position: 'insideBottomRight',
-                fill: 'var(--foreground)',
-                fontSize: 12,
-              }}
-            />
-          )}
+          {marker && markerLine(marker)}
           <ChartTooltip
             content={
               <ChartTooltipContent

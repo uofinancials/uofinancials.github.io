@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 import type { FallRecord } from '@/data/fall'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { ALL_PAIRS } from './pay-change-labels'
 import {
-  ALL_PAIRS,
   changeBinLabel,
   changeCounts,
   continuingPairs,

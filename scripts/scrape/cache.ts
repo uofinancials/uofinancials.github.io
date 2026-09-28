@@ -39,6 +39,12 @@ export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')
 export const OUTLOOK_DATA_PATH = path.join(DATA_DIR, 'outlook.json')
 export const SUMMARY_DATA_PATH = path.join(DATA_DIR, 'summary.json')
 
+export const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
+
+export function areaTrendsPath(code: string): string {
+  return path.join(AREA_TRENDS_DIR, `${code}.json`)
+}
+
 export function fallDataPath(year: number): string {
   return path.join(DATA_DIR, 'fall', `${year}.json`)
 }

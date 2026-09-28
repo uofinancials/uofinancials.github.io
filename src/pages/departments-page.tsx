@@ -87,6 +87,7 @@ export function DepartmentsPage() {
     navigate({
       search: (previous) => ({ ...previous, ...patch }),
       replace: true,
+      resetScroll: false,
     })
   const fiscal = fiscalYearLabel(now.fiscalYear)
   return (

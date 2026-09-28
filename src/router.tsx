@@ -14,6 +14,7 @@ import { SiteLayout } from '@/components/layout/site-layout'
 import { orgCode } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import {
+  areaTrendsQuery,
   budgetYearQuery,
   fallYearQuery,
   manifestQuery,
@@ -38,7 +39,13 @@ import { peopleSearchSchema, personSearchSchema } from '@/lib/people/search'
 import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
 import { scenarioSearchSchema } from '@/lib/scenario/search'
-import { isSummaryView, trendsSearchSchema } from '@/lib/trends/search'
+import { areaOfCode } from '@/lib/trends/scope'
+import {
+  CHANGE_METRIC,
+  payChangesSearchSchema,
+  pickReportParams,
+  trendsSearchSchema,
+} from '@/lib/trends/search'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -78,32 +85,72 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
-  loaderDeps: ({ search }) => ({
-    area: search.area,
-    isSummary: isSummaryView(search),
-  }),
+  beforeLoad: ({ search }) => {
+    const { metric, ...filters } = search
+    if (metric === CHANGE_METRIC) {
+      throw redirect({
+        to: '/trends/pay-changes',
+        search: filters,
+        replace: true,
+      })
+    }
+    const kept = pickReportParams(search)
+    if (Object.keys(search).length > Object.keys(kept).length) {
+      throw redirect({ to: '/trends', search: kept, replace: true })
+    }
+  },
+  loaderDeps: ({ search }) => ({ area: search.area, with: search.with }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const [manifest, summary] = await Promise.all([
+      queryClient.ensureQueryData(manifestQuery),
+      queryClient.ensureQueryData(summaryQuery),
+      deps.area && queryClient.prefetchQuery(areaTrendsQuery(deps.area)),
+    ])
+    await Promise.all(
+      (deps.with ?? []).flatMap((code) => {
+        const area = areaOfCode(summary.trends.areas, code)
+        return area ? [queryClient.prefetchQuery(areaTrendsQuery(area))] : []
+      }),
+    )
+    const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
+    return {
+      years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
+      fiscalYears: {
+        from: Math.min(...fiscalYears),
+        to: Math.max(...fiscalYears),
+      },
+    }
+  },
+  component: lazyRouteComponent(
+    () => import('@/pages/trends-page'),
+    'TrendsPage',
+  ),
+})
+
+const payChangesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/trends/pay-changes',
+  validateSearch: payChangesSearchSchema,
+  loaderDeps: ({ search }) => ({ area: search.area }),
   loader: async ({ context: { queryClient }, deps }) => {
     const loadYears = async () => {
       const manifest = await queryClient.ensureQueryData(manifestQuery)
       const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-      if (!deps.isSummary) {
-        await Promise.all(
-          years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
-        )
-      }
+      await Promise.all(
+        years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
+      )
       return years
     }
     const [years, fiscalYears] = await Promise.all([
       loadYears(),
       deps.area === undefined ? [] : loadBudgetYears(queryClient),
-      queryClient.ensureQueryData(summaryQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
     ])
     return { years, fiscalYears }
   },
   component: lazyRouteComponent(
-    () => import('@/pages/trends-page'),
-    'TrendsPage',
+    () => import('@/pages/pay-changes-page'),
+    'PayChangesPage',
   ),
 })
 
@@ -287,6 +334,7 @@ const sourcesRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   homeRoute,
   trendsRoute,
+  payChangesRoute,
   departmentsRoute,
   departmentRoute,
   peopleRoute,

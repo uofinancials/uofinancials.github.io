@@ -11,7 +11,7 @@ import { isClassifiedTemp } from '../census/totals.ts'
 import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
 import { titleOf } from '../people/person-fields.ts'
 import { findPersonLinks, type PersonLink } from '../people/person-links.ts'
-import { isRankRename, normalizeTitle } from './pay-change-labels.ts'
+import { ALL_PAIRS, isRankRename, normalizeTitle } from './pay-change-labels.ts'
 import { type RaiseRow, raiseRowOf } from './raise-groups.ts'
 import {
   MIN_JOBS_SHOWN,
@@ -19,11 +19,6 @@ import {
   medianOf,
   type TrendFilter,
 } from './trends.ts'
-
-/** A census pair's label, e.g. `2024-25`. */
-export function pairLabel(fromYear: number): string {
-  return `${fromYear}-${String(fromYear + 1).slice(-2)}`
-}
 
 /** A person link whose two primary jobs are the same staff kind and term, neither a classified temporary; grouped by the earlier job. */
 export type ContinuingPair = {
@@ -113,8 +108,6 @@ export type ChangePoint = {
 }
 
 export type ChangeSeries = { key: string; points: ChangePoint[] }
-
-export const ALL_PAIRS = 'All continuing jobs'
 
 function measure(fromYear: number, ratios: number[] = []): ChangePoint {
   return {

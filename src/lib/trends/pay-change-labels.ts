@@ -1,3 +1,18 @@
+import { MIN_JOBS_SHOWN } from './trends.ts'
+
+/** A census pair's label, e.g. `2024-25`. */
+export function pairLabel(fromYear: number): string {
+  return `${fromYear}-${String(fromYear + 1).slice(-2)}`
+}
+
+export const ALL_PAIRS = 'All continuing jobs'
+
+/** What a change in salary rate between two censuses covers. */
+export const RATE_NOTE =
+  'A change is between the annual salary rates UO publishes for one job in two consecutive Fall censuses. It includes every increase that took effect between the two census dates, so an increase effective before a census counts in the pair ending there. Rates are not pay, and dollars are as published, not adjusted for inflation.'
+/** How a continuing job and its change are computed. */
+export const CONTINUING_JOB_METHOD = `a continuing job is a person link this site computes: a name, exactly as published, with one primary job in each of two consecutive censuses, both paid by the same pay department. UO publishes no person identifier, so people who change department or name are not linked. Pairs are left out when either job is a classified temporary (annualised hourly rates), the job moved between classified and unclassified, or its term changed between 9 and 12 months; appointment changes stay in, since a rate is the full-time rate. The change is the later rate over the earlier, less one, counted in the group, EEO category, pay department, and class or rank of the earlier job; class or rank is as in the person view's median. Medians and distributions are shown for ${MIN_JOBS_SHOWN} or more pairs.`
+
 /** Ranks UO renamed between two censuses, by the later census; a linked job moving from `from` to `to` that year has not changed rank. */
 export const RANK_RENAMES = [
   {

@@ -1,14 +1,13 @@
-import { RadioField } from '@/components/fields/radio-field'
 import { RemovableFilter } from '@/components/fields/removable-filter'
 import { SelectField } from '@/components/fields/select-field'
+import { YearRangeFields } from '@/components/fields/year-range-fields'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/census/groups'
 import {
   ALL_GROUPS,
   GROUP_OPTIONS,
+  type PayChangesSearch,
   STAFF_KIND_OPTIONS,
-  TREND_METRIC_OPTIONS,
-  type TrendsSearch,
   type TrendView,
 } from '@/lib/trends/search'
 
@@ -19,7 +18,7 @@ function LineToggles({
 }: {
   lines: string[]
   hidden: string[]
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
   return (
     <fieldset className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
@@ -55,7 +54,7 @@ function JobFilters({
   onChange,
 }: {
   names: FilterNames
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
   return (
     <>
@@ -81,7 +80,7 @@ function JobFilters({
   )
 }
 
-/** The trends view's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
+/** The pay changes page's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
 export function TrendsControls({
   view,
   years,
@@ -93,21 +92,10 @@ export function TrendsControls({
   years: number[]
   lines: string[]
   names: FilterNames
-  onChange: (search: TrendsSearch) => void
+  onChange: (search: PayChangesSearch) => void
 }) {
-  const yearOptions = years.map((year): [string, string] => [
-    String(year),
-    String(year),
-  ])
   return (
     <div className="space-y-4">
-      <RadioField
-        legend="Measure"
-        name="metric"
-        value={view.metric}
-        options={TREND_METRIC_OPTIONS}
-        onSelect={(metric) => onChange({ metric })}
-      />
       <div className="flex flex-wrap gap-4">
         <SelectField
           label="Group"
@@ -130,17 +118,11 @@ export function TrendsControls({
             })
           }
         />
-        <SelectField
-          label="From"
-          value={String(view.from)}
-          options={yearOptions}
-          onSelect={(value) => onChange({ from: Number(value) })}
-        />
-        <SelectField
-          label="To"
-          value={String(view.to)}
-          options={yearOptions}
-          onSelect={(value) => onChange({ to: Number(value) })}
+        <YearRangeFields
+          years={years}
+          from={view.from}
+          to={view.to}
+          onChange={onChange}
         />
       </div>
       <JobFilters names={names} onChange={onChange} />

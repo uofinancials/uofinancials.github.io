@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import { TableCell } from '@/components/ui/table'
-import { NUMBER_CELL } from '@/lib/utils'
-
-const PERCENT = 100
+import { NUMBER_CELL, widthOf } from '@/lib/utils'
 
 /** A number cell, with a bar beside its figure when given a share, the bar's length the value's share of the column's largest. */
 export function BarCell({
@@ -23,7 +21,7 @@ export function BarCell({
         <span aria-hidden className="h-3 w-20 shrink-0 sm:w-40">
           <span
             className="block h-full rounded-sm bg-chart/70"
-            style={{ width: `${share * PERCENT}%` }}
+            style={{ width: widthOf(share) }}
           />
         </span>
       </div>

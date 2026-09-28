@@ -11,7 +11,7 @@ export function SelectField({
 }: {
   label: string
   value: string
-  options: [string, string][]
+  options: readonly (readonly [string, string])[]
   onSelect: (value: string) => void
 }) {
   return (
