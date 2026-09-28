@@ -1,7 +1,7 @@
 import type { BudgetRow, BudgetYear } from '@/data/budget'
 import type { OpeRates } from '@/data/ope'
 import type { Projection } from '@/data/outlook'
-import type { ScenarioResult } from '@/lib/scenario'
+import type { ScenarioResult } from '@/lib/scenario/scenario'
 
 export const AREA = '222000'
 export const UNIT = '223100'

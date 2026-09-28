@@ -1,22 +1,22 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { DepartmentTable } from '@/components/department-table'
-import { RadioField } from '@/components/radio-field'
-import { SearchField } from '@/components/search-field'
-import { SelectField } from '@/components/select-field'
-import { SourceCitation } from '@/components/source-citation'
+import { DepartmentTable } from '@/components/departments/table'
+import { RadioField } from '@/components/fields/radio-field'
+import { SearchField } from '@/components/fields/search-field'
+import { SelectField } from '@/components/fields/select-field'
+import { SourceCitation } from '@/components/layout/source-citation'
 import { fiscalYearLabel } from '@/data/budget'
 import { summaryQuery } from '@/data/queries'
 import {
   type DepartmentsSearch,
   type DepartmentsView,
   resolveDepartmentsView,
-} from '@/lib/department-search'
+} from '@/lib/departments/search'
 import {
   DEPARTMENT_TABLE_METHOD,
   filterRows,
   sortRows,
-} from '@/lib/department-table'
+} from '@/lib/departments/table'
 
 const PLACEMENT_NOTE =
   'Areas and units are the budget’s level-3 and level-5 organisations. Pay departments the budget does not publish are placed in an area by a department-name prefix, or by hand, as on the overview.'

@@ -1,12 +1,12 @@
 import type { Manifest } from '../../src/data/manifest.ts'
-import { runBudget } from './budget.ts'
-import { runFall } from './fall.ts'
+import { runBudget } from './budget/budget.ts'
+import { runFall } from './fall/fall.ts'
 import {
   readManifest,
   type StepResult,
   writeManifest,
 } from './manifest-file.ts'
-import { runRates } from './rates.ts'
+import { runRates } from './rates/rates.ts'
 import { runSummary } from './summary.ts'
 
 const STEPS: Record<string, (manifest: Manifest) => Promise<StepResult>> = {

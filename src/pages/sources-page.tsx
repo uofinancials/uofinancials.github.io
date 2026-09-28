@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { PageSection } from '@/components/page-section'
+import { PageSection } from '@/components/layout/page-section'
 import {
   Table,
   TableBody,
@@ -12,9 +12,9 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import { manifestQuery, outlookQuery, raiseTermsQuery } from '@/data/queries'
-import { outlookSources } from '@/lib/budget-outlook'
-import { listCitedDocuments, sourceAnchor } from '@/lib/citation'
-import { formatCount, formatDollars } from '@/lib/format'
+import { outlookSources } from '@/lib/budget/outlook'
+import { listCitedDocuments, sourceAnchor } from '@/lib/shared/citation'
+import { formatCount, formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const HASH_CELL = 'font-mono text-xs'

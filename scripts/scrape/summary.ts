@@ -8,7 +8,7 @@ import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
 import { type Summary, summarySchema } from '../../src/data/summary.ts'
-import { buildSummary } from '../../src/lib/summary.ts'
+import { buildSummary } from '../../src/lib/summary/summary.ts'
 import {
   budgetDataPath,
   DATA_DIR,

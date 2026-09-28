@@ -5,13 +5,13 @@ import {
   useNavigate,
   useSearch,
 } from '@tanstack/react-router'
-import { AreaBreakdown } from '@/components/area-breakdown'
-import { CitedLine } from '@/components/cited-line'
-import { PageSection } from '@/components/page-section'
-import { ScenarioAnswers } from '@/components/scenario-answers'
-import { SeriesChart } from '@/components/series-chart'
-import { SourceCitation } from '@/components/source-citation'
-import { TopPaidTable } from '@/components/top-paid-table'
+import { SeriesChart } from '@/components/charts/series-chart'
+import { AreaBreakdown } from '@/components/home/area-breakdown'
+import { ScenarioAnswers } from '@/components/home/scenario-answers'
+import { TopPaidTable } from '@/components/home/top-paid-table'
+import { CitedLine } from '@/components/layout/cited-line'
+import { PageSection } from '@/components/layout/page-section'
+import { SourceCitation } from '@/components/layout/source-citation'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import {
@@ -20,19 +20,23 @@ import {
   raiseTermsQuery,
   summaryQuery,
 } from '@/data/queries'
-import { outlookSeries } from '@/lib/budget-outlook'
-import { formatCompactDollars, formatCount, formatDollars } from '@/lib/format'
+import { outlookSeries } from '@/lib/budget/outlook'
+import { fiscalYearOf, SPEND_METHOD } from '@/lib/census/totals'
 import {
   answersOf,
   type HeadlineFigures,
   jobsByCensus,
   type placementBases,
   TOP_PAID_COUNT,
-} from '@/lib/home'
-import { fiscalYearOf, SPEND_METHOD } from '@/lib/overview'
-import { firstSavingsYear } from '@/lib/scenario-outlook'
-import { raiseRates, raiseSources } from '@/lib/scenario-raises'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/home/home'
+import { firstSavingsYear } from '@/lib/scenario/outlook'
+import { raiseRates, raiseSources } from '@/lib/scenario/raises'
+import {
+  formatCompactDollars,
+  formatCount,
+  formatDollars,
+} from '@/lib/shared/format'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
 const COMPACT_CHART = 'h-64'
 

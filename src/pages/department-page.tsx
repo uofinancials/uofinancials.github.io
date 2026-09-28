@@ -7,32 +7,32 @@ import {
   useSearch,
 } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { DepartmentBudgetSection } from '@/components/department-budget-section'
-import { DepartmentJobsSection } from '@/components/department-jobs-section'
-import { DepartmentTable } from '@/components/department-table'
-import { SourceCitation } from '@/components/source-citation'
-import { useDepartmentCensuses } from '@/components/use-department-censuses'
+import { DepartmentBudgetSection } from '@/components/departments/budget-section'
+import { DepartmentJobsSection } from '@/components/departments/jobs-section'
+import { DepartmentTable } from '@/components/departments/table'
+import { SourceCitation } from '@/components/layout/source-citation'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
 import { fallYearQuery, toData } from '@/data/queries'
-import { departmentBudget } from '@/lib/department-budget'
-import { type CodeProfile, describeCode } from '@/lib/department-index'
+import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
+import { departmentBudget } from '@/lib/departments/budget'
+import { type CodeProfile, describeCode } from '@/lib/departments/codes'
 import {
   type DepartmentCensus,
   departmentClasses,
   departmentTrends,
   departmentYears,
-} from '@/lib/department-jobs'
+} from '@/lib/departments/jobs'
 import {
   type DepartmentSearch,
   type DepartmentView,
   resolveDepartmentView,
-} from '@/lib/department-search'
+} from '@/lib/departments/search'
 import {
   DEPARTMENT_TABLE_METHOD,
   departmentRows,
   latestTableYears,
   sortRows,
-} from '@/lib/department-table'
+} from '@/lib/departments/table'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const SPONSORED_NOTE =

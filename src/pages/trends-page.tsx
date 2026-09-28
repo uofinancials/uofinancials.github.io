@@ -1,10 +1,10 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { PayChangesSection } from '@/components/pay-changes-section'
-import { SourceCitation } from '@/components/source-citation'
-import { TrendsControls } from '@/components/trends-controls'
-import { TrendsFigure } from '@/components/trends-figure'
+import { SourceCitation } from '@/components/layout/source-citation'
+import { TrendsControls } from '@/components/trends/controls'
+import { TrendsFigure } from '@/components/trends/figure'
+import { PayChangesSection } from '@/components/trends/pay-changes-section'
 import {
   Table,
   TableBody,
@@ -13,29 +13,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useDepartmentCensuses } from '@/components/use-department-censuses'
-import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery, summaryQuery, toData } from '@/data/queries'
-import { areaTrendFilter } from '@/lib/department-index'
-import { AREA_PLACEMENT_METHOD } from '@/lib/department-jobs'
-import { SPEND_METHOD } from '@/lib/overview'
-import { peerKeyFor } from '@/lib/peer-group'
+import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
+import { usePayChanges } from '@/hooks/use-pay-changes'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,
   publishedCategoriesOf,
   TREND_GROUPS,
   type TrendGroup,
-} from '@/lib/trend-groups'
-import {
-  buildTrends,
-  filterNames,
-  MIN_JOBS_SHOWN,
-  sliceTrends,
-  type TrendFilter,
-  type Trends,
-} from '@/lib/trends'
+} from '@/lib/census/groups'
+import { SPEND_METHOD } from '@/lib/census/totals'
+import { areaTrendFilter } from '@/lib/departments/codes'
+import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
+import { peerKeyFor } from '@/lib/people/peer-group'
 import {
   ALL_GROUPS,
   type CensusMetric,
@@ -47,7 +39,15 @@ import {
   seriesWithMetric,
   type TrendsSearch,
   type TrendView,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
+import {
+  buildTrends,
+  filterNames,
+  MIN_JOBS_SHOWN,
+  sliceTrends,
+  type TrendFilter,
+  type Trends,
+} from '@/lib/trends/trends'
 
 const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
 

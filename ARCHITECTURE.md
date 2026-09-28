@@ -74,92 +74,63 @@ flowchart LR
 - `src/router.tsx` - the route tree, each route's data loading, each page's code
   loaded on demand, and the default loading, error, and not-found pages.
 - `src/pages` - one component per route.
-- `src/components` - the shared layout with the independence notice, the error
-  report link, and the source and license links, the page section, the source
-  citation caption and cited-source line, the loading and error states, the
-  select, radio, search, and draft text fields, the department or area picker,
-  the totals chart and table, the line chart, the stacked bar chart, the
-  histogram table, the trends table and controls, the department budget and jobs
-  sections, the department table, the sortable column header, the census filter
-  controls, the salary distribution figure, the removable filter, the pay
-  changes section with its lines, counts table, distribution, and raise
-  comparison, the people list's controls, table, sort controls, column picker,
-  and group figure, the person view with its computed figures, rate chart,
-  records table, and job history, the budget outlook's lines and cases tables,
-  the scenario rule list, rule editor, scope fields, savings, eliminations, and
-  raise rates tables, savings total, and outlook section, the home page's
-  scenario answers, area breakdown, and top-paid table, and the hooks and query
-  that load one census's placed jobs, the people list's matching jobs, the pay
-  changes of a Trends view, the name index, a scenario and its result, the
-  censuses joined to their budget years, and the censuses a hiring freeze reads.
-- `src/components/ui` - shadcn/ui components.
+- `src/components` - one folder per area:
+  - `layout` - the shared layout with the independence notice and error report
+    link, page sections, source citations, and loading and error states.
+  - `fields` - form fields, the department or area picker, the removable filter,
+    and the sortable column header.
+  - `charts` - line, stacked bar, and totals charts, their tables, and series
+    colors.
+  - `home` - the home page's scenario answers, area breakdown, and top-paid
+    table.
+  - `trends` - the Trends controls, figure, and table, and the pay changes
+    section.
+  - `departments` - the department table and a department's budget and jobs.
+  - `people` - the people list's controls, table, and figures.
+  - `person` - one name's figures, rates, records, and job history.
+  - `budget` - the budget outlook's lines and cases tables.
+  - `scenario` - rule editing and the scenario's results, savings, and outlook.
+  - `ui` - shadcn/ui components.
+- `src/hooks` - the hooks and queries that load and join the data files for a
+  page's view.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
-- `src/lib` - census totals by group, college or VP area assignment, the
-  cross-year employee groups and their trends, budget account groups, a
-  department's budget and jobs, the department index, the summary of the pages'
-  default figures, the department table's rows with their year-on-year changes
-  and each area's figures, the home page's headlines, example answers, jobs per
-  census, area bars, and top-paid jobs, sort order for tables, the salary rate
-  distribution, each page's URL state, source citations, number formatting, the
-  person links between consecutive Fall years, the person lookup (name index,
-  name matching, linked runs, a person's records from the censuses the index
-  lists, and a record's published fields), the people list's filtering, sorting,
-  and paging of one census's jobs, a person's computed figures, rates by job,
-  job history, a job's class or rank and the medians beside it, continuing jobs'
-  pay changes with the rank renames and title abbreviations they use, a job's
-  estimated raise group, and each raise group's median change beside its
-  compounded across-the-board terms, the budget outlook's gap by year, chart
-  series, and cited sources, and scenarios: a job's estimated OPE rate group,
-  each area's estimated E&G share, rules over one census and the stage each runs
-  in, the hiring freeze and the censuses it reads, department and area
-  eliminations by budget line and the budget year they use, raise freezes and
-  each raise group's rate they forgo, savings against the projection or one of
-  its cases, the rules' and case's URL form, rule and scope labels, new rules
-  and their order, and example scenarios.
+- `src/lib` - class name merging and the number cell style, and one folder per
+  domain:
+  - `shared` - number formatting, table sort order, and source citations.
+  - `census` - census totals, area assignment, employee groups, and the salary
+    rate distribution.
+  - `trends` - trends by group, continuing jobs' pay changes, and raise groups
+    beside their terms.
+  - `departments` - a department's budget and jobs, the department index, and
+    the department table.
+  - `people` - the people list, person links and lookup, and a person's computed
+    figures and peer medians.
+  - `budget` - the budget outlook's gap, series, and cited sources.
+  - `scenario` - scenario rules, their editing and examples, and the savings
+    they produce against the projection.
+  - `home` - the home page's figures.
+  - `summary` - the summary of the pages' default figures.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
 
 - `scripts/scrape/main.ts` - the `pnpm scrape [dataset]` command: runs the
   dataset steps and writes the manifest.
-- `scripts/scrape/fall.ts` - the Fall step: reads the downloaded reports and
-  writes the year files.
-- `scripts/scrape/budget.ts` - the budget step: downloads the workbooks and
-  writes the year files.
-- `scripts/scrape/rates.ts` - the rates step: downloads the OPE pages and writes
-  the rates file.
 - `scripts/scrape/summary.ts` - the summary step: derives the summary file from
   the committed data files.
-- `scripts/scrape/fetch.ts` - network access: robots.txt, identification,
-  request spacing, and the conditional download cache.
-- `scripts/scrape/robots.ts` - robots.txt rules.
-- `scripts/scrape/manifest-file.ts` - reading and writing the manifest.
-- `scripts/scrape/pdf-lines.ts` - PDF pages as positioned text lines.
-- `scripts/scrape/fall-file.ts` - one Fall Census report: its identity and its
-  records.
-- `scripts/scrape/fall-blocks.ts` - report pages split into labelled record
-  blocks.
-- `scripts/scrape/fall-record.ts` - a record block as a typed record.
-- `scripts/scrape/mojibake.ts` - repair of the reports' encoding damage.
-- `scripts/scrape/possible-student.ts` - the possible student or graduate
-  employee flag.
-- `scripts/scrape/budget-links.ts` - the workbook links on the Budget Reports
-  page.
-- `scripts/scrape/budget-file.ts` - one budget workbook as a typed budget year.
-- `scripts/scrape/ope-pages.ts` - the OPE rate pages as typed rates.
 - `scripts/scrape/cache.ts` - the source and data locations, and the committed
   JSON reader.
-- `scripts/committed-data.test.ts` - schema and total checks of every committed
-  data file, and each census's area placement.
-- `scripts/committed-outlook.test.ts` - the budget outlook's published
-  arithmetic: lines to totals, run rates, and fund balances.
-- `scripts/committed-scenario.test.ts` - OPE rate groups, E&G shares, and
-  scenario results on the committed data.
-- `scripts/committed-home.test.ts` - Fall 2025 totals, an area's figures, and
-  the home page's figures on the committed data.
-- `scripts/committed-summary.test.ts` - the committed summary against a fresh
-  derivation from the committed data files.
+- `scripts/scrape/manifest-file.ts` - reading and writing the manifest.
+- `scripts/scrape/net` - network access: robots.txt rules, identification,
+  request spacing, and the conditional download cache.
+- `scripts/scrape/fall` - the Fall step: PDF pages as text lines, record blocks,
+  typed records, encoding repair, and the possible student or GE flag.
+- `scripts/scrape/budget` - the budget step: the workbook links on the Budget
+  Reports page, and each workbook as a typed budget year.
+- `scripts/scrape/rates` - the rates step: the OPE rate pages as typed rates.
+- `scripts/committed` - checks of the committed data files, and of the figures
+  derived from them, against their sources.
 
 ### End-to-end tests (`e2e/`)
 
@@ -186,19 +157,19 @@ flowchart LR
   latest Fall census, the projected gap as a chart, two scenario examples'
   savings against the gap, job records per census, the largest colleges and VP
   areas by a measure held in the URL, the highest published salary rates, and
-  the data's dates, each linking to its page; driven by the `src/lib` home
-  figures over the summary, the outlook, the raise terms, and the manifest.
+  the data's dates, each linking to its page; driven by `src/lib/home` over the
+  summary, the outlook, the raise terms, and the manifest.
 - `/trends` - salary spend, FTE, and median salary rate by employee group for
   every Fall census, or for continuing jobs in each pair of consecutive censuses
   the median change in salary rate, the counts of changed class, rank, and
   title, and one pair's distribution of changes and median change by raise group
   beside its across-the-board terms; filtered by pay department, college or VP
-  area, or class or rank, with the view held in the URL; driven by `src/lib`
-  trends over the summary, or, for a filter by staff kind, department, area, or
-  class or rank, or the change measure, `src/lib` groups, trends, person links,
-  pay changes, and the raise comparison over every Fall year and the raise
-  terms, and the department modules over every budget year when filtered by
-  area.
+  area, or class or rank, with the view held in the URL; driven by
+  `src/lib/trends` over the summary, or, for a filter by staff kind, department,
+  area, or class or rank, or the change measure, `src/lib/census`,
+  `src/lib/trends`, and the `src/lib/people` person links over every Fall year
+  and the raise terms, and `src/lib/departments` over every budget year when
+  filtered by area.
 - `/departments` - a sortable table of the colleges and VP areas in the latest
   census's budget year, or of their units and pay departments, with budget,
   jobs, spend, and median and each one's change from the year before, filtered
@@ -207,38 +178,36 @@ flowchart LR
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, for an area its units in the department
   table and how its jobs were placed, and links to a scenario eliminating it and
-  to its Trends pay changes; driven by the `src/lib` department modules over
-  every Fall and budget year, and the outlook file for the scenario's budget
-  year.
+  to its Trends pay changes; driven by `src/lib/departments` over every Fall and
+  budget year, and the outlook file for the scenario's budget year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   charts of the matching jobs by salary rate, with primary-job percentiles, and
   by group, their salary spend by EEO category, and names from other censuses
   when a name has no job in it; not indexed by search engines; driven by the
-  `src/lib` people list and distribution over one Fall year and its budget year,
-  and the summary's name index.
+  `src/lib/people` list and `src/lib/census` distribution over one Fall year and
+  its budget year, and the summary's name index.
 - `/people/$name` - one name's computed figures, its rates by job over time, its
   records for one census at a time, and its job history, with a back button; not
-  indexed by search engines; driven by the `src/lib` person lookup and computed
-  figures over the summary's name index and medians and the Fall years the name
-  appears in.
+  indexed by search engines; driven by `src/lib/people` over the summary's name
+  index and medians and the Fall years the name appears in.
 - `/budget` - the E&G fund projection: the gap and fund balance by fiscal year
   as a chart and table, every published line, the alternative cases, the
   reduction estimate, the all-funds budget, the stated assumptions, and the
-  announced budget actions, each cited; driven by the `src/lib` budget outlook
-  over the outlook file.
+  announced budget actions, each cited; driven by `src/lib/budget` over the
+  outlook file.
 - `/scenarios` - rules over the latest Fall census, grouped by the stage each
   runs in and edited in place, with each rule's jobs and salary, full cost, and
   E&G savings, each elimination's budgeted pay, OPE, and S&S, the first savings
   year's raise rates that savings grow by and a raise freeze forgoes, with their
   sources, the savings set against the E&G projection or one of its cases by
   fiscal year, example questions, the stated methods, and the sources, with the
-  rules and case held in the URL; driven by the `src/lib` scenario modules over
-  one Fall year, its budget year, the budget year of the first savings year, the
-  OPE rates, the raise terms, and the outlook file, and every Fall year from
-  2019 when a hiring freeze is present.
+  rules and case held in the URL; driven by `src/lib/scenario` over one Fall
+  year, its budget year, the budget year of the first savings year, the OPE
+  rates, the raise terms, and the outlook file, and every Fall year from 2019
+  when a hiring freeze is present.
 - `/sources` - every source file in the manifest and every document the raise
   terms and the budget outlook cite, with retrieval dates, hashes, and counts;
-  driven by `src/data` and `src/lib`.
+  driven by `src/data`, `src/lib/shared`, and `src/lib/budget`.
 - Any other path - the not-found page, inside the shared layout.
 
 ## Deployment
