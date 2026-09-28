@@ -125,8 +125,7 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
   const found = matchPeople(data.people, q)
   if (!found || found.total === 0) return <p>No name matches “{q}”.</p>
   return (
-    <section className="space-y-2">
-      <h2 className="font-semibold">Names matching “{q}” in any Fall census</h2>
+    <PageSection title={`Names matching “${q}” in any Fall census`}>
       <ul aria-label="Matching names" className="space-y-1">
         {found.matches.map((person) => (
           <li key={person.name} className="flex flex-wrap gap-x-2">
@@ -147,7 +146,7 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
         {formatCount(found.matches.length)} of {formatCount(found.total)} names.
         None has a job matching these filters in Fall {year}.
       </p>
-    </section>
+    </PageSection>
   )
 }
 

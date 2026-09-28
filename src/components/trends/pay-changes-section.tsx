@@ -1,3 +1,4 @@
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { PayChangeCountsTable } from '@/components/trends/pay-change-counts-table'
 import { PayChangeDistribution } from '@/components/trends/pay-change-distribution'
@@ -34,8 +35,7 @@ const NO_PAIRS =
 
 function LabelTables() {
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">Renames and abbreviations</h2>
+    <PageSection title="Renames and abbreviations">
       <p className="text-sm text-muted-foreground">
         This site treats these rank moves, in the census that first publishes
         the new rank, as renames rather than rank changes; a job's title change
@@ -78,7 +78,7 @@ function LabelTables() {
           ))}
         </TableBody>
       </Table>
-    </section>
+    </PageSection>
   )
 }
 
@@ -101,8 +101,7 @@ export function PayChangesSection({
   const title = `${CHANGE_LABEL}, continuing jobs, by ${linesLabel(view.group)}, ${span}`
   return (
     <>
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">{title}</h2>
+      <PageSection title={title}>
         <p className="text-sm text-muted-foreground">{RATE_NOTE}</p>
         <PayChangeLines
           series={series}
@@ -115,7 +114,7 @@ export function PayChangesSection({
           rows={counts}
           caption={`Continuing jobs with a changed class, rank, or title, ${span}`}
         />
-      </section>
+      </PageSection>
       {raises && (
         <RaiseComparisonSection
           comparison={raises}

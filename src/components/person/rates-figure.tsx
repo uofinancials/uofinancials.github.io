@@ -1,4 +1,5 @@
 import { SeriesChart } from '@/components/charts/series-chart'
+import { PageSection } from '@/components/layout/page-section'
 import {
   Table,
   TableBody,
@@ -29,8 +30,7 @@ export function PersonRatesFigure({
   const { years, series, medianGroups } = personRates(person, medians)
   const label = `${person.name}: annual salary rate by job, Fall ${years[0]}-${years.at(-1)}`
   return (
-    <section className="space-y-4">
-      <h2 className="font-semibold">Salary rate by job</h2>
+    <PageSection title="Salary rate by job">
       <SeriesChart
         labels={years.map(String)}
         series={series}
@@ -84,6 +84,6 @@ export function PersonRatesFigure({
           ))}
         </TableBody>
       </Table>
-    </section>
+    </PageSection>
   )
 }

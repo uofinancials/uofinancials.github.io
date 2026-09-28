@@ -10,6 +10,7 @@ import { useMemo } from 'react'
 import { DepartmentBudgetSection } from '@/components/departments/budget-section'
 import { DepartmentJobsSection } from '@/components/departments/jobs-section'
 import { DepartmentTable } from '@/components/departments/table'
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
 import { fallYearQuery, toData } from '@/data/queries'
@@ -121,8 +122,7 @@ function AreaUnitsSection({
   if (!table || rows.length === 0) return null
   const { now, before } = table
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">Units in this area</h2>
+    <PageSection title="Units in this area">
       <DepartmentTable
         caption={`${fiscalYearLabel(now.budget.fiscalYear)} budget and Fall ${now.census.year} jobs, with changes from ${fiscalYearLabel(before.budget.fiscalYear)} and Fall ${before.census.year}`}
         rows={sortRows(rows, view.sort, view.dir)}
@@ -151,7 +151,7 @@ function AreaUnitsSection({
           },
         ]}
       />
-    </section>
+    </PageSection>
   )
 }
 

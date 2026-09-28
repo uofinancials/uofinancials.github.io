@@ -1,6 +1,7 @@
 import { BinTable } from '@/components/charts/bin-table'
 import { StackedBarChart } from '@/components/charts/stacked-bar-chart'
 import { SelectField } from '@/components/fields/select-field'
+import { PageSection } from '@/components/layout/page-section'
 import { stackedCounts } from '@/lib/census/groups'
 import { formatCount } from '@/lib/shared/format'
 import {
@@ -26,8 +27,7 @@ export function PayChangeDistribution({
   const stacks = stackedCounts(distribution)
   const label = `Continuing jobs by change in salary rate, Fall ${pairLabel(pair)}`
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">One census pair</h2>
+    <PageSection title="One census pair">
       <SelectField
         label="Fall"
         value={String(pair)}
@@ -60,6 +60,6 @@ export function PayChangeDistribution({
           />
         </>
       )}
-    </section>
+    </PageSection>
   )
 }

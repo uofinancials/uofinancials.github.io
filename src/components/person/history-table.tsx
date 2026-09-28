@@ -1,3 +1,4 @@
+import { PageSection } from '@/components/layout/page-section'
 import {
   Table,
   TableBody,
@@ -13,8 +14,7 @@ import { jobHistory } from '@/lib/people/person-summary'
 /** Every job under the name, census by census, with the published fields that change most. */
 export function PersonHistoryTable({ person }: { person: Person }) {
   return (
-    <section className="space-y-2">
-      <h2 className="font-semibold">Job history</h2>
+    <PageSection title="Job history">
       <p className="text-xs text-muted-foreground">
         As published. Censuses marked “linked” are in a run joined on the exact
         name and the same pay department of a single primary job, computed by
@@ -48,6 +48,6 @@ export function PersonHistoryTable({ person }: { person: Person }) {
           ))}
         </TableBody>
       </Table>
-    </section>
+    </PageSection>
   )
 }

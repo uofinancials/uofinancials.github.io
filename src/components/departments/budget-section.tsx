@@ -1,5 +1,6 @@
 import { SeriesChart } from '@/components/charts/series-chart'
 import { RadioField } from '@/components/fields/radio-field'
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import {
   Table,
@@ -127,8 +128,7 @@ export function DepartmentBudgetSection({
   const last = budget.years.at(-1)
   const title = `Budget by ${breakdown === 'account' ? 'account group' : 'fund type'}`
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
+    <PageSection title={title}>
       <p className="text-sm text-muted-foreground">{BUDGET_NOTE}</p>
       <RadioField
         legend="Break down by"
@@ -160,6 +160,6 @@ export function DepartmentBudgetSection({
           ]}
         />
       )}
-    </section>
+    </PageSection>
   )
 }

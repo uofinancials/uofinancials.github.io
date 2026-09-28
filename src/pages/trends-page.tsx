@@ -1,6 +1,7 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { TrendsControls } from '@/components/trends/controls'
 import { TrendsFigure } from '@/components/trends/figure'
@@ -168,8 +169,7 @@ function CensusSection({
 }) {
   const title = `${METRIC_INFO[metric].label} by ${linesLabel(view.group)}, Fall ${view.from}-${view.to}`
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
+    <PageSection title={title}>
       <TrendsFigure
         trends={trends}
         metric={metric}
@@ -185,7 +185,7 @@ function CensusSection({
           },
         ]}
       />
-    </section>
+    </PageSection>
   )
 }
 
@@ -235,15 +235,14 @@ export function TrendsPage() {
         />
       )}
       {census && <CensusSection {...census} view={view} />}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Groups</h2>
+      <PageSection title="Groups">
         <p className="text-sm text-muted-foreground">
           UO restructured its EEO categories in 2018, 2019, and 2021. This site
           groups them so each group means the same jobs in every year. Open a
           group to see its categories as published.
         </p>
         <GroupMapping />
-      </section>
+      </PageSection>
     </div>
   )
 }

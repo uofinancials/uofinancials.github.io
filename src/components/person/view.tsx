@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { PersonCards } from '@/components/person/cards'
 import { PersonHistoryTable } from '@/components/person/history-table'
@@ -50,8 +51,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
   const primary = primaryJobOf(entry.records)
   const group = primary && peerGroupOf(primary)
   return (
-    <section className="space-y-2">
-      <h2 className="font-semibold">Fall {entry.year} records</h2>
+    <PageSection title={`Fall ${entry.year} records`}>
       <PersonRecordsTable
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
@@ -102,7 +102,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
         </p>
       )}
-    </section>
+    </PageSection>
   )
 }
 
