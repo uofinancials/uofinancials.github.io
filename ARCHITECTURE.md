@@ -83,8 +83,8 @@ flowchart LR
     citations, the navigation and tab link style, and loading and error states.
   - `fields` - form fields, the department or area picker, the removable filter,
     and the sortable column header.
-  - `charts` - line, stacked bar, and totals charts, their tables, and series
-    colors.
+  - `charts` - line charts and small multiples, the stacked bar chart, bars in
+    table cells, the charts' tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
     table.
   - `trends` - the Trends controls, figure, and table, and the pay changes
@@ -101,7 +101,8 @@ flowchart LR
   queries that fetch and parse them.
 - `src/lib` - class name merging and the number cell style, and one folder per
   domain:
-  - `shared` - number formatting, table sort order, and source citations.
+  - `shared` - number formatting, table sort order, source citations, and the
+    rules charts draw series by.
   - `census` - census totals, area assignment, employee groups, and the salary
     rate distribution.
   - `trends` - trends by group, continuing jobs' pay changes, and raise groups
@@ -186,11 +187,11 @@ flowchart LR
   to its Trends pay changes; driven by `src/lib/departments` over every Fall and
   budget year, and the outlook file for the scenario's budget year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
-  charts of the matching jobs by salary rate, with primary-job percentiles, and
-  by group, their salary spend by EEO category, and names from other censuses
-  when a name has no job in it; not indexed by search engines; driven by the
-  `src/lib/people` list and `src/lib/census` distribution over one Fall year and
-  its budget year, and the summary's name index.
+  a chart of the matching jobs by salary rate, with primary-job percentiles, or
+  a table of them by group, their salary spend by EEO category, and names from
+  other censuses when a name has no job in it; not indexed by search engines;
+  driven by the `src/lib/people` list and `src/lib/census` distribution over one
+  Fall year and its budget year, and the summary's name index.
 - `/people/$name` - one name's computed figures, its rates by job over time, its
   records for one census at a time, and its job history, with a back button; not
   indexed by search engines; driven by `src/lib/people` over the summary's name
