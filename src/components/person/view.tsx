@@ -56,7 +56,6 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
       />
-      <Sources sources={[{ kind: 'fall', year: entry.year }]} />
       {[...departments].map(([code, department]) => (
         <p key={code} className="flex flex-wrap gap-x-4 text-sm">
           <Link className="link" to="/departments/$code" params={{ code }}>
@@ -100,6 +99,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
         </p>
       )}
+      <Sources sources={[{ kind: 'fall', year: entry.year }]} />
     </PageSection>
   )
 }
