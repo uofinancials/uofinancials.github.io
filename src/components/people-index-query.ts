@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { summaryQuery } from '@/data/queries'
-import { indexNames } from '@/lib/person-lookup'
+import { indexNames } from '@/lib/people/person-lookup'
 
 /** Every name across the Fall censuses, and the class and rank medians, from the summary. */
 export const peopleIndexQuery = queryOptions({

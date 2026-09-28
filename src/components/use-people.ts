@@ -2,7 +2,11 @@ import { useLoaderData, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { useCensusPlace } from '@/components/use-census-place'
 import type { FallRecord } from '@/data/fall'
-import { type CategoryTotals, categoryTotals } from '@/lib/overview'
+import {
+  buildDistribution,
+  type Distribution,
+} from '@/lib/census/salary-distribution'
+import { type CategoryTotals, categoryTotals } from '@/lib/census/totals'
 import {
   binsInRange,
   countNames,
@@ -13,10 +17,9 @@ import {
   type PeopleView,
   resolvePeopleView,
   sortJobs,
-} from '@/lib/people-list'
-import type { PeopleSearch } from '@/lib/people-search'
-import { titleOf } from '@/lib/person-fields'
-import { buildDistribution, type Distribution } from '@/lib/salary-distribution'
+} from '@/lib/people/list'
+import { titleOf } from '@/lib/people/person-fields'
+import type { PeopleSearch } from '@/lib/people/search'
 
 /** The view's filters alone, so turning a page or changing the sort or chart does not re-filter. */
 function useFilterView(search: PeopleSearch, years: number[]): PeopleView {

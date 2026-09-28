@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import type { Savings } from '@/lib/scenario'
+import type { Savings } from '@/lib/scenario/scenario'
 import { ScenarioResultsTable } from './scenario-results-table'
 
 const savings = (jobs: number, cents: number): Savings => ({

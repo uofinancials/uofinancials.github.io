@@ -8,9 +8,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { FallRecord } from '@/data/fall'
-import { formatDollars } from '@/lib/format'
-import { recordKey } from '@/lib/people-list'
-import { titleOf } from '@/lib/person-fields'
+import { recordKey } from '@/lib/people/list'
+import { titleOf } from '@/lib/people/person-fields'
+import { formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** Jobs as published, each name linked to its person page for the census year. */

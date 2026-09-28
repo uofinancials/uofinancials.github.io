@@ -21,8 +21,8 @@ import {
   gapRows,
   outlookSeries,
   runRateFor,
-} from '@/lib/budget-outlook'
-import { formatCompactDollars, formatDollars } from '@/lib/format'
+} from '@/lib/budget/outlook'
+import { formatCompactDollars, formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const GAP_HEADS = ['Revenue', 'Expenses', 'Run rate', 'Ending fund balance']

@@ -6,8 +6,8 @@ import {
   type PeopleView,
   rateRangeDollars,
   typedFilters,
-} from '@/lib/people-list'
-import type { PeopleSearch } from '@/lib/people-search'
+} from '@/lib/people/list'
+import type { PeopleSearch } from '@/lib/people/search'
 
 const ALL = 'all'
 

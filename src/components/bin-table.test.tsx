@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { emptyCounts } from '@/lib/trend-groups'
+import { emptyCounts } from '@/lib/census/groups'
 import { BinTable } from './bin-table'
 
 const BIN = {

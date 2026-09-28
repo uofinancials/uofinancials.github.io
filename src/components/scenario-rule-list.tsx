@@ -2,9 +2,8 @@ import { Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { ScenarioRuleEditor } from '@/components/scenario-rule-editor'
 import type { BudgetYear } from '@/data/budget'
-import { departmentIndex } from '@/lib/department-index'
-import type { DepartmentCensus } from '@/lib/department-jobs'
-import { RULE_STAGES, type Rule, stageOf } from '@/lib/scenario'
+import { departmentIndex } from '@/lib/departments/codes'
+import type { DepartmentCensus } from '@/lib/departments/jobs'
 import {
   canMoveRule,
   newRule,
@@ -13,9 +12,10 @@ import {
   RULE_STAGE_HEADINGS,
   ruleInsertIndex,
   swapAt,
-} from '@/lib/scenario-edit'
-import { eliminationOptions } from '@/lib/scenario-eliminate'
-import { positionOptions } from '@/lib/scenario-labels'
+} from '@/lib/scenario/edit'
+import { eliminationOptions } from '@/lib/scenario/eliminate'
+import { positionOptions } from '@/lib/scenario/labels'
+import { RULE_STAGES, type Rule, stageOf } from '@/lib/scenario/scenario'
 
 function fitIds(ids: string[], count: number): string[] {
   return Array.from(

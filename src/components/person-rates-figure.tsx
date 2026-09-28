@@ -7,15 +7,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { PeerMedians } from '@/lib/people/peer-median'
+import type { Person } from '@/lib/people/person-lookup'
+import { MEDIAN_SERIES, personRates } from '@/lib/people/person-summary'
 import {
   formatCompactDollars,
   formatDollars,
   formatOrBlank,
-} from '@/lib/format'
-import type { PeerMedians } from '@/lib/peer-median'
-import type { Person } from '@/lib/person-lookup'
-import { MEDIAN_SERIES, personRates } from '@/lib/person-summary'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/shared/format'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** Each job's published rate by census, as a chart and a table. */

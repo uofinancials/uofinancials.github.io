@@ -11,17 +11,17 @@ import {
 import type { ScenarioHistory } from '@/components/use-scenario-history'
 import { fiscalYearLabel } from '@/data/budget'
 import {
-  formatCompactDollars,
-  formatDollars,
-  formatOrBlank,
-  formatWeeks,
-} from '@/lib/format'
-import {
   type Baseline,
   firstShortfallYear,
   type OutlookRow,
   scenarioSeries,
-} from '@/lib/scenario-outlook'
+} from '@/lib/scenario/outlook'
+import {
+  formatCompactDollars,
+  formatDollars,
+  formatOrBlank,
+  formatWeeks,
+} from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const HEADS = [

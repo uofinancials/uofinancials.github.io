@@ -10,11 +10,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { FallRecord } from '@/data/fall'
-import { NO_VALUE } from '@/lib/format'
-import { type PeopleView, recordKey } from '@/lib/people-list'
-import type { PeopleSort } from '@/lib/people-search'
-import { LIST_FIELDS } from '@/lib/person-fields'
-import type { SortDirection } from '@/lib/sort'
+import { type PeopleView, recordKey } from '@/lib/people/list'
+import { LIST_FIELDS } from '@/lib/people/person-fields'
+import type { PeopleSort } from '@/lib/people/search'
+import { NO_VALUE } from '@/lib/shared/format'
+import type { SortDirection } from '@/lib/shared/sort'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** One page of jobs, a row each, named and linked to the person, in the view's columns; each sortable header sorts by its column. */

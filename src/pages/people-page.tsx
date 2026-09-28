@@ -15,20 +15,20 @@ import { TotalsChart } from '@/components/totals-chart'
 import { TotalsTable } from '@/components/totals-table'
 import { type Matching, usePeople } from '@/components/use-people'
 import type { FallRecord } from '@/data/fall'
-import { formatCount, formatDollars } from '@/lib/format'
-import { type CategoryTotals, SPEND_METHOD } from '@/lib/overview'
-import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people-list'
+import { RATE_NOTE, type SalaryBin } from '@/lib/census/salary-distribution'
+import { type CategoryTotals, SPEND_METHOD } from '@/lib/census/totals'
+import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people/list'
+import { formatYearRanges, matchPeople } from '@/lib/people/person-lookup'
 import {
   type ListColumn,
   PEOPLE_CHARTS,
   type PeopleChart,
   type PeopleSearch,
   type PeopleSort,
-} from '@/lib/people-search'
-import { formatYearRanges, matchPeople } from '@/lib/person-lookup'
-import { RATE_NOTE, type SalaryBin } from '@/lib/salary-distribution'
-import type { SortDirection } from '@/lib/sort'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/people/search'
+import { formatCount, formatDollars } from '@/lib/shared/format'
+import type { SortDirection } from '@/lib/shared/sort'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
 const CHART_LABELS: Record<PeopleChart, string> = {
   rates: 'Salary rates',

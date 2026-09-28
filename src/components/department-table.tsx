@@ -8,15 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { TableSort } from '@/lib/department-search'
-import type { DepartmentRow, DepartmentSort } from '@/lib/department-table'
+import type { TableSort } from '@/lib/departments/search'
+import type { DepartmentRow, DepartmentSort } from '@/lib/departments/table'
 import {
   formatChange,
   formatCount,
   formatDollars,
   formatOrBlank,
-} from '@/lib/format'
-import type { SortDirection } from '@/lib/sort'
+} from '@/lib/shared/format'
+import type { SortDirection } from '@/lib/shared/sort'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const FIGURES: {

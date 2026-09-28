@@ -1,15 +1,15 @@
 import { RemovableFilter } from '@/components/removable-filter'
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
-import type { CensusSearch, CensusView, Place } from '@/lib/census-search'
-import { TERMS } from '@/lib/salary-distribution'
-import { TREND_GROUPS } from '@/lib/trend-groups'
+import { TREND_GROUPS } from '@/lib/census/groups'
+import { TERMS } from '@/lib/census/salary-distribution'
+import type { CensusSearch, CensusView, Place } from '@/lib/census/search'
 import {
   ALL_GROUPS,
   GROUP_OPTIONS,
   STAFF_KIND_OPTIONS,
   TERM_OPTIONS,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
 
 const ALL = 'all'
 

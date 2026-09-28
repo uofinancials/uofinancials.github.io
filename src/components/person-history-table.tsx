@@ -6,9 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { HISTORY_LABELS } from '@/lib/person-fields'
-import type { Person } from '@/lib/person-lookup'
-import { jobHistory } from '@/lib/person-summary'
+import { HISTORY_LABELS } from '@/lib/people/person-fields'
+import type { Person } from '@/lib/people/person-lookup'
+import { jobHistory } from '@/lib/people/person-summary'
 
 /** Every job under the name, census by census, with the published fields that change most. */
 export function PersonHistoryTable({ person }: { person: Person }) {

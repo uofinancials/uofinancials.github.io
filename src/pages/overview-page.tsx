@@ -20,19 +20,23 @@ import {
   raiseTermsQuery,
   summaryQuery,
 } from '@/data/queries'
-import { outlookSeries } from '@/lib/budget-outlook'
-import { formatCompactDollars, formatCount, formatDollars } from '@/lib/format'
+import { outlookSeries } from '@/lib/budget/outlook'
+import { fiscalYearOf, SPEND_METHOD } from '@/lib/census/totals'
 import {
   answersOf,
   type HeadlineFigures,
   jobsByCensus,
   type placementBases,
   TOP_PAID_COUNT,
-} from '@/lib/home'
-import { fiscalYearOf, SPEND_METHOD } from '@/lib/overview'
-import { firstSavingsYear } from '@/lib/scenario-outlook'
-import { raiseRates, raiseSources } from '@/lib/scenario-raises'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/home/home'
+import { firstSavingsYear } from '@/lib/scenario/outlook'
+import { raiseRates, raiseSources } from '@/lib/scenario/raises'
+import {
+  formatCompactDollars,
+  formatCount,
+  formatDollars,
+} from '@/lib/shared/format'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
 const COMPACT_CHART = 'h-64'
 

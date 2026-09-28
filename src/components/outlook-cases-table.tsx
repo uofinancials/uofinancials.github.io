@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
-import { formatDollars, formatOrBlank } from '@/lib/format'
+import { formatDollars, formatOrBlank } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** Each published case's run rate by fiscal year, its present value, and its final ending fund balance. */

@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { FallRecord } from '@/data/fall'
-import { personFields } from '@/lib/person-fields'
+import { personFields } from '@/lib/people/person-fields'
 
 /** One census year's jobs under a name, a column per job and a row per published field. */
 export function PersonRecordsTable({

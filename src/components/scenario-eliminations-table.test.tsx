@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import type { EliminationResult } from '@/lib/scenario'
+import type { EliminationResult } from '@/lib/scenario/scenario'
 import { ScenarioEliminationsTable } from './scenario-eliminations-table'
 
 const elimination = (

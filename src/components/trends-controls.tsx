@@ -2,7 +2,7 @@ import { RadioField } from '@/components/radio-field'
 import { RemovableFilter } from '@/components/removable-filter'
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
-import { TREND_GROUPS } from '@/lib/trend-groups'
+import { TREND_GROUPS } from '@/lib/census/groups'
 import {
   ALL_GROUPS,
   GROUP_OPTIONS,
@@ -10,7 +10,7 @@ import {
   TREND_METRIC_OPTIONS,
   type TrendsSearch,
   type TrendView,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
 
 function LineToggles({
   lines,

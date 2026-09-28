@@ -8,7 +8,7 @@ import { budgetYearQuery, fallYearQuery, manifestQuery } from '@/data/queries'
 import {
   type DepartmentCensus,
   toDepartmentCensuses,
-} from '@/lib/department-jobs'
+} from '@/lib/departments/jobs'
 
 export type ScenarioHistory =
   | { status: 'idle' | 'loading' | 'error'; history: [] }

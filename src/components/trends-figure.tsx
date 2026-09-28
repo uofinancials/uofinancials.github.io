@@ -1,11 +1,11 @@
 import { SeriesChart } from '@/components/series-chart'
 import { TrendsTable } from '@/components/trends-table'
-import type { Trends } from '@/lib/trends'
 import {
   type CensusMetric,
   METRIC_INFO,
   metricValues,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
+import type { Trends } from '@/lib/trends/trends'
 
 export function TrendsFigure({
   trends,

@@ -6,35 +6,35 @@ import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
-import { toDepartmentCensuses } from '../../src/lib/department-jobs.ts'
-import { egShareOf, egShares } from '../../src/lib/eg-share.ts'
-import { opeGroupOf } from '../../src/lib/ope-groups.ts'
+import { trendGroupOf } from '../../src/lib/census/groups.ts'
 import {
   fiscalYearOf,
   isClassifiedTemp,
   jobSpendCents,
-} from '../../src/lib/overview.ts'
-import { raiseRowOf } from '../../src/lib/raise-groups.ts'
-import {
-  ANY_SCOPE as ALL,
-  type Rule,
-  type ScenarioResult,
-} from '../../src/lib/scenario.ts'
-import { freezeHistoryCensuses } from '../../src/lib/scenario-freeze.ts'
+} from '../../src/lib/census/totals.ts'
+import { toDepartmentCensuses } from '../../src/lib/departments/jobs.ts'
+import { egShareOf, egShares } from '../../src/lib/scenario/eg-share.ts'
+import { freezeHistoryCensuses } from '../../src/lib/scenario/freeze.ts'
 import {
   costOf,
   type Job,
   PROJECTED_RAISE_BASIS_POINTS,
   ratesFor,
   toJobs,
-} from '../../src/lib/scenario-jobs.ts'
+} from '../../src/lib/scenario/jobs.ts'
+import { opeGroupOf } from '../../src/lib/scenario/ope-groups.ts'
 import {
   baselines,
   outlookRows,
   projectScenario,
-} from '../../src/lib/scenario-outlook.ts'
-import { raiseRates } from '../../src/lib/scenario-raises.ts'
-import { trendGroupOf } from '../../src/lib/trend-groups.ts'
+} from '../../src/lib/scenario/outlook.ts'
+import { raiseRates } from '../../src/lib/scenario/raises.ts'
+import {
+  ANY_SCOPE as ALL,
+  type Rule,
+  type ScenarioResult,
+} from '../../src/lib/scenario/scenario.ts'
+import { raiseRowOf } from '../../src/lib/trends/raise-groups.ts'
 import {
   budgetDataPath,
   DATA_DIR,

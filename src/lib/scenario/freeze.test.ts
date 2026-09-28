@@ -1,0 +1,119 @@
+import { expect, test } from 'vitest'
+import type { FallRecord } from '@/data/fall'
+import { toDepartmentCensus } from '@/lib/departments/jobs'
+import { ANY_SCOPE } from '@/lib/scenario/scenario'
+import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { AREA, RATES, scenarioBudget, UNIT } from '@/test/scenario-fixtures'
+import { departureRate, type FreezeRule, freezeShare } from './freeze'
+import { type Rule, runScenario, type ScenarioScope } from './scenario'
+
+const PAY = { code: UNIT, name: 'CAS Biology' }
+const CLASSIFIED: ScenarioScope = { ...ANY_SCOPE, kind: 'classified' }
+const BUDGET = scenarioBudget([])
+
+const job = (name: string, annualSalaryRateCents: number) =>
+  classifiedJob({ name, payDepartment: PAY, annualSalaryRateCents })
+const censusOf = (year: number, records: FallRecord[]) =>
+  toDepartmentCensus({ year, records }, BUDGET)
+
+// 2023 to 2024: Brown's 6,000,000 of 10,000,000 leaves (60%); 2024 to 2025: Cruz's 4,000,000 of 8,000,000 (50%).
+const HISTORY = [
+  censusOf(2023, [job('Avila', 4_000_000), job('Brown', 6_000_000)]),
+  censusOf(2024, [job('Avila', 4_000_000), job('Cruz', 4_000_000)]),
+  censusOf(2025, [
+    job('Avila', 4_000_000),
+    unclassifiedJob({ name: 'Diaz', payDepartment: PAY }),
+  ]),
+]
+const [, , CENSUS] = HISTORY
+
+function freeze(overrides: Partial<FreezeRule> = {}): FreezeRule {
+  return {
+    kind: 'freeze',
+    scope: CLASSIFIED,
+    years: 2,
+    afterFreeze: 'refill',
+    ...overrides,
+  }
+}
+
+function run(rules: Rule[]) {
+  if (!CENSUS) throw new Error('The test history has no 2025 census')
+  return runScenario({
+    census: CENSUS,
+    rules,
+    rates: RATES,
+    egShares: new Map([[AREA, 10_000]]),
+    opeFiscalYear: 2026,
+    history: HISTORY,
+    projectedYears: 4,
+    eliminationBudget: BUDGET,
+    raiseRates: [],
+  })
+}
+
+test("the departure rate is the mean share of the scope's spend whose names leave", () => {
+  expect(departureRate(HISTORY, CLASSIFIED)).toBe(5_500)
+  expect(departureRate(HISTORY.slice(0, 1), CLASSIFIED)).toBe(0)
+})
+
+test('a freeze compounds while it lasts, then refills or holds its last share', () => {
+  expect([1, 2, 3].map((year) => freezeShare(freeze(), 5_500, year))).toEqual([
+    5_500, 7_975, 0,
+  ])
+  expect(
+    [2, 3, 5].map((year) =>
+      freezeShare(freeze({ afterFreeze: 'eliminate' }), 5_500, year),
+    ),
+  ).toEqual([7_975, 7_975, 7_975])
+})
+
+test("a freeze saves its share of the scope's cost each year, and nothing in the census total", () => {
+  const result = run([freeze()])
+  expect(result.total).toEqual({
+    jobs: 0,
+    salaryCents: 0,
+    fullCostCents: 0,
+    egCents: 0,
+  })
+  // Avila's full cost is 4,000,000 x 0.9 x 1.9 = 6,840,000, all of it E&G, in each year's pay at 3% a year:
+  // 55% of 4,120,000 and 7,045,200, then 79.75% of 4,243,600 and 7,256,556 (5,787,103.41).
+  expect(result.rules).toEqual([
+    {
+      kind: 'freeze',
+      rateBasisPoints: 5_500,
+      byYear: [
+        {
+          jobs: 1,
+          salaryCents: 2_266_000,
+          fullCostCents: 3_874_860,
+          egCents: 3_874_860,
+        },
+        {
+          jobs: 1,
+          salaryCents: 3_384_271,
+          fullCostCents: 5_787_103,
+          egCents: 5_787_103,
+        },
+        { jobs: 0, salaryCents: 0, fullCostCents: 0, egCents: 0 },
+        { jobs: 0, salaryCents: 0, fullCostCents: 0, egCents: 0 },
+      ],
+    },
+  ])
+})
+
+test('a freeze applies after every other rule, and a second freeze to what the first left', () => {
+  const result = run([
+    freeze({ years: 1 }),
+    { kind: 'cut', scope: CLASSIFIED, cutBasisPoints: 5_000 },
+    freeze({ years: 1 }),
+  ])
+  const [first, , second] = result.rules
+  if (first?.kind !== 'freeze' || second?.kind !== 'freeze') {
+    throw new Error('The first and third rules are freezes')
+  }
+  // After the cut, Avila's rate is 2,000,000, or 2,060,000 in FY27 pay: 55% of it, then 55% of the 927,000 left.
+  expect(first.byYear[0]?.salaryCents).toBe(1_133_000)
+  expect(second.byYear[0]?.salaryCents).toBe(509_850)
+  expect(result.total.salaryCents).toBe(2_000_000)
+})

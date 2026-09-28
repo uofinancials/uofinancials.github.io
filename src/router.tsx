@@ -23,22 +23,22 @@ import {
   raiseTermsQuery,
   summaryQuery,
 } from '@/data/queries'
-import { resolveCensusYear } from '@/lib/census-search'
-import {
-  departmentSearchSchema,
-  departmentsSearchSchema,
-} from '@/lib/department-search'
-import { homeSearchSchema } from '@/lib/home'
+import { resolveCensusYear } from '@/lib/census/search'
 import {
   fiscalYearForCensus,
   fiscalYearOf,
   selectOverviewSources,
-} from '@/lib/overview'
-import { peopleSearchSchema, personSearchSchema } from '@/lib/people-search'
-import { eliminationFiscalYear } from '@/lib/scenario-eliminate'
-import { firstSavingsYear } from '@/lib/scenario-outlook'
-import { scenarioSearchSchema } from '@/lib/scenario-search'
-import { isSummaryView, trendsSearchSchema } from '@/lib/trends-search'
+} from '@/lib/census/totals'
+import {
+  departmentSearchSchema,
+  departmentsSearchSchema,
+} from '@/lib/departments/search'
+import { homeSearchSchema } from '@/lib/home/home'
+import { peopleSearchSchema, personSearchSchema } from '@/lib/people/search'
+import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
+import { firstSavingsYear } from '@/lib/scenario/outlook'
+import { scenarioSearchSchema } from '@/lib/scenario/search'
+import { isSummaryView, trendsSearchSchema } from '@/lib/trends/search'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({

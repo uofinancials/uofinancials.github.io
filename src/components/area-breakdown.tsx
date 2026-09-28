@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { AreaFigure } from '@/lib/department-table'
-import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
-import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home'
+import type { AreaFigure } from '@/lib/departments/table'
+import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home/home'
+import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const SHOWN_AREAS = 10

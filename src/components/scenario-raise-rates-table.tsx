@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import { sourceKey } from '@/data/cited-source'
-import type { RaiseRate } from '@/lib/scenario'
-import { toPercent } from '@/lib/scenario-search'
+import type { RaiseRate } from '@/lib/scenario/scenario'
+import { toPercent } from '@/lib/scenario/search'
 import { NUMBER_CELL } from '@/lib/utils'
 
 function Sources({ rate }: { rate: RaiseRate }) {

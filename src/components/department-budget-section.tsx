@@ -9,13 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { BudgetBreakdown, DepartmentBudget } from '@/lib/department-budget'
-import { budgetYearLabel } from '@/lib/department-search'
+import type {
+  BudgetBreakdown,
+  DepartmentBudget,
+} from '@/lib/departments/budget'
+import { budgetYearLabel } from '@/lib/departments/search'
 import {
   formatCompactDollars,
   formatDollars,
   formatOrBlank,
-} from '@/lib/format'
+} from '@/lib/shared/format'
 import { cn, NUMBER_CELL } from '@/lib/utils'
 
 const BREAKDOWN_OPTIONS = [

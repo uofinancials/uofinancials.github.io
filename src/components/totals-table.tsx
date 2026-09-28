@@ -7,13 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { GroupTotals, Totals } from '@/lib/census/totals'
 import {
   formatCount,
   formatDollars,
   formatFte,
   formatShare,
-} from '@/lib/format'
-import type { GroupTotals, Totals } from '@/lib/overview'
+} from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const NUMBER_HEADS = ['People', 'Jobs', 'FTE', 'Salary spend', 'Share']

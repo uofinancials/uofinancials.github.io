@@ -1,5 +1,5 @@
-import type { ListColumn } from '@/lib/people-search'
-import { LIST_FIELDS } from '@/lib/person-fields'
+import { LIST_FIELDS } from '@/lib/people/person-fields'
+import type { ListColumn } from '@/lib/people/search'
 
 /** Checkboxes for the people list's optional columns, in table order, behind a toggle. */
 export function ColumnPicker({

@@ -5,17 +5,17 @@ import { budgetYearSchema } from '../../src/data/budget.ts'
 import { fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
+import { isClassifiedTemp, summarize } from '../../src/lib/census/totals.ts'
 import {
   departmentYears,
   toDepartmentCensus,
-} from '../../src/lib/department-jobs.ts'
-import { areaFigures } from '../../src/lib/department-table.ts'
+} from '../../src/lib/departments/jobs.ts'
+import { areaFigures } from '../../src/lib/departments/table.ts'
 import {
   headlineFigures,
   jobsByCensus,
   topPaidJobs,
-} from '../../src/lib/home.ts'
-import { isClassifiedTemp, summarize } from '../../src/lib/overview.ts'
+} from '../../src/lib/home/home.ts'
 import {
   budgetDataPath,
   DATA_DIR,

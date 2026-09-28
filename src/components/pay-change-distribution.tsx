@@ -1,15 +1,15 @@
 import { BinTable } from '@/components/bin-table'
 import { SelectField } from '@/components/select-field'
 import { StackedBarChart } from '@/components/stacked-bar-chart'
-import { formatCount } from '@/lib/format'
+import { stackedCounts } from '@/lib/census/groups'
+import { formatCount } from '@/lib/shared/format'
 import {
   type ChangeDistribution,
   changeBinLabel,
   changeBinRange,
   pairLabel,
-} from '@/lib/pay-changes'
-import { stackedCounts } from '@/lib/trend-groups'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/trends/pay-changes'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
 /** The chosen census pair's jobs by change in rate, as a stacked histogram and a table. */
 export function PayChangeDistribution({

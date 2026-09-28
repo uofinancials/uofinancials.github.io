@@ -12,15 +12,18 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { PayChanges } from '@/components/use-pay-changes'
-import { RANK_RENAMES, TITLE_ABBREVIATIONS } from '@/lib/pay-change-labels'
-import { pairLabel } from '@/lib/pay-changes'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+import {
+  RANK_RENAMES,
+  TITLE_ABBREVIATIONS,
+} from '@/lib/trends/pay-change-labels'
+import { pairLabel } from '@/lib/trends/pay-changes'
 import {
   CHANGE_LABEL,
   linesLabel,
   type TrendsSearch,
   type TrendView,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
 const RATE_NOTE =
   'A change is between the annual salary rates UO publishes for one job in two consecutive Fall censuses. It includes every increase that took effect between the two census dates, so an increase effective before a census counts in the pair ending there. Rates are not pay, and dollars are as published, not adjusted for inflation.'

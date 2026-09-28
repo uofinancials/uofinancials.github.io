@@ -1,0 +1,228 @@
+import { expect, test } from 'vitest'
+import { EXEC_OTHER_CATEGORY } from '@/lib/census/groups'
+import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import {
+  buildTrends,
+  filterNames,
+  medianRateCents,
+  type TrendFilter,
+} from './trends'
+
+const ALL: TrendFilter = {
+  kind: 'all',
+  group: null,
+  dept: null,
+  position: null,
+  jobs: null,
+  from: 2014,
+  to: 2025,
+}
+const temp = classifiedJob({
+  name: 'Temp, Tia',
+  apptPercent: 10,
+  annualSalaryRateCents: 41_600_000,
+  positionClass: { code: 'TS4017', title: null },
+})
+
+test('the median of an even count is the mean of the middle two, rounded to the cent', () => {
+  expect(medianRateCents([3, 1, 2])).toBe(2)
+  expect(medianRateCents([4, 1, 2, 7])).toBe(3)
+  expect(medianRateCents([1, 4])).toBe(3)
+  expect(medianRateCents([])).toBeNull()
+})
+
+test('each group gets a point per census; temps count in FTE only; spend needs three paid jobs and median three primary rates', () => {
+  const trends = buildTrends(
+    [
+      {
+        year: 2025,
+        records: [
+          unclassifiedJob({ annualSalaryRateCents: 9_000_000 }),
+          unclassifiedJob({
+            jobType: 'Overload',
+            apptPercent: 10,
+            annualSalaryRateCents: 1_000_000,
+          }),
+          classifiedJob(),
+          temp,
+        ],
+      },
+      { year: 2024, records: [unclassifiedJob({ apptPercent: 50 })] },
+    ],
+    ALL,
+  )
+  expect(trends.series.map((line) => line.key)).toEqual([
+    'Faculty',
+    'Classified staff',
+    'Overloads',
+    'Classified temporaries',
+  ])
+  expect(trends.series[0]?.points).toEqual([
+    {
+      year: 2024,
+      jobs: 1,
+      spendCents: null,
+      fteHundredths: 50,
+      medianRateCents: null,
+    },
+    {
+      year: 2025,
+      jobs: 1,
+      spendCents: null,
+      fteHundredths: 100,
+      medianRateCents: null,
+    },
+  ])
+  expect(trends.series[2]?.points[0]).toMatchObject({
+    year: 2024,
+    fteHundredths: null,
+  })
+  expect(trends.series[2]?.points[1]?.medianRateCents).toBeNull()
+  expect(trends.series[3]?.points[1]).toEqual({
+    year: 2025,
+    jobs: 1,
+    spendCents: null,
+    fteHundredths: 10,
+    medianRateCents: null,
+  })
+  expect(trends.total[1]).toEqual({
+    year: 2025,
+    jobs: 4,
+    spendCents: 9_000_000 + 100_000 + 5_000_000,
+    fteHundredths: 100 + 10 + 100 + 10,
+    medianRateCents: null,
+  })
+})
+
+test('an opened group lines up its published categories; kind and range filter first', () => {
+  const years = [
+    {
+      year: 2018,
+      records: [
+        unclassifiedJob({ eeoCategory: 'Senior Administrators' }),
+        unclassifiedJob({ eeoCategory: 'Other Professionals' }),
+        unclassifiedJob({ eeoCategory: 'Faculty' }),
+      ],
+    },
+    {
+      year: 2017,
+      records: [unclassifiedJob({ eeoCategory: 'Other Professionals' })],
+    },
+  ]
+  const opened = buildTrends(years, {
+    ...ALL,
+    group: 'Admins and professionals',
+  })
+  expect(opened.series.map((line) => line.key)).toEqual([
+    'Other Professionals',
+    'Senior Administrators',
+  ])
+  expect(opened.series[1]?.points.map((point) => point.fteHundredths)).toEqual([
+    null,
+    100,
+  ])
+  expect(opened.total.map((point) => point.fteHundredths)).toEqual([100, 200])
+  expect(buildTrends(years, { ...ALL, from: 2018 }).total).toHaveLength(1)
+  expect(buildTrends(years, { ...ALL, kind: 'classified' }).series).toEqual([])
+})
+
+test('opened Executives puts jobs there by the EXEC grade alone on one line', () => {
+  const opened = buildTrends(
+    [
+      {
+        year: 2018,
+        records: [
+          unclassifiedJob({ eeoCategory: 'Executive Admins' }),
+          unclassifiedJob({
+            eeoCategory: 'Executive Admins',
+            oaSalaryGrade: 'EXEC',
+          }),
+          unclassifiedJob({
+            eeoCategory: 'Senior Administrators',
+            oaSalaryGrade: 'EXEC',
+          }),
+          unclassifiedJob({ eeoCategory: null, oaSalaryGrade: 'EXEC' }),
+          unclassifiedJob({ eeoCategory: 'Senior Administrators' }),
+        ],
+      },
+    ],
+    { ...ALL, group: 'Executives' },
+  )
+  expect(
+    opened.series.map(({ key, points }) => [key, points[0]?.jobs]),
+  ).toEqual([
+    [EXEC_OTHER_CATEGORY, 2],
+    ['Executive Admins', 2],
+  ])
+})
+
+test('the pay department, class or rank, and jobs filters keep only matching jobs, in every measure', () => {
+  const physics = { code: '222222', name: 'Physics' }
+  const years = [
+    {
+      year: 2025,
+      records: [
+        unclassifiedJob({ payDepartment: physics, rank: 'Professor' }),
+        unclassifiedJob({
+          payDepartment: physics,
+          rank: 'Professor',
+          annualSalaryRateCents: 7_000_000,
+        }),
+        unclassifiedJob({ payDepartment: physics }),
+        unclassifiedJob({ rank: 'Professor' }),
+        classifiedJob({ payDepartment: physics }),
+      ],
+    },
+  ]
+  const jobs = (filter: Partial<TrendFilter>) =>
+    buildTrends(years, { ...ALL, ...filter }).total[0]?.jobs
+  expect(jobs({ dept: '222222' })).toBe(4)
+  expect(jobs({ position: 'rank Professor' })).toBe(3)
+  expect(jobs({ position: 'class 0104' })).toBe(1)
+  expect(jobs({ jobs: new Set(years[0]?.records.slice(0, 2)) })).toBe(2)
+  const both = buildTrends(years, {
+    ...ALL,
+    dept: '222222',
+    position: 'rank Professor',
+  })
+  expect(both.total[0]).toMatchObject({
+    jobs: 2,
+    spendCents: null,
+    fteHundredths: 200,
+  })
+  expect(both.series.map(({ key }) => key)).toEqual(['Faculty'])
+})
+
+test('a filter names its department and class or rank from the first job with them, or keeps the code', () => {
+  const years = [
+    census(2025, [
+      unclassifiedJob({
+        rank: 'Professor',
+        payDepartment: { code: '222222', name: 'Physics' },
+      }),
+    ]),
+  ]
+  expect(
+    filterNames(years, { dept: '222222', position: 'rank Professor' }),
+  ).toEqual({ dept: 'Physics (222222)', position: 'Professor' })
+  expect(filterNames(years, { dept: '000000', position: null })).toEqual({
+    dept: '000000',
+    position: null,
+  })
+})
+
+test('a range drops the lines with no job in it and keeps the others in order', () => {
+  const years = [
+    {
+      year: 2016,
+      records: [unclassifiedJob({ eeoCategory: null }), classifiedJob()],
+    },
+    { year: 2017, records: [unclassifiedJob(), classifiedJob()] },
+  ]
+  const keys = (from: number) =>
+    buildTrends(years, { ...ALL, from, to: 2017 }).series.map(({ key }) => key)
+  expect(keys(2017)).toEqual(
+    keys(2016).filter((key) => key !== 'Category not published'),
+  )
+  expect(keys(2016)).toContain('Category not published')
+})

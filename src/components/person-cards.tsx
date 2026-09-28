@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { PersonRun } from '@/lib/people/person-lookup'
+import { runCards } from '@/lib/people/person-summary'
 import {
   formatChange,
   formatDollars,
   formatOrBlank,
   formatYears,
-} from '@/lib/format'
-import type { PersonRun } from '@/lib/person-lookup'
-import { runCards } from '@/lib/person-summary'
+} from '@/lib/shared/format'
 
 function Figure({
   label,

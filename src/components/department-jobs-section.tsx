@@ -13,26 +13,26 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import { type StaffKind, staffKindSchema } from '@/data/fall'
+import { SPEND_METHOD } from '@/lib/census/totals'
 import {
   AREA_PLACEMENT_METHOD,
   type AreaPlacement,
   type ClassRow,
-} from '@/lib/department-jobs'
-import type { DepartmentSearch, DepartmentView } from '@/lib/department-search'
+} from '@/lib/departments/jobs'
+import type { DepartmentSearch, DepartmentView } from '@/lib/departments/search'
 import {
   formatCount,
   formatDollars,
   formatFte,
   formatOrBlank,
-} from '@/lib/format'
-import { SPEND_METHOD } from '@/lib/overview'
-import type { Trends } from '@/lib/trends'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/shared/format'
 import {
   METRIC_INFO,
   METRIC_OPTIONS,
   STAFF_KIND_OPTIONS,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
+import type { Trends } from '@/lib/trends/trends'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const STAFF_KINDS = ['unclassified', 'classified'] as const

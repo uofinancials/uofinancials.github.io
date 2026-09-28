@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
-import { formatDollars, formatOrBlank, formatWeeks } from '@/lib/format'
+import { formatDollars, formatOrBlank, formatWeeks } from '@/lib/shared/format'
 import { cn, NUMBER_CELL } from '@/lib/utils'
 
 function Row({

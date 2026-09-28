@@ -6,41 +6,41 @@ import { fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
-import { ORG_LEVEL_AREA } from '../../src/lib/areas.ts'
-import { departmentBudget } from '../../src/lib/department-budget.ts'
-import {
-  departmentYears,
-  toDepartmentCensuses,
-} from '../../src/lib/department-jobs.ts'
+import { ORG_LEVEL_AREA } from '../../src/lib/census/areas.ts'
 import {
   HAND_AREAS,
   type HandArea,
   handAreasFor,
-} from '../../src/lib/hand-areas.ts'
-import { placementBases } from '../../src/lib/home.ts'
-import { isClassifiedTemp, summarize } from '../../src/lib/overview.ts'
+} from '../../src/lib/census/hand-areas.ts'
+import { buildDistribution } from '../../src/lib/census/salary-distribution.ts'
+import { isClassifiedTemp, summarize } from '../../src/lib/census/totals.ts'
+import { departmentBudget } from '../../src/lib/departments/budget.ts'
 import {
-  changeCounts,
-  continuingPairs,
-  payChangeTrends,
-} from '../../src/lib/pay-changes.ts'
-import { peerMedianFor, peerMedians } from '../../src/lib/peer-median.ts'
+  departmentYears,
+  toDepartmentCensuses,
+} from '../../src/lib/departments/jobs.ts'
+import { placementBases } from '../../src/lib/home/home.ts'
 import {
   countNames,
   filterPeopleJobs,
   pageOf,
   resolvePeopleView,
   sortJobs,
-} from '../../src/lib/people-list.ts'
-import { findPersonLinks } from '../../src/lib/person-links.ts'
-import { indexPeople } from '../../src/lib/person-lookup.ts'
-import { runCards } from '../../src/lib/person-summary.ts'
+} from '../../src/lib/people/list.ts'
+import { peerMedianFor, peerMedians } from '../../src/lib/people/peer-median.ts'
+import { findPersonLinks } from '../../src/lib/people/person-links.ts'
+import { indexPeople } from '../../src/lib/people/person-lookup.ts'
+import { runCards } from '../../src/lib/people/person-summary.ts'
+import {
+  changeCounts,
+  continuingPairs,
+  payChangeTrends,
+} from '../../src/lib/trends/pay-changes.ts'
 import {
   censusWindow,
   raiseComparison,
-} from '../../src/lib/raise-comparison.ts'
-import { buildDistribution } from '../../src/lib/salary-distribution.ts'
-import { buildTrends } from '../../src/lib/trends.ts'
+} from '../../src/lib/trends/raise-comparison.ts'
+import { buildTrends } from '../../src/lib/trends/trends.ts'
 import {
   identityProblems,
   totalExpenditureCents,

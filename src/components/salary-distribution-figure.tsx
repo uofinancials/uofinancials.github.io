@@ -1,14 +1,14 @@
 import { BinTable } from '@/components/bin-table'
 import { StackedBarChart } from '@/components/stacked-bar-chart'
-import { formatCount, formatDollars, formatOrBlank } from '@/lib/format'
+import { stackedCounts, type TrendGroup } from '@/lib/census/groups'
 import {
   binLabel,
   binRange,
   type Distribution,
   PERCENTILES,
   type SalaryBin,
-} from '@/lib/salary-distribution'
-import { stackedCounts, type TrendGroup } from '@/lib/trend-groups'
+} from '@/lib/census/salary-distribution'
+import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
 
 function Summary({
   distribution,

@@ -7,8 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatCount } from '@/lib/format'
-import type { GroupCounts, TrendGroup } from '@/lib/trend-groups'
+import type { GroupCounts, TrendGroup } from '@/lib/census/groups'
+import { formatCount } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** A histogram's numbers: one row per bin, its count in each group and in total. */

@@ -9,10 +9,10 @@ import {
   filterPairs,
   payChangeDistribution,
   payChangeTrends,
-} from '@/lib/pay-changes'
-import { viewRaiseComparison } from '@/lib/raise-comparison'
-import type { TrendFilter } from '@/lib/trends'
-import { CHANGE_METRIC, type TrendView } from '@/lib/trends-search'
+} from '@/lib/trends/pay-changes'
+import { viewRaiseComparison } from '@/lib/trends/raise-comparison'
+import { CHANGE_METRIC, type TrendView } from '@/lib/trends/search'
+import type { TrendFilter } from '@/lib/trends/trends'
 
 const pairsByYears = new WeakMap<FallYear[], ContinuingPair[]>()
 

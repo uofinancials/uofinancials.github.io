@@ -1,4 +1,4 @@
-import { formatDollars, formatShare } from '@/lib/format'
+import { formatDollars, formatShare } from '@/lib/shared/format'
 
 /** A year's E&G savings before freezes, as a share of the Board's reduction estimate. */
 export function ScenarioSavingsTotal({

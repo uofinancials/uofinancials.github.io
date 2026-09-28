@@ -4,7 +4,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import { formatCount } from '@/lib/format'
+import { formatCount } from '@/lib/shared/format'
 import { lineColor } from './line-color'
 
 const STACK = 'stack'

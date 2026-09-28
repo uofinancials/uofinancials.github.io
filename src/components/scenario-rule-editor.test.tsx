@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
-import { ANY_SCOPE, type Rule } from '@/lib/scenario'
+import { ANY_SCOPE, type Rule } from '@/lib/scenario/scenario'
 import { ScenarioRuleEditor } from './scenario-rule-editor'
 
 const RULE: Rule = {

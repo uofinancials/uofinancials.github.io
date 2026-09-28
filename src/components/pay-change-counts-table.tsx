@@ -6,9 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatCount, formatShare, NO_VALUE } from '@/lib/format'
-import { type ChangeCounts, pairLabel } from '@/lib/pay-changes'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+import { formatCount, formatShare, NO_VALUE } from '@/lib/shared/format'
+import { type ChangeCounts, pairLabel } from '@/lib/trends/pay-changes'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const COLUMNS: {

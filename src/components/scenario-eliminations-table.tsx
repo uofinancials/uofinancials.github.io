@@ -8,9 +8,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { fiscalYearLabel } from '@/data/budget'
-import { formatCount, formatDollars } from '@/lib/format'
-import type { EliminatedTotal, EliminationResult } from '@/lib/scenario'
-import { smallReachNote } from '@/lib/scenario-labels'
+import { smallReachNote } from '@/lib/scenario/labels'
+import type {
+  EliminatedTotal,
+  EliminationResult,
+} from '@/lib/scenario/scenario'
+import { formatCount, formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const HEADS = [

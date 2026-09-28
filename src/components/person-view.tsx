@@ -5,15 +5,19 @@ import { PersonRatesFigure } from '@/components/person-rates-figure'
 import { PersonRecordsTable } from '@/components/person-records-table'
 import { SourceCitation } from '@/components/source-citation'
 import { tabLinkClass } from '@/components/tab-link-class'
-import { peerGroupOf } from '@/lib/peer-group'
-import type { PeerMedians } from '@/lib/peer-median'
+import { peerGroupOf } from '@/lib/people/peer-group'
+import type { PeerMedians } from '@/lib/people/peer-median'
 import {
   type Person,
   type PersonYear,
   personYearsOf,
   primaryJobOf,
-} from '@/lib/person-lookup'
-import { payDepartmentsOf, positionsOf, runOf } from '@/lib/person-summary'
+} from '@/lib/people/person-lookup'
+import {
+  payDepartmentsOf,
+  positionsOf,
+  runOf,
+} from '@/lib/people/person-summary'
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =

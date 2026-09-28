@@ -11,8 +11,8 @@ import { peopleIndexQuery } from '@/components/people-index-query'
 import { PersonView } from '@/components/person-view'
 import { SourceCitation } from '@/components/source-citation'
 import { fallYearQuery, toData } from '@/data/queries'
-import { resolveCensusYear } from '@/lib/census-search'
-import { personOf, yearsOf } from '@/lib/person-lookup'
+import { resolveCensusYear } from '@/lib/census/search'
+import { personOf, yearsOf } from '@/lib/people/person-lookup'
 
 const BACK_CLASS = 'text-sm underline'
 

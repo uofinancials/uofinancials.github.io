@@ -10,23 +10,23 @@ import {
   outlookQuery,
   raiseTermsQuery,
 } from '@/data/queries'
+import { fiscalYearOf } from '@/lib/census/totals'
 import {
   type DepartmentCensus,
   toDepartmentCensus,
-} from '@/lib/department-jobs'
-import { egShares } from '@/lib/eg-share'
-import { fiscalYearOf } from '@/lib/overview'
-import type { Rule } from '@/lib/scenario'
-import { freezeHistoryCensuses } from '@/lib/scenario-freeze'
-import { eliminationRows, scenarioResultRows } from '@/lib/scenario-labels'
+} from '@/lib/departments/jobs'
+import { egShares } from '@/lib/scenario/eg-share'
+import { freezeHistoryCensuses } from '@/lib/scenario/freeze'
+import { eliminationRows, scenarioResultRows } from '@/lib/scenario/labels'
 import {
   baselines,
   firstSavingsYear,
   outlookRows,
   projectScenario,
-} from '@/lib/scenario-outlook'
-import { raiseRates as ratesOfYear } from '@/lib/scenario-raises'
-import { parseRules, resolveBaselineIndex } from '@/lib/scenario-search'
+} from '@/lib/scenario/outlook'
+import { raiseRates as ratesOfYear } from '@/lib/scenario/raises'
+import type { Rule } from '@/lib/scenario/scenario'
+import { parseRules, resolveBaselineIndex } from '@/lib/scenario/search'
 
 /** The route's census joined to its budget, with the rates, outlook, and E&G shares. */
 function useScenarioData() {

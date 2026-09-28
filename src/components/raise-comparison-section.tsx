@@ -14,11 +14,11 @@ import {
   formatCount,
   formatOrBlank,
   formatPoints,
-} from '@/lib/format'
-import { pairLabel } from '@/lib/pay-changes'
-import type { RaiseComparison } from '@/lib/raise-comparison'
-import { RAISE_ROW_METHOD, UNPLACED_JOBS } from '@/lib/raise-groups'
-import { MIN_JOBS_SHOWN } from '@/lib/trends'
+} from '@/lib/shared/format'
+import { pairLabel } from '@/lib/trends/pay-changes'
+import type { RaiseComparison } from '@/lib/trends/raise-comparison'
+import { RAISE_ROW_METHOD, UNPLACED_JOBS } from '@/lib/trends/raise-groups'
+import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const NO_TERM = 'No term recorded'

@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { manifestQuery } from '@/data/queries'
-import { citeSource, type SourceRef } from '@/lib/citation'
+import { citeSource, type SourceRef } from '@/lib/shared/citation'
 
 /** The caption under a figure: its source, retrieval date, and how it was computed. */
 export function SourceCitation({

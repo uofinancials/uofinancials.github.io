@@ -3,16 +3,16 @@ import { AreaSelect } from '@/components/area-select'
 import { DraftInput } from '@/components/draft-input'
 import { SelectField } from '@/components/select-field'
 import { staffKindSchema } from '@/data/fall'
-import type { IndexArea } from '@/lib/department-index'
-import { TERMS } from '@/lib/salary-distribution'
-import type { ScenarioScope } from '@/lib/scenario'
-import { TREND_GROUPS } from '@/lib/trend-groups'
+import { TREND_GROUPS } from '@/lib/census/groups'
+import { TERMS } from '@/lib/census/salary-distribution'
+import type { IndexArea } from '@/lib/departments/codes'
+import type { ScenarioScope } from '@/lib/scenario/scenario'
 import {
   ALL_GROUPS,
   GROUP_OPTIONS,
   STAFF_KIND_OPTIONS,
   TERM_OPTIONS,
-} from '@/lib/trends-search'
+} from '@/lib/trends/search'
 
 const ALL = 'all'
 

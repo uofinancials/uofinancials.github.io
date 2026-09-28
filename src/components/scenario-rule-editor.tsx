@@ -4,17 +4,17 @@ import { AreaSelect } from '@/components/area-select'
 import { DraftInput } from '@/components/draft-input'
 import { ScenarioScopeFields } from '@/components/scenario-scope-fields'
 import { SelectField } from '@/components/select-field'
-import type { IndexArea } from '@/lib/department-index'
-import { CENTS_PER_DOLLAR } from '@/lib/format'
-import type { Rule } from '@/lib/scenario'
-import { describeRule } from '@/lib/scenario-labels'
+import type { IndexArea } from '@/lib/departments/codes'
+import { describeRule } from '@/lib/scenario/labels'
+import type { Rule } from '@/lib/scenario/scenario'
 import {
   parseCapText,
   parseDollarsText,
   parsePercentText,
   parseYearsText,
   toPercent,
-} from '@/lib/scenario-search'
+} from '@/lib/scenario/search'
+import { CENTS_PER_DOLLAR } from '@/lib/shared/format'
 
 const AFTER_FREEZE_OPTIONS: [string, string][] = [
   ['refill', 'Refilled'],

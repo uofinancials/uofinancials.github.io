@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { CONTROL_CLASS, FIELD_CLASS } from '@/components/select-field'
-import type { IndexArea } from '@/lib/department-index'
+import type { IndexArea } from '@/lib/departments/codes'
 
 /** A department or area picker: `children` options first, then each area's group, led by "All of" when the area has a code. */
 export function AreaSelect({
