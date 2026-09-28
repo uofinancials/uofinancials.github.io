@@ -1,4 +1,5 @@
 import { ReferenceLine } from 'recharts'
+import { RankedBars } from '@/components/charts/ranked-bars'
 import { SeriesChart } from '@/components/charts/series-chart'
 import { RadioField } from '@/components/fields/radio-field'
 import { PageSection } from '@/components/layout/page-section'
@@ -105,13 +106,14 @@ export function GrowthSection({
   onMetric: (metric: ReportMetric) => void
 }) {
   const { lines, hidden, unindexed } = indexedGroups(trends, metric)
+  const rows = changeTable(trends)
   const labels = trends.total.map(({ year }) => String(year))
   const title = `${METRIC_INFO[metric].label} by group, Fall ${from} = 100`
   const note = unindexedNote(unindexed, metric, from)
   const isRestructureShown = from < RESTRUCTURE_YEAR && to >= RESTRUCTURE_YEAR
   return (
     <PageSection id="groups-grew" title="Which groups grew?">
-      <p>{growthAnswer(changeTable(trends), metric, from)}</p>
+      <p>{growthAnswer(rows, metric, from)}</p>
       <RadioField
         legend="Measure"
         name="growth"
@@ -119,23 +121,35 @@ export function GrowthSection({
         options={METRIC_OPTIONS}
         onSelect={onMetric}
       />
-      <SeriesChart
-        labels={labels}
-        series={lines}
-        hidden={hidden}
-        format={formatIndex}
-        formatAxis={formatIndex}
-        label={title}
-        marker={
-          isRestructureShown
-            ? { x: String(RESTRUCTURE_YEAR), label: 'Categories restructured' }
-            : undefined
-        }
-        hasEndLabels
-        isZeroBased={false}
-      >
-        <ReferenceLine y={INDEX_BASE} stroke="var(--foreground)" />
-      </SeriesChart>
+      <RankedBars
+        items={rows
+          .filter(({ key }) => key !== UNPAID_GROUP)
+          .map((row) => ({ key: row.key, change: row[metric] }))}
+        label={`Change in ${METRIC_INFO[metric].noun} by group, Fall ${from} to Fall ${to}`}
+        className="md:hidden"
+      />
+      <div className="hidden md:block">
+        <SeriesChart
+          labels={labels}
+          series={lines}
+          hidden={hidden}
+          format={formatIndex}
+          formatAxis={formatIndex}
+          label={title}
+          marker={
+            isRestructureShown
+              ? {
+                  x: String(RESTRUCTURE_YEAR),
+                  label: 'Categories restructured',
+                }
+              : undefined
+          }
+          hasEndLabels
+          isZeroBased={false}
+        >
+          <ReferenceLine y={INDEX_BASE} stroke="var(--foreground)" />
+        </SeriesChart>
+      </div>
       <p className="text-sm text-muted-foreground">
         {note}
         {note && ' '}

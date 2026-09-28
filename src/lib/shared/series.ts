@@ -80,3 +80,17 @@ export function spreadLabels(
   })
   return spread
 }
+
+/** Items with a change, largest first, each with its change's size as a fraction of the largest size; items without one are left out. */
+export function rankByChange(
+  items: { key: string; change: number | null }[],
+): { key: string; change: number; share: number }[] {
+  const ranked = items
+    .flatMap(({ key, change }) => (change === null ? [] : [{ key, change }]))
+    .sort((a, b) => b.change - a.change)
+  const largest = Math.max(0, ...ranked.map(({ change }) => Math.abs(change)))
+  return ranked.map((item) => ({
+    ...item,
+    share: largest === 0 ? 0 : Math.abs(item.change) / largest,
+  }))
+}

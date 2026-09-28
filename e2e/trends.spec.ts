@@ -94,7 +94,7 @@ test('a link made before the report keeps only what the report reads', async ({
   await expect(page).toHaveURL(/\/trends$/)
 })
 
-test('the question links jump to their sections, and the page does not scroll sideways at 360px', async ({
+test('on a phone the growth chart is ranked bars, the question links open and jump to their sections, and the page does not scroll sideways at 360px', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
@@ -107,6 +107,18 @@ test('the question links jump to their sections, and the page does not scroll si
   await expect(
     page.getByRole('heading', { name: 'Where did the money go?' }),
   ).toBeInViewport()
+  await expect(
+    page.getByRole('list', { name: /^Change in jobs by group/ }),
+  ).toContainText('Admins and professionals+27.0%')
+  const raises = page.getByRole('table', {
+    name: /^Median change in salary rate/,
+  })
+  await expect(raises).toBeHidden()
+  await page
+    .getByRole('navigation', { name: 'Questions on this page' })
+    .getByRole('link', { name: 'What raises did people get?' })
+    .click()
+  await expect(raises).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })

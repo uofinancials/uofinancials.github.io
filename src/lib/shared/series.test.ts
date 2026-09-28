@@ -3,6 +3,7 @@ import {
   belowZeroMarker,
   changeOf,
   isAnyBelowZero,
+  rankByChange,
   shareOfLargest,
   sparseNote,
   spreadLabels,
@@ -61,4 +62,19 @@ test('labels spread to keep a gap, in their given order, and stay within the ran
   expect(spreadLabels([50, 10, 12], 10, [0, 100])).toEqual([50, 10, 20])
   expect(spreadLabels([95, 98], 10, [0, 100])).toEqual([90, 100])
   expect(spreadLabels([-5], 10, [0, 100])).toEqual([0])
+})
+
+test('changes rank largest first, sized against the largest size, without the missing', () => {
+  expect(
+    rankByChange([
+      { key: 'A', change: 0.1 },
+      { key: 'B', change: null },
+      { key: 'C', change: -0.4 },
+      { key: 'D', change: 0.2 },
+    ]),
+  ).toEqual([
+    { key: 'D', change: 0.2, share: 0.5 },
+    { key: 'A', change: 0.1, share: 0.25 },
+    { key: 'C', change: -0.4, share: 1 },
+  ])
 })

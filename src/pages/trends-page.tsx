@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { SelectField } from '@/components/fields/select-field'
-import { PageSection } from '@/components/layout/page-section'
+import { CollapsibleSection } from '@/components/layout/collapsible-section'
 import { CompareSection } from '@/components/trends/compare-section'
 import { GroupMapping } from '@/components/trends/group-mapping'
 import { GrowthSection } from '@/components/trends/growth-section'
@@ -24,6 +24,12 @@ const QUESTIONS = [
   ['groups', 'How are groups defined?'],
 ] as const
 
+/** Opens a section a phone shows closed, so a link to it lands on its contents. */
+function openSection(id: string) {
+  const section = document.getElementById(id)
+  if (section instanceof HTMLDetailsElement) section.open = true
+}
+
 function QuestionLinks() {
   return (
     <nav aria-label="Questions on this page">
@@ -33,6 +39,7 @@ function QuestionLinks() {
             <a
               href={`#${id}`}
               className="block rounded-full border px-3 py-1.5 hover:bg-muted"
+              onClick={() => openSection(id)}
             >
               {question}
             </a>
@@ -140,13 +147,13 @@ export function TrendsPage() {
         fiscalYears={fiscalYears}
         onChange={handleChange}
       />
-      <PageSection id="groups" title="How are groups defined?">
+      <CollapsibleSection id="groups" title="How are groups defined?">
         <p className="text-sm text-muted-foreground">
           UO restructured its EEO categories in 2018, 2019, and 2021. This site
           groups them so each group means the same jobs in every year.
         </p>
         <GroupMapping />
-      </PageSection>
+      </CollapsibleSection>
     </div>
   )
 }

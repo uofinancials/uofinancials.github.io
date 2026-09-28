@@ -67,14 +67,14 @@ export function compareRows(
     .sort((a, b) => b.jobs - a.jobs || a.name.localeCompare(b.name))
 }
 
-/** The first line's change in the measure over the range, against the others'. */
-export function compareAnswer(
+/** Each line's change in the measure from the first census in the range to the last. */
+export function lineChanges(
   lines: CompareLine[],
   metric: ReportMetric,
   { from, to }: { from: number; to: number },
-): string | null {
-  const { pick, noun } = METRIC_INFO[metric]
-  const changes = lines.map(({ key, points }) => {
+): { key: string; change: number | null }[] {
+  const { pick } = METRIC_INFO[metric]
+  return lines.map(({ key, points }) => {
     const shown = inRange(points, from, to)
     const first = shown[0]
     const last = shown.at(-1)
@@ -83,12 +83,20 @@ export function compareAnswer(
       change: first && last ? changeOf(pick(first), pick(last)) : null,
     }
   })
-  const [subject, ...others] = changes
+}
+
+/** The first line's change in the measure over the range, against the others'. */
+export function compareAnswer(
+  lines: CompareLine[],
+  metric: ReportMetric,
+  range: { from: number; to: number },
+): string | null {
+  const [subject, ...others] = lineChanges(lines, metric, range)
   if (!subject || subject.change === null) return null
   const against = others.flatMap(({ key, change }) =>
     change === null ? [] : [`${formatChange(change)} for ${key}`],
   )
-  const base = `${subject.key}: ${noun} ${formatChange(subject.change)} since Fall ${from}`
+  const base = `${subject.key}: ${METRIC_INFO[metric].noun} ${formatChange(subject.change)} since Fall ${range.from}`
   return against.length === 0
     ? `${base}.`
     : `${base}, against ${against.join(' and ')}.`

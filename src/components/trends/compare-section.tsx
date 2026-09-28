@@ -1,9 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { RankedBars } from '@/components/charts/ranked-bars'
 import { SeriesChart } from '@/components/charts/series-chart'
 import { RadioField } from '@/components/fields/radio-field'
 import { SelectField } from '@/components/fields/select-field'
-import { PageSection } from '@/components/layout/page-section'
+import { CollapsibleSection } from '@/components/layout/collapsible-section'
 import { Sources } from '@/components/layout/sources'
 import {
   Table,
@@ -30,6 +31,7 @@ import {
   compareAnswer,
   compareLines,
   compareRows,
+  lineChanges,
 } from '@/lib/trends/compare'
 import { unindexedNote } from '@/lib/trends/report-text'
 import {
@@ -132,16 +134,23 @@ function CompareChart({
   return (
     <>
       <p>{compareAnswer(lines, metric, range)}</p>
-      <SeriesChart
-        labels={labels ?? []}
-        series={indexed.lines}
-        format={formatIndex}
-        formatAxis={formatIndex}
-        label={`${METRIC_INFO[metric].label}, Fall ${range.from} = 100`}
-        hasEndLabels
-        isZeroBased={false}
-        className="h-80"
+      <RankedBars
+        items={lineChanges(lines, metric, range)}
+        label={`Change in ${METRIC_INFO[metric].noun}, Fall ${range.from} to Fall ${range.to}`}
+        className="md:hidden"
       />
+      <div className="hidden md:block">
+        <SeriesChart
+          labels={labels ?? []}
+          series={indexed.lines}
+          format={formatIndex}
+          formatAxis={formatIndex}
+          label={`${METRIC_INFO[metric].label}, Fall ${range.from} = 100`}
+          hasEndLabels
+          isZeroBased={false}
+          className="h-80"
+        />
+      </div>
       {note && <p className="text-sm text-muted-foreground">{note}</p>}
     </>
   )
@@ -194,6 +203,34 @@ function AreaCompare({
   )
 }
 
+function EveryAreaCompare({
+  areas,
+  total,
+  range,
+}: {
+  areas: CodeTrend[]
+  total: TrendPoint[]
+  range: Range
+}) {
+  return (
+    <>
+      <p>
+        Choose a college or VP area to chart it, or one of its units, against
+        the university.
+      </p>
+      <CompareTable
+        rows={compareRows(areas, range)}
+        totals={compareRows(
+          [{ code: '', name: ALL_OF_UO, points: total }],
+          range,
+        )}
+        caption={`Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`}
+        selected={null}
+      />
+    </>
+  )
+}
+
 /** One unit against its college or VP area and the university, and the area's units, or every area when none is picked. */
 export function CompareSection({
   areas,
@@ -218,7 +255,11 @@ export function CompareSection({
   const all = { key: ALL_OF_UO, points: total }
   const byName = [...areas].sort((a, b) => a.name.localeCompare(b.name))
   return (
-    <PageSection id="compare" title="How does my unit compare?">
+    <CollapsibleSection
+      id="compare"
+      title="How does my unit compare?"
+      isOpen={picked !== null}
+    >
       <div className="flex flex-wrap items-end gap-4">
         <SelectField
           label="College or VP area"
@@ -249,21 +290,7 @@ export function CompareSection({
           onChange={onChange}
         />
       ) : (
-        <>
-          <p>
-            Choose a college or VP area to chart it, or one of its units,
-            against the university.
-          </p>
-          <CompareTable
-            rows={compareRows(areas, range)}
-            totals={compareRows(
-              [{ code: '', name: ALL_OF_UO, points: total }],
-              range,
-            )}
-            caption={`Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`}
-            selected={null}
-          />
-        </>
+        <EveryAreaCompare areas={areas} total={total} range={range} />
       )}
       <Sources
         sources={[
@@ -279,6 +306,6 @@ export function CompareSection({
           },
         ]}
       />
-    </PageSection>
+    </CollapsibleSection>
   )
 }

@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { PageSection } from '@/components/layout/page-section'
+import { CollapsibleSection } from '@/components/layout/collapsible-section'
 import { Sources } from '@/components/layout/sources'
 import {
   Table,
@@ -44,7 +44,10 @@ export function RaisesSection({
 }) {
   const rows = raiseRows(payChanges, fromYears)
   return (
-    <PageSection id="raises" title="What raises did people who stayed get?">
+    <CollapsibleSection
+      id="raises"
+      title="What raises did people who stayed get?"
+    >
       {fromYears.length === 0 ? (
         <p>A change needs two consecutive censuses; choose a wider range.</p>
       ) : (
@@ -115,6 +118,6 @@ export function RaisesSection({
         ]}
         methods={[CHAINED_METHOD]}
       />
-    </PageSection>
+    </CollapsibleSection>
   )
 }
