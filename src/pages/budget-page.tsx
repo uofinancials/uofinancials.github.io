@@ -208,11 +208,7 @@ export function BudgetPage() {
           sources={[
             {
               kind: 'document',
-              source: {
-                url: projection.source.url,
-                document: projection.source.document,
-                retrievedOn: projection.source.retrievedOn,
-              },
+              source: { ...projection.source, location: undefined },
             },
           ]}
         />

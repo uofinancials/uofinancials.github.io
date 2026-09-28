@@ -131,8 +131,9 @@ export function PayChangesSection({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'fall-range', from: first, to: last + 1 },
+            kind: 'fall-range',
+            from: first,
+            to: last + 1,
             computed: COMPUTED,
           },
         ]}

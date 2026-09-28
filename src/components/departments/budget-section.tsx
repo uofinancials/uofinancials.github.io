@@ -149,12 +149,9 @@ export function DepartmentBudgetSection({
         <Sources
           sources={[
             {
-              kind: 'data',
-              ref: {
-                kind: 'budget-range',
-                from: first.fiscalYear,
-                to: last.fiscalYear,
-              },
+              kind: 'budget-range',
+              from: first.fiscalYear,
+              to: last.fiscalYear,
               computed: COMPUTED,
             },
           ]}

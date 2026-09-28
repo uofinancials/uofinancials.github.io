@@ -28,7 +28,7 @@ const MANIFEST: Manifest = {
   summary: null,
 }
 
-const FALL: SectionSource = { kind: 'data', ref: { kind: 'fall', year: 2025 } }
+const FALL: SectionSource = { kind: 'fall', year: 2025 }
 
 const DOCUMENT: SectionSource = {
   kind: 'document',

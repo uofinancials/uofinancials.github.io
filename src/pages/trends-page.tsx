@@ -179,8 +179,9 @@ function CensusSection({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'fall-range', from: view.from, to: view.to },
+            kind: 'fall-range',
+            from: view.from,
+            to: view.to,
             computed: COMPUTED,
           },
         ]}
@@ -220,8 +221,8 @@ export function TrendsPage() {
         <Sources
           sources={[
             {
-              kind: 'data',
-              ref: { kind: 'budget-range', ...area.fiscalYears },
+              kind: 'budget-range',
+              ...area.fiscalYears,
               computed: AREA_PLACEMENT_METHOD,
             },
           ]}

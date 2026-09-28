@@ -172,7 +172,7 @@ test('cited documents are listed once each with their term counts', () => {
 })
 
 test('summarizes a section sources by count and whether one is computed', () => {
-  const fall = { kind: 'data', ref: { kind: 'fall', year: 2025 } } as const
+  const fall = { kind: 'fall', year: 2025 } as const
   const computed = { ...fall, computed: 'a sum.' }
   const document = {
     kind: 'document',

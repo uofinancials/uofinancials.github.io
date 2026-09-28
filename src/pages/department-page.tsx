@@ -133,21 +133,15 @@ function AreaUnitsSection({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: {
-              kind: 'budget-range',
-              from: before.budget.fiscalYear,
-              to: now.budget.fiscalYear,
-            },
+            kind: 'budget-range',
+            from: before.budget.fiscalYear,
+            to: now.budget.fiscalYear,
             computed: DEPARTMENT_TABLE_METHOD,
           },
           {
-            kind: 'data',
-            ref: {
-              kind: 'fall-range',
-              from: before.census.year,
-              to: now.census.year,
-            },
+            kind: 'fall-range',
+            from: before.census.year,
+            to: now.census.year,
           },
         ]}
       />

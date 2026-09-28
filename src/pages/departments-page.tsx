@@ -114,17 +114,15 @@ export function DepartmentsPage() {
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: {
-              kind: 'budget-range',
-              from: before.fiscalYear,
-              to: now.fiscalYear,
-            },
+            kind: 'budget-range',
+            from: before.fiscalYear,
+            to: now.fiscalYear,
             computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`,
           },
           {
-            kind: 'data',
-            ref: { kind: 'fall-range', from: before.year, to: now.year },
+            kind: 'fall-range',
+            from: before.year,
+            to: now.year,
           },
         ]}
       />

@@ -152,8 +152,9 @@ export function RaiseComparisonSection({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'fall-range', from: pair, to: pair + 1 },
+            kind: 'fall-range',
+            from: pair,
+            to: pair + 1,
             computed: COMPUTED,
           },
         ]}

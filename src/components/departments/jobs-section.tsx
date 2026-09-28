@@ -221,8 +221,9 @@ export function DepartmentJobsSection({
         <Sources
           sources={[
             {
-              kind: 'data',
-              ref: { kind: 'fall-range', from: first, to: last },
+              kind: 'fall-range',
+              from: first,
+              to: last,
               computed: COMPUTED,
             },
           ]}

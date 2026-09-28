@@ -177,8 +177,8 @@ function CategorySpend({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'fall', year },
+            kind: 'fall',
+            year,
             computed: `over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`,
           },
         ]}
@@ -270,8 +270,8 @@ export function PeoplePage() {
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'fall', year: view.year },
+            kind: 'fall',
+            year: view.year,
             computed: COMPUTED,
           },
         ]}

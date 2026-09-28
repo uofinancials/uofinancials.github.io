@@ -61,26 +61,20 @@ function ScenarioSources({
     scenario
   const [first] = historyCensuses
   const sources: SectionSource[] = [
-    { kind: 'data', ref: { kind: 'fall', year: census.year } },
-    { kind: 'data', ref: { kind: 'budget', fiscalYear: census.fiscalYear } },
-  ]
-  if (eliminationBudget.fiscalYear !== census.fiscalYear) {
-    sources.push({
-      kind: 'data',
-      ref: { kind: 'budget', fiscalYear: eliminationBudget.fiscalYear },
-    })
-  }
-  sources.push({ kind: 'data', ref: { kind: 'rates' } })
-  if (history.status === 'ready' && first) {
-    sources.push({
-      kind: 'data',
-      ref: { kind: 'fall-range', from: first.year, to: census.year },
-    })
-  }
-  sources.push(
+    { kind: 'fall', year: census.year },
+    { kind: 'budget', fiscalYear: census.fiscalYear },
+    ...(eliminationBudget.fiscalYear === census.fiscalYear
+      ? []
+      : [
+          { kind: 'budget', fiscalYear: eliminationBudget.fiscalYear } as const,
+        ]),
+    { kind: 'rates' },
+    ...(history.status === 'ready' && first
+      ? [{ kind: 'fall-range', from: first.year, to: census.year } as const]
+      : []),
     { kind: 'document', source: projection.source },
     { kind: 'document', source: projection.casesSource },
-  )
+  ]
   return <Sources sources={sources} />
 }
 

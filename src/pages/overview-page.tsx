@@ -182,8 +182,9 @@ function JobsTrend({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'fall-range', from: first.year, to: last.year },
+            kind: 'fall-range',
+            from: first.year,
+            to: last.year,
             computed:
               "each census's job records, as counted in its published files; a person with two jobs counts twice.",
           },
@@ -237,14 +238,14 @@ function DepartmentsPreview({
       <Sources
         sources={[
           {
-            kind: 'data',
-            ref: { kind: 'budget', fiscalYear },
+            kind: 'budget',
+            fiscalYear,
             computed:
               "an area's budget is the Total Expenditure Budget summed over its units, as on the departments page.",
           },
           {
-            kind: 'data',
-            ref: { kind: 'fall', year },
+            kind: 'fall',
+            year,
             computed: `an area's jobs are the census jobs placed in it; ${SPEND_METHOD} Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs.`,
           },
         ]}
@@ -271,7 +272,7 @@ function PeoplePreview({ data }: { data: ReturnType<typeof useHomeData> }) {
         .
       </p>
       <TopPaidTable jobs={data.topPaid} year={year} />
-      <Sources sources={[{ kind: 'data', ref: { kind: 'fall', year } }]} />
+      <Sources sources={[{ kind: 'fall', year }]} />
     </PageSection>
   )
 }
@@ -309,14 +310,14 @@ export function OverviewPage() {
           sources={[
             { kind: 'document', source: projection.source },
             {
-              kind: 'data',
-              ref: { kind: 'budget', fiscalYear },
+              kind: 'budget',
+              fiscalYear,
               computed:
                 'the budget is the Total Expenditure Budget summed over every published line, all funds.',
             },
             {
-              kind: 'data',
-              ref: { kind: 'fall', year },
+              kind: 'fall',
+              year,
               computed: `people are distinct published names; ${SPEND_METHOD}`,
             },
           ]}

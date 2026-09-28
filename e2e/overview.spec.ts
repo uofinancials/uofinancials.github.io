@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
+import { openSources } from './sources.ts'
 
 test('the home page leads with cited headlines and the projected gap', async ({
   page,
@@ -26,7 +27,7 @@ test('the home page leads with cited headlines and the projected gap', async ({
       name: 'Projected E&G run rate and ending fund balance by fiscal year',
     }),
   ).toBeVisible()
-  await main.getByText('Sources and method (3)', { exact: true }).click()
+  await openSources(page)
   await expect(
     page.getByRole('link', { name: 'Board of Trustees meeting materials' }),
   ).not.toHaveCount(0)

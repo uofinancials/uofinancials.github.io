@@ -11,6 +11,7 @@ import { OPE_GROUP_METHOD } from '@/lib/scenario/ope-groups'
 import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario/outlook'
 import { SCENARIO_METHOD } from '@/lib/scenario/scenario'
 import { toSearchRules } from '@/lib/scenario/search'
+import type { SectionSource } from '@/lib/shared/citation'
 import { formatDollars, formatShare } from '@/lib/shared/format'
 import { RAISE_ROW_METHOD } from '@/lib/trends/raise-groups'
 
@@ -86,14 +87,13 @@ export function ScenarioAnswers({
       </details>
       <Sources
         sources={[
-          { kind: 'data', ref: { kind: 'fall', year } },
-          { kind: 'data', ref: { kind: 'budget', fiscalYear } },
-          { kind: 'data', ref: { kind: 'rates' } },
+          { kind: 'fall', year },
+          { kind: 'budget', fiscalYear },
+          { kind: 'rates' },
           { kind: 'document', source: projection.source },
-          ...raiseSources.map((source) => ({
-            kind: 'document' as const,
-            source,
-          })),
+          ...raiseSources.map(
+            (source): SectionSource => ({ kind: 'document', source }),
+          ),
         ]}
       />
     </PageSection>

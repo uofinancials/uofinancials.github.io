@@ -60,12 +60,9 @@ export function PersonPage() {
           <Sources
             sources={[
               {
-                kind: 'data',
-                ref: {
-                  kind: 'fall-range',
-                  from: Math.min(...yearsOf(person)),
-                  to: Math.max(...yearsOf(person)),
-                },
+                kind: 'fall-range',
+                from: Math.min(...yearsOf(person)),
+                to: Math.max(...yearsOf(person)),
               },
             ]}
           />
