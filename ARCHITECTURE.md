@@ -79,7 +79,8 @@ flowchart LR
 - `src/pages` - one component per route.
 - `src/components` - one folder per area:
   - `layout` - the shared layout with the independence notice and error report
-    link, page sections, source citations, and loading and error states.
+    link, page sections, stat cards, the sources disclosure and inline source
+    citations, the navigation and tab link style, and loading and error states.
   - `fields` - form fields, the department or area picker, the removable filter,
     and the sortable column header.
   - `charts` - line, stacked bar, and totals charts, their tables, and series
@@ -153,6 +154,7 @@ flowchart LR
   layout.
 - `e2e/trends-change.spec.ts` - the Trends pay change measure, its filters, its
   raise comparison, and its link from the person page.
+- `e2e/sources.ts` - opening a page's sources disclosures.
 
 ## Pages
 
