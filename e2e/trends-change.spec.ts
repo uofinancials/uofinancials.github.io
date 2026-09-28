@@ -106,3 +106,15 @@ test('pay changes set each raise group’s median beside its cited across-the-bo
     'leaves out the opened group',
   )
 })
+
+test('changing a filter far down the page keeps the reader where they are', async ({
+  page,
+}) => {
+  await page.goto('/trends/pay-changes')
+  const pair = page.getByRole('combobox', { name: 'Fall' })
+  await pair.scrollIntoViewIfNeeded()
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+  await pair.selectOption('2021')
+  await expect(page).toHaveURL(/pair=2021/)
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+})

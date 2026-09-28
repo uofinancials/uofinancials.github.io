@@ -90,7 +90,10 @@ export function PayChangesPage() {
       ]
     : []
   const handleChange = (patch: PayChangesSearch) =>
-    navigate({ search: (previous) => ({ ...previous, ...patch }) })
+    navigate({
+      search: (previous) => ({ ...previous, ...patch }),
+      resetScroll: false,
+    })
   return (
     <div className="space-y-8">
       <div className="space-y-2">

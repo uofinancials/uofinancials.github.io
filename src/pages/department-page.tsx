@@ -224,7 +224,6 @@ export function DepartmentPage() {
   const { code } = useParams({ from: '/departments/$code' })
   const navigate = useNavigate({ from: '/departments/$code' })
   const data = useDepartmentData()
-  const { budgets, censuses, eliminationOrgs } = data
   const { profile, jobs, view, budget, trends, classRows } = useDepartmentView(
     code,
     data,
@@ -232,14 +231,17 @@ export function DepartmentPage() {
   if (!profile) return <NotFoundPage />
   const hasJobs = jobs.yearsWithJobs.length > 0
   const handleChange = (patch: DepartmentSearch) =>
-    navigate({ search: (previous) => ({ ...previous, ...patch }) })
+    navigate({
+      search: (previous) => ({ ...previous, ...patch }),
+      resetScroll: false,
+    })
   return (
     <div className="space-y-8">
       <DepartmentHeader
         profile={profile}
         hasBothSources={profile.hasBudget && hasJobs}
         links={{
-          canEliminate: eliminationOrgs?.[code] !== undefined,
+          canEliminate: data.eliminationOrgs?.[code] !== undefined,
           hasPayChanges: hasJobs,
         }}
       />
@@ -258,8 +260,8 @@ export function DepartmentPage() {
       {profile.isArea && (
         <AreaUnitsSection
           code={code}
-          censuses={censuses}
-          budgets={budgets}
+          censuses={data.censuses}
+          budgets={data.budgets}
           view={view}
           onChange={handleChange}
         />

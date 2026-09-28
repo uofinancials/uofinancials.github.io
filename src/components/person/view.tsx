@@ -34,6 +34,7 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
               to="/people/$name"
               params={{ name: person.name }}
               search={{ year: entry.year }}
+              resetScroll={false}
               aria-current={entry.year === year ? 'page' : undefined}
               className={cn(TAB_LINK_CLASS, 'tabular-nums')}
             >

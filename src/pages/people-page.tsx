@@ -46,6 +46,7 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
               to="/people"
               search={(previous) => ({ ...previous, chart: option })}
               replace
+              resetScroll={false}
               aria-current={option === chart ? 'page' : undefined}
               className={TAB_LINK_CLASS}
             >
@@ -189,7 +190,11 @@ function JobsSection({
   const navigate = useNavigate({ from: '/people' })
   const shown = pageOf(sorted, view.page)
   const handleColumns = (cols: ListColumn[]) =>
-    navigate({ search: (previous) => ({ ...previous, cols }), replace: true })
+    navigate({
+      search: (previous) => ({ ...previous, cols }),
+      replace: true,
+      resetScroll: false,
+    })
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
@@ -209,6 +214,7 @@ export function PeoplePage() {
     navigate({
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
       replace,
+      resetScroll: false,
     })
   const handleSort = (sort: PeopleSort, dir: SortDirection) =>
     change({ sort, dir })

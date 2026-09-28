@@ -227,7 +227,11 @@ function DepartmentsPreview({
           jobs: `Fall ${year} jobs`,
         }}
         onMeasure={(chosen) =>
-          navigate({ search: { measure: chosen }, replace: true })
+          navigate({
+            search: { measure: chosen },
+            replace: true,
+            resetScroll: false,
+          })
         }
       />
       <p>
