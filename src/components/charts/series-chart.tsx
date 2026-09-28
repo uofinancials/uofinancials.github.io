@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import {
   CartesianGrid,
   Legend,
@@ -19,12 +20,14 @@ import {
   sparseNote,
 } from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
+import { type EndLabel, EndLabels } from './end-labels'
 import { lineColor } from './line-color'
 
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
 const MARKER_DASH = '4 4'
+const END_LABELS_WIDTH_PX = 210
 
 type ChartSeries = {
   key: string
@@ -68,6 +71,33 @@ function lineStyle({ isBaseline }: ChartSeries, index: number) {
       }
 }
 
+function markerLine(marker: ChartMarker) {
+  return (
+    <ReferenceLine
+      x={marker.x}
+      stroke="var(--foreground)"
+      strokeDasharray={MARKER_DASH}
+      label={{
+        value: marker.label,
+        position: 'insideBottomRight',
+        fill: 'var(--foreground)',
+        fontSize: 12,
+      }}
+    />
+  )
+}
+
+function endLabelsOf(
+  shown: { line: ChartSeries; index: number }[],
+): EndLabel[] {
+  return shown.flatMap(({ line, index }) => {
+    const value = line.values.findLast((point) => point !== null)
+    return value === undefined || value === null
+      ? []
+      : [{ key: line.key, value, stroke: lineStyle(line, index).stroke }]
+  })
+}
+
 /** One line per series over the x labels, with zero marked when a line goes below it; the table beside it carries the numbers. Below two valued labels it says so in a sentence instead. */
 export function SeriesChart({
   labels,
@@ -77,7 +107,10 @@ export function SeriesChart({
   formatAxis,
   label,
   marker,
+  hasEndLabels = false,
+  isZeroBased = true,
   className,
+  children,
 }: {
   labels: string[]
   series: ChartSeries[]
@@ -87,8 +120,14 @@ export function SeriesChart({
   label: string
   /** A dashed vertical line at one x label, with its text. */
   marker?: ChartMarker
+  /** Names each line at its end instead of in a legend. */
+  hasEndLabels?: boolean
+  /** Whether the y axis starts at zero, or near the lowest value. */
+  isZeroBased?: boolean
   /** Overrides the chart's height classes. */
   className?: string
+  /** Further reference lines or areas. */
+  children?: ReactNode
 }) {
   const shown = series
     .map((line, index) => ({ line, dataKey: seriesKey(index), index }))
@@ -108,7 +147,11 @@ export function SeriesChart({
         config={{}}
         className={cn('aspect-auto h-96 w-full', className)}
       >
-        <LineChart data={data} accessibilityLayer>
+        <LineChart
+          data={data}
+          margin={hasEndLabels ? { right: END_LABELS_WIDTH_PX } : undefined}
+          accessibilityLayer
+        >
           <CartesianGrid vertical={false} />
           {isBelowZero && (
             <ReferenceArea y1={0} fill="var(--muted)" fillOpacity={1} />
@@ -116,25 +159,14 @@ export function SeriesChart({
           <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />
           <YAxis
             width={AXIS_WIDTH_PX}
+            domain={isZeroBased ? undefined : ['auto', 'auto']}
             tickLine={false}
             tickFormatter={(value) => formatAxis(Number(value))}
           />
           {isBelowZero && (
             <ReferenceLine y={0} stroke="var(--foreground)" strokeWidth={1.5} />
           )}
-          {marker && (
-            <ReferenceLine
-              x={marker.x}
-              stroke="var(--foreground)"
-              strokeDasharray={MARKER_DASH}
-              label={{
-                value: marker.label,
-                position: 'insideBottomRight',
-                fill: 'var(--foreground)',
-                fontSize: 12,
-              }}
-            />
-          )}
+          {marker && markerLine(marker)}
           <ChartTooltip
             content={
               <ChartTooltipContent
@@ -142,7 +174,11 @@ export function SeriesChart({
               />
             }
           />
-          {shown.length > 1 && <Legend itemSorter={null} />}
+          {children}
+          {hasEndLabels && (
+            <EndLabels labels={endLabelsOf(shown)} format={format} />
+          )}
+          {!hasEndLabels && shown.length > 1 && <Legend itemSorter={null} />}
           {shown.map(({ line, dataKey, index }) => (
             <Line
               key={line.key}

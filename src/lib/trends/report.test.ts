@@ -2,11 +2,14 @@ import { expect, test } from 'vitest'
 import {
   chainedChange,
   changeTable,
+  heatLevel,
+  indexedGroups,
   indexValues,
   raiseRows,
   spendContributions,
   spendShares,
   staffingRatio,
+  stepBars,
   volumeAndPay,
   volumeAndPayByGroup,
 } from './report'
@@ -171,4 +174,109 @@ test('raise rows pick each line’s median for the pairs asked, and chain them',
   )
   expect(row?.medians).toEqual([0.2, null])
   expect(row?.chained).toBeNull()
+})
+
+test('step bars start each part where the one before ends, as fractions of the longest reach', () => {
+  const bars = stepBars(1500, {
+    fteChange: 0.2,
+    perFteChange: 0.4,
+    volumeCents: 300,
+    payCents: 800,
+    changeCents: 1100,
+  })
+  expect(bars.map(({ key, cents }) => [key, cents])).toEqual([
+    ['first', 1500],
+    ['volume', 300],
+    ['pay', 800],
+    ['last', 2600],
+  ])
+  expect(bars[1]?.offset).toBeCloseTo(1500 / 2600)
+  expect(bars[2]?.offset).toBeCloseTo(1800 / 2600)
+  expect(bars[2]?.width).toBeCloseTo(800 / 2600)
+  expect(bars[3]?.width).toBe(1)
+})
+
+test('a fall in spend per FTE draws back from where the FTE part ends', () => {
+  const [, , pay] = stepBars(1000, {
+    fteChange: 0.5,
+    perFteChange: -0.2,
+    volumeCents: 500,
+    payCents: -300,
+    changeCents: 200,
+  })
+  expect(pay?.cents).toBe(-300)
+  expect(pay?.offset).toBeCloseTo(1200 / 1500)
+  expect(pay?.width).toBeCloseTo(300 / 1500)
+})
+
+test('heat levels step up at each bound', () => {
+  expect([-0.01, 0, 0.005, 0.03, 0.079, 0.129].map(heatLevel)).toEqual([
+    0, 0, 1, 2, 4, 5,
+  ])
+})
+
+test('indexed groups keep every group’s place, hide those without an index, and end with all jobs as the baseline', () => {
+  const { lines, hidden, unindexed } = indexedGroups(TRENDS, 'spend')
+  expect(lines.map(({ key }) => key)).toEqual([
+    'Faculty',
+    'Executives',
+    'Admins and professionals',
+    'Unclassified staff',
+    'Classified staff',
+    'Overloads',
+    'Category not published',
+    'Classified temporaries',
+    'All jobs',
+  ])
+  expect(lines[0]?.values).toEqual([100, 150])
+  expect(lines.at(-1)).toEqual({
+    key: 'All jobs',
+    values: [100, (2600 / 1500) * 100],
+    isBaseline: true,
+  })
+  expect(unindexed).toEqual(['Executives', 'Classified temporaries'])
+  expect(hidden).toEqual([
+    'Executives',
+    'Unclassified staff',
+    'Classified staff',
+    'Overloads',
+    'Category not published',
+    'Classified temporaries',
+  ])
+  expect(indexedGroups(TRENDS, 'jobs').hidden).toContain(
+    'Classified temporaries',
+  )
+})
+
+test('a group with no job in the first or the last census has no change row', () => {
+  const trends: Trends = {
+    series: [
+      ...TRENDS.series,
+      {
+        key: 'Category not published',
+        points: [point(2014, 0, null, 0, null), point(2015, 0, null, 0, null)],
+      },
+    ],
+    total: TRENDS.total,
+  }
+  expect(changeTable(trends).map(({ key }) => key)).not.toContain(
+    'Category not published',
+  )
+  expect(spendContributions(trends).map(({ key }) => key)).not.toContain(
+    'Category not published',
+  )
+})
+
+test('a raise line with no median in the pairs asked is left out', () => {
+  expect(
+    raiseRows(
+      [
+        {
+          key: 'Category not published',
+          points: [{ fromYear: 2017, pairs: 3, median: 0.03 }],
+        },
+      ],
+      [2014],
+    ),
+  ).toEqual([])
 })

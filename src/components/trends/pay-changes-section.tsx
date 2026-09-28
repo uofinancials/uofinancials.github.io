@@ -27,9 +27,11 @@ import {
 } from '@/lib/trends/search'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
-const RATE_NOTE =
+export const RATE_NOTE =
   'A change is between the annual salary rates UO publishes for one job in two consecutive Fall censuses. It includes every increase that took effect between the two census dates, so an increase effective before a census counts in the pair ending there. Rates are not pay, and dollars are as published, not adjusted for inflation.'
-const COMPUTED = `a continuing job is a person link this site computes: a name, exactly as published, with one primary job in each of two consecutive censuses, both paid by the same pay department. UO publishes no person identifier, so people who change department or name are not linked. Pairs are left out when either job is a classified temporary (annualised hourly rates), the job moved between classified and unclassified, or its term changed between 9 and 12 months; appointment changes stay in, since a rate is the full-time rate. The change is the later rate over the earlier, less one, counted in the group, EEO category, pay department, and class or rank of the earlier job; class or rank is as in the person view's median. Medians and distributions are shown for ${MIN_JOBS_SHOWN} or more pairs. Class changes compare the class number, whatever its letter prefix; rank changes leave out the renames and unpublished ranks below; title changes compare titles without case, punctuation, or the abbreviations below. A changed class, rank, or title is a changed published label, not necessarily a promotion.`
+export const CONTINUING_JOB_METHOD = `a continuing job is a person link this site computes: a name, exactly as published, with one primary job in each of two consecutive censuses, both paid by the same pay department. UO publishes no person identifier, so people who change department or name are not linked. Pairs are left out when either job is a classified temporary (annualised hourly rates), the job moved between classified and unclassified, or its term changed between 9 and 12 months; appointment changes stay in, since a rate is the full-time rate. The change is the later rate over the earlier, less one, counted in the group, EEO category, pay department, and class or rank of the earlier job; class or rank is as in the person view's median. Medians and distributions are shown for ${MIN_JOBS_SHOWN} or more pairs.`
+
+const PAY_CHANGE_METHOD = `${CONTINUING_JOB_METHOD} Class changes compare the class number, whatever its letter prefix; rank changes leave out the renames and unpublished ranks below; title changes compare titles without case, punctuation, or the abbreviations below. A changed class, rank, or title is a changed published label, not necessarily a promotion.`
 
 const NO_PAIRS =
   'A change needs two consecutive censuses; choose a wider range of years.'
@@ -123,7 +125,7 @@ export function PayChangesSection({
               kind: 'fall-range',
               from: first,
               to: last + 1,
-              computed: COMPUTED,
+              computed: PAY_CHANGE_METHOD,
             },
             ...filterSources,
           ]}

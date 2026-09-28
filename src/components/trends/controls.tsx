@@ -1,13 +1,10 @@
-import { RadioField } from '@/components/fields/radio-field'
 import { RemovableFilter } from '@/components/fields/removable-filter'
 import { SelectField } from '@/components/fields/select-field'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/census/groups'
 import {
   ALL_GROUPS,
-  type CensusMetric,
   GROUP_OPTIONS,
-  METRIC_OPTIONS,
   type PayChangesSearch,
   STAFF_KIND_OPTIONS,
   type TrendView,
@@ -82,18 +79,15 @@ function JobFilters({
   )
 }
 
-/** The trends view's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
+/** The pay changes page's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
 export function TrendsControls({
   view,
-  metric,
   years,
   lines,
   names,
   onChange,
 }: {
   view: TrendView
-  /** The census measure, when the view shows one. */
-  metric?: { value: CensusMetric; onSelect: (metric: CensusMetric) => void }
   years: number[]
   lines: string[]
   names: FilterNames
@@ -105,15 +99,6 @@ export function TrendsControls({
   ])
   return (
     <div className="space-y-4">
-      {metric && (
-        <RadioField
-          legend="Measure"
-          name="metric"
-          value={metric.value}
-          options={METRIC_OPTIONS}
-          onSelect={metric.onSelect}
-        />
-      )}
       <div className="flex flex-wrap gap-4">
         <SelectField
           label="Group"

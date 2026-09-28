@@ -7,9 +7,7 @@ test('pay changes show each census pair’s median by group, the change counts, 
 }) => {
   await page.goto('/trends')
   const main = page.getByRole('main')
-  await page
-    .getByRole('link', { name: 'Pay changes of continuing jobs' })
-    .click()
+  await page.getByRole('link', { name: /^Pay changes by department/ }).click()
   await expect(page).toHaveURL(/\/trends\/pay-changes$/)
   const lines = page.getByRole('table', {
     name: /^Median change in salary rate/,
@@ -46,7 +44,7 @@ test('pay changes show each census pair’s median by group, the change counts, 
   await expect(page.getByRole('group', { name: 'Lines' })).toHaveCount(0)
 })
 
-test('an old change measure link redirects to pay changes, an opened group’s change lines are its categories, and a filter narrows the other measures too', async ({
+test('an old change measure link redirects to pay changes, and an opened group’s change lines are its categories', async ({
   page,
 }) => {
   await page.goto('/trends?metric=change&group=Admins+and+professionals')
@@ -56,15 +54,6 @@ test('an old change measure link redirects to pay changes, an opened group’s c
   await expect(
     page.getByRole('columnheader', { name: 'Senior Administrators' }),
   ).toBeVisible()
-  await page.goto('/trends?dept=000000')
-  await expect(page.getByRole('main')).toContainText('Pay department: 000000')
-  await page.goto('/trends?position=D9101')
-  await expect(page.getByRole('main')).toContainText(
-    /Class or rank: .+ \(class 9101\)/,
-  )
-  await expect(page.getByRole('columnheader', { name: 'Faculty' })).toHaveCount(
-    0,
-  )
 })
 
 test('a person links to the pay changes of their class or rank, the filter can be removed, and the page does not scroll sideways at 360px', async ({

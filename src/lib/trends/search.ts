@@ -55,6 +55,8 @@ export const METRIC_INFO: Record<
   ReportMetric,
   {
     label: string
+    /** The label as it reads mid-sentence. */
+    noun: string
     pick: (point: TrendPoint) => number | null
     format: (value: number) => string
     formatAxis: (value: number) => string
@@ -62,39 +64,32 @@ export const METRIC_INFO: Record<
 > = {
   jobs: {
     label: 'Jobs',
+    noun: 'jobs',
     pick: (point) => point.jobs,
     format: formatCount,
     formatAxis: formatCount,
   },
   spend: {
     label: 'Salary spend',
+    noun: 'salary spend',
     pick: (point) => point.spendCents,
     format: formatDollars,
     formatAxis: formatCompactDollars,
   },
   fte: {
     label: 'FTE',
+    noun: 'FTE',
     pick: (point) => point.fteHundredths,
     format: formatFte,
     formatAxis: formatFte,
   },
   median: {
     label: 'Median salary rate',
+    noun: 'median salary rate',
     pick: (point) => point.medianRateCents,
     format: formatDollars,
     formatAxis: formatCompactDollars,
   },
-}
-
-/** The series that have a value for the metric in at least one census. */
-export function seriesWithMetric(
-  series: TrendSeries[],
-  metric: ReportMetric,
-): TrendSeries[] {
-  const { pick } = METRIC_INFO[metric]
-  return series.filter(({ points }) =>
-    points.some((point) => pick(point) !== null),
-  )
 }
 
 /** The pay changes page's URL search params; `pair` is the earlier census of the pair whose distribution is shown. A malformed value falls back to its default. */
@@ -112,25 +107,27 @@ export const payChangesSearchSchema = z.object({
 
 export type PayChangesSearch = z.infer<typeof payChangesSearchSchema>
 
-/** The trends page's URL search params: the pay changes page's and a measure; the change measure redirects to the pay changes page. */
+/** The trends report's URL search params: the year range and each section's measure. The pay changes page's params are read only to redirect a link made before the report. */
 export const trendsSearchSchema = payChangesSearchSchema.extend({
   metric: z.enum(TREND_METRICS).optional().catch(undefined),
+  growth: z.enum(REPORT_METRICS).optional().catch(undefined),
 })
 
-export type TrendsSearch = z.infer<typeof trendsSearchSchema>
-
-/** Whether the search shows every job under a census measure, the view the summary holds. */
-export function isSummaryView({
-  group,
-  kind,
-  dept,
+/** The params of a trends search the report reads; any other is from a link made before it. */
+export function pickReportParams({
+  from,
+  to,
+  growth,
   area,
-  position,
-}: TrendsSearch): boolean {
-  return [group, kind, dept, area, position].every(
-    (filter) => filter === undefined,
+}: TrendsSearch): TrendsSearch {
+  return Object.fromEntries(
+    Object.entries({ from, to, growth, area }).filter(
+      ([, value]) => value !== undefined,
+    ),
   )
 }
+
+export type TrendsSearch = z.infer<typeof trendsSearchSchema>
 
 export type TrendView = Omit<TrendFilter, 'jobs'> & {
   hide: string[]
@@ -168,6 +165,12 @@ export function resolveTrendView(
     pair:
       fromYears.length > 0 ? resolveCensusYear(search.pair, fromYears) : from,
   }
+}
+
+/** The report's year range and pairs, as the pay changes page resolves them, and section 2's measure. */
+export function resolveReportView(search: TrendsSearch, years: number[]) {
+  const { from, to, fromYears } = resolveTrendView(search, years)
+  return { from, to, fromYears, growth: search.growth ?? 'jobs' }
 }
 
 export const METRIC_OPTIONS = CENSUS_METRICS.map(

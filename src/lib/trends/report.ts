@@ -1,4 +1,4 @@
-import type { TrendGroup } from '../census/groups.ts'
+import { TREND_GROUPS, type TrendGroup } from '../census/groups.ts'
 import { changeOf } from '../shared/series.ts'
 import type { ChangeSeries } from './pay-changes.ts'
 import { METRIC_INFO, type ReportMetric } from './search.ts'
@@ -15,8 +15,16 @@ export const RATIO_GROUPS: readonly TrendGroup[] = [
 ]
 export const RATIO_BASE_GROUP: TrendGroup = 'Faculty'
 
-/** Their rates are annualised hourly rates, so they have FTE but no spend. */
-const UNPAID_GROUP: TrendGroup = 'Classified temporaries'
+/** Their rates are annualised hourly rates, so they have FTE but no spend; their count swings from year to year, so the index chart leaves them to the table. */
+export const UNPAID_GROUP: TrendGroup = 'Classified temporaries'
+
+/** The groups with a job in the first or the last census; a group with neither has no change to show. */
+function atEitherEnd(series: TrendSeries[]): TrendSeries[] {
+  return series.filter(
+    ({ points }) =>
+      (points[0]?.jobs ?? 0) > 0 || (points.at(-1)?.jobs ?? 0) > 0,
+  )
+}
 
 /** Each value over the first times 100; `null` when the first is missing or not above zero, so the line has no index. */
 export function indexValues(
@@ -27,6 +35,48 @@ export function indexValues(
   return values.map((value) =>
     value === null ? null : (value / base) * INDEX_BASE,
   )
+}
+
+export type IndexedLine = {
+  key: string
+  values: (number | null)[]
+  isBaseline?: boolean
+}
+
+/**
+ * Every group in `TREND_GROUPS` order, indexed to the first census, then all
+ * jobs as the baseline; a group keeps its place when it has no index, so its
+ * color does not move. `hidden` are the lines with no index, and `unindexed`
+ * those of them with a job in the range.
+ */
+export function indexedGroups(
+  { series, total }: Trends,
+  metric: ReportMetric,
+): { lines: IndexedLine[]; hidden: string[]; unindexed: string[] } {
+  const { pick } = METRIC_INFO[metric]
+  const groups = TREND_GROUPS.map((key) => {
+    const points = series.find((line) => line.key === key)?.points
+    return {
+      key,
+      values: points ? indexValues(points.map(pick)) : null,
+      isPresent: points !== undefined,
+    }
+  })
+  const withoutIndex = groups.filter(({ values }) => values === null)
+  return {
+    lines: [
+      ...groups.map(({ key, values }) => ({ key, values: values ?? [] })),
+      {
+        key: ALL_JOBS,
+        values: indexValues(total.map(pick)) ?? [],
+        isBaseline: true,
+      },
+    ],
+    hidden: [...new Set([...withoutIndex.map(({ key }) => key), UNPAID_GROUP])],
+    unindexed: withoutIndex
+      .filter(({ isPresent }) => isPresent)
+      .map(({ key }) => key),
+  }
 }
 
 export type ChangeRow = { key: string } & Record<ReportMetric, number | null>
@@ -50,7 +100,7 @@ function changeRow(key: string, points: TrendPoint[]): ChangeRow {
 /** Each group's change from the first year to the last in every measure, then all jobs'. */
 export function changeTable({ series, total }: Trends): ChangeRow[] {
   return [
-    ...series.map(({ key, points }) => changeRow(key, points)),
+    ...atEitherEnd(series).map(({ key, points }) => changeRow(key, points)),
     changeRow(ALL_JOBS, total),
   ]
 }
@@ -111,7 +161,7 @@ export function spendContributions({
   const shareOf = (part: number | null) =>
     part === null || whole === null || whole === 0 ? null : part / whole
   return [
-    ...series
+    ...atEitherEnd(series)
       .filter(({ key }) => key !== UNPAID_GROUP)
       .map(({ key, points }) => {
         const part = changeCents(points)
@@ -173,7 +223,7 @@ export function volumeAndPayByGroup({
     !point || point.spendCents === null || !point.fteHundredths
       ? null
       : point.spendCents / point.fteHundredths
-  return series
+  return atEitherEnd(series)
     .filter(({ key }) => key !== UNPAID_GROUP)
     .map(({ key, points }) => ({
       key,
@@ -202,16 +252,54 @@ export type RaiseRow = {
   chained: number | null
 }
 
-/** Each line's median change for the given pairs, and those medians chained. */
+/** Each line's median change for the given pairs, and those medians chained; a line with no median in them is left out. */
 export function raiseRows(
   series: ChangeSeries[],
   fromYears: number[],
 ): RaiseRow[] {
-  return series.map(({ key, points }) => {
+  return series.flatMap(({ key, points }) => {
     const medians = fromYears.map(
       (year) =>
         points.find(({ fromYear }) => fromYear === year)?.median ?? null,
     )
-    return { key, medians, chained: chainedChange(medians) }
+    return medians.every((median) => median === null)
+      ? []
+      : [{ key, medians, chained: chainedChange(medians) }]
   })
+}
+
+export type StepBar = {
+  key: string
+  cents: number
+  offset: number
+  width: number
+}
+
+/** The first census's spend, the two parts of the change, and the last census's spend as bars along one axis: each part starts where the one before ends, and each offset and width is a fraction of the longest reach. */
+export function stepBars(firstCents: number, split: VolumeAndPay): StepBar[] {
+  const steps = [
+    { key: 'first', from: 0, to: firstCents },
+    { key: 'volume', from: firstCents, to: firstCents + split.volumeCents },
+    {
+      key: 'pay',
+      from: firstCents + split.volumeCents,
+      to: firstCents + split.changeCents,
+    },
+    { key: 'last', from: 0, to: firstCents + split.changeCents },
+  ]
+  const reach = Math.max(...steps.flatMap(({ from, to }) => [from, to]))
+  return steps.map(({ key, from, to }) => ({
+    key,
+    cents: to - from,
+    offset: reach <= 0 ? 0 : Math.min(from, to) / reach,
+    width: reach <= 0 ? 0 : Math.abs(to - from) / reach,
+  }))
+}
+
+/** The upper bounds of a median change's shading levels, as fractions. */
+const HEAT_LEVELS = [0.005, 0.025, 0.04, 0.06, 0.09]
+
+/** A median change's shading level, from 0 (none) to `HEAT_LEVELS.length`. */
+export function heatLevel(change: number): number {
+  return HEAT_LEVELS.filter((bound) => change >= bound).length
 }

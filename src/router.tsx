@@ -39,8 +39,8 @@ import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
 import { scenarioSearchSchema } from '@/lib/scenario/search'
 import {
-  isSummaryView,
   payChangesSearchSchema,
+  pickReportParams,
   trendsSearchSchema,
 } from '@/lib/trends/search'
 import { NotFoundPage } from '@/pages/not-found-page'
@@ -82,7 +82,8 @@ const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
   validateSearch: trendsSearchSchema,
-  beforeLoad: ({ search: { metric, ...filters } }) => {
+  beforeLoad: ({ search }) => {
+    const { metric, ...filters } = search
     if (metric === 'change') {
       throw redirect({
         to: '/trends/pay-changes',
@@ -90,29 +91,19 @@ const trendsRoute = createRoute({
         replace: true,
       })
     }
-  },
-  loaderDeps: ({ search }) => ({
-    area: search.area,
-    isSummary: isSummaryView(search),
-  }),
-  loader: async ({ context: { queryClient }, deps }) => {
-    const loadYears = async () => {
-      const manifest = await queryClient.ensureQueryData(manifestQuery)
-      const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-      if (!deps.isSummary) {
-        await Promise.all(
-          years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
-        )
-      }
-      return years
+    const kept = pickReportParams(search)
+    if (Object.keys(search).length > Object.keys(kept).length) {
+      throw redirect({ to: '/trends', search: kept, replace: true })
     }
-    const [years, fiscalYears] = await Promise.all([
-      loadYears(),
-      deps.area === undefined ? [] : loadBudgetYears(queryClient),
+  },
+  loader: async ({ context: { queryClient } }) => {
+    const [manifest] = await Promise.all([
+      queryClient.ensureQueryData(manifestQuery),
       queryClient.ensureQueryData(summaryQuery),
-      queryClient.ensureQueryData(raiseTermsQuery),
     ])
-    return { years, fiscalYears }
+    return {
+      years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
+    }
   },
   component: lazyRouteComponent(
     () => import('@/pages/trends-page'),

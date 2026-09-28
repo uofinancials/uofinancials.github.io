@@ -1,8 +1,7 @@
 import { expect, test } from 'vitest'
 import {
-  isSummaryView,
+  resolveReportView,
   resolveTrendView,
-  seriesWithMetric,
   type TrendsSearch,
   trendsSearchSchema,
 } from './search'
@@ -55,25 +54,12 @@ test('malformed params fall back to their defaults', () => {
   ).toEqual({ group: 'Faculty' })
 })
 
-test('a metric keeps only the series with a value for it', () => {
-  const point = {
-    year: 2025,
-    spendCents: null,
-    jobs: 1,
-    fteHundredths: 10,
-    medianRateCents: null,
-  }
-  const series = [{ key: 'Classified temporaries', points: [point] }]
-  expect(seriesWithMetric(series, 'fte')).toEqual(series)
-  expect(seriesWithMetric(series, 'spend')).toEqual([])
-})
-
-test('the summary holds every job under a census measure, whatever the group, years, or hidden lines', () => {
-  expect(isSummaryView({})).toBe(true)
-  expect(isSummaryView({ metric: 'fte', from: 2018, hide: ['x'] })).toBe(true)
-  expect(isSummaryView({ group: 'Faculty' })).toBe(false)
-  expect(isSummaryView({ kind: 'classified' })).toBe(false)
-  expect(isSummaryView({ dept: '223100' })).toBe(false)
-  expect(isSummaryView({ area: '222000' })).toBe(false)
-  expect(isSummaryView({ position: 'E0104' })).toBe(false)
+test('the report reads its years as the pay changes page does, and shows jobs by default', () => {
+  expect(resolveReportView({ from: 2015 }, YEARS)).toEqual({
+    from: 2015,
+    to: 2025,
+    fromYears: [],
+    growth: 'jobs',
+  })
+  expect(resolveReportView({ growth: 'median' }, YEARS).growth).toBe('median')
 })
