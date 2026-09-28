@@ -103,7 +103,7 @@ export function PayChangesPage() {
             All trends
           </Link>{' '}
           ·{' '}
-          <Link className="link" to="/trends" hash="groups">
+          <Link className="link" to="/trends" search={{ tab: 'groups' }}>
             How groups are defined
           </Link>
         </p>

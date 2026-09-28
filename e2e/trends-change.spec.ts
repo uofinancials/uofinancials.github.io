@@ -5,7 +5,7 @@ import { openSources } from './sources.ts'
 test('pay changes show each census pair’s median by group, the change counts, and one pair’s distribution held in the link', async ({
   page,
 }) => {
-  await page.goto('/trends')
+  await page.goto('/trends?tab=raises')
   const main = page.getByRole('main')
   await page.getByRole('link', { name: /^Pay changes by department/ }).click()
   await expect(page).toHaveURL(/\/trends\/pay-changes$/)

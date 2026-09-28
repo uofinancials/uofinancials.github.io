@@ -60,25 +60,32 @@ test('the report reads its years as the pay changes page does, and shows jobs by
     from: 2015,
     to: 2025,
     fromYears: [],
-    growth: 'jobs',
+    measure: 'jobs',
     view: 'bars',
-    compare: 'fte',
+    tab: 'grew',
   })
-  expect(resolveReportView({ growth: 'median' }, YEARS).growth).toBe('median')
+  expect(resolveReportView({ measure: 'median' }, YEARS).measure).toBe('median')
 })
 
 test('a report link keeps its years, measures, area, and unit, and nothing else', () => {
   expect(
     pickReportParams({
       from: 2018,
-      compare: 'spend',
+      measure: 'spend',
+      tab: 'raises',
       area: '222000',
       unit: '222050',
       dept: '223100',
       metric: 'change',
       hide: ['Faculty'],
     }),
-  ).toEqual({ from: 2018, compare: 'spend', area: '222000', unit: '222050' })
+  ).toEqual({
+    from: 2018,
+    measure: 'spend',
+    tab: 'raises',
+    area: '222000',
+    unit: '222050',
+  })
   expect(trendsSearchSchema.parse({ metric: 'fte' })).toEqual({
     metric: undefined,
   })

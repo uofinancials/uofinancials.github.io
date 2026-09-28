@@ -1,14 +1,10 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { IndexFigure } from '@/components/charts/index-figure'
-import { RadioField } from '@/components/fields/radio-field'
-import { SelectField } from '@/components/fields/select-field'
-import { CollapsibleSection } from '@/components/layout/collapsible-section'
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
-import { areaTrendsQuery } from '@/data/queries'
-import type { CodeTrend } from '@/data/summary'
+import type { CodeTrend, ScopeTrends } from '@/data/summary'
 import { SPEND_METHOD } from '@/lib/census/totals'
-import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
+import type { SectionSource } from '@/lib/shared/citation'
 import { formatChange, formatCount, formatOrBlank } from '@/lib/shared/format'
 import {
   type CompareRow,
@@ -17,18 +13,16 @@ import {
   compareRows,
   inRange,
   lineChanges,
+  totalsOf,
 } from '@/lib/trends/compare'
 import { unindexedNote } from '@/lib/trends/report-text'
+import type { ReportScope } from '@/lib/trends/scope'
 import {
   METRIC_INFO,
-  REPORT_METRIC_OPTIONS,
   type ReportMetric,
-  type ReportSearch,
   type YearRange,
 } from '@/lib/trends/search'
 import { type GroupRow, GroupTable } from './group-table'
-
-const EVERY = ''
 
 function compareRow(
   { code, name, jobs, fte, spend }: CompareRow,
@@ -111,122 +105,52 @@ function CompareFigure({
   )
 }
 
-function AreaCompare({
-  area,
-  unit,
-  university,
-  metric,
-  range,
-  onChange,
-}: {
-  area: CodeTrend
-  unit: string | null
-  university: CodeTrend
-  metric: ReportMetric
-  range: YearRange
-  onChange: (patch: ReportSearch) => void
-}) {
-  const { data } = useSuspenseQuery(areaTrendsQuery(area.code))
-  const units = inRange(
-    data.units.map(({ code, name, trends }) => ({
-      code,
-      name,
-      points: trends.total,
-    })),
-    range,
-  )
-  const picked = units.find(({ code }) => code === unit) ?? null
-  const byName = [...units].sort((a, b) => a.name.localeCompare(b.name))
-  return (
-    <>
-      <SelectField
-        label="Unit"
-        value={picked?.code ?? EVERY}
-        options={[
-          [EVERY, 'The whole area'],
-          ...byName.map(({ code, name }): [string, string] => [code, name]),
-        ]}
-        onSelect={(value) => onChange({ unit: value || undefined })}
-      />
-      <CompareFigure
-        codes={picked ? [picked, area, university] : [area, university]}
-        metric={metric}
-        range={range}
-      />
-      <CompareTable
-        codes={units}
-        totals={[area, university]}
-        caption={`Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`}
-        selected={picked?.code}
-      />
-    </>
-  )
-}
-
-/** One unit against its college or VP area and the university, and the area's units, or every area when none is picked; the codes are given over every census and shown over the range. */
+/** The picked area, or unit against its area, charted against the university, then the area's units, or every area when none is picked; the codes are given over every census and shown over the range. */
 export function CompareSection({
   areas,
   university,
-  area,
-  unit,
+  scope,
+  units,
   metric,
   range,
-  fiscalYears,
-  onChange,
+  scopeSources,
 }: {
   areas: CodeTrend[]
   university: CodeTrend
-  area: string | null
-  unit: string | null
+  scope: ReportScope
+  /** The picked area's units, empty without one. */
+  units: ScopeTrends[]
   metric: ReportMetric
   range: YearRange
-  fiscalYears: YearRange
-  onChange: (patch: ReportSearch) => void
+  scopeSources: SectionSource[]
 }) {
-  const shown = inRange([university, ...areas], range)
-  const [all = university, ...shownAreas] = shown
-  const picked = shownAreas.find(({ code }) => code === area) ?? null
-  const byName = [...shownAreas].sort((a, b) => a.name.localeCompare(b.name))
+  const [all = university, ...shownAreas] = inRange(
+    [university, ...areas],
+    range,
+  )
+  const area = scope.area && inRange([totalsOf(scope.area)], range)[0]
+  const unit = scope.unit && inRange([totalsOf(scope.unit)], range)[0]
   return (
-    <CollapsibleSection
-      id="compare"
-      title="How does my unit compare?"
-      isOpen={picked !== null}
-    >
-      <div className="flex flex-wrap items-end gap-4">
-        <SelectField
-          label="College or VP area"
-          value={picked?.code ?? EVERY}
-          options={[
-            [EVERY, 'Every area'],
-            ...byName.map(({ code, name }): [string, string] => [code, name]),
-          ]}
-          onSelect={(value) =>
-            onChange({ area: value || undefined, unit: undefined })
-          }
-        />
-        <RadioField
-          legend="Measure"
-          name="compare"
-          value={metric}
-          options={REPORT_METRIC_OPTIONS}
-          onSelect={(value) => onChange({ compare: value })}
-        />
-      </div>
-      {picked ? (
-        <AreaCompare
-          area={picked}
-          unit={unit}
-          university={all}
-          metric={metric}
-          range={range}
-          onChange={onChange}
-        />
+    <PageSection title="How does it compare?">
+      {area ? (
+        <>
+          <CompareFigure
+            codes={unit ? [unit, area, all] : [area, all]}
+            metric={metric}
+            range={range}
+          />
+          <CompareTable
+            codes={inRange(units.map(totalsOf), range)}
+            totals={[area, all]}
+            caption={`Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`}
+            selected={unit?.code}
+          />
+        </>
       ) : (
         <>
           <p>
-            Choose a college or VP area to chart it, or one of its units,
-            against the university.
+            Choose a college or VP area in the filters to chart it, or one of
+            its units, against the university.
           </p>
           <CompareTable
             codes={shownAreas}
@@ -242,13 +166,9 @@ export function CompareSection({
             ...range,
             computed: `${SPEND_METHOD} Each line is its figure in each census over its figure in Fall ${range.from}, times 100; changes are the last census’s figure over the first’s, less one. A unit’s jobs are those paid under its code, so a unit that took over another’s jobs shows it as growth.`,
           },
-          {
-            kind: 'budget-range',
-            ...fiscalYears,
-            computed: AREA_PLACEMENT_METHOD,
-          },
+          ...scopeSources,
         ]}
       />
-    </CollapsibleSection>
+    </PageSection>
   )
 }

@@ -4,6 +4,7 @@ import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { TrendsTable } from '@/components/trends/table'
 import { SPEND_METHOD } from '@/lib/census/totals'
+import type { SectionSource } from '@/lib/shared/citation'
 import { formatChange, formatOrBlank } from '@/lib/shared/format'
 import {
   ALL_JOBS,
@@ -19,7 +20,6 @@ import {
   GROWTH_VIEW_OPTIONS,
   type GrowthView,
   METRIC_INFO,
-  REPORT_METRIC_OPTIONS,
   REPORT_METRICS,
   type ReportMetric,
   type ReportSearch,
@@ -36,37 +36,6 @@ const METHOD = `Each line is a group’s figure in each census over its figure i
 
 const RATIO_METHOD = `${RATIO_GROUPS.join(' and ')} jobs over ${RATIO_BASE_GROUP} jobs in each census, times 100, counting jobs rather than people or FTE.`
 
-function GrowthControls({
-  metric,
-  view,
-  onChange,
-}: {
-  metric: ReportMetric
-  view: GrowthView
-  onChange: (patch: ReportSearch) => void
-}) {
-  return (
-    <div className="flex flex-wrap gap-x-8 gap-y-4">
-      <RadioField
-        legend="Measure"
-        name="growth"
-        value={metric}
-        options={REPORT_METRIC_OPTIONS}
-        onSelect={(value) => onChange({ growth: value })}
-      />
-      <div className="hidden md:block">
-        <RadioField
-          legend="Show"
-          name="view"
-          value={view}
-          options={GROWTH_VIEW_OPTIONS}
-          onSelect={(value) => onChange({ view: value })}
-        />
-      </div>
-    </div>
-  )
-}
-
 /** Each group's growth since the first census, indexed, with the change table and the staffing ratio. */
 export function GrowthSection({
   trends,
@@ -74,6 +43,7 @@ export function GrowthSection({
   range: { from, to },
   metric,
   view,
+  scopeSources,
   onChange,
 }: {
   trends: Trends
@@ -81,6 +51,7 @@ export function GrowthSection({
   range: YearRange
   metric: ReportMetric
   view: GrowthView
+  scopeSources: SectionSource[]
   onChange: (patch: ReportSearch) => void
 }) {
   const { lines, hidden, unindexed } = indexedGroups(trends, metric)
@@ -95,7 +66,15 @@ export function GrowthSection({
   return (
     <PageSection id="groups-grew" title="Which groups grew?">
       <p>{growthAnswer(charted, metric, from)}</p>
-      <GrowthControls metric={metric} view={view} onChange={onChange} />
+      <div className="hidden md:block">
+        <RadioField
+          legend="Show"
+          name="view"
+          value={view}
+          options={GROWTH_VIEW_OPTIONS}
+          onSelect={(value) => onChange({ view: value })}
+        />
+      </div>
       <IndexFigure
         view={view}
         emphasis={ALL_JOBS}
@@ -142,7 +121,10 @@ export function GrowthSection({
       </details>
       <RatioFigure rows={ratios} />
       <Sources
-        sources={[{ kind: 'fall-range', from, to, computed: METHOD }]}
+        sources={[
+          { kind: 'fall-range', from, to, computed: METHOD },
+          ...scopeSources,
+        ]}
         methods={[RATIO_METHOD]}
       />
     </PageSection>

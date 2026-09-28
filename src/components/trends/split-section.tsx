@@ -1,6 +1,7 @@
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { SPEND_METHOD } from '@/lib/census/totals'
+import type { SectionSource } from '@/lib/shared/citation'
 import {
   formatChange,
   formatDollarChange,
@@ -70,9 +71,11 @@ function StepFigure({
 export function SplitSection({
   trends,
   range,
+  scopeSources,
 }: {
   trends: Trends
   range: YearRange
+  scopeSources: SectionSource[]
 }) {
   const split = volumeAndPay(trends)
   const method = `${SPEND_METHOD} FTE leaves out classified temporaries, as salary spend does. The change in FTE at Fall ${range.from} spend per FTE is the change in FTE times Fall ${range.from} spend over Fall ${range.from} FTE; the rest of the change in spend is the change in spend per FTE.`
@@ -102,7 +105,12 @@ export function SplitSection({
           Spend or FTE is missing in Fall {range.from} or Fall {range.to}.
         </p>
       )}
-      <Sources sources={[{ kind: 'fall-range', ...range, computed: method }]} />
+      <Sources
+        sources={[
+          { kind: 'fall-range', ...range, computed: method },
+          ...scopeSources,
+        ]}
+      />
     </PageSection>
   )
 }

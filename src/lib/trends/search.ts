@@ -43,6 +43,7 @@ export type CensusMetric = (typeof CENSUS_METRICS)[number]
 /** The census measures and a count of jobs, for the trends report. */
 export const REPORT_METRICS = ['jobs', ...CENSUS_METRICS] as const
 export type ReportMetric = (typeof REPORT_METRICS)[number]
+export const reportMetricSchema = z.enum(REPORT_METRICS)
 
 /** How the report shows each group's growth: its change as a ranked bar, or its index over time. */
 export const GROWTH_VIEWS = ['bars', 'chart'] as const
@@ -52,6 +53,20 @@ export const GROWTH_VIEW_OPTIONS = [
   ['bars', 'Change'],
   ['chart', 'Over time'],
 ] as const satisfies readonly (readonly [GrowthView, string])[]
+
+/** The report's questions, one tab each, in order. */
+export const REPORT_TABS = [
+  'grew',
+  'money',
+  'pay',
+  'raises',
+  'compare',
+  'groups',
+] as const
+export type ReportTab = (typeof REPORT_TABS)[number]
+
+/** The tabs whose figures follow the Measure filter. */
+export const MEASURED_TABS: readonly ReportTab[] = ['grew', 'compare']
 
 /** The measure of a link made before the pay changes page, which redirects there. */
 export const CHANGE_METRIC = 'change'
@@ -114,15 +129,15 @@ export const payChangesSearchSchema = z.object({
 
 export type PayChangesSearch = z.infer<typeof payChangesSearchSchema>
 
-/** The trends report's URL search params: the year range, each section's measure, and the compared area and unit. */
+/** The trends report's URL search params: the year range, measure, college or VP area and unit every tab follows, the growth view, and the tab. */
 export const reportSearchSchema = z.object({
   from: z.number().int().optional().catch(undefined),
   to: z.number().int().optional().catch(undefined),
-  growth: z.enum(REPORT_METRICS).optional().catch(undefined),
+  measure: reportMetricSchema.optional().catch(undefined),
   view: z.enum(GROWTH_VIEWS).optional().catch(undefined),
-  compare: z.enum(REPORT_METRICS).optional().catch(undefined),
   area: orgCodeParam.optional().catch(undefined),
   unit: orgCodeParam.optional().catch(undefined),
+  tab: z.enum(REPORT_TABS).optional().catch(undefined),
 })
 
 export type ReportSearch = z.infer<typeof reportSearchSchema>
@@ -195,13 +210,13 @@ export function resolveTrendView(
   }
 }
 
-/** The report's year range and its pairs, and the measures of its growth and comparison sections. */
+/** The report's year range and its pairs, measure, growth view, and tab. */
 export function resolveReportView(search: ReportSearch, years: number[]) {
   return {
     ...resolveRange(search, years),
-    growth: search.growth ?? 'jobs',
+    measure: search.measure ?? 'jobs',
     view: search.view ?? 'bars',
-    compare: search.compare ?? 'fte',
+    tab: search.tab ?? 'grew',
   }
 }
 

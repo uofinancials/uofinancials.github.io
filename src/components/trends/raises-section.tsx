@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import { CollapsibleSection } from '@/components/layout/collapsible-section'
+import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import type { Summary } from '@/data/summary'
+import type { SectionSource } from '@/lib/shared/citation'
 import { formatChange, formatOrBlank } from '@/lib/shared/format'
 import {
   ALL_PAIRS,
@@ -11,7 +12,7 @@ import {
 } from '@/lib/trends/pay-change-labels'
 import { heatLevel, raiseRows } from '@/lib/trends/report'
 import { raisesAnswer } from '@/lib/trends/report-text'
-import type { YearRange } from '@/lib/trends/search'
+import type { PayChangesSearch, YearRange } from '@/lib/trends/search'
 import { GroupTable } from './group-table'
 
 /** Each shading level's cell classes, from no change to the largest. */
@@ -32,17 +33,19 @@ export function RaisesSection({
   payChanges,
   fromYears,
   range,
+  scope,
+  scopeSources,
 }: {
   payChanges: Summary['trends']['payChanges']
   fromYears: number[]
   range: YearRange
+  /** The pay changes page's filter for the report's area or unit. */
+  scope: PayChangesSearch
+  scopeSources: SectionSource[]
 }) {
   const rows = raiseRows(payChanges, fromYears)
   return (
-    <CollapsibleSection
-      id="raises"
-      title="What raises did people who stayed get?"
-    >
+    <PageSection title="What raises did people who stayed get?">
       {fromYears.length === 0 ? (
         <p>A change needs two consecutive censuses; choose a wider range.</p>
       ) : (
@@ -71,7 +74,7 @@ export function RaisesSection({
         </>
       )}
       <p className="text-sm">
-        <Link className="link" to="/trends/pay-changes">
+        <Link className="link" to="/trends/pay-changes" search={scope}>
           Pay changes by department, area, or class or rank, one pair’s
           distribution, and raises beside the contract terms
         </Link>
@@ -79,9 +82,10 @@ export function RaisesSection({
       <Sources
         sources={[
           { kind: 'fall-range', ...range, computed: CONTINUING_JOB_METHOD },
+          ...scopeSources,
         ]}
         methods={[CHAINED_METHOD]}
       />
-    </CollapsibleSection>
+    </PageSection>
   )
 }

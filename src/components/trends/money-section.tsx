@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { SPEND_METHOD } from '@/lib/census/totals'
+import type { SectionSource } from '@/lib/shared/citation'
 import {
   formatDollarChange,
   formatOrBlank,
@@ -130,9 +131,11 @@ function RiseTable({
 export function MoneySection({
   trends,
   range,
+  scopeSources,
 }: {
   trends: Trends
   range: YearRange
+  scopeSources: SectionSource[]
 }) {
   const contributions = spendContributions(trends)
   return (
@@ -147,7 +150,12 @@ export function MoneySection({
         </Link>{' '}
         projects the E&amp;G fund only, so the two are not the same money.
       </p>
-      <Sources sources={[{ kind: 'fall-range', ...range, computed: METHOD }]} />
+      <Sources
+        sources={[
+          { kind: 'fall-range', ...range, computed: METHOD },
+          ...scopeSources,
+        ]}
+      />
     </PageSection>
   )
 }
