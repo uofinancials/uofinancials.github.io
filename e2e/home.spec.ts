@@ -164,6 +164,7 @@ test('trends lines can be hidden and the page does not scroll sideways at 360px'
     .getByRole('figure', { name: /Salary spend by group/ })
     .locator('.recharts-line')
   await expect(lines).toHaveCount(7)
+  await expect(page.getByText('Only in 2017.')).toBeVisible()
   await page.getByRole('checkbox', { name: 'Faculty' }).uncheck()
   await expect(lines).toHaveCount(6)
   const width = await page.evaluate(() => document.documentElement.scrollWidth)

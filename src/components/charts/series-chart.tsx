@@ -14,6 +14,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import type { ChartMarker } from '@/lib/budget/outlook'
+import { MIN_LINE_POINTS } from '@/lib/shared/format'
 import { cn } from '@/lib/utils'
 import { lineColor } from './line-color'
 
@@ -21,7 +22,6 @@ const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
 const AXIS_PADDING = { left: 16, right: 16 }
 const MARKER_DASH = '4 4'
-const MIN_POINTS = 2
 
 type ChartSeries = {
   key: string
@@ -57,6 +57,7 @@ export function SeriesChart({
   formatAxis,
   label,
   marker,
+  hasLegend = true,
   className,
 }: {
   labels: string[]
@@ -67,10 +68,11 @@ export function SeriesChart({
   label: string
   /** A dashed vertical line at one x label, with its text. */
   marker?: ChartMarker
+  hasLegend?: boolean
   /** Overrides the chart's height classes. */
   className?: string
 }) {
-  if (labels.length < MIN_POINTS) return null
+  if (labels.length < MIN_LINE_POINTS) return null
   const shown = series.filter(({ key }) => !hidden.includes(key))
   const isBelowZero = shown.some(({ values }) =>
     values.some((value) => value !== null && value < 0),
@@ -121,7 +123,7 @@ export function SeriesChart({
               />
             }
           />
-          <Legend itemSorter={null} />
+          {hasLegend && <Legend itemSorter={null} />}
           {series.map((line, index) =>
             hidden.includes(line.key) ? null : (
               <Line

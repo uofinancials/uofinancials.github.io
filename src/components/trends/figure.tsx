@@ -1,4 +1,4 @@
-import { SeriesChart } from '@/components/charts/series-chart'
+import { SmallMultiples } from '@/components/charts/small-multiples'
 import { TrendsTable } from '@/components/trends/table'
 import {
   type CensusMetric,
@@ -10,7 +10,7 @@ import type { Trends } from '@/lib/trends/trends'
 export function TrendsFigure({
   trends,
   metric,
-  hidden,
+  hidden = [],
   label,
 }: {
   trends: Trends
@@ -18,13 +18,15 @@ export function TrendsFigure({
   hidden?: string[]
   label: string
 }) {
-  const { format, formatAxis } = METRIC_INFO[metric]
+  const { format, formatAxis, pick } = METRIC_INFO[metric]
+  const shown = metricValues(trends.series, metric).filter(
+    ({ key }) => !hidden.includes(key),
+  )
   return (
     <>
-      <SeriesChart
+      <SmallMultiples
         labels={trends.total.map(({ year }) => String(year))}
-        series={metricValues(trends.series, metric)}
-        hidden={hidden}
+        series={[{ key: 'Total', values: trends.total.map(pick) }, ...shown]}
         format={format}
         formatAxis={formatAxis}
         label={label}
