@@ -15,7 +15,6 @@ import {
   type TrendFilter,
   type TrendPoint,
   type TrendSeries,
-  type Trends,
 } from './trends.ts'
 
 export const ALL_GROUPS = 'all'
@@ -166,19 +165,11 @@ export const TREND_METRIC_OPTIONS = [
   [CHANGE_METRIC, CHANGE_LABEL] as const,
 ]
 
-export const TOTAL_SERIES = 'Total'
-
-/** The total's and each shown series' metric value per census, the total first; `null` where there is none. */
-export function metricPanels(
-  trends: Trends,
+/** Each series' metric value per census, `null` where it has none. */
+export function metricValues(
+  series: TrendSeries[],
   metric: CensusMetric,
-  hidden: string[],
 ): { key: string; values: (number | null)[] }[] {
   const { pick } = METRIC_INFO[metric]
-  return [
-    { key: TOTAL_SERIES, values: trends.total.map(pick) },
-    ...trends.series
-      .filter(({ key }) => !hidden.includes(key))
-      .map(({ key, points }) => ({ key, values: points.map(pick) })),
-  ]
+  return series.map(({ key, points }) => ({ key, values: points.map(pick) }))
 }

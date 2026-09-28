@@ -1,4 +1,4 @@
-import { SmallMultiples } from '@/components/charts/small-multiples'
+import { SeriesChart } from '@/components/charts/series-chart'
 import { RadioField } from '@/components/fields/radio-field'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
@@ -137,7 +137,7 @@ export function DepartmentBudgetSection({
         options={BREAKDOWN_OPTIONS}
         onSelect={onBreakdown}
       />
-      <SmallMultiples
+      <SeriesChart
         labels={budget.years.map(budgetYearLabel)}
         series={budget.series}
         format={formatDollars}

@@ -7,11 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatOrBlank } from '@/lib/shared/format'
-import {
-  type CensusMetric,
-  METRIC_INFO,
-  TOTAL_SERIES,
-} from '@/lib/trends/search'
+import { type CensusMetric, METRIC_INFO } from '@/lib/trends/search'
 import type { TrendPoint, TrendSeries } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
@@ -39,7 +35,7 @@ export function TrendsTable({
             </TableHead>
           ))}
           <TableHead scope="col" className="text-right">
-            {TOTAL_SERIES}
+            Total
           </TableHead>
         </TableRow>
       </TableHeader>

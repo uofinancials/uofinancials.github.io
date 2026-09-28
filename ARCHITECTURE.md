@@ -83,8 +83,8 @@ flowchart LR
     citations, the navigation and tab link style, and loading and error states.
   - `fields` - form fields, the department or area picker, the removable filter,
     and the sortable column header.
-  - `charts` - line charts and small multiples, the stacked bar chart, bars in
-    table cells, the charts' tables, and series colors.
+  - `charts` - line and stacked bar charts, bars in table cells, the charts'
+    tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
     table.
   - `trends` - the Trends controls, figure, and table, and the pay changes
