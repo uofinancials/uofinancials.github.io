@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 
-/** Opens every closed sources disclosure on the page, so its links can be asserted. */
+/** Opens every closed sources disclosure on the page. */
 export async function openSources(page: Page) {
   const closed = page.locator('details:not([open]) > summary', {
     hasText: /^Sources?\b/,
