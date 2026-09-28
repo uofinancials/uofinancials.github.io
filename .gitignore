@@ -26,5 +26,8 @@ dist-ssr
 # Tooling
 .cache
 .claude
+/PRODUCT.md
+/DESIGN.md
+.impeccable
 test-results
 playwright-report
