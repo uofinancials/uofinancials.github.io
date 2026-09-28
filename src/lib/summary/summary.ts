@@ -5,7 +5,6 @@ import type { OpeRates } from '../../data/ope.ts'
 import type { Outlook } from '../../data/outlook.ts'
 import type { RaiseTerms } from '../../data/raises.ts'
 import type { Summary } from '../../data/summary.ts'
-import { TREND_GROUPS, type TrendGroup } from '../census/groups.ts'
 import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
 import {
   type DepartmentCensus,
@@ -27,8 +26,9 @@ import { peerMedians } from '../people/peer-median.ts'
 import { indexPeople, personYearsOf } from '../people/person-lookup.ts'
 import { firstSavingsYear } from '../scenario/outlook.ts'
 import { raiseRates } from '../scenario/raises.ts'
-import { ALL_GROUPS } from '../trends/search.ts'
-import { buildTrends } from '../trends/trends.ts'
+import { type AreaTrends, areaTrends } from '../trends/area-trends.ts'
+import { continuingPairs, payChangeTrends } from '../trends/pay-changes.ts'
+import { buildTrends, pairYears } from '../trends/trends.ts'
 
 /** The committed data files a summary is derived from. */
 export type SummaryInputs = {
@@ -49,26 +49,40 @@ function latestYears({ manifest, falls, budgets }: SummaryInputs) {
   return years
 }
 
-function summarizeTrends(falls: FallYear[]): Summary['trends'] {
-  const censuses = falls.map(({ censusDate, records }) => ({
+/** Each area's and its units' jobs in every census, placed as the department pages place them. */
+export function buildAreaTrends({
+  manifest,
+  falls,
+  budgets,
+}: SummaryInputs): AreaTrends[] {
+  return areaTrends(toDepartmentCensuses(manifest, falls, budgets))
+}
+
+function summarizeTrends(inputs: SummaryInputs): Summary['trends'] {
+  const censuses = inputs.falls.map(({ censusDate, records }) => ({
     year: censusYearOf(censusDate),
     records,
   }))
   const years = censuses.map(({ year }) => year)
-  const trendsFor = (group: TrendGroup | null) =>
-    buildTrends(censuses, {
+  const from = Math.min(...years)
+  const to = Math.max(...years)
+  return {
+    all: buildTrends(censuses, {
       kind: 'all',
-      group,
+      group: null,
       dept: null,
       position: null,
       jobs: null,
-      from: Math.min(...years),
-      to: Math.max(...years),
-    })
-  return Object.fromEntries([
-    [ALL_GROUPS, trendsFor(null)],
-    ...TREND_GROUPS.map((group) => [group, trendsFor(group)]),
-  ])
+      from,
+      to,
+    }),
+    payChanges: payChangeTrends(
+      continuingPairs(inputs.falls),
+      pairYears(years, from, to),
+      null,
+    ),
+    areas: buildAreaTrends(inputs).map(({ units, ...area }) => area),
+  }
 }
 
 function summarizeDepartments(years: {
@@ -140,7 +154,7 @@ function summarizePeople(falls: FallYear[]): Summary['people'] {
 export function buildSummary(inputs: SummaryInputs): Summary {
   const years = latestYears(inputs)
   return {
-    trends: summarizeTrends(inputs.falls),
+    trends: summarizeTrends(inputs),
     departments: summarizeDepartments(years),
     home: summarizeHome(inputs, years.now),
     people: summarizePeople(inputs.falls),

@@ -20,7 +20,6 @@ import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import { peerKeyFor } from '@/lib/people/peer-group'
 import type { SectionSource } from '@/lib/shared/citation'
 import {
-  ALL_GROUPS,
   CENSUS_METRICS,
   type CensusMetric,
   isSummaryView,
@@ -41,8 +40,6 @@ import {
 } from '@/lib/trends/trends'
 
 const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Dollars are as published, not adjusted for inflation. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Groups are this site’s mapping of UO’s EEO categories, below.`
-
-const EMPTY_TRENDS: Trends = { series: [], total: [] }
 
 function useAreaJobs(area: string | null, falls: FallYear[]) {
   const { fiscalYears } = useLoaderData({ from: '/trends' })
@@ -95,9 +92,8 @@ function useTrends() {
   )
   const trends = useMemo(() => {
     if (!isSummary) return buildTrends(censuses, filter)
-    const full = summary.trends[group ?? ALL_GROUPS]
-    return full ? sliceTrends(full, from, to) : EMPTY_TRENDS
-  }, [censuses, isSummary, filter, summary, group, from, to])
+    return sliceTrends(summary.trends.all, from, to)
+  }, [censuses, isSummary, filter, summary, from, to])
   const names = useMemo(
     () => ({
       ...filterNames(censuses, { dept, position }),

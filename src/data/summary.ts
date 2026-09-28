@@ -22,6 +22,28 @@ const trendsSchema = z.strictObject({
   total: z.array(trendPointSchema),
 })
 
+const changeSeriesSchema = z.strictObject({
+  key: z.string(),
+  points: z.array(
+    z.strictObject({
+      fromYear: year,
+      pairs: count,
+      median: z.number().nullable(),
+    }),
+  ),
+})
+
+const codeTrendSchema = z.strictObject({
+  code: z.string(),
+  name: z.string(),
+  points: z.array(trendPointSchema),
+})
+
+/** An area's units' and pay departments' figures in each census, written by `pnpm scrape summary` beside the summary. */
+export const areaTrendsSchema = codeTrendSchema.extend({
+  units: z.array(codeTrendSchema),
+})
+
 const areaSchema = z.strictObject({ code: z.string(), name: z.string() })
 
 const tableYearSchema = z.strictObject({ year, fiscalYear: year })
@@ -89,8 +111,14 @@ const nameEntrySchema = z.strictObject({
 
 /** Figures derived from the committed data files by `pnpm scrape summary`, for the pages' default views. */
 export const summarySchema = z.strictObject({
-  /** Every census, kind "all", unfiltered; keyed by the opened group, or "all" for none. */
-  trends: z.record(z.string(), trendsSchema),
+  trends: z.strictObject({
+    /** Every census's jobs by group. */
+    all: trendsSchema,
+    /** Continuing jobs' median change in salary rate for every census pair, all of them then by group. */
+    payChanges: z.array(changeSeriesSchema),
+    /** Each area's jobs in every census. */
+    areas: z.array(codeTrendSchema),
+  }),
   departments: z.strictObject({
     now: tableYearSchema,
     before: tableYearSchema,

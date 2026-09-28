@@ -70,9 +70,8 @@ test('a metric keeps only the series with a value for it', () => {
 
 test('the summary holds every job under a census measure, whatever the group, years, or hidden lines', () => {
   expect(isSummaryView({})).toBe(true)
-  expect(
-    isSummaryView({ metric: 'fte', group: 'Faculty', from: 2018, hide: ['x'] }),
-  ).toBe(true)
+  expect(isSummaryView({ metric: 'fte', from: 2018, hide: ['x'] })).toBe(true)
+  expect(isSummaryView({ group: 'Faculty' })).toBe(false)
   expect(isSummaryView({ kind: 'classified' })).toBe(false)
   expect(isSummaryView({ dept: '223100' })).toBe(false)
   expect(isSummaryView({ area: '222000' })).toBe(false)
