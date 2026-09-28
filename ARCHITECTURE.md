@@ -86,8 +86,8 @@ flowchart LR
   - `layout` - the shared layout with the independence notice and error report
     link, page sections, stat cards, the sources disclosure and inline source
     citations, the navigation and tab link style, and loading and error states.
-  - `fields` - form fields, the department or area picker, the removable filter,
-    and the sortable column header.
+  - `fields` - form fields, the department or area picker, a type-to-search
+    picker, the removable filter, and the sortable column header.
   - `charts` - line, index, and stacked bar charts, ranked bars of a change,
     bars in table cells, the charts' tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
@@ -181,9 +181,10 @@ flowchart LR
   census, then one tab per question: each group's growth as ranked bars or
   indexed over time; each group's share of spend and of its change; the change
   in spend split into FTE and pay per FTE; continuing jobs' median raises by
-  group and census pair; the pick against its area and the university; and how
-  groups are defined; driven by `src/lib/trends` over the summary and, for a
-  picked area or unit, that area's trends file.
+  group and census pair; the pick against up to three areas or units from
+  anywhere and the university; and how groups are defined; driven by
+  `src/lib/trends` over the summary and, for a picked area or unit, that area's
+  trends file.
 - `/trends/pay-changes` - for continuing jobs in each pair of consecutive
   censuses, the median change in salary rate by group, the counts of changed
   class, rank, and title, and one pair's distribution of changes and median
