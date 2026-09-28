@@ -14,8 +14,8 @@ import {
   summarySchema,
 } from '../../src/data/summary.ts'
 import {
-  buildAreaTrends,
   buildSummary,
+  buildTrendScopes,
   type SummaryInputs,
 } from '../../src/lib/summary/summary.ts'
 import {
@@ -57,8 +57,12 @@ export function deriveSummary(manifest: Manifest): {
     OPE_DATA_PATH,
     RAISES_DATA_PATH,
   ].map((file) => path.relative(DATA_DIR, file))
-  const areas = buildAreaTrends(inputs)
-  return { summary: buildSummary(inputs, areas), areas, files }
+  const scopes = buildTrendScopes(inputs)
+  return {
+    summary: buildSummary(inputs, scopes),
+    areas: scopes.areas,
+    files,
+  }
 }
 
 /** Each derived file's text by its path: the summary, then one file per area. */

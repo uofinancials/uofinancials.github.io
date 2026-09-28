@@ -127,7 +127,14 @@ function AreaCompare({
   onChange: (patch: ReportSearch) => void
 }) {
   const { data } = useSuspenseQuery(areaTrendsQuery(area.code))
-  const units = inRange(data.units, range)
+  const units = inRange(
+    data.units.map(({ code, name, trends }) => ({
+      code,
+      name,
+      points: trends.total,
+    })),
+    range,
+  )
   const picked = units.find(({ code }) => code === unit) ?? null
   const byName = [...units].sort((a, b) => a.name.localeCompare(b.name))
   return (

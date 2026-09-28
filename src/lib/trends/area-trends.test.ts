@@ -1,8 +1,9 @@
 import { expect, test } from 'vitest'
 import type { BudgetYear } from '@/data/budget'
 import { toDepartmentCensus } from '@/lib/departments/jobs'
-import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { areaTrends } from './area-trends'
+import { continuingPairs } from './pay-changes'
 
 const BUDGET: BudgetYear = {
   fiscalYear: 2026,
@@ -23,40 +24,40 @@ const BUDGET: BudgetYear = {
 const BIOLOGY = { code: '223100', name: 'CAS Biology' }
 const ENGLISH = { code: '222050', name: 'CAS English' }
 
-function jobs(count: number, overrides: Parameters<typeof unclassifiedJob>[0]) {
-  return Array.from({ length: count }, () => unclassifiedJob(overrides))
+function jobs(
+  names: string[],
+  overrides: Parameters<typeof unclassifiedJob>[0],
+) {
+  return names.map((name) => unclassifiedJob({ ...overrides, name }))
 }
 
-const CENSUSES = [
-  toDepartmentCensus(
-    {
-      year: 2024,
-      records: [
-        ...jobs(3, { payDepartment: BIOLOGY }),
-        unclassifiedJob({ payDepartment: ENGLISH, apptPercent: 50 }),
-        classifiedJob({ payDepartment: { code: '480000', name: 'Athletics' } }),
-      ],
-    },
-    BUDGET,
-  ),
-  toDepartmentCensus(
-    {
-      year: 2025,
-      records: [
-        ...jobs(2, {
-          payDepartment: BIOLOGY,
-          annualSalaryRateCents: 6_000_000,
-        }),
-        ...jobs(3, { payDepartment: ENGLISH }),
-      ],
-    },
-    BUDGET,
-  ),
+const FALL_2024 = [
+  ...jobs(['A', 'B', 'C'], { payDepartment: BIOLOGY }),
+  ...jobs(['E1'], { payDepartment: ENGLISH, apptPercent: 50 }),
+  classifiedJob({
+    name: 'X',
+    payDepartment: { code: '480000', name: 'Athletics' },
+  }),
+]
+const FALL_2025 = [
+  ...jobs(['A', 'B', 'C'], {
+    payDepartment: BIOLOGY,
+    annualSalaryRateCents: 6_000_000,
+  }),
+  ...jobs(['E1', 'E2', 'E3'], { payDepartment: ENGLISH }),
 ]
 
-test('an area’s figures are the jobs each census places in it, and a unit’s those paid under its code', () => {
-  const [arts] = areaTrends(CENSUSES)
-  expect(arts?.points).toEqual([
+const AREAS = areaTrends(
+  [
+    toDepartmentCensus({ year: 2024, records: FALL_2024 }, BUDGET),
+    toDepartmentCensus({ year: 2025, records: FALL_2025 }, BUDGET),
+  ],
+  continuingPairs([census(2024, FALL_2024), census(2025, FALL_2025)]),
+)
+
+test('an area’s jobs are those each census places in it, by group, and a unit’s those paid under its code', () => {
+  const [arts] = AREAS
+  expect(arts?.trends.total).toEqual([
     {
       year: 2024,
       jobs: 4,
@@ -66,61 +67,54 @@ test('an area’s figures are the jobs each census places in it, and a unit’s 
     },
     {
       year: 2025,
-      jobs: 5,
-      spendCents: 27_000_000,
-      fteHundredths: 500,
+      jobs: 6,
+      spendCents: 33_000_000,
+      fteHundredths: 600,
+      medianRateCents: 5_500_000,
+    },
+  ])
+  expect(arts?.trends.series.map(({ key }) => key)).toEqual(['Faculty'])
+  expect(arts?.units.map(({ name }) => name)).toEqual([
+    'CAS Biology',
+    'CAS English',
+  ])
+  expect(arts?.units[1]?.trends.total).toEqual([
+    {
+      year: 2024,
+      jobs: 1,
+      spendCents: null,
+      fteHundredths: 50,
+      medianRateCents: null,
+    },
+    {
+      year: 2025,
+      jobs: 3,
+      spendCents: 15_000_000,
+      fteHundredths: 300,
       medianRateCents: 5_000_000,
     },
   ])
-  expect(arts?.units).toEqual([
-    {
-      ...BIOLOGY,
-      points: [
-        {
-          year: 2024,
-          jobs: 3,
-          spendCents: 15_000_000,
-          fteHundredths: 300,
-          medianRateCents: 5_000_000,
-        },
-        {
-          year: 2025,
-          jobs: 2,
-          spendCents: null,
-          fteHundredths: 200,
-          medianRateCents: null,
-        },
-      ],
-    },
-    {
-      ...ENGLISH,
-      points: [
-        {
-          year: 2024,
-          jobs: 1,
-          spendCents: null,
-          fteHundredths: 50,
-          medianRateCents: null,
-        },
-        {
-          year: 2025,
-          jobs: 3,
-          spendCents: 15_000_000,
-          fteHundredths: 300,
-          medianRateCents: 5_000_000,
-        },
-      ],
-    },
+})
+
+test('a pair counts where its earlier job is, and a median needs three pairs', () => {
+  const [arts] = AREAS
+  expect(arts?.payChanges[0]?.points).toEqual([
+    { fromYear: 2024, pairs: 4, median: 0.2 },
+  ])
+  const [biology, english] = arts?.units ?? []
+  expect(biology?.payChanges[0]?.points[0]?.median).toBeCloseTo(0.2)
+  expect(english?.payChanges[0]?.points).toEqual([
+    { fromYear: 2024, pairs: 1, median: null },
   ])
 })
 
 test('a unit with no job in any census is left out, and an area keeps a census with none', () => {
-  const [, athletics] = areaTrends(CENSUSES)
+  const [, athletics] = AREAS
   expect(athletics?.code).toBe('480000')
   expect(athletics?.units).toEqual([])
-  expect(athletics?.points.map(({ jobs }) => jobs)).toEqual([1, 0])
+  expect(athletics?.trends.total.map(({ jobs }) => jobs)).toEqual([1, 0])
 })
 
 test('no census gives no areas', () => {
-  expect(areaTrends([])).toEqual([])
+  expect(areaTrends([], [])).toEqual([])
 })

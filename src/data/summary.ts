@@ -39,9 +39,17 @@ const codeTrendSchema = z.strictObject({
   points: z.array(trendPointSchema),
 })
 
-/** An area's units' and pay departments' figures in each census, written by `pnpm scrape summary` beside the summary. */
-export const areaTrendsSchema = codeTrendSchema.extend({
-  units: z.array(codeTrendSchema),
+/** An area's or unit's jobs by group in each census, and its continuing jobs' median pay change by group for each census pair. */
+const scopeTrendsSchema = z.strictObject({
+  code: z.string(),
+  name: z.string(),
+  trends: trendsSchema,
+  payChanges: z.array(changeSeriesSchema),
+})
+
+/** An area's figures and each of its units' and pay departments', written by `pnpm scrape summary` beside the summary. */
+export const areaTrendsSchema = scopeTrendsSchema.extend({
+  units: z.array(scopeTrendsSchema),
 })
 
 const areaSchema = z.strictObject({ code: z.string(), name: z.string() })
@@ -139,5 +147,6 @@ export const summarySchema = z.strictObject({
 
 export type Summary = z.infer<typeof summarySchema>
 export type CodeTrend = z.infer<typeof codeTrendSchema>
+export type ScopeTrends = z.infer<typeof scopeTrendsSchema>
 export type AreaTrends = z.infer<typeof areaTrendsSchema>
 export type NameEntry = z.infer<typeof nameEntrySchema>

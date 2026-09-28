@@ -1,62 +1,110 @@
 import type { FallRecord } from '../../data/fall.ts'
-import type { AreaTrends, CodeTrend } from '../../data/summary.ts'
+import type { AreaTrends, ScopeTrends } from '../../data/summary.ts'
 import { departmentIndex } from '../departments/codes.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
-import { measureJobs } from './trends.ts'
+import { type ContinuingPair, payChangeTrends } from './pay-changes.ts'
+import { buildTrends, pairYears, type TrendFilter } from './trends.ts'
 
-function groupBy(
-  records: FallRecord[],
-  keyOf: (record: FallRecord) => string | null,
-): Map<string, FallRecord[]> {
-  const groups = new Map<string, FallRecord[]>()
-  for (const record of records) {
-    const key = keyOf(record)
+function groupBy<T>(
+  items: T[],
+  keyOf: (item: T) => string | null,
+): Map<string, T[]> {
+  const groups = new Map<string, T[]>()
+  for (const item of items) {
+    const key = keyOf(item)
     if (key === null) continue
     const members = groups.get(key) ?? []
-    members.push(record)
+    members.push(item)
     groups.set(key, members)
   }
   return groups
 }
 
-/**
- * Each area of the latest census's budget year, with its units and pay
- * departments as that census's department index lists them. An area's jobs
- * are those each census places in it, and a unit's those paid under its code,
- * as their department pages count them.
- */
-export function areaTrends(censuses: DepartmentCensus[]): AreaTrends[] {
-  const sorted = [...censuses].sort((a, b) => a.year - b.year)
-  const latest = sorted.at(-1)
-  if (!latest) return []
-  const placed = sorted.map((census) => ({
-    year: census.year,
-    byArea: groupBy(census.records, (record) => census.assign(record).area),
-    byCode: groupBy(census.records, (record) => record.payDepartment.code),
+/** The censuses and pairs every scope is built from, and the range they cover. */
+type Frame = {
+  censuses: DepartmentCensus[]
+  pairs: ContinuingPair[]
+  filter: TrendFilter
+  fromYears: number[]
+}
+
+/** Builds a scope's trends and pay changes from the jobs and pairs whose key, by `recordKey`, is its code. */
+function scopeBuilder(
+  { censuses, pairs, filter, fromYears }: Frame,
+  recordKey: (record: FallRecord, year: number) => string | null,
+) {
+  const placed = censuses.map(({ year, records }) => ({
+    year,
+    records: groupBy(records, (record) => recordKey(record, year)),
   }))
-  const trendOf = (
-    code: string,
-    name: string,
-    pick: (census: (typeof placed)[number]) => Map<string, FallRecord[]>,
-  ): CodeTrend => ({
+  const pairsOf = groupBy(pairs, ({ from, fromYear }) =>
+    recordKey(from, fromYear),
+  )
+  return (code: string, name: string): ScopeTrends => ({
     code,
     name,
-    points: placed.map((census) => ({
-      year: census.year,
-      ...measureJobs(pick(census).get(code) ?? []),
-    })),
+    trends: buildTrends(
+      placed.map(({ year, records }) => ({
+        year,
+        records: records.get(code) ?? [],
+      })),
+      filter,
+    ),
+    payChanges: payChangeTrends(pairsOf.get(code) ?? [], fromYears, null),
   })
+}
+
+/**
+ * Each area of the latest census's budget year, with its units and pay
+ * departments as that census's department index lists them: jobs by group in
+ * every census, and continuing jobs' median pay change by group for every
+ * pair. An area's jobs and pairs are those each census places in it, and a
+ * unit's those paid under its code, as their department pages count them; a
+ * pair belongs where its earlier job is.
+ */
+export function areaTrends(
+  censuses: DepartmentCensus[],
+  pairs: ContinuingPair[],
+): AreaTrends[] {
+  const sorted = [...censuses].sort((a, b) => a.year - b.year)
+  const latest = sorted.at(-1)
+  const first = sorted[0]
+  if (!latest || !first) return []
+  const frame: Frame = {
+    censuses: sorted,
+    pairs,
+    filter: {
+      kind: 'all',
+      group: null,
+      dept: null,
+      position: null,
+      jobs: null,
+      from: first.year,
+      to: latest.year,
+    },
+    fromYears: pairYears(
+      sorted.map(({ year }) => year),
+      first.year,
+      latest.year,
+    ),
+  }
+  const byYear = new Map(sorted.map((census) => [census.year, census]))
+  const areaScope = scopeBuilder(
+    frame,
+    (record, year) => byYear.get(year)?.assign(record).area ?? null,
+  )
+  const unitScope = scopeBuilder(frame, (record) => record.payDepartment.code)
   return departmentIndex(latest).flatMap(({ code, name, entries }) =>
     code === null
       ? []
       : [
           {
-            ...trendOf(code, name, ({ byArea }) => byArea),
+            ...areaScope(code, name),
             units: entries
-              .map((entry) =>
-                trendOf(entry.code, entry.name, ({ byCode }) => byCode),
-              )
-              .filter(({ points }) => points.some(({ jobs }) => jobs > 0)),
+              .map((entry) => unitScope(entry.code, entry.name))
+              .filter(({ trends }) =>
+                trends.total.some(({ jobs }) => jobs > 0),
+              ),
           },
         ],
   )
