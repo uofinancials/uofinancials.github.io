@@ -94,7 +94,9 @@ test('the filters and the growth view are held in the link, and every tab compar
     }),
   ).toBeVisible()
   await tab(page, 'What raises did people get?').click()
-  await expect(page.getByRole('group', { name: 'Measure' })).toHaveCount(0)
+  await expect(page.getByRole('group', { name: 'Select measure' })).toHaveCount(
+    0,
+  )
   const raises = page.getByRole('table', {
     name: /^Median change in salary rate/,
   })

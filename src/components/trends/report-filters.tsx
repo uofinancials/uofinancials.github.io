@@ -94,7 +94,7 @@ export function ReportFilters({
         />
         {measure && (
           <RadioField
-            legend="Measure"
+            legend="Select measure"
             name="measure"
             value={measure}
             options={REPORT_METRIC_OPTIONS}
