@@ -6,6 +6,7 @@ import {
   payChangesSearchOf,
   reportScope,
   resolveCompared,
+  scopeSearchOf,
 } from './scope'
 
 const EMPTY = { trends: { series: [], total: [] }, payChanges: [] }
@@ -107,4 +108,15 @@ test('compared codes resolve to totals from the summary or their area’s file, 
     ['480000', 'Athletics'],
     ['222050', 'CAS English'],
   ])
+})
+
+test('picking an area scopes to it alone, and picking a unit scopes to it within its area', () => {
+  expect(scopeSearchOf(AREAS, '480000')).toEqual({
+    area: '480000',
+    unit: undefined,
+  })
+  expect(scopeSearchOf(AREAS, '222050')).toEqual({
+    area: '222000',
+    unit: '222050',
+  })
 })

@@ -116,19 +116,23 @@ test('a college or VP area and a unit within it scope every tab, and the compari
       name: /^Arts & Sciences, College of [\d,]+ -4\.1% \+40\.\d%$/,
     }),
   ).toBeVisible()
-  const areaBox = page.getByRole('combobox', { name: 'College or VP area' })
-  await areaBox.fill('arts sci')
-  await page
-    .getByRole('listbox', { name: 'College or VP area' })
+  const scopeBox = page.getByRole('combobox', {
+    name: 'College, VP area, or unit',
+  })
+  const scopeList = page.getByRole('listbox', {
+    name: 'College, VP area, or unit',
+  })
+  await scopeBox.fill('arts sci')
+  await scopeList
     .getByRole('option', { name: /^Arts & Sciences, College of/ })
     .click()
   await expect(page).toHaveURL(/area=.*222000/)
-  await expect(areaBox).toHaveValue('Arts & Sciences, College of')
+  await expect(scopeBox).toHaveValue('Arts & Sciences, College of')
   await page.getByRole('radio', { name: 'FTE' }).check()
-  await page
-    .getByRole('combobox', { name: 'Unit' })
-    .selectOption({ label: 'CAS English' })
-  await expect(page).toHaveURL(/unit=.*222050/)
+  await scopeBox.fill('cas english')
+  await scopeList.getByRole('option', { name: /^CAS English/ }).click()
+  await expect(page).toHaveURL(/area=.*222000.*unit=.*222050/)
+  await expect(scopeBox).toHaveValue('CAS English')
   await page.reload()
   const main = page.getByRole('main')
   await expect(
@@ -161,9 +165,11 @@ test('links made before the report keep what it reads, and an area link scopes i
   await page.goto('/trends?area=222000&metric=fte')
   await expect(page).not.toHaveURL(/metric/)
   await expect(
-    page.getByRole('combobox', { name: 'College or VP area' }),
+    page.getByRole('combobox', { name: 'College, VP area, or unit' }),
   ).toHaveValue('Arts & Sciences, College of')
-  await page.getByRole('button', { name: 'Clear College or VP area' }).click()
+  await page
+    .getByRole('button', { name: 'Clear College, VP area, or unit' })
+    .click()
   await expect(page).not.toHaveURL(/area=/)
   await expect(
     page.getByRole('heading', {
@@ -186,7 +192,7 @@ test('the filters stay in view and a tab keeps the reader’s place', async ({
   await tabs.scrollIntoViewIfNeeded()
   await page.mouse.wheel(0, 400)
   await expect(
-    page.getByRole('combobox', { name: 'College or VP area' }),
+    page.getByRole('combobox', { name: 'College, VP area, or unit' }),
   ).toBeInViewport()
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
   await tab(page, 'Where did the money go?').click()
@@ -199,7 +205,7 @@ test('on a phone the filters fold behind one button, the growth tab is ranked ba
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
   await page.goto('/trends')
-  const area = page.getByRole('combobox', { name: 'College or VP area' })
+  const area = page.getByRole('combobox', { name: 'College, VP area, or unit' })
   await expect(area).toBeHidden()
   await page.getByRole('button', { name: /Filters$/ }).click()
   await expect(area).toBeVisible()

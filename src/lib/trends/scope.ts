@@ -6,7 +6,7 @@ import type {
 } from '../../data/summary.ts'
 import { totalsOf } from './compare.ts'
 import type { ChangeSeries } from './pay-changes.ts'
-import type { PayChangesSearch } from './search.ts'
+import type { PayChangesSearch, ReportSearch } from './search.ts'
 import type { Trends } from './trends.ts'
 
 export const ALL_OF_UO = 'All of UO'
@@ -96,4 +96,15 @@ export function resolveCompared(
       .find((listed) => listed.code === code)
     return unit ? [totalsOf(unit)] : []
   })
+}
+
+/** The report's search for a picked code: an area alone, or a unit with the area that lists it. */
+export function scopeSearchOf(
+  areas: SummaryArea[],
+  code: string,
+): ReportSearch {
+  const area = areaOfCode(areas, code)
+  return area === code || area === null
+    ? { area: code, unit: undefined }
+    : { area, unit: code }
 }

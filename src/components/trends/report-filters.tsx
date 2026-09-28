@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { OptionSearch } from '@/components/fields/option-search'
 import { RadioField } from '@/components/fields/radio-field'
-import { SelectField } from '@/components/fields/select-field'
 import { YearRangeFields } from '@/components/fields/year-range-fields'
-import type { CodeTrend, ScopeTrends } from '@/data/summary'
-import { ALL_OF_UO, type ReportScope } from '@/lib/trends/scope'
+import type { SummaryArea } from '@/data/summary'
+import type { CompareOption } from '@/lib/trends/compare'
+import { ALL_OF_UO, type ReportScope, scopeSearchOf } from '@/lib/trends/scope'
 import {
   REPORT_METRIC_OPTIONS,
   type ReportMetric,
@@ -12,8 +12,6 @@ import {
   type YearRange,
 } from '@/lib/trends/search'
 import { cn } from '@/lib/utils'
-
-const EVERY = ''
 
 function FiltersToggle({
   isOpen,
@@ -39,57 +37,21 @@ function FiltersToggle({
   )
 }
 
-function ScopeFields({
-  areas,
-  area,
-  units,
-  unit,
-  onChange,
-}: {
-  areas: CodeTrend[]
-  area: string | null
-  units: ScopeTrends[]
-  unit: string | null
-  onChange: (patch: ReportSearch) => void
-}) {
-  const options = areas.map(({ code, name }) => ({ code, name, area: null }))
-  return (
-    <>
-      <OptionSearch
-        label="College or VP area"
-        options={options}
-        selected={options.find(({ code }) => code === area) ?? null}
-        placeholder={ALL_OF_UO}
-        onAdd={(code) => onChange({ area: code, unit: undefined })}
-        onClear={() => onChange({ area: undefined, unit: undefined })}
-      />
-      {units.length > 0 && (
-        <SelectField
-          label="Unit"
-          value={unit ?? EVERY}
-          options={[
-            [EVERY, 'The whole area'],
-            ...units.map(({ code, name }): [string, string] => [code, name]),
-          ]}
-          onSelect={(value) => onChange({ unit: value || undefined })}
-        />
-      )}
-    </>
-  )
-}
-
 /** The report's filters in one card, kept in view as the page scrolls on a wide screen and folded behind a button on a phone; Measure shows only where a tab uses it. */
 export function ReportFilters({
   years,
   range,
   areas,
+  options,
   scope,
   measure,
   onChange,
 }: {
   years: number[]
   range: YearRange
-  areas: CodeTrend[]
+  areas: SummaryArea[]
+  /** Every area and unit, the choices of the scope search. */
+  options: CompareOption[]
   scope: ReportScope
   /** `null` on a tab no measure applies to. */
   measure: ReportMetric | null
@@ -118,12 +80,17 @@ export function ReportFilters({
           to={range.to}
           onChange={onChange}
         />
-        <ScopeFields
-          areas={areas}
-          area={scope.area?.code ?? null}
-          units={scope.units}
-          unit={scope.unit?.code ?? null}
-          onChange={onChange}
+        <OptionSearch
+          label="College, VP area, or unit"
+          options={options}
+          selected={
+            options.find(
+              ({ code }) => code === (scope.unit ?? scope.area)?.code,
+            ) ?? null
+          }
+          placeholder={ALL_OF_UO}
+          onAdd={(code) => onChange(scopeSearchOf(areas, code))}
+          onClear={() => onChange({ area: undefined, unit: undefined })}
         />
         {measure && (
           <RadioField

@@ -177,6 +177,7 @@ export function TrendsPage() {
         years={years}
         range={{ from: view.from, to: view.to }}
         areas={summary.trends.areas}
+        options={report.options}
         scope={scope}
         measure={MEASURED_TABS.includes(view.tab) ? view.measure : null}
         onChange={handleChange}
