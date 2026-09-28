@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
-import { PageSection } from '@/components/page-section'
+import { PageSection } from '@/components/layout/page-section'
 import {
   Table,
   TableBody,

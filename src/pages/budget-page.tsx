@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { CitedLine } from '@/components/cited-line'
-import { OutlookCasesTable } from '@/components/outlook-cases-table'
-import { OutlookLinesTable } from '@/components/outlook-lines-table'
-import { PageSection } from '@/components/page-section'
-import { SeriesChart } from '@/components/series-chart'
+import { OutlookCasesTable } from '@/components/budget/outlook-cases-table'
+import { OutlookLinesTable } from '@/components/budget/outlook-lines-table'
+import { SeriesChart } from '@/components/charts/series-chart'
+import { CitedLine } from '@/components/layout/cited-line'
+import { PageSection } from '@/components/layout/page-section'
 import {
   Table,
   TableBody,

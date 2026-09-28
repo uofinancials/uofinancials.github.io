@@ -8,10 +8,9 @@ import {
   type RouterHistory,
   redirect,
 } from '@tanstack/react-router'
-import { PageError } from '@/components/page-error'
-import { PageLoading } from '@/components/page-loading'
-import { peopleIndexQuery } from '@/components/people-index-query'
-import { SiteLayout } from '@/components/site-layout'
+import { PageError } from '@/components/layout/page-error'
+import { PageLoading } from '@/components/layout/page-loading'
+import { SiteLayout } from '@/components/layout/site-layout'
 import { orgCode } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import {
@@ -23,6 +22,7 @@ import {
   raiseTermsQuery,
   summaryQuery,
 } from '@/data/queries'
+import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { resolveCensusYear } from '@/lib/census/search'
 import {
   fiscalYearForCensus,

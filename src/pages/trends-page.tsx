@@ -1,10 +1,10 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { PayChangesSection } from '@/components/pay-changes-section'
-import { SourceCitation } from '@/components/source-citation'
-import { TrendsControls } from '@/components/trends-controls'
-import { TrendsFigure } from '@/components/trends-figure'
+import { SourceCitation } from '@/components/layout/source-citation'
+import { TrendsControls } from '@/components/trends/controls'
+import { TrendsFigure } from '@/components/trends/figure'
+import { PayChangesSection } from '@/components/trends/pay-changes-section'
 import {
   Table,
   TableBody,
@@ -13,10 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useDepartmentCensuses } from '@/components/use-department-censuses'
-import { usePayChanges } from '@/components/use-pay-changes'
 import { censusYearOf, type FallYear } from '@/data/fall'
 import { fallYearQuery, summaryQuery, toData } from '@/data/queries'
+import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
+import { usePayChanges } from '@/hooks/use-pay-changes'
 import {
   EXEC_OTHER_CATEGORY,
   EXECUTIVE_GRADE,

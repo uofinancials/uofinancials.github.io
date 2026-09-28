@@ -5,13 +5,13 @@ import {
   useNavigate,
   useSearch,
 } from '@tanstack/react-router'
-import { AreaBreakdown } from '@/components/area-breakdown'
-import { CitedLine } from '@/components/cited-line'
-import { PageSection } from '@/components/page-section'
-import { ScenarioAnswers } from '@/components/scenario-answers'
-import { SeriesChart } from '@/components/series-chart'
-import { SourceCitation } from '@/components/source-citation'
-import { TopPaidTable } from '@/components/top-paid-table'
+import { SeriesChart } from '@/components/charts/series-chart'
+import { AreaBreakdown } from '@/components/home/area-breakdown'
+import { ScenarioAnswers } from '@/components/home/scenario-answers'
+import { TopPaidTable } from '@/components/home/top-paid-table'
+import { CitedLine } from '@/components/layout/cited-line'
+import { PageSection } from '@/components/layout/page-section'
+import { SourceCitation } from '@/components/layout/source-citation'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import {
