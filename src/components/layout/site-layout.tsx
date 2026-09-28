@@ -1,4 +1,5 @@
 import { Link, Outlet } from '@tanstack/react-router'
+import { NAV_LINK_CLASS } from '@/components/layout/nav-link-class'
 
 const REPO_URL = 'https://github.com/uofinancials/uofinancials.github.io'
 const ISSUES_URL = `${REPO_URL}/issues`
@@ -26,10 +27,7 @@ export function SiteLayout() {
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               {NAV_LINKS.map(([to, label]) => (
                 <li key={to}>
-                  <Link
-                    to={to}
-                    className="text-muted-foreground underline-offset-4 hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-foreground aria-[current=page]:underline"
-                  >
+                  <Link to={to} className={NAV_LINK_CLASS}>
                     {label}
                   </Link>
                 </li>

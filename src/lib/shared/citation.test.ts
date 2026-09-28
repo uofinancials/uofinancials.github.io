@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import type { Manifest } from '@/data/manifest'
 import { fallFile } from '@/test/fall-records'
-import { citeSource, listCitedDocuments } from './citation'
+import { citeSource, listCitedDocuments, sourcesSummary } from './citation'
 
 const HASH = 'a'.repeat(64)
 
@@ -169,4 +169,24 @@ test('cited documents are listed once each with their term counts', () => {
       citations: 1,
     },
   ])
+})
+
+test('summarizes a section sources by count and whether one is computed', () => {
+  const fall = { kind: 'fall', year: 2025 } as const
+  const computed = { ...fall, computed: 'a sum.' }
+  const document = {
+    kind: 'document',
+    source: {
+      url: 'https://example.org',
+      document: 'Doc',
+      retrievedOn: '2026-09-24',
+    },
+  } as const
+  expect(sourcesSummary([fall], false)).toBe('Source')
+  expect(sourcesSummary([computed], false)).toBe('Source and method')
+  expect(sourcesSummary([fall, document, fall], false)).toBe('Sources (3)')
+  expect(sourcesSummary([fall, document], true)).toBe('Sources and method (2)')
+  expect(sourcesSummary([document, computed], false)).toBe(
+    'Sources and method (2)',
+  )
 })

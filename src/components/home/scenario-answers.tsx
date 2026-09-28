@@ -1,9 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import { CitedLine } from '@/components/layout/cited-line'
 import { PageSection } from '@/components/layout/page-section'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
-import { type CitedSource, sourceKey } from '@/data/cited-source'
+import type { CitedSource } from '@/data/cited-source'
 import type { Projection } from '@/data/outlook'
 import type { ExampleAnswer } from '@/lib/home/home'
 import { EG_SHARE_METHOD } from '@/lib/scenario/eg-share'
@@ -12,6 +11,7 @@ import { OPE_GROUP_METHOD } from '@/lib/scenario/ope-groups'
 import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario/outlook'
 import { SCENARIO_METHOD } from '@/lib/scenario/scenario'
 import { toSearchRules } from '@/lib/scenario/search'
+import type { SectionSource } from '@/lib/shared/citation'
 import { formatDollars, formatShare } from '@/lib/shared/format'
 import { RAISE_ROW_METHOD } from '@/lib/trends/raise-groups'
 
@@ -77,23 +77,18 @@ export function ScenarioAnswers({
         from pay cuts, thresholds, hiring and raise freezes, and department
         eliminations.
       </p>
-      <details className="text-sm">
-        <summary>How these are estimated</summary>
-        <ul className="mt-2 list-disc space-y-2 pl-6">
-          {METHODS.map((method) => (
-            <li key={method}>{method}</li>
-          ))}
-        </ul>
-      </details>
-      <div className="space-y-1">
-        <SourceCitation source={{ kind: 'fall', year }} />
-        <SourceCitation source={{ kind: 'budget', fiscalYear }} />
-        <SourceCitation source={{ kind: 'rates' }} />
-        <CitedLine source={projection.source} />
-        {raiseSources.map((source) => (
-          <CitedLine key={sourceKey(source)} source={source} />
-        ))}
-      </div>
+      <Sources
+        methods={METHODS}
+        sources={[
+          { kind: 'fall', year },
+          { kind: 'budget', fiscalYear },
+          { kind: 'rates' },
+          { kind: 'document', source: projection.source },
+          ...raiseSources.map(
+            (source): SectionSource => ({ kind: 'document', source }),
+          ),
+        ]}
+      />
     </PageSection>
   )
 }

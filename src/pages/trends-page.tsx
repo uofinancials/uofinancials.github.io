@@ -1,7 +1,8 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { PageSection } from '@/components/layout/page-section'
+import { Sources } from '@/components/layout/sources'
 import { TrendsControls } from '@/components/trends/controls'
 import { TrendsFigure } from '@/components/trends/figure'
 import { PayChangesSection } from '@/components/trends/pay-changes-section'
@@ -28,6 +29,7 @@ import { SPEND_METHOD } from '@/lib/census/totals'
 import { areaTrendFilter } from '@/lib/departments/codes'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import { peerKeyFor } from '@/lib/people/peer-group'
+import type { SectionSource } from '@/lib/shared/citation'
 import {
   ALL_GROUPS,
   type CensusMetric,
@@ -161,26 +163,34 @@ function CensusSection({
   trends,
   view,
   metric,
+  filterSources,
 }: {
   trends: Trends
   view: TrendView
   metric: CensusMetric
+  filterSources: SectionSource[]
 }) {
   const title = `${METRIC_INFO[metric].label} by ${linesLabel(view.group)}, Fall ${view.from}-${view.to}`
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">{title}</h2>
+    <PageSection title={title}>
       <TrendsFigure
         trends={trends}
         metric={metric}
         hidden={view.hide}
         label={title}
       />
-      <SourceCitation
-        source={{ kind: 'fall-range', from: view.from, to: view.to }}
-        computed={COMPUTED}
+      <Sources
+        sources={[
+          {
+            kind: 'fall-range',
+            from: view.from,
+            to: view.to,
+            computed: COMPUTED,
+          },
+          ...filterSources,
+        ]}
       />
-    </section>
+    </PageSection>
   )
 }
 
@@ -199,6 +209,15 @@ export function TrendsPage() {
         }
       : null
   const lines = changes?.series ?? census?.trends.series ?? []
+  const filterSources: SectionSource[] = area
+    ? [
+        {
+          kind: 'budget-range',
+          ...area.fiscalYears,
+          computed: AREA_PLACEMENT_METHOD,
+        },
+      ]
+    : []
   const handleChange = (patch: TrendsSearch) =>
     navigate({ search: (previous) => ({ ...previous, ...patch }) })
   return (
@@ -211,29 +230,25 @@ export function TrendsPage() {
         names={names}
         onChange={handleChange}
       />
-      {area && (
-        <SourceCitation
-          source={{ kind: 'budget-range', ...area.fiscalYears }}
-          computed={AREA_PLACEMENT_METHOD}
-        />
-      )}
       {changes && (
         <PayChangesSection
           changes={changes}
           view={view}
+          filterSources={filterSources}
           onChange={handleChange}
         />
       )}
-      {census && <CensusSection {...census} view={view} />}
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Groups</h2>
+      {census && (
+        <CensusSection {...census} view={view} filterSources={filterSources} />
+      )}
+      <PageSection title="Groups">
         <p className="text-sm text-muted-foreground">
           UO restructured its EEO categories in 2018, 2019, and 2021. This site
           groups them so each group means the same jobs in every year. Open a
           group to see its categories as published.
         </p>
         <GroupMapping />
-      </section>
+      </PageSection>
     </div>
   )
 }

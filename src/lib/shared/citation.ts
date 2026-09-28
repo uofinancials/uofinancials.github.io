@@ -1,5 +1,9 @@
 import { fiscalYearLabel } from '../../data/budget.ts'
-import type { CitedSource } from '../../data/cited-source.ts'
+import {
+  type CitedSource,
+  type DocumentSource,
+  sourceKey,
+} from '../../data/cited-source.ts'
 import type { Manifest } from '../../data/manifest.ts'
 
 export type SourceRef =
@@ -16,6 +20,11 @@ export type Citation = {
   retrievedOn: string
   anchor: string
 }
+
+/** One entry in a section's sources: a committed dataset with any method, or a cited document. */
+export type SectionSource =
+  | (SourceRef & { computed?: string })
+  | { kind: 'document'; source: DocumentSource }
 
 const DATA_ENABLEMENT = 'UO Office of Data Enablement'
 const BUDGET_AND_RESOURCE_PLANNING = 'UO Budget and Resource Planning'
@@ -159,4 +168,25 @@ export function listCitedDocuments(sources: CitedSource[]): CitedDocument[] {
     })
   }
   return [...documents.values()]
+}
+
+/** A section's sources summary: "Source" or "Sources (n)", saying "and method" when a method is given or one source is computed. */
+export function sourcesSummary(
+  sources: SectionSource[],
+  hasMethods: boolean,
+): string {
+  const method =
+    hasMethods ||
+    sources.some((source) => source.kind !== 'document' && source.computed)
+      ? ' and method'
+      : ''
+  return sources.length === 1
+    ? `Source${method}`
+    : `Sources${method} (${sources.length})`
+}
+
+export function sectionSourceKey(source: SectionSource): string {
+  return source.kind === 'document'
+    ? sourceKey(source.source)
+    : `${source.kind} ${sourceAnchor(source)}`
 }

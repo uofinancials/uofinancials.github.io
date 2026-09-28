@@ -132,7 +132,7 @@ test('rules are added, edited, moved, and removed in place, and held in the link
     /Pay capped/,
   )
   await page.getByRole('button', { name: 'Remove rule 1' }).click()
-  await expect(page.getByRole('group')).toHaveCount(2)
+  await expect(page.getByRole('group', { name: /^\d+\./ })).toHaveCount(2)
   await expect(page.getByRole('group', { name: /^1\./ })).toHaveAccessibleName(
     /Pay capped/,
   )

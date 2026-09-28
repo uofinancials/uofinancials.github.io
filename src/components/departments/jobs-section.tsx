@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { RadioField } from '@/components/fields/radio-field'
 import { SelectField } from '@/components/fields/select-field'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { PageSection } from '@/components/layout/page-section'
+import { Sources } from '@/components/layout/sources'
 import { TrendsFigure } from '@/components/trends/figure'
 import {
   Table,
@@ -165,8 +166,7 @@ export function DepartmentJobsSection({
   const last = trends.total.at(-1)?.year
   const title = `${METRIC_INFO[view.metric].label} by group, Fall ${first}-${last}`
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">Jobs</h2>
+    <PageSection title="Jobs">
       <div className="flex flex-wrap items-end gap-4">
         <RadioField
           legend="Measure"
@@ -218,11 +218,17 @@ export function DepartmentJobsSection({
         </>
       )}
       {first !== undefined && last !== undefined && (
-        <SourceCitation
-          source={{ kind: 'fall-range', from: first, to: last }}
-          computed={COMPUTED}
+        <Sources
+          sources={[
+            {
+              kind: 'fall-range',
+              from: first,
+              to: last,
+              computed: COMPUTED,
+            },
+          ]}
         />
       )}
-    </section>
+    </PageSection>
   )
 }

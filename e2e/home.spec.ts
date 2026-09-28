@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
 import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
+import { openSources } from './sources.ts'
 
 test('home page loads', async ({ page }) => {
   await page.goto('/')
@@ -109,6 +110,7 @@ test('trends show every census by group, and a group opens into its published ca
   ).toBeVisible()
   await expect(main).toContainText('$295,679,251')
   await expect(main).toContainText('$504,812,068')
+  await openSources(page)
   await expect(
     page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
   ).toBeVisible()
@@ -247,6 +249,7 @@ test('people search by every word of a name, and a chosen name shows its records
   await expect(
     page.getByRole('rowheader', { name: 'Annual salary rate' }).first(),
   ).toBeVisible()
+  await openSources(page)
   await expect(
     page
       .getByRole('link', { name: /^Fall \d{4} Census salary reports$/ })
@@ -298,6 +301,7 @@ test('a person’s computed figures, rate chart, and class median are labelled, 
   ).toBeVisible()
   await expect(main).toContainText('Groups used: ')
   await expect(page.getByRole('heading', { name: 'Job history' })).toBeVisible()
+  await openSources(page)
   await expect(
     page.getByRole('link', {
       name: /^Fall \d{4}-\d{4} Census salary reports$/,
@@ -332,6 +336,7 @@ test('census tabs are held in the link and lead to the class’s jobs, and the s
   await page.getByRole('button', { name: 'Remove' }).click()
   await expect(page).not.toHaveURL(/position=/)
   await page.goto('/people?q=smith')
+  await openSources(page)
   await expect(
     page.getByRole('link', { name: 'Fall 2025 Census salary reports' }),
   ).toHaveCount(2)

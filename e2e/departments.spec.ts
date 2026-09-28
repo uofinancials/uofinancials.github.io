@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import { expect, type Page, test } from '@playwright/test'
+import { openSources } from './sources.ts'
 
 const pageWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth)
@@ -90,6 +91,7 @@ test('a unit shows its budget and its jobs, and its views are held in the link',
     page.getByRole('columnheader', { name: 'FY26 (period 12)' }),
   ).toBeVisible()
   await expect(main).toContainText('excludes sponsored research funds')
+  await openSources(page)
   await expect(
     page.getByRole('link', {
       name: 'FY21-FY27 operational expenditure budgets',

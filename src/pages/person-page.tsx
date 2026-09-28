@@ -7,7 +7,7 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { PersonView } from '@/components/person/view'
 import { fallYearQuery, toData } from '@/data/queries'
 import { peopleIndexQuery } from '@/hooks/people-index-query'
@@ -57,12 +57,14 @@ export function PersonPage() {
             medians={data.medians}
             year={resolveCensusYear(year, yearsOf(person))}
           />
-          <SourceCitation
-            source={{
-              kind: 'fall-range',
-              from: Math.min(...yearsOf(person)),
-              to: Math.max(...yearsOf(person)),
-            }}
+          <Sources
+            sources={[
+              {
+                kind: 'fall-range',
+                from: Math.min(...yearsOf(person)),
+                to: Math.max(...yearsOf(person)),
+              },
+            ]}
           />
         </>
       ) : (

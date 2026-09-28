@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { SourceCitation } from '@/components/layout/source-citation'
-import { tabLinkClass } from '@/components/layout/tab-link-class'
+import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import { PageSection } from '@/components/layout/page-section'
+import { Sources } from '@/components/layout/sources'
 import { PersonCards } from '@/components/person/cards'
 import { PersonHistoryTable } from '@/components/person/history-table'
 import { PersonRatesFigure } from '@/components/person/rates-figure'
@@ -34,7 +35,7 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
               params={{ name: person.name }}
               search={{ year: entry.year }}
               aria-current={entry.year === year ? 'page' : undefined}
-              className={cn(tabLinkClass(entry.year === year), 'tabular-nums')}
+              className={cn(TAB_LINK_CLASS, 'tabular-nums')}
             >
               {entry.year}
             </Link>
@@ -50,13 +51,11 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
   const primary = primaryJobOf(entry.records)
   const group = primary && peerGroupOf(primary)
   return (
-    <section className="space-y-2">
-      <h2 className="font-semibold">Fall {entry.year} records</h2>
+    <PageSection title={`Fall ${entry.year} records`}>
       <PersonRecordsTable
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
       />
-      <SourceCitation source={{ kind: 'fall', year: entry.year }} />
       {[...departments].map(([code, department]) => (
         <p key={code} className="flex flex-wrap gap-x-4 text-sm">
           <Link className="link" to="/departments/$code" params={{ code }}>
@@ -100,7 +99,8 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
           </Link>
         </p>
       )}
-    </section>
+      <Sources sources={[{ kind: 'fall', year: entry.year }]} />
+    </PageSection>
   )
 }
 

@@ -10,7 +10,8 @@ import { useMemo } from 'react'
 import { DepartmentBudgetSection } from '@/components/departments/budget-section'
 import { DepartmentJobsSection } from '@/components/departments/jobs-section'
 import { DepartmentTable } from '@/components/departments/table'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { PageSection } from '@/components/layout/page-section'
+import { Sources } from '@/components/layout/sources'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
 import { fallYearQuery, toData } from '@/data/queries'
 import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
@@ -121,8 +122,7 @@ function AreaUnitsSection({
   if (!table || rows.length === 0) return null
   const { now, before } = table
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-semibold">Units in this area</h2>
+    <PageSection title="Units in this area">
       <DepartmentTable
         caption={`${fiscalYearLabel(now.budget.fiscalYear)} budget and Fall ${now.census.year} jobs, with changes from ${fiscalYearLabel(before.budget.fiscalYear)} and Fall ${before.census.year}`}
         rows={sortRows(rows, view.sort, view.dir)}
@@ -130,22 +130,22 @@ function AreaUnitsSection({
         view={view}
         onSort={(sort, dir) => onChange({ sort, dir })}
       />
-      <SourceCitation
-        source={{
-          kind: 'budget-range',
-          from: before.budget.fiscalYear,
-          to: now.budget.fiscalYear,
-        }}
-        computed={DEPARTMENT_TABLE_METHOD}
+      <Sources
+        sources={[
+          {
+            kind: 'budget-range',
+            from: before.budget.fiscalYear,
+            to: now.budget.fiscalYear,
+            computed: DEPARTMENT_TABLE_METHOD,
+          },
+          {
+            kind: 'fall-range',
+            from: before.census.year,
+            to: now.census.year,
+          },
+        ]}
       />
-      <SourceCitation
-        source={{
-          kind: 'fall-range',
-          from: before.census.year,
-          to: now.census.year,
-        }}
-      />
-    </section>
+    </PageSection>
   )
 }
 

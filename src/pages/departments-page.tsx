@@ -4,7 +4,7 @@ import { DepartmentTable } from '@/components/departments/table'
 import { RadioField } from '@/components/fields/radio-field'
 import { SearchField } from '@/components/fields/search-field'
 import { SelectField } from '@/components/fields/select-field'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
 import { summaryQuery } from '@/data/queries'
 import {
@@ -111,16 +111,20 @@ export function DepartmentsPage() {
           onSort={(sort, dir) => handleChange({ sort, dir })}
         />
       )}
-      <SourceCitation
-        source={{
-          kind: 'budget-range',
-          from: before.fiscalYear,
-          to: now.fiscalYear,
-        }}
-        computed={`${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`}
-      />
-      <SourceCitation
-        source={{ kind: 'fall-range', from: before.year, to: now.year }}
+      <Sources
+        sources={[
+          {
+            kind: 'budget-range',
+            from: before.fiscalYear,
+            to: now.fiscalYear,
+            computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`,
+          },
+          {
+            kind: 'fall-range',
+            from: before.year,
+            to: now.year,
+          },
+        ]}
       />
     </div>
   )

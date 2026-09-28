@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { TotalsChart } from '@/components/charts/totals-chart'
 import { TotalsTable } from '@/components/charts/totals-table'
+import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
 import { PageSection } from '@/components/layout/page-section'
-import { SourceCitation } from '@/components/layout/source-citation'
-import { tabLinkClass } from '@/components/layout/tab-link-class'
+import { Sources } from '@/components/layout/sources'
 import { CensusControls } from '@/components/people/census-controls'
 import { ColumnPicker } from '@/components/people/column-picker'
 import { PeopleControls } from '@/components/people/controls'
@@ -48,7 +48,7 @@ function ChartTabs({ chart }: { chart: PeopleChart }) {
               search={(previous) => ({ ...previous, chart: option })}
               replace
               aria-current={option === chart ? 'page' : undefined}
-              className={tabLinkClass(option === chart)}
+              className={TAB_LINK_CLASS}
             >
               {CHART_LABELS[option]}
             </Link>
@@ -125,8 +125,7 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
   const found = matchPeople(data.people, q)
   if (!found || found.total === 0) return <p>No name matches “{q}”.</p>
   return (
-    <section className="space-y-2">
-      <h2 className="font-semibold">Names matching “{q}” in any Fall census</h2>
+    <PageSection title={`Names matching “${q}” in any Fall census`}>
       <ul aria-label="Matching names" className="space-y-1">
         {found.matches.map((person) => (
           <li key={person.name} className="flex flex-wrap gap-x-2">
@@ -147,7 +146,7 @@ function OtherCensusNames({ q, year }: { q: string; year: number }) {
         {formatCount(found.matches.length)} of {formatCount(found.total)} names.
         None has a job matching these filters in Fall {year}.
       </p>
-    </section>
+    </PageSection>
   )
 }
 
@@ -175,9 +174,14 @@ function CategorySpend({
         totalSpendCents={totalSpendCents}
         temps={temps}
       />
-      <SourceCitation
-        source={{ kind: 'fall', year }}
-        computed={`over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`}
+      <Sources
+        sources={[
+          {
+            kind: 'fall',
+            year,
+            computed: `over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`,
+          },
+        ]}
       />
     </PageSection>
   )
@@ -263,9 +267,14 @@ export function PeoplePage() {
           <CategorySpend totals={matching.categories} year={view.year} />
         </>
       )}
-      <SourceCitation
-        source={{ kind: 'fall', year: view.year }}
-        computed={COMPUTED}
+      <Sources
+        sources={[
+          {
+            kind: 'fall',
+            year: view.year,
+            computed: COMPUTED,
+          },
+        ]}
       />
     </div>
   )
