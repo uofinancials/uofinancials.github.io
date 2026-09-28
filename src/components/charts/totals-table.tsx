@@ -14,7 +14,7 @@ import {
   formatFte,
   formatShare,
 } from '@/lib/shared/format'
-import { shareOfLargest } from '@/lib/shared/share'
+import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
 import { BarCell } from './bar-cell'
 

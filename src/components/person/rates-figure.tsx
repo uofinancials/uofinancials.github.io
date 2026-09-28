@@ -16,6 +16,7 @@ import {
   formatDollars,
   formatOrBlank,
 } from '@/lib/shared/format'
+import { MIN_LINE_POINTS } from '@/lib/shared/series'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
@@ -31,7 +32,7 @@ export function PersonRatesFigure({
   const label = `${person.name}: annual salary rate by job, Fall ${years[0]}-${years.at(-1)}`
   return (
     <PageSection title="Salary rate by job">
-      {years.length === 1 ? (
+      {years.length < MIN_LINE_POINTS ? (
         <p>
           Only the Fall {years[0]} census lists this name, so there is no line
           to draw; the table below has the rates.

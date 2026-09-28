@@ -2,12 +2,12 @@ import { type BudgetYear, fiscalYearLabel } from '../../data/budget.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
 import {
-  type ChartMarker,
   FUND_BALANCE_SERIES,
   RUN_RATE_SERIES,
   sectionTotal,
 } from '../budget/outlook.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
+import { belowZeroMarker, type ChartMarker } from '../shared/series.ts'
 import { BASIS_BIG, growCents, PROJECTED_RAISE_BASIS_POINTS } from './jobs.ts'
 import type { RaiseRate } from './raises.ts'
 import { type Rule, runScenario, type ScenarioResult } from './scenario.ts'
@@ -187,28 +187,31 @@ export function firstShortfallYear(rows: OutlookRow[]): number | null {
 
 /** Marks the first fiscal year the fund balance with savings is below zero, if any. */
 export function shortfallMarker(rows: OutlookRow[]): ChartMarker | undefined {
-  const fiscalYear = firstShortfallYear(rows)
-  if (fiscalYear === null) return undefined
-  const x = fiscalYearLabel(fiscalYear)
-  return { x, label: `With savings, below zero from ${x}` }
+  return belowZeroMarker(
+    rows.map((row) => fiscalYearLabel(row.fiscalYear)),
+    rows.map((row) => row.remainingFundBalanceCents),
+    'With savings,',
+  )
 }
 
 /** The outlook chart's fiscal-year labels, its published lines as baselines, and its with-savings lines. */
 export function scenarioSeries(rows: OutlookRow[]): {
   labels: string[]
-  series: { key: string; values: number[]; isBaseline: boolean }[]
+  series: { key: string; values: number[]; isBaseline?: boolean }[]
 } {
-  const line = (
-    key: string,
-    pick: (row: OutlookRow) => number,
-    isBaseline = false,
-  ) => ({ key, values: rows.map(pick), isBaseline })
+  const line = (key: string, pick: (row: OutlookRow) => number) => ({
+    key,
+    values: rows.map(pick),
+  })
   return {
     labels: rows.map((row) => fiscalYearLabel(row.fiscalYear)),
     series: [
-      line(RUN_RATE_SERIES, (row) => row.runRateCents, true),
+      { ...line(RUN_RATE_SERIES, (row) => row.runRateCents), isBaseline: true },
       line('Run rate with savings', (row) => row.remainingRunRateCents),
-      line(FUND_BALANCE_SERIES, (row) => row.endingFundBalanceCents, true),
+      {
+        ...line(FUND_BALANCE_SERIES, (row) => row.endingFundBalanceCents),
+        isBaseline: true,
+      },
       line('Fund balance with savings', (row) => row.remainingFundBalanceCents),
     ],
   }

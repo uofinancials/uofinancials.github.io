@@ -112,15 +112,3 @@ export function formatOrBlank(
 ): string {
   return value === null || value === undefined ? NO_VALUE : format(value)
 }
-
-export const MIN_LINE_POINTS = 2
-
-/** Why a series is too sparse to draw as a line: `null` with two or more values, else the labels it has a value at. */
-export function sparseNote(
-  labels: string[],
-  values: (number | null)[],
-): string | null {
-  const valued = labels.filter((_, index) => (values[index] ?? null) !== null)
-  if (valued.length >= MIN_LINE_POINTS) return null
-  return valued.length === 0 ? 'No figures.' : `Only in ${valued.join(', ')}.`
-}

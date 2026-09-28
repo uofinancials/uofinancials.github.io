@@ -3,7 +3,7 @@ import { TrendsTable } from '@/components/trends/table'
 import {
   type CensusMetric,
   METRIC_INFO,
-  metricValues,
+  metricPanels,
 } from '@/lib/trends/search'
 import type { Trends } from '@/lib/trends/trends'
 
@@ -18,15 +18,12 @@ export function TrendsFigure({
   hidden?: string[]
   label: string
 }) {
-  const { format, formatAxis, pick } = METRIC_INFO[metric]
-  const shown = metricValues(trends.series, metric).filter(
-    ({ key }) => !hidden.includes(key),
-  )
+  const { format, formatAxis } = METRIC_INFO[metric]
   return (
     <>
       <SmallMultiples
         labels={trends.total.map(({ year }) => String(year))}
-        series={[{ key: 'Total', values: trends.total.map(pick) }, ...shown]}
+        series={metricPanels(trends, metric, hidden)}
         format={format}
         formatAxis={formatAxis}
         label={label}

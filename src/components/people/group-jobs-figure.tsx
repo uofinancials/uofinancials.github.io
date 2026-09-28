@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table'
 import type { GroupRow } from '@/lib/people/list'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
-import { shareOfLargest } from '@/lib/shared/share'
+import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
 
 /** A table of each group's jobs, with bars, and median rate. */

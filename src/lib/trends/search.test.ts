@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
   isSummaryView,
+  metricPanels,
   resolveTrendView,
   seriesWithMetric,
   type TrendsSearch,
@@ -79,4 +80,25 @@ test('the summary holds every job under a census measure, whatever the group, ye
   expect(isSummaryView({ dept: '223100' })).toBe(false)
   expect(isSummaryView({ area: '222000' })).toBe(false)
   expect(isSummaryView({ position: 'E0104' })).toBe(false)
+})
+
+test('the metric panels are the total, then each shown series', () => {
+  const point = (year: number, spendCents: number | null) => ({
+    year,
+    jobs: 0,
+    spendCents,
+    fteHundredths: null,
+    medianRateCents: null,
+  })
+  const trends = {
+    total: [point(2024, 30), point(2025, 40)],
+    series: [
+      { key: 'Faculty', points: [point(2024, 10), point(2025, null)] },
+      { key: 'Overloads', points: [point(2024, 20), point(2025, 40)] },
+    ],
+  }
+  expect(metricPanels(trends, 'spend', ['Overloads'])).toEqual([
+    { key: 'Total', values: [30, 40] },
+    { key: 'Faculty', values: [10, null] },
+  ])
 })

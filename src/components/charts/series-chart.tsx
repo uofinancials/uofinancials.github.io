@@ -13,8 +13,11 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import type { ChartMarker } from '@/lib/budget/outlook'
-import { MIN_LINE_POINTS } from '@/lib/shared/format'
+import {
+  type ChartMarker,
+  isAnyBelowZero,
+  sparseNote,
+} from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
 import { lineColor } from './line-color'
 
@@ -28,6 +31,24 @@ type ChartSeries = {
   values: (number | null)[]
   /** Drawn thin and grey, as the reference the colored lines are read against. */
   isBaseline?: boolean
+}
+
+/** Recharts resolves a string data key as a path, and series keys are data, so each series gets a positional field. */
+function seriesKey(index: number) {
+  return `series${index}`
+}
+
+/** One row per x label, each series' value under its positional key. */
+function chartRows(labels: string[], series: ChartSeries[]) {
+  return labels.map((x, index) => ({
+    x,
+    ...Object.fromEntries(
+      series.map(({ values }, position) => [
+        seriesKey(position),
+        values[index] ?? null,
+      ]),
+    ),
+  }))
 }
 
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
@@ -48,7 +69,7 @@ function lineStyle({ isBaseline }: ChartSeries, index: number) {
       }
 }
 
-/** One line per series over the x labels, with zero marked when a line goes below it; the table beside it carries the numbers. Draws nothing for fewer than two labels. */
+/** One line per series over the x labels, with zero marked when a line goes below it; the table beside it carries the numbers. Below two valued labels it says so in a sentence instead. */
 export function SeriesChart({
   labels,
   series,
@@ -57,7 +78,6 @@ export function SeriesChart({
   formatAxis,
   label,
   marker,
-  hasLegend = true,
   className,
 }: {
   labels: string[]
@@ -68,21 +88,21 @@ export function SeriesChart({
   label: string
   /** A dashed vertical line at one x label, with its text. */
   marker?: ChartMarker
-  hasLegend?: boolean
   /** Overrides the chart's height classes. */
   className?: string
 }) {
-  if (labels.length < MIN_LINE_POINTS) return null
-  const shown = series.filter(({ key }) => !hidden.includes(key))
-  const isBelowZero = shown.some(({ values }) =>
-    values.some((value) => value !== null && value < 0),
+  const shown = series
+    .map((line, index) => ({ line, dataKey: seriesKey(index), index }))
+    .filter(({ line }) => !hidden.includes(line.key))
+  const note = sparseNote(
+    labels,
+    shown.map(({ line }) => line.values),
   )
-  const data = labels.map((x, index) => ({
-    x,
-    values: Object.fromEntries(
-      series.map(({ key, values }) => [key, values[index] ?? null]),
-    ),
-  }))
+  if (note !== null) {
+    return <p className="text-sm text-muted-foreground">{note}</p>
+  }
+  const isBelowZero = isAnyBelowZero(shown.map(({ line }) => line.values))
+  const data = chartRows(labels, series)
   return (
     <figure aria-label={label}>
       <ChartContainer
@@ -123,19 +143,17 @@ export function SeriesChart({
               />
             }
           />
-          {hasLegend && <Legend itemSorter={null} />}
-          {series.map((line, index) =>
-            hidden.includes(line.key) ? null : (
-              <Line
-                key={line.key}
-                name={line.key}
-                dataKey={(row: (typeof data)[number]) => row.values[line.key]}
-                {...lineStyle(line, index)}
-                type="linear"
-                isAnimationActive={false}
-              />
-            ),
-          )}
+          {shown.length > 1 && <Legend itemSorter={null} />}
+          {shown.map(({ line, dataKey, index }) => (
+            <Line
+              key={line.key}
+              name={line.key}
+              dataKey={dataKey}
+              {...lineStyle(line, index)}
+              type="linear"
+              isAnimationActive={false}
+            />
+          ))}
         </LineChart>
       </ChartContainer>
     </figure>

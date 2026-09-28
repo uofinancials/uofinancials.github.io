@@ -4,15 +4,18 @@ import { NUMBER_CELL } from '@/lib/utils'
 
 const PERCENT = 100
 
-/** A number cell with a bar beside its figure, the bar's length the value's share of the column's largest. */
+/** A number cell, with a bar beside its figure when given a share, the bar's length the value's share of the column's largest. */
 export function BarCell({
   share,
   children,
 }: {
-  /** From 0 to 1. */
-  share: number
+  /** From 0 to 1; without it the cell is a plain number cell. */
+  share?: number
   children: ReactNode
 }) {
+  if (share === undefined) {
+    return <TableCell className={NUMBER_CELL}>{children}</TableCell>
+  }
   return (
     <TableCell className={NUMBER_CELL}>
       <div className="flex items-center justify-end gap-3">
