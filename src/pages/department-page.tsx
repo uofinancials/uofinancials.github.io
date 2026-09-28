@@ -10,7 +10,7 @@ import { useMemo } from 'react'
 import { DepartmentBudgetSection } from '@/components/departments/budget-section'
 import { DepartmentJobsSection } from '@/components/departments/jobs-section'
 import { DepartmentTable } from '@/components/departments/table'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
 import { fallYearQuery, toData } from '@/data/queries'
 import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
@@ -130,20 +130,26 @@ function AreaUnitsSection({
         view={view}
         onSort={(sort, dir) => onChange({ sort, dir })}
       />
-      <SourceCitation
-        source={{
-          kind: 'budget-range',
-          from: before.budget.fiscalYear,
-          to: now.budget.fiscalYear,
-        }}
-        computed={DEPARTMENT_TABLE_METHOD}
-      />
-      <SourceCitation
-        source={{
-          kind: 'fall-range',
-          from: before.census.year,
-          to: now.census.year,
-        }}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: {
+              kind: 'budget-range',
+              from: before.budget.fiscalYear,
+              to: now.budget.fiscalYear,
+            },
+            computed: DEPARTMENT_TABLE_METHOD,
+          },
+          {
+            kind: 'data',
+            ref: {
+              kind: 'fall-range',
+              from: before.census.year,
+              to: now.census.year,
+            },
+          },
+        ]}
       />
     </section>
   )

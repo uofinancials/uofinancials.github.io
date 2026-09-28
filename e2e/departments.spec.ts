@@ -90,11 +90,21 @@ test('a unit shows its budget and its jobs, and its views are held in the link',
     page.getByRole('columnheader', { name: 'FY26 (period 12)' }),
   ).toBeVisible()
   await expect(main).toContainText('excludes sponsored research funds')
+  await page
+    .locator('details', {
+      hasText: 'FY21-FY27 operational expenditure budgets',
+    })
+    .locator('summary')
+    .click()
   await expect(
     page.getByRole('link', {
       name: 'FY21-FY27 operational expenditure budgets',
     }),
   ).toBeVisible()
+  await page
+    .locator('details', { hasText: 'Fall 2014-2025 Census salary reports' })
+    .locator('summary')
+    .click()
   await expect(
     page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
   ).toBeVisible()

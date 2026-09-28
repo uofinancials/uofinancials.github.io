@@ -1,9 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import { CitedLine } from '@/components/layout/cited-line'
 import { PageSection } from '@/components/layout/page-section'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
-import { type CitedSource, sourceKey } from '@/data/cited-source'
+import type { CitedSource } from '@/data/cited-source'
 import type { Projection } from '@/data/outlook'
 import type { ExampleAnswer } from '@/lib/home/home'
 import { EG_SHARE_METHOD } from '@/lib/scenario/eg-share'
@@ -85,15 +84,18 @@ export function ScenarioAnswers({
           ))}
         </ul>
       </details>
-      <div className="space-y-1">
-        <SourceCitation source={{ kind: 'fall', year }} />
-        <SourceCitation source={{ kind: 'budget', fiscalYear }} />
-        <SourceCitation source={{ kind: 'rates' }} />
-        <CitedLine source={projection.source} />
-        {raiseSources.map((source) => (
-          <CitedLine key={sourceKey(source)} source={source} />
-        ))}
-      </div>
+      <Sources
+        sources={[
+          { kind: 'data', ref: { kind: 'fall', year } },
+          { kind: 'data', ref: { kind: 'budget', fiscalYear } },
+          { kind: 'data', ref: { kind: 'rates' } },
+          { kind: 'document', source: projection.source },
+          ...raiseSources.map((source) => ({
+            kind: 'document' as const,
+            source,
+          })),
+        ]}
+      />
     </PageSection>
   )
 }

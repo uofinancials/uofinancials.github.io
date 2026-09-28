@@ -5,6 +5,7 @@ import { OutlookLinesTable } from '@/components/budget/outlook-lines-table'
 import { SeriesChart } from '@/components/charts/series-chart'
 import { CitedLine } from '@/components/layout/cited-line'
 import { PageSection } from '@/components/layout/page-section'
+import { Sources } from '@/components/layout/sources'
 import {
   Table,
   TableBody,
@@ -106,7 +107,7 @@ function AllFunds({ allFunds }: { allFunds: Outlook['allFunds'] }) {
         {formatDollars(allFunds.otherRevenueCents)} and are projected to cover
         their costs.
       </p>
-      <CitedLine source={allFunds.source} />
+      <Sources sources={[{ kind: 'document', source: allFunds.source }]} />
     </>
   )
 }
@@ -164,15 +165,17 @@ export function BudgetPage() {
           reported={outlook.reportedRunRates}
           projection={projection}
         />
-        <CitedLine source={projection.source} />
+        <Sources sources={[{ kind: 'document', source: projection.source }]} />
       </PageSection>
       <PageSection title="Every published line">
         <OutlookLinesTable projection={projection} />
-        <CitedLine source={projection.source} />
+        <Sources sources={[{ kind: 'document', source: projection.source }]} />
       </PageSection>
       <PageSection title="Alternative cases">
         <OutlookCasesTable projection={projection} />
-        <CitedLine source={projection.casesSource} />
+        <Sources
+          sources={[{ kind: 'document', source: projection.casesSource }]}
+        />
       </PageSection>
       <PageSection
         title={`The ${formatCompactDollars(projection.reductionTargetCents)} in reductions`}
@@ -184,7 +187,11 @@ export function BudgetPage() {
           {formatDollars(projection.presentValueCents)}; the discount rate is
           not published. It is not the gap in any one year.
         </p>
-        <CitedLine source={projection.reductionTargetSource} />
+        <Sources
+          sources={[
+            { kind: 'document', source: projection.reductionTargetSource },
+          ]}
+        />
       </PageSection>
       <PageSection title="All funds">
         <AllFunds allFunds={outlook.allFunds} />
@@ -197,12 +204,17 @@ export function BudgetPage() {
             </li>
           ))}
         </ul>
-        <CitedLine
-          source={{
-            url: projection.source.url,
-            document: projection.source.document,
-            retrievedOn: projection.source.retrievedOn,
-          }}
+        <Sources
+          sources={[
+            {
+              kind: 'document',
+              source: {
+                url: projection.source.url,
+                document: projection.source.document,
+                retrievedOn: projection.source.retrievedOn,
+              },
+            },
+          ]}
         />
       </PageSection>
       <PageSection title="Announced budget actions">

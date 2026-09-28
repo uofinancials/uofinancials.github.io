@@ -24,6 +24,11 @@ test('the budget page shows the projected E&G gap by year, its scope, and its so
   await expect(
     page.getByRole('row', { name: /^100 fewer nonresident/ }),
   ).toContainText('-$86,360,984')
+  await page
+    .locator('details', { hasText: 'agenda item 4' })
+    .first()
+    .locator('summary')
+    .click()
   await expect(
     page
       .getByRole('link', {

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { RadioField } from '@/components/fields/radio-field'
 import { SelectField } from '@/components/fields/select-field'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { TrendsFigure } from '@/components/trends/figure'
 import {
   Table,
@@ -218,9 +218,14 @@ export function DepartmentJobsSection({
         </>
       )}
       {first !== undefined && last !== undefined && (
-        <SourceCitation
-          source={{ kind: 'fall-range', from: first, to: last }}
-          computed={COMPUTED}
+        <Sources
+          sources={[
+            {
+              kind: 'data',
+              ref: { kind: 'fall-range', from: first, to: last },
+              computed: COMPUTED,
+            },
+          ]}
         />
       )}
     </section>

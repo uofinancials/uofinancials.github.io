@@ -1,7 +1,7 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { TrendsControls } from '@/components/trends/controls'
 import { TrendsFigure } from '@/components/trends/figure'
 import { PayChangesSection } from '@/components/trends/pay-changes-section'
@@ -176,9 +176,14 @@ function CensusSection({
         hidden={view.hide}
         label={title}
       />
-      <SourceCitation
-        source={{ kind: 'fall-range', from: view.from, to: view.to }}
-        computed={COMPUTED}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'fall-range', from: view.from, to: view.to },
+            computed: COMPUTED,
+          },
+        ]}
       />
     </section>
   )
@@ -212,9 +217,14 @@ export function TrendsPage() {
         onChange={handleChange}
       />
       {area && (
-        <SourceCitation
-          source={{ kind: 'budget-range', ...area.fiscalYears }}
-          computed={AREA_PLACEMENT_METHOD}
+        <Sources
+          sources={[
+            {
+              kind: 'data',
+              ref: { kind: 'budget-range', ...area.fiscalYears },
+              computed: AREA_PLACEMENT_METHOD,
+            },
+          ]}
         />
       )}
       {changes && (

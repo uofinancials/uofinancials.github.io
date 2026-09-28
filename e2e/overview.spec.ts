@@ -26,6 +26,7 @@ test('the home page leads with cited headlines and the projected gap', async ({
       name: 'Projected E&G run rate and ending fund balance by fiscal year',
     }),
   ).toBeVisible()
+  await main.getByText('Sources and method (3)', { exact: true }).click()
   await expect(
     page.getByRole('link', { name: 'Board of Trustees meeting materials' }),
   ).not.toHaveCount(0)

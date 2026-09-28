@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { manifestQuery } from '@/data/queries'
 import { citeSource, type SourceRef } from '@/lib/shared/citation'
 
-/** The caption under a figure: its source, retrieval date, and how it was computed. */
+/** A committed dataset inline: its link, publisher, retrieval date, and how a figure was computed from it. */
 export function SourceCitation({
   source,
   computed,
@@ -14,8 +14,7 @@ export function SourceCitation({
   const { data: manifest } = useSuspenseQuery(manifestQuery)
   const citation = citeSource(manifest, source)
   return (
-    <p className="text-xs text-muted-foreground">
-      Source:{' '}
+    <>
       <a className="link" href={citation.href}>
         {citation.dataset}
       </a>
@@ -29,6 +28,6 @@ export function SourceCitation({
           Computed: {computed}
         </>
       )}
-    </p>
+    </>
   )
 }

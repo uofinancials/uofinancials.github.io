@@ -35,6 +35,10 @@ test('the change measure shows each census pair’s median by group, the change 
     page.getByRole('heading', { name: /Fall 2021-22$/ }),
   ).toBeVisible()
   await expect(main).toContainText('Teaching Assistant Professor')
+  await page
+    .locator('details', { hasText: 'Fall 2014-2025 Census salary reports' })
+    .locator('summary')
+    .click()
   await expect(
     page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
   ).toBeVisible()

@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { PersonCards } from '@/components/person/cards'
 import { PersonHistoryTable } from '@/components/person/history-table'
 import { PersonRatesFigure } from '@/components/person/rates-figure'
@@ -56,7 +56,9 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
       />
-      <SourceCitation source={{ kind: 'fall', year: entry.year }} />
+      <Sources
+        sources={[{ kind: 'data', ref: { kind: 'fall', year: entry.year } }]}
+      />
       {[...departments].map(([code, department]) => (
         <p key={code} className="flex flex-wrap gap-x-4 text-sm">
           <Link className="link" to="/departments/$code" params={{ code }}>

@@ -4,7 +4,7 @@ import { TotalsChart } from '@/components/charts/totals-chart'
 import { TotalsTable } from '@/components/charts/totals-table'
 import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
 import { PageSection } from '@/components/layout/page-section'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { CensusControls } from '@/components/people/census-controls'
 import { ColumnPicker } from '@/components/people/column-picker'
 import { PeopleControls } from '@/components/people/controls'
@@ -175,9 +175,14 @@ function CategorySpend({
         totalSpendCents={totalSpendCents}
         temps={temps}
       />
-      <SourceCitation
-        source={{ kind: 'fall', year }}
-        computed={`over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'fall', year },
+            computed: `over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`,
+          },
+        ]}
       />
     </PageSection>
   )
@@ -263,9 +268,14 @@ export function PeoplePage() {
           <CategorySpend totals={matching.categories} year={view.year} />
         </>
       )}
-      <SourceCitation
-        source={{ kind: 'fall', year: view.year }}
-        computed={COMPUTED}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'fall', year: view.year },
+            computed: COMPUTED,
+          },
+        ]}
       />
     </div>
   )

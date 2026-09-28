@@ -1,7 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { CitedLine } from '@/components/layout/cited-line'
 import { PageSection } from '@/components/layout/page-section'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { ScenarioEliminationsTable } from '@/components/scenario/eliminations-table'
 import { ScenarioOutlookSection } from '@/components/scenario/outlook-section'
 import { ScenarioRaiseRatesTable } from '@/components/scenario/raise-rates-table'
@@ -21,6 +20,7 @@ import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario/outlook'
 import { RAISE_FREEZE_METHOD } from '@/lib/scenario/raises'
 import { SCENARIO_METHOD, usesRaiseRates } from '@/lib/scenario/scenario'
 import { toSearchRules } from '@/lib/scenario/search'
+import type { SectionSource } from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 
 const METHODS = [
@@ -52,31 +52,36 @@ function Examples() {
   )
 }
 
-function Sources({ scenario }: { scenario: ReturnType<typeof useScenario> }) {
+function ScenarioSources({
+  scenario,
+}: {
+  scenario: ReturnType<typeof useScenario>
+}) {
   const { census, projection, history, historyCensuses, eliminationBudget } =
     scenario
   const [first] = historyCensuses
-  return (
-    <div className="space-y-2">
-      <SourceCitation source={{ kind: 'fall', year: census.year }} />
-      <SourceCitation
-        source={{ kind: 'budget', fiscalYear: census.fiscalYear }}
-      />
-      {eliminationBudget.fiscalYear !== census.fiscalYear && (
-        <SourceCitation
-          source={{ kind: 'budget', fiscalYear: eliminationBudget.fiscalYear }}
-        />
-      )}
-      <SourceCitation source={{ kind: 'rates' }} />
-      {history.status === 'ready' && first && (
-        <SourceCitation
-          source={{ kind: 'fall-range', from: first.year, to: census.year }}
-        />
-      )}
-      <CitedLine source={projection.source} />
-      <CitedLine source={projection.casesSource} />
-    </div>
+  const sources: SectionSource[] = [
+    { kind: 'data', ref: { kind: 'fall', year: census.year } },
+    { kind: 'data', ref: { kind: 'budget', fiscalYear: census.fiscalYear } },
+  ]
+  if (eliminationBudget.fiscalYear !== census.fiscalYear) {
+    sources.push({
+      kind: 'data',
+      ref: { kind: 'budget', fiscalYear: eliminationBudget.fiscalYear },
+    })
+  }
+  sources.push({ kind: 'data', ref: { kind: 'rates' } })
+  if (history.status === 'ready' && first) {
+    sources.push({
+      kind: 'data',
+      ref: { kind: 'fall-range', from: first.year, to: census.year },
+    })
+  }
+  sources.push(
+    { kind: 'document', source: projection.source },
+    { kind: 'document', source: projection.casesSource },
   )
+  return <Sources sources={sources} />
 }
 
 function RulesSection({
@@ -205,7 +210,7 @@ export function ScenariosPage() {
             <li key={method}>{method}</li>
           ))}
         </ul>
-        <Sources scenario={scenario} />
+        <ScenarioSources scenario={scenario} />
       </PageSection>
     </div>
   )

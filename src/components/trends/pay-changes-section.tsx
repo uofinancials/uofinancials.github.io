@@ -1,4 +1,4 @@
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { PayChangeCountsTable } from '@/components/trends/pay-change-counts-table'
 import { PayChangeDistribution } from '@/components/trends/pay-change-distribution'
 import { PayChangeLines } from '@/components/trends/pay-change-lines'
@@ -129,9 +129,14 @@ export function PayChangesSection({
         fromYears={fromYears}
         onPair={(pair) => onChange({ pair })}
       />
-      <SourceCitation
-        source={{ kind: 'fall-range', from: first, to: last + 1 }}
-        computed={COMPUTED}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'fall-range', from: first, to: last + 1 },
+            computed: COMPUTED,
+          },
+        ]}
       />
       <LabelTables />
     </>

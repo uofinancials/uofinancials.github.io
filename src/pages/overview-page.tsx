@@ -9,9 +9,8 @@ import { SeriesChart } from '@/components/charts/series-chart'
 import { AreaBreakdown } from '@/components/home/area-breakdown'
 import { ScenarioAnswers } from '@/components/home/scenario-answers'
 import { TopPaidTable } from '@/components/home/top-paid-table'
-import { CitedLine } from '@/components/layout/cited-line'
 import { PageSection } from '@/components/layout/page-section'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import { StatCard } from '@/components/layout/stat-card'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
@@ -147,7 +146,7 @@ function GapSection({
         label="Projected E&G run rate and ending fund balance by fiscal year"
         className={COMPACT_CHART}
       />
-      <CitedLine source={projection.source} />
+      <Sources sources={[{ kind: 'document', source: projection.source }]} />
     </PageSection>
   )
 }
@@ -180,9 +179,15 @@ function JobsTrend({
         label={`Job records published per Fall census, ${first.year}-${last.year}`}
         className={COMPACT_CHART}
       />
-      <SourceCitation
-        source={{ kind: 'fall-range', from: first.year, to: last.year }}
-        computed="each census's job records, as counted in its published files; a person with two jobs counts twice."
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'fall-range', from: first.year, to: last.year },
+            computed:
+              "each census's job records, as counted in its published files; a person with two jobs counts twice.",
+          },
+        ]}
       />
     </PageSection>
   )
@@ -229,13 +234,20 @@ function DepartmentsPreview({
         </Link>
       </p>
       <AreaBases bases={data.bases} />
-      <SourceCitation
-        source={{ kind: 'budget', fiscalYear }}
-        computed="an area's budget is the Total Expenditure Budget summed over its units, as on the departments page."
-      />
-      <SourceCitation
-        source={{ kind: 'fall', year }}
-        computed={`an area's jobs are the census jobs placed in it; ${SPEND_METHOD} Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs.`}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'budget', fiscalYear },
+            computed:
+              "an area's budget is the Total Expenditure Budget summed over its units, as on the departments page.",
+          },
+          {
+            kind: 'data',
+            ref: { kind: 'fall', year },
+            computed: `an area's jobs are the census jobs placed in it; ${SPEND_METHOD} Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs.`,
+          },
+        ]}
       />
     </PageSection>
   )
@@ -259,7 +271,7 @@ function PeoplePreview({ data }: { data: ReturnType<typeof useHomeData> }) {
         .
       </p>
       <TopPaidTable jobs={data.topPaid} year={year} />
-      <SourceCitation source={{ kind: 'fall', year }} />
+      <Sources sources={[{ kind: 'data', ref: { kind: 'fall', year } }]} />
     </PageSection>
   )
 }
@@ -293,17 +305,22 @@ export function OverviewPage() {
           look up a department or a person.
         </p>
         <Headlines figures={headlines} year={year} fiscalYear={fiscalYear} />
-        <div className="space-y-1">
-          <CitedLine source={projection.source} />
-          <SourceCitation
-            source={{ kind: 'budget', fiscalYear }}
-            computed="the budget is the Total Expenditure Budget summed over every published line, all funds."
-          />
-          <SourceCitation
-            source={{ kind: 'fall', year }}
-            computed={`people are distinct published names; ${SPEND_METHOD}`}
-          />
-        </div>
+        <Sources
+          sources={[
+            { kind: 'document', source: projection.source },
+            {
+              kind: 'data',
+              ref: { kind: 'budget', fiscalYear },
+              computed:
+                'the budget is the Total Expenditure Budget summed over every published line, all funds.',
+            },
+            {
+              kind: 'data',
+              ref: { kind: 'fall', year },
+              computed: `people are distinct published names; ${SPEND_METHOD}`,
+            },
+          ]}
+        />
       </div>
       <GapSection projection={projection} runRate={headlines.runRate} />
       <ScenarioAnswers

@@ -1,5 +1,5 @@
 import { CitedSourceText } from '@/components/layout/cited-source-text'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import {
   Table,
   TableBody,
@@ -149,9 +149,14 @@ export function RaiseComparisonSection({
           </ul>
         </>
       )}
-      <SourceCitation
-        source={{ kind: 'fall-range', from: pair, to: pair + 1 }}
-        computed={COMPUTED}
+      <Sources
+        sources={[
+          {
+            kind: 'data',
+            ref: { kind: 'fall-range', from: pair, to: pair + 1 },
+            computed: COMPUTED,
+          },
+        ]}
       />
     </section>
   )

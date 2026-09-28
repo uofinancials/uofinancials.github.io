@@ -1,6 +1,6 @@
 import { SeriesChart } from '@/components/charts/series-chart'
 import { RadioField } from '@/components/fields/radio-field'
-import { SourceCitation } from '@/components/layout/source-citation'
+import { Sources } from '@/components/layout/sources'
 import {
   Table,
   TableBody,
@@ -146,13 +146,18 @@ export function DepartmentBudgetSection({
       />
       <BudgetTable budget={budget} breakdown={breakdown} />
       {first && last && (
-        <SourceCitation
-          source={{
-            kind: 'budget-range',
-            from: first.fiscalYear,
-            to: last.fiscalYear,
-          }}
-          computed={COMPUTED}
+        <Sources
+          sources={[
+            {
+              kind: 'data',
+              ref: {
+                kind: 'budget-range',
+                from: first.fiscalYear,
+                to: last.fiscalYear,
+              },
+              computed: COMPUTED,
+            },
+          ]}
         />
       )}
     </section>

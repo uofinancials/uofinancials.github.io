@@ -8,7 +8,7 @@ export function CitedLine({
   source: Omit<CitedSource, 'location'> & { location?: string }
 }) {
   return (
-    <p className="text-sm text-muted-foreground">
+    <p className="text-xs text-muted-foreground">
       Source: <CitedSourceText source={source} />.
     </p>
   )
