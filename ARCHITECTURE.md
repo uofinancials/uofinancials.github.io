@@ -45,8 +45,10 @@ entered by hand. The site reads nothing but its bundle and those files.
   the department table's rows, the home page's figures, and every name's census
   years with the class and rank medians; derived from the other data files by
   `scripts/scrape`.
-- `public/data/trends/<area>.json` - one college or VP area's units' and pay
-  departments' yearly figures; derived with the summary by `scripts/scrape`.
+- `public/data/trends/<area>.json` - one college or VP area's, and each of its
+  units' and pay departments', jobs by group in every census and continuing
+  jobs' median pay change by group; derived with the summary by
+  `scripts/scrape`.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
   dates, and counts, and the files and date the summary was derived from;
   written by `scripts/scrape`.
@@ -82,18 +84,17 @@ flowchart LR
 - `src/pages` - one component per route.
 - `src/components` - one folder per area:
   - `layout` - the shared layout with the independence notice and error report
-    link, page sections and collapsible sections, stat cards, the sources
-    disclosure and inline source citations, the navigation and tab link style,
-    and loading and error states.
+    link, page sections, stat cards, the sources disclosure and inline source
+    citations, the navigation and tab link style, and loading and error states.
   - `fields` - form fields, the department or area picker, the removable filter,
     and the sortable column header.
   - `charts` - line, index, and stacked bar charts, ranked bars of a change,
     bars in table cells, the charts' tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
     table.
-  - `trends` - the Trends report's sections and group table, the pay changes
-    page's controls and sections, the group mapping, and the jobs figure and
-    table the department page shares.
+  - `trends` - the Trends report's filters, tabs, sections, and group table, the
+    pay changes page's controls and sections, the group mapping, and the jobs
+    figure and table the department page shares.
   - `departments` - the department table and a department's budget and jobs.
   - `people` - the people list's controls, table, and figures.
   - `person` - one name's figures, rates, records, and job history.
@@ -159,8 +160,9 @@ flowchart LR
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
   and raise freezes, eliminations, cases, unreadable link entries, and narrow
   layout.
-- `e2e/trends.spec.ts` - the Trends report's answers and tables, its year range
-  and measures, the unit comparison, older links, and narrow layout.
+- `e2e/trends.spec.ts` - the Trends report's tabs, answers, and tables, its
+  filters and area or unit scope, older links, scroll position, and narrow
+  layout.
 - `e2e/trends-change.spec.ts` - the pay changes page, its filters, its raise
   comparison, older links to it, and its link from the person page.
 - `e2e/sources.ts` - opening a page's sources disclosures.
@@ -173,14 +175,15 @@ flowchart LR
   areas by a measure held in the URL, the highest published salary rates, and
   the data's dates, each linking to its page; driven by `src/lib/home` over the
   summary, the outlook, the raise terms, and the manifest.
-- `/trends` - a report of the Fall censuses over a year range held in the URL:
-  spend, jobs, median rate, and admins and executives per 100 faculty since the
-  first census; each group's growth as ranked bars or indexed over time; each
-  group's share of spend and of its change; the change in spend split into FTE
-  and pay per FTE; continuing jobs' median raises by group and census pair; and
-  one unit against its college or VP area and the university; driven by
-  `src/lib/trends` over the summary and, for a picked area, that area's trends
-  file.
+- `/trends` - a report of the Fall censuses for all of UO, a college or VP area,
+  or a unit, over a year range, with the filters and tab held in the URL: spend,
+  jobs, median rate, and admins and executives per 100 faculty since the first
+  census, then one tab per question: each group's growth as ranked bars or
+  indexed over time; each group's share of spend and of its change; the change
+  in spend split into FTE and pay per FTE; continuing jobs' median raises by
+  group and census pair; the pick against its area and the university; and how
+  groups are defined; driven by `src/lib/trends` over the summary and, for a
+  picked area or unit, that area's trends file.
 - `/trends/pay-changes` - for continuing jobs in each pair of consecutive
   censuses, the median change in salary rate by group, the counts of changed
   class, rank, and title, and one pair's distribution of changes and median
