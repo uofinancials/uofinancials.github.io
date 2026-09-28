@@ -43,7 +43,6 @@ export type CensusMetric = (typeof CENSUS_METRICS)[number]
 /** The census measures and a count of jobs, for the trends report. */
 export const REPORT_METRICS = ['jobs', ...CENSUS_METRICS] as const
 export type ReportMetric = (typeof REPORT_METRICS)[number]
-export const reportMetricSchema = z.enum(REPORT_METRICS)
 
 /** How the report shows each group's growth: its change as a ranked bar, or its index over time. */
 export const GROWTH_VIEWS = ['bars', 'chart'] as const
@@ -136,7 +135,7 @@ export const MAX_COMPARED = 3
 export const reportSearchSchema = z.object({
   from: z.number().int().optional().catch(undefined),
   to: z.number().int().optional().catch(undefined),
-  measure: reportMetricSchema.optional().catch(undefined),
+  measure: z.enum(REPORT_METRICS).optional().catch(undefined),
   view: z.enum(GROWTH_VIEWS).optional().catch(undefined),
   area: orgCodeParam.optional().catch(undefined),
   unit: orgCodeParam.optional().catch(undefined),

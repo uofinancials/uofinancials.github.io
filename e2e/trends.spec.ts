@@ -71,7 +71,7 @@ test('the filters and the growth view are held in the link, and every tab compar
   page,
 }) => {
   await page.goto('/trends')
-  await page.getByRole('combobox', { name: 'Measure' }).selectOption('median')
+  await page.getByRole('radio', { name: 'Median salary rate' }).check()
   await expect(page).toHaveURL(/measure=median/)
   await page.getByRole('combobox', { name: 'From' }).selectOption('2018')
   await expect(page).toHaveURL(/from=2018/)
@@ -94,7 +94,7 @@ test('the filters and the growth view are held in the link, and every tab compar
     }),
   ).toBeVisible()
   await tab(page, 'What raises did people get?').click()
-  await expect(page.getByRole('combobox', { name: 'Measure' })).toHaveCount(0)
+  await expect(page.getByRole('group', { name: 'Measure' })).toHaveCount(0)
   const raises = page.getByRole('table', {
     name: /^Median change in salary rate/,
   })
@@ -116,11 +116,15 @@ test('a college or VP area and a unit within it scope every tab, and the compari
       name: /^Arts & Sciences, College of [\d,]+ -4\.1% \+40\.\d%$/,
     }),
   ).toBeVisible()
+  const areaBox = page.getByRole('combobox', { name: 'College or VP area' })
+  await areaBox.fill('arts sci')
   await page
-    .getByRole('combobox', { name: 'College or VP area' })
-    .selectOption({ label: 'Arts & Sciences, College of' })
+    .getByRole('listbox', { name: 'College or VP area' })
+    .getByRole('option', { name: /^Arts & Sciences, College of/ })
+    .click()
   await expect(page).toHaveURL(/area=.*222000/)
-  await page.getByRole('combobox', { name: 'Measure' }).selectOption('fte')
+  await expect(areaBox).toHaveValue('Arts & Sciences, College of')
+  await page.getByRole('radio', { name: 'FTE' }).check()
   await page
     .getByRole('combobox', { name: 'Unit' })
     .selectOption({ label: 'CAS English' })
@@ -158,7 +162,15 @@ test('links made before the report keep what it reads, and an area link scopes i
   await expect(page).not.toHaveURL(/metric/)
   await expect(
     page.getByRole('combobox', { name: 'College or VP area' }),
-  ).toHaveValue('222000')
+  ).toHaveValue('Arts & Sciences, College of')
+  await page.getByRole('button', { name: 'Clear College or VP area' }).click()
+  await expect(page).not.toHaveURL(/area=/)
+  await expect(
+    page.getByRole('heading', {
+      name: 'What changed in All of UO since Fall 2014',
+    }),
+  ).toBeVisible()
+  await page.goto('/trends?area=222000')
   await expect(
     page.getByRole('heading', {
       name: 'What changed in Arts & Sciences, College of since Fall 2014',

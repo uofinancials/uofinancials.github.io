@@ -49,72 +49,156 @@ function OptionList({
   )
 }
 
-/** A text box that lists the areas and units matching what is typed, as a combobox: arrows move through the list, Enter or a click adds the highlighted one, Escape clears. */
+/** Arrow keys move through the list, Enter picks the highlighted option, Escape clears what was typed. */
+function keyHandler({
+  count,
+  active,
+  onActive,
+  onPick,
+  onEscape,
+}: {
+  count: number
+  active: number
+  onActive: (index: number) => void
+  onPick: () => void
+  onEscape: () => void
+}) {
+  return (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const step = event.key === 'ArrowDown' ? 1 : -1
+      onActive(Math.max(0, Math.min(count - 1, active + step)))
+    } else if (event.key === 'Enter') {
+      event.preventDefault()
+      onPick()
+    } else if (event.key === 'Escape') {
+      onEscape()
+    }
+  }
+}
+
+/** The search's typed text, highlighted row, and whether it is being edited, and the options it lists. */
+function useOptionSearch({
+  options,
+  chosen,
+  isSelect,
+  onAdd,
+}: {
+  options: CompareOption[]
+  chosen: string[]
+  isSelect: boolean
+  onAdd: (code: string) => void
+}) {
+  const [query, setQuery] = useState('')
+  const [active, setActive] = useState(0)
+  const [isEditing, setEditing] = useState(false)
+  const matches =
+    isSelect && isEditing && query.trim() === ''
+      ? options.filter(({ code }) => !chosen.includes(code))
+      : matchOptions(options, query, chosen)
+  const shown = isSelect && !isEditing ? [] : matches
+  const close = () => {
+    setEditing(false)
+    setQuery('')
+    setActive(0)
+  }
+  return {
+    query,
+    active,
+    isEditing,
+    shown,
+    highlighted: shown[Math.min(active, shown.length - 1)],
+    setActive,
+    setEditing,
+    close,
+    type: (text: string) => {
+      setEditing(true)
+      setQuery(text)
+      setActive(0)
+    },
+    pick: (option: CompareOption | undefined) => {
+      if (!option) return
+      onAdd(option.code)
+      close()
+    },
+  }
+}
+
+/**
+ * A text box listing the options that match what is typed, as a combobox.
+ * Without `selected` it adds each pick and empties; with it, it shows the
+ * pick, lists every option when focused and empty, and offers a clear button.
+ */
 export function OptionSearch({
   label,
   options,
-  chosen,
+  chosen = [],
+  selected,
+  placeholder = 'Type a college, area, or unit',
   onAdd,
+  onClear,
 }: {
   label: string
   options: CompareOption[]
   /** Codes already added, left out of the list. */
-  chosen: string[]
+  chosen?: string[]
+  /** The option picked, or `null` for none; absent for a box that adds. */
+  selected?: CompareOption | null
+  placeholder?: string
   onAdd: (code: string) => void
+  onClear?: () => void
 }) {
   const listId = useId()
-  const [query, setQuery] = useState('')
-  const [active, setActive] = useState(0)
-  const matches = matchOptions(options, query, chosen)
-  const highlighted = matches[Math.min(active, matches.length - 1)]
-  const add = (option: CompareOption | undefined) => {
-    if (!option) return
-    onAdd(option.code)
-    setQuery('')
-    setActive(0)
-  }
-  const handleKey = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault()
-      const step = event.key === 'ArrowDown' ? 1 : -1
-      setActive(Math.max(0, Math.min(matches.length - 1, active + step)))
-    } else if (event.key === 'Enter') {
-      event.preventDefault()
-      add(highlighted)
-    } else if (event.key === 'Escape') {
-      setQuery('')
-    }
-  }
+  const isSelect = selected !== undefined
+  const search = useOptionSearch({ options, chosen, isSelect, onAdd })
+  const { query, active, isEditing, shown, highlighted } = search
   return (
     <div className="relative">
       <label className={FIELD_CLASS}>
         <span className="text-muted-foreground">{label}</span>
-        <input
-          type="text"
-          role="combobox"
-          aria-expanded={matches.length > 0}
-          aria-controls={listId}
-          aria-autocomplete="list"
-          aria-activedescendant={
-            highlighted ? `${listId}-${highlighted.code}` : undefined
-          }
-          className={cn(CONTROL_CLASS, 'w-72 max-w-full')}
-          placeholder="Type a college, area, or unit"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value)
-            setActive(0)
-          }}
-          onKeyDown={handleKey}
-        />
+        <span className="flex items-center gap-1">
+          <input
+            type="text"
+            role="combobox"
+            aria-expanded={shown.length > 0}
+            aria-controls={listId}
+            aria-autocomplete="list"
+            aria-activedescendant={
+              highlighted ? `${listId}-${highlighted.code}` : undefined
+            }
+            className={cn(CONTROL_CLASS, 'w-72 max-w-full')}
+            placeholder={placeholder}
+            value={isSelect && !isEditing ? (selected?.name ?? '') : query}
+            onFocus={() => search.setEditing(true)}
+            onBlur={search.close}
+            onChange={(event) => search.type(event.target.value)}
+            onKeyDown={keyHandler({
+              count: shown.length,
+              active,
+              onActive: search.setActive,
+              onPick: () => search.pick(highlighted),
+              onEscape: () => search.type(''),
+            })}
+          />
+          {selected && onClear && (
+            <button
+              type="button"
+              aria-label={`Clear ${label}`}
+              className="rounded-full px-2 text-muted-foreground hover:bg-background hover:text-foreground"
+              onClick={onClear}
+            >
+              ×
+            </button>
+          )}
+        </span>
       </label>
-      {matches.length > 0 && (
+      {shown.length > 0 && (
         <OptionList
           id={listId}
           label={label}
-          matches={matches}
+          matches={shown}
           highlighted={highlighted}
-          onPick={add}
+          onPick={search.pick}
         />
       )}
     </div>

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { OptionSearch } from '@/components/fields/option-search'
+import { RadioField } from '@/components/fields/radio-field'
 import { SelectField } from '@/components/fields/select-field'
 import { YearRangeFields } from '@/components/fields/year-range-fields'
 import type { CodeTrend, ScopeTrends } from '@/data/summary'
@@ -7,7 +9,6 @@ import {
   REPORT_METRIC_OPTIONS,
   type ReportMetric,
   type ReportSearch,
-  reportMetricSchema,
   type YearRange,
 } from '@/lib/trends/search'
 import { cn } from '@/lib/utils'
@@ -51,18 +52,16 @@ function ScopeFields({
   unit: string | null
   onChange: (patch: ReportSearch) => void
 }) {
+  const options = areas.map(({ code, name }) => ({ code, name, area: null }))
   return (
     <>
-      <SelectField
+      <OptionSearch
         label="College or VP area"
-        value={area ?? EVERY}
-        options={[
-          [EVERY, ALL_OF_UO],
-          ...areas.map(({ code, name }): [string, string] => [code, name]),
-        ]}
-        onSelect={(value) =>
-          onChange({ area: value || undefined, unit: undefined })
-        }
+        options={options}
+        selected={options.find(({ code }) => code === area) ?? null}
+        placeholder={ALL_OF_UO}
+        onAdd={(code) => onChange({ area: code, unit: undefined })}
+        onClear={() => onChange({ area: undefined, unit: undefined })}
       />
       {units.length > 0 && (
         <SelectField
@@ -127,13 +126,13 @@ export function ReportFilters({
           onChange={onChange}
         />
         {measure && (
-          <SelectField
-            label="Measure"
+          <RadioField
+            legend="Measure"
+            name="measure"
             value={measure}
             options={REPORT_METRIC_OPTIONS}
-            onSelect={(value) =>
-              onChange({ measure: reportMetricSchema.safeParse(value).data })
-            }
+            isSegmented
+            onSelect={(value) => onChange({ measure: value })}
           />
         )}
       </div>
