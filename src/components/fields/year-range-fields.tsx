@@ -1,6 +1,5 @@
 import { SelectField } from './select-field'
 
-/** From and To selects over the listed census years. */
 export function YearRangeFields({
   years,
   from,

@@ -14,7 +14,6 @@ export const RATIO_GROUPS: readonly TrendGroup[] = [
   'Executives',
 ]
 export const RATIO_BASE_GROUP: TrendGroup = 'Faculty'
-/** The ratio's groups, then its base. */
 export const RATIO_COLUMNS: readonly TrendGroup[] = [
   ...RATIO_GROUPS,
   RATIO_BASE_GROUP,

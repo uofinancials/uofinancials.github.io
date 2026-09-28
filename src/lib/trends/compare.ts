@@ -5,7 +5,6 @@ import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
 
 export const ALL_OF_UO = 'All of UO'
 
-/** Each code's points in the range. */
 export function inRange(
   codes: CodeTrend[],
   { from, to }: YearRange,
