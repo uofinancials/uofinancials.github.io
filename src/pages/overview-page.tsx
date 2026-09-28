@@ -75,7 +75,9 @@ function Headline({
       className="rounded-xl border p-4 text-foreground hover:bg-muted"
     >
       <span className="block text-sm text-muted-foreground">{label}</span>
-      <span className="block text-2xl font-semibold tabular-nums">{value}</span>
+      <span className="block text-figure font-semibold tabular-nums">
+        {value}
+      </span>
     </Link>
   )
 }
@@ -285,7 +287,7 @@ export function OverviewPage() {
   return (
     <div className="space-y-10">
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">UO Financials</h1>
+        <h1 className="text-title font-semibold">UO Financials</h1>
         <p>
           An independent look at the salary, headcount, and budget data the
           University of Oregon publishes: see the projected budget gap, test

@@ -221,7 +221,7 @@ export function PeoplePage() {
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
-      <h1 className="text-2xl font-semibold">People, Fall {view.year}</h1>
+      <h1 className="text-title font-semibold">People, Fall {view.year}</h1>
       <p className="text-sm text-muted-foreground">
         Every job the Fall {view.year} Census salary reports publish, by name,
         as published. {RATE_NOTE}

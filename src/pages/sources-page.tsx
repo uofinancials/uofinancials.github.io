@@ -214,7 +214,7 @@ export function SourcesPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Sources</h1>
+        <h1 className="text-title font-semibold">Sources</h1>
         <p>
           Every figure on this site comes from reports the University of Oregon
           publishes for public consumption. The site extracts the figures into

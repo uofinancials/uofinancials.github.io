@@ -160,7 +160,7 @@ function DepartmentHeader({
 }) {
   return (
     <header className="space-y-2">
-      <h1 className="text-2xl font-semibold">
+      <h1 className="text-title font-semibold">
         {profile.name}{' '}
         <span className="text-muted-foreground">{profile.code}</span>
       </h1>

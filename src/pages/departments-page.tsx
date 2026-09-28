@@ -91,7 +91,7 @@ export function DepartmentsPage() {
   const fiscal = fiscalYearLabel(now.fiscalYear)
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Departments</h1>
+      <h1 className="text-title font-semibold">Departments</h1>
       <p className="text-sm text-muted-foreground">
         Each college or VP area in the {fiscal} budget, or each unit and Fall{' '}
         {now.year} pay department, with its budget and jobs and their change

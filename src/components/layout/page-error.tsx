@@ -5,7 +5,7 @@ export function PageError({ error }: ErrorComponentProps) {
   const message = error instanceof Error ? error.message : String(error)
   return (
     <div role="alert" className="space-y-3">
-      <h1 className="text-2xl font-semibold">This page could not load</h1>
+      <h1 className="text-title font-semibold">This page could not load</h1>
       <p className="text-sm text-muted-foreground">{message}</p>
       <button
         type="button"

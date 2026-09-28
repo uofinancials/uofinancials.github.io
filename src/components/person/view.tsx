@@ -118,7 +118,7 @@ export function PersonView({
   const entry = run?.years.find((candidate) => candidate.year === year)
   return (
     <section className="space-y-6">
-      <h1 className="text-2xl font-semibold">{person.name}</h1>
+      <h1 className="text-title font-semibold">{person.name}</h1>
       <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />

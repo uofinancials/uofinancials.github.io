@@ -25,7 +25,7 @@ function Figure({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-1">
-        <p className="text-2xl font-semibold tabular-nums">{value}</p>
+        <p className="text-figure font-semibold tabular-nums">{value}</p>
         <p className="text-xs text-muted-foreground">{method}</p>
       </CardContent>
     </Card>
