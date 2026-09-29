@@ -116,3 +116,24 @@ test('does not pair codes when fewer than three jobs move', () => {
     ),
   ).toEqual([])
 })
+
+test('leaves out a budget unit whose staff the census pays under another code in the same years', () => {
+  expect(
+    findUnitCandidates(
+      [census(2021, [job('Doe, Ann', '222555', 'CAS History Operations')])],
+      [{ ...budget({ '222554': 'CAS History Ops' }), fiscalYear: 2022 }],
+    ),
+  ).toEqual([])
+})
+
+test('keeps a pay code whose jobs the budget unit code takes over later', () => {
+  expect(
+    findUnitCandidates(
+      [
+        census(2020, [job('Doe, Ann', '221160', 'Technology Services')]),
+        census(2021, [job('Doe, Ann', '263000', 'Technology Services')]),
+      ],
+      [{ ...budget({ '263000': 'Technology Services' }), fiscalYear: 2021 }],
+    ),
+  ).toEqual([{ codes: ['221160', '263000'], reason: 'same-name' }])
+})

@@ -128,7 +128,55 @@ function jobsMovedPairs(falls: FallYear[]): string[] {
   })
 }
 
-/** Every pair of codes that a shared normalised name, one name beginning another, or a move of most of a code's jobs suggests is one unit. */
+/** The fiscal years each budget org code is published in. */
+function budgetYearsByCode(budgets: BudgetYear[]): Map<string, Set<number>> {
+  const years = new Map<string, Set<number>>()
+  for (const { fiscalYear, orgs } of budgets) {
+    for (const code of Object.keys(orgs)) {
+      years.set(code, (years.get(code) ?? new Set()).add(fiscalYear))
+    }
+  }
+  return years
+}
+
+/** The fiscal years each pay code has jobs in: Fall census Y falls in fiscal year Y + 1. */
+function payYearsByCode(falls: FallYear[]): Map<string, Set<number>> {
+  const years = new Map<string, Set<number>>()
+  for (const { censusDate, records } of falls) {
+    const fiscalYear = Number(censusDate.slice(0, 4)) + 1
+    for (const { payDepartment } of records) {
+      const { code } = payDepartment
+      if (code !== null) {
+        years.set(code, (years.get(code) ?? new Set()).add(fiscalYear))
+      }
+    }
+  }
+  return years
+}
+
+/**
+ * A budget unit and a pay code the budget never publishes, paying in the same
+ * fiscal year, where the unit's code never takes over the jobs afterwards: the
+ * census pays the unit's staff under another code, which is a crosswalk
+ * between the datasets, not a second code for the unit.
+ */
+function isBudgetPayPair(
+  [a, b]: readonly [string, string],
+  budgetYears: Map<string, Set<number>>,
+  payYears: Map<string, Set<number>>,
+): boolean {
+  const [unit, pay] = budgetYears.has(a) ? [a, b] : [b, a]
+  const unitYears = budgetYears.get(unit)
+  if (!unitYears || budgetYears.has(pay)) return false
+  const paying = [...(payYears.get(pay) ?? [])]
+  const lastPaid = Math.max(...paying)
+  const isTakenOver = [...(payYears.get(unit) ?? [])].some(
+    (year) => year > lastPaid,
+  )
+  return !isTakenOver && paying.some((year) => unitYears.has(year))
+}
+
+/** Every pair of codes that a shared normalised name, one name beginning another, or a move of most of a code's jobs suggests is one unit, less the budget-unit and pay-code pairs. */
 export function findUnitCandidates(
   falls: FallYear[],
   budgets: BudgetYear[],
@@ -141,10 +189,13 @@ export function findUnitCandidates(
   note(sameNamePairs(codesByName), 'same-name')
   note(namePrefixPairs(codesByName), 'name-prefix')
   note(jobsMovedPairs(falls), 'jobs-moved')
+  const budgetYears = budgetYearsByCode(budgets)
+  const payYears = payYearsByCode(falls)
   return [...reasons]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, reason]) => {
+    .map(([key, reason]): UnitCandidate => {
       const [a = '', b = ''] = key.split('|')
       return { codes: [a, b], reason }
     })
+    .filter(({ codes }) => !isBudgetPayPair(codes, budgetYears, payYears))
 }
