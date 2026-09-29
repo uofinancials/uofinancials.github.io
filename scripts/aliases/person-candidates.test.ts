@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import type { FallClassified, FallYear } from '../../src/data/fall.ts'
 import {
+  changesMiddleInitial,
   differsByFewLetters,
   differsOnlyByInitial,
   findPersonCandidates,
@@ -112,6 +113,27 @@ test('does not offer a spelling variant that only adds a middle initial', () => 
       census(2023, [job('DOE, ANN B', { jobStartDate: '2022-06-01' })]),
     ]),
   ).toEqual([])
+})
+
+test('does not offer a changed middle initial on an unchanged job', () => {
+  expect(
+    findPersonCandidates([
+      census(2020, [job('Bruno, Charlotte E')]),
+      census(2021, [job('Bruno, Charlotte F')]),
+    ]),
+  ).toEqual([])
+})
+
+test('changesMiddleInitial needs the same surname and given name and two different initials', () => {
+  expect(changesMiddleInitial('Bruno, Charlotte E', 'Bruno, Charlotte F')).toBe(
+    true,
+  )
+  expect(changesMiddleInitial('Bruno, Charlotte E', 'Bruno, Charlotte')).toBe(
+    false,
+  )
+  expect(changesMiddleInitial('Bruno, Charlotte E', 'Brown, Charlotte F')).toBe(
+    false,
+  )
 })
 
 test('differsOnlyByInitial ignores case, punctuation and an initial on one name only', () => {

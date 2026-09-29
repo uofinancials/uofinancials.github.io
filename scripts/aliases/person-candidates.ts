@@ -98,12 +98,28 @@ export function differsByFewLetters(a: string, b: string): boolean {
   )
 }
 
-/** A pair of candidate names that a rule links without review. */
-export function isLinkedByRule(a: string, b: string): boolean {
+/** The same surname and given name with a different middle initial, on an unchanged job. */
+export function changesMiddleInitial(a: string, b: string): boolean {
+  const [partsA, partsB] = [nameParts(a), nameParts(b)]
   return (
-    keepsGivenNames(a, b) ||
+    partsA.surname === partsB.surname &&
+    partsA.given === partsB.given &&
+    partsA.initial !== '' &&
+    partsB.initial !== '' &&
+    partsA.initial !== partsB.initial
+  )
+}
+
+/** A candidate a rule links without review; a new surname or a new middle initial only on an unchanged job. */
+export function isLinkedByRule({
+  names: [a, b],
+  reason,
+}: Pick<PersonCandidate, 'names' | 'reason'>): boolean {
+  const isUnchangedJob = reason === 'same-job'
+  return (
     differsOnlyByInitial(a, b) ||
-    differsByFewLetters(a, b)
+    differsByFewLetters(a, b) ||
+    (isUnchangedJob && (keepsGivenNames(a, b) || changesMiddleInitial(a, b)))
   )
 }
 
@@ -200,10 +216,9 @@ export function findPersonCandidates(falls: FallYear[]): PersonCandidate[] {
     ...spellingPairs(ordered),
   ]) {
     const key = pairKey(candidate)
-    const [a, b] = candidate.names
-    if (!byPair.has(key) && !isLinkedByRule(a, b)) byPair.set(key, candidate)
+    if (!byPair.has(key)) byPair.set(key, candidate)
   }
-  return [...byPair.values()].sort((a, b) =>
-    pairKey(a).localeCompare(pairKey(b), 'en'),
-  )
+  return [...byPair.values()]
+    .filter((candidate) => !isLinkedByRule(candidate))
+    .sort((a, b) => pairKey(a).localeCompare(pairKey(b), 'en'))
 }
