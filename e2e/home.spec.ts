@@ -332,3 +332,20 @@ test('the people list does not scroll sideways at 360px', async ({ page }) => {
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })
+
+test('the people list cites its census before the EEO section begins', async ({
+  page,
+}) => {
+  await page.goto('/people')
+  const eeo = page.locator('section', {
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Salary spend by EEO category',
+    }),
+  })
+  await expect(eeo).toBeVisible()
+  await expect(
+    eeo.locator('xpath=preceding-sibling::*[1]').locator('summary'),
+  ).toHaveText(/^Sources? and method/)
+  await expect(eeo.locator('xpath=following-sibling::details')).toHaveCount(0)
+})

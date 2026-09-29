@@ -17,7 +17,7 @@ import { listCitedDocuments, sourceAnchor } from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
-const HASH_CELL = 'font-mono text-xs'
+const HASH_CELL = 'min-w-48 font-mono text-xs break-all whitespace-normal'
 const NOT_STATED = 'not stated'
 
 function SourceTable({

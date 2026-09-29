@@ -95,7 +95,10 @@ function BudgetTable({
           <TableRow key={key}>
             <TableHead
               scope="row"
-              className={cn(!isGroup && 'pl-6 font-normal')}
+              className={cn(
+                'min-w-40 whitespace-normal',
+                !isGroup && 'pl-6 font-normal',
+              )}
             >
               {label}
             </TableHead>

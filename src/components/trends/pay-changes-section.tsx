@@ -19,6 +19,7 @@ import {
   pairLabel,
   RANK_RENAMES,
   RATE_NOTE,
+  RENAME_RANGE,
   TITLE_ABBREVIATIONS,
 } from '@/lib/trends/pay-change-labels'
 import {
@@ -29,6 +30,11 @@ import {
 } from '@/lib/trends/search'
 
 const PAY_CHANGE_METHOD = `${CONTINUING_JOB_METHOD} Class changes compare the class number, whatever its letter prefix; rank changes leave out the renames and unpublished ranks below; title changes compare titles without case, punctuation, or the abbreviations below. A changed class, rank, or title is a changed published label, not necessarily a promotion.`
+
+const LABEL_CELL = 'min-w-40 whitespace-normal'
+
+const RENAME_METHOD =
+  "Reading these rank moves as renames, and these words as the same, is this site's method; the ranks and titles are as each census publishes them."
 
 const NO_PAIRS =
   'A change needs two consecutive censuses; choose a wider range of years.'
@@ -53,8 +59,8 @@ function LabelTables() {
           {RANK_RENAMES.map(({ toYear, from, to }) => (
             <TableRow key={`${toYear} ${from}`}>
               <TableCell>{pairLabel(toYear - 1)}</TableCell>
-              <TableCell>{from}</TableCell>
-              <TableCell>{to}</TableCell>
+              <TableCell className={LABEL_CELL}>{from}</TableCell>
+              <TableCell className={LABEL_CELL}>{to}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -73,11 +79,21 @@ function LabelTables() {
           {Object.entries(TITLE_ABBREVIATIONS).map(([word, forms]) => (
             <TableRow key={word}>
               <TableCell>{word}</TableCell>
-              <TableCell>{forms.join(', ')}</TableCell>
+              <TableCell className={LABEL_CELL}>{forms.join(', ')}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <Sources
+        sources={[
+          {
+            kind: 'fall-range',
+            from: RENAME_RANGE.from,
+            to: RENAME_RANGE.to,
+            computed: RENAME_METHOD,
+          },
+        ]}
+      />
     </PageSection>
   )
 }

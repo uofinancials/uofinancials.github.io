@@ -218,6 +218,11 @@ export function PeoplePage() {
     })
   const handleSort = (sort: PeopleSort, dir: SortDirection) =>
     change({ sort, dir })
+  const listSources = (
+    <Sources
+      sources={[{ kind: 'fall', year: view.year, computed: COMPUTED }]}
+    />
+  )
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
@@ -253,25 +258,19 @@ export function PeoplePage() {
       {view.q && matching.jobs.length === 0 && (
         <OtherCensusNames q={view.q} year={view.year} />
       )}
-      {matching.jobs.length > 0 && (
+      {matching.jobs.length > 0 ? (
         <>
           <JobsSection
             sorted={matching.sorted}
             view={view}
             onSort={handleSort}
           />
+          {listSources}
           <CategorySpend totals={matching.categories} year={view.year} />
         </>
+      ) : (
+        listSources
       )}
-      <Sources
-        sources={[
-          {
-            kind: 'fall',
-            year: view.year,
-            computed: COMPUTED,
-          },
-        ]}
-      />
     </div>
   )
 }

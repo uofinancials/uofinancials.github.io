@@ -50,7 +50,7 @@ function TermsTable({ terms }: { terms: AcrossTheBoardTerm[] }) {
             key={`${term.source.url} ${term.source.location} ${term.appliesTo} ${term.effective.from} ${term.percent}`}
           >
             <TableCell>{term.employeeGroup}</TableCell>
-            <TableCell>
+            <TableCell className="min-w-48 whitespace-normal">
               {term.appliesTo}
               {term.note && (
                 <span className="block text-muted-foreground">{term.note}</span>
@@ -58,7 +58,7 @@ function TermsTable({ terms }: { terms: AcrossTheBoardTerm[] }) {
             </TableCell>
             <TableCell className={NUMBER_CELL}>{term.percent}%</TableCell>
             <TableCell>{effectiveOf(term)}</TableCell>
-            <TableCell>
+            <TableCell className="min-w-48 whitespace-normal">
               <CitedSourceText source={term.source} />
             </TableCell>
           </TableRow>
@@ -110,7 +110,10 @@ export function RaiseComparisonSection({
         <TableBody>
           {rows.map(({ row, jobs, median, acrossTheBoard, other }) => (
             <TableRow key={row.label}>
-              <TableHead scope="row" className="font-normal">
+              <TableHead
+                scope="row"
+                className="min-w-40 font-normal whitespace-normal"
+              >
                 {row.label}
               </TableHead>
               <TableCell className={NUMBER_CELL}>{formatCount(jobs)}</TableCell>

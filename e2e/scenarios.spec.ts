@@ -254,3 +254,20 @@ test('the page with a raise freeze does not scroll sideways at 360px', async ({
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })
+
+test('each section with computed figures closes with its sources and method', async ({
+  page,
+}) => {
+  await page.goto('/scenarios')
+  await page
+    .getByRole('link', { name: 'What would 10% off pay above $200,000 save?' })
+    .click()
+  for (const title of ['Rules', 'Savings by rule', 'Against the projection']) {
+    const section = page.locator('section', {
+      has: page.getByRole('heading', { level: 2, name: title, exact: true }),
+    })
+    await expect(section.locator('details > summary').last()).toHaveText(
+      /^Sources and method \(\d+\)$/,
+    )
+  }
+})

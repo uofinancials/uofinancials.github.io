@@ -100,3 +100,16 @@
 @utility link {
   @apply text-primary underline decoration-primary/40 hover:decoration-primary;
 }
+
+@utility scroll-edge {
+  --edge-shadow: color-mix(in oklab, var(--foreground) 18%, transparent);
+  background:
+    linear-gradient(to right, var(--background) 40%, transparent) left center /
+    2.5rem 100% no-repeat local,
+    linear-gradient(to left, var(--background) 40%, transparent) right center /
+    2.5rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, var(--edge-shadow), transparent)
+    left center / 0.75rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--edge-shadow), transparent)
+    right center / 0.75rem 100% no-repeat scroll;
+}

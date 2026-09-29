@@ -43,7 +43,10 @@ export function OutlookCasesTable({ projection }: { projection: Projection }) {
       <TableBody>
         {projection.cases.map((scenario) => (
           <TableRow key={scenario.label}>
-            <TableHead scope="row" className="font-normal">
+            <TableHead
+              scope="row"
+              className="min-w-40 font-normal whitespace-normal"
+            >
               {scenario.label}
             </TableHead>
             {years.map((year, index) => (

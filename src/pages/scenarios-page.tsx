@@ -23,6 +23,9 @@ import { toSearchRules } from '@/lib/scenario/search'
 import type { SectionSource } from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 
+const SCENARIO_COMPUTED =
+  'Estimated from this census by the rules above; the method is under "How this is estimated".'
+
 const METHODS = [
   SCENARIO_METHOD,
   FULL_COST_METHOD,
@@ -61,7 +64,7 @@ function ScenarioSources({
     scenario
   const [first] = historyCensuses
   const sources: SectionSource[] = [
-    { kind: 'fall', year: census.year },
+    { kind: 'fall', year: census.year, computed: SCENARIO_COMPUTED },
     { kind: 'budget', fiscalYear: census.fiscalYear },
     ...(eliminationBudget.fiscalYear === census.fiscalYear
       ? []
@@ -118,6 +121,7 @@ function RulesSection({
         {fiscalYearLabel(scenario.firstYear)} rates;{' '}
         {formatCount(result.temporaries)} classified temporaries are left out.
       </p>
+      <ScenarioSources scenario={scenario} />
     </PageSection>
   )
 }
@@ -157,6 +161,7 @@ function SavingsSection({
         eliminatedCents={result.eliminated?.egCents ?? null}
         reductionTargetCents={scenario.projection.reductionTargetCents}
       />
+      <ScenarioSources scenario={scenario} />
     </PageSection>
   )
 }
@@ -199,6 +204,7 @@ export function ScenariosPage() {
             })
           }
         />
+        <ScenarioSources scenario={scenario} />
       </PageSection>
       <PageSection title="How this is estimated">
         <ul className="list-disc space-y-2 pl-6 text-sm">
@@ -206,7 +212,6 @@ export function ScenariosPage() {
             <li key={method}>{method}</li>
           ))}
         </ul>
-        <ScenarioSources scenario={scenario} />
       </PageSection>
     </div>
   )

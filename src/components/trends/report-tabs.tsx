@@ -15,7 +15,7 @@ const TAB_LABELS: Record<ReportTab, string> = {
 export function ReportTabs({ tab }: { tab: ReportTab }) {
   return (
     <nav aria-label="Questions">
-      <ul className="-mx-4 flex overflow-x-auto border-b px-4 md:mx-0 md:flex-wrap md:px-0">
+      <ul className="scroll-edge -mx-4 flex overflow-x-auto border-b px-4 md:mx-0 md:flex-wrap md:px-0">
         {REPORT_TABS.map((option) => (
           <li key={option} className="shrink-0">
             <Link
