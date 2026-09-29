@@ -66,7 +66,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const years = manifest.fall.map((entry) => {
-      const year = fallYearSchema.parse(
+      const year = foldedFallYearSchema.parse(
         readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
       )
       const expected = entry.files.reduce((sum, file) => sum + file.records, 0)
@@ -74,14 +74,14 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       expect(year.records.length).toBe(expected)
       return year
     })
-    expect(findPersonLinks(years)).toHaveLength(52_880)
+    expect(findPersonLinks(years)).toHaveLength(53_327)
     const people = indexPeople(years)
     const runs = people.flatMap((person) => person.runs)
-    expect(people).toHaveLength(15_916)
-    expect(runs).toHaveLength(19_593)
+    expect(people).toHaveLength(15_645)
+    expect(runs).toHaveLength(19_145)
     const linked = runs.filter(({ isLinked }) => isLinked)
-    expect(linked).toHaveLength(13_189)
-    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(13_189)
+    expect(linked).toHaveLength(12_993)
+    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(12_993)
   },
   ALL_YEARS_TIMEOUT_MS,
 )
@@ -513,19 +513,19 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2024-2025 pay changes match an independent computation',
   () => {
     const years = [2024, 2025].map((year) =>
-      fallYearSchema.parse(
+      foldedFallYearSchema.parse(
         readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
       ),
     )
     const pairs = continuingPairs(years)
     const [all] = payChangeTrends(pairs, [2024], null)
-    expect(all?.points[0]?.pairs).toBe(4_865)
+    expect(all?.points[0]?.pairs).toBe(4_895)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)
     expect(changeCounts(pairs, [2024])[0]).toMatchObject({
-      unclassified: 3_338,
-      rankChanged: 169,
+      unclassified: 3_355,
+      rankChanged: 170,
       rankUnpublished: 0,
-      classified: 1_527,
+      classified: 1_540,
       classChanged: 48,
     })
     const raises = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
@@ -540,11 +540,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ]),
     )
     expect(rowsByLabel).toMatchObject({
-      'SEIU 503': [1_500, '0.1083', 661],
-      'United Academics, tenure-related': [754, '0.0790', 790],
-      'United Academics, pro tem, visiting, and retired': [187, '0.0659', 659],
-      'Officers of Administration': [1_360, '0.0300', 300],
+      'SEIU 503': [1_513, '0.1083', 661],
+      'United Academics, tenure-related': [758, '0.0790', 790],
+      'United Academics, pro tem, visiting, and retired': [188, '0.0659', 659],
+      'Officers of Administration': [1_370, '0.0300', 300],
     })
-    expect(comparison.unplaced).toBe(151)
+    expect(comparison.unplaced).toBe(152)
   },
 )

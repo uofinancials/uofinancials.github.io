@@ -149,7 +149,7 @@ test('an area lists its units, states how its jobs were placed, and does not scr
     'College or VP area: Arts & Sciences, College of',
   )
   await expect(main).toContainText('whose pay department the site places in it')
-  const areaPairs = page.getByRole('row', { name: /^2024-25 946 / })
+  const areaPairs = page.getByRole('row', { name: /^2024-25 949 / })
   await expect(areaPairs).toBeVisible()
   await page
     .getByRole('button', { name: /^Remove College or VP area: / })

@@ -6,6 +6,11 @@ import {
 } from '../../data/fall.ts'
 import type { NameEntry } from '../../data/summary.ts'
 import { findPersonLinks } from './person-links.ts'
+import {
+  type PersonNames,
+  personNameOf,
+  personNamesOf,
+} from './person-names.ts'
 
 export const MIN_QUERY_CHARS = 2
 export const MAX_MATCHES = 50
@@ -19,14 +24,20 @@ export type PersonYear = {
 /** Consecutive census years of one name; `isLinked` when a computed person link joins each pair. */
 export type PersonRun = { years: PersonYear[]; isLinked: boolean }
 
+/** One person: `name` is their latest published name, and `otherNames` the other names their records were published under. */
 export type Person = {
   name: string
+  otherNames: string[]
   searchKey: string
   runs: PersonRun[]
 }
 
 function normalize(text: string): string {
   return text.toLowerCase().replaceAll(',', ' ').replace(/\s+/g, ' ').trim()
+}
+
+function searchKeyOf(name: string, otherNames: string[]): string {
+  return normalize([name, ...otherNames].join(' '))
 }
 
 function chain<T>(
@@ -53,7 +64,10 @@ function linkedYearsByName(years: FallYear[]): Map<string, Set<number>> {
   return linked
 }
 
-function recordsByNameAndYear(years: FallYear[]): Map<string, PersonYear[]> {
+function recordsByNameAndYear(
+  years: FallYear[],
+  names: PersonNames,
+): Map<string, PersonYear[]> {
   const byName = new Map<string, PersonYear[]>()
   const ordered = [...years].sort((a, b) =>
     a.censusDate.localeCompare(b.censusDate),
@@ -61,8 +75,9 @@ function recordsByNameAndYear(years: FallYear[]): Map<string, PersonYear[]> {
   for (const { censusDate, records } of ordered) {
     const year = censusYearOf(censusDate)
     for (const record of records) {
-      const personYears = byName.get(record.name) ?? []
-      byName.set(record.name, personYears)
+      const name = personNameOf(names, record.name)
+      const personYears = byName.get(name) ?? []
+      byName.set(name, personYears)
       const current = personYears.at(-1)
       if (current?.year === year) current.records.push(record)
       else personYears.push({ year, censusDate, records: [record] })
@@ -76,15 +91,24 @@ export function primaryJobOf(records: FallRecord[]): FallRecord | undefined {
   return records.find(isPrimaryJob)
 }
 
-/** One entry per name exactly as published, sorted by name. */
+function otherNamesOf(name: string, personYears: PersonYear[]): string[] {
+  const published = personYears.flatMap(({ records }) =>
+    records.map((record) => record.name),
+  )
+  return [...new Set(published)].filter((other) => other !== name)
+}
+
+/** One entry per person, under the name as published or the latest of the names `personNamesOf` joins, sorted by name. */
 export function indexPeople(years: FallYear[]): Person[] {
   const linked = linkedYearsByName(years)
-  return [...recordsByNameAndYear(years)]
+  return [...recordsByNameAndYear(years, personNamesOf(years))]
     .map(([name, personYears]) => {
       const linkedFrom = linked.get(name) ?? new Set()
+      const otherNames = otherNamesOf(name, personYears)
       return {
         name,
-        searchKey: normalize(name),
+        otherNames,
+        searchKey: searchKeyOf(name, otherNames),
         runs: chain(personYears, ({ year }) => linkedFrom.has(year - 1)).map(
           (run) => ({ years: run, isLinked: run.length > 1 }),
         ),
@@ -97,7 +121,10 @@ export function indexPeople(years: FallYear[]): Person[] {
 export type IndexedName = NameEntry & { searchKey: string }
 
 export function indexNames(names: NameEntry[]): IndexedName[] {
-  return names.map((entry) => ({ ...entry, searchKey: normalize(entry.name) }))
+  return names.map((entry) => ({
+    ...entry,
+    searchKey: searchKeyOf(entry.name, entry.otherNames ?? []),
+  }))
 }
 
 /** The person an index entry names, with their records from the censuses it lists; a census not given is left out. */
@@ -105,14 +132,17 @@ export function personOf(entry: IndexedName, years: FallYear[]): Person {
   const byYear = new Map(
     years.map((fall) => [censusYearOf(fall.censusDate), fall]),
   )
+  const otherNames = entry.otherNames ?? []
+  const names = new Set([entry.name, ...otherNames])
   const personYear = (year: number): PersonYear[] => {
     const fall = byYear.get(year)
     if (!fall) return []
-    const records = fall.records.filter(({ name }) => name === entry.name)
+    const records = fall.records.filter(({ name }) => names.has(name))
     return [{ year, censusDate: fall.censusDate, records }]
   }
   return {
     name: entry.name,
+    otherNames,
     searchKey: entry.searchKey,
     runs: entry.runs.map((run) => ({
       years: run.flatMap(personYear),

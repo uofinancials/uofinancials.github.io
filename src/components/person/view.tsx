@@ -27,7 +27,7 @@ import {
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =
-  'UO publishes no person identifier. Records are grouped by the name exactly as published, so one name may be more than one person, and one person may appear under more than one name.'
+  'UO publishes no person identifier. Records are grouped by the name as published, and this site joins some names as one person by hand review or by a name-matching rule, so one name may be more than one person, and one person may still appear under more than one name.'
 
 const MIN_YEAR_TABS = 2
 
@@ -133,6 +133,11 @@ export function PersonView({
           <BackButton />
         </p>
         <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
+        {person.otherNames.length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Also published as {person.otherNames.join('; ')}.
+          </p>
+        )}
       </PageHeader>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />

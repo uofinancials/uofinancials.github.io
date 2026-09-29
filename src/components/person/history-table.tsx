@@ -11,20 +11,22 @@ import { HISTORY_LABELS } from '@/lib/people/person-fields'
 import type { Person } from '@/lib/people/person-lookup'
 import { jobHistory } from '@/lib/people/person-summary'
 
-/** Every job under the name, census by census, with the published fields that change most. */
+/** Every job of the person, census by census, with the published fields that change most, and the name each was published under where there is more than one. */
 export function PersonHistoryTable({ person }: { person: Person }) {
+  const hasNames = person.otherNames.length > 0
   return (
     <PageSection title="Job history">
       <p className="text-sm text-muted-foreground">
-        As published. Censuses marked “linked” are in a run joined on the exact
-        name and the same pay department of a single primary job, computed by
-        this site.
+        As published. Censuses marked “linked” are in a run joined on the name,
+        or on names this site joins as one person, and the same pay department
+        of a single primary job, computed by this site.
       </p>
       <Table>
         <caption className="sr-only">{person.name}: job history</caption>
         <TableHeader>
           <TableRow>
             <TableHead scope="col">Fall</TableHead>
+            {hasNames && <TableHead scope="col">Name as published</TableHead>}
             {HISTORY_LABELS.map((column) => (
               <TableHead key={column} scope="col">
                 {column}
@@ -41,6 +43,7 @@ export function PersonHistoryTable({ person }: { person: Person }) {
                   <span className="text-muted-foreground"> linked</span>
                 )}
               </TableHead>
+              {hasNames && <TableCell>{row.name}</TableCell>}
               {HISTORY_LABELS.map((column, index) => (
                 <TableCell key={column}>{row.values[index]}</TableCell>
               ))}

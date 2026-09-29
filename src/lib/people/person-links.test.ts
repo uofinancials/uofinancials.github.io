@@ -55,7 +55,7 @@ test('does not link a name with two primary jobs or none', () => {
   ).toEqual([])
 })
 
-test('links only consecutive years and exact names', () => {
+test('links only consecutive years, even between names joined as one person', () => {
   const links = findPersonLinks([
     census(2020, [job('Doe, Ann', '111111'), job('Mcgee, Cy', '111111')]),
     census(2022, [job('Doe, Ann', '111111')]),
@@ -64,4 +64,31 @@ test('links only consecutive years and exact names', () => {
   expect(links.map(({ name, fromYear }) => ({ name, fromYear }))).toEqual([
     { name: 'Doe, Ann', fromYear: 2022 },
   ])
+})
+
+test('links a hand-reviewed pair of names under the later name', () => {
+  const links = findPersonLinks([
+    census(2022, [job('Grose, Mike D', '111111')]),
+    census(2023, [job('Grose, Michael D', '111111')]),
+  ])
+  expect(links.map(({ name, fromYear }) => ({ name, fromYear }))).toEqual([
+    { name: 'Grose, Michael D', fromYear: 2022 },
+  ])
+})
+
+test('links a misspelt name on an unchanged job, which no table lists', () => {
+  const links = findPersonLinks([
+    census(2020, [job('Doe, Ann B', '111111')]),
+    census(2021, [job('Doe, Anne B', '111111')]),
+  ])
+  expect(links.map(({ name }) => name)).toEqual(['Doe, Anne B'])
+})
+
+test('does not link an unchanged job whose surname and given name both change', () => {
+  expect(
+    findPersonLinks([
+      census(2020, [job('Doe, Ann', '111111')]),
+      census(2021, [job('Roe, Bea', '111111')]),
+    ]),
+  ).toEqual([])
 })

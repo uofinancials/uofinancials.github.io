@@ -161,15 +161,20 @@ export function personRates(
 }
 
 /** Every job under the name, census by census, with its history fields as published. */
-export function jobHistory(
-  person: Person,
-): { key: string; year: number; isLinked: boolean; values: string[] }[] {
+export function jobHistory(person: Person): {
+  key: string
+  year: number
+  isLinked: boolean
+  name: string
+  values: string[]
+}[] {
   return person.runs.flatMap(({ years, isLinked }) =>
     years.flatMap(({ year, records }) =>
       records.map((record, index) => ({
         key: `${year}-${index}`,
         year,
         isLinked,
+        name: record.name,
         values: historyValues(record),
       })),
     ),

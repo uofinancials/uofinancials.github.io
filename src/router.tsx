@@ -251,6 +251,17 @@ const personRoute = createRoute({
   loader: async ({ context: { queryClient }, params: { name } }) => {
     const { people } = await queryClient.ensureQueryData(peopleIndexQuery)
     const entry = people.find((person) => person.name === name) ?? null
+    const joined = entry
+      ? undefined
+      : people.find((person) => person.otherNames?.includes(name))
+    if (joined) {
+      throw redirect({
+        to: '/people/$name',
+        params: { name: joined.name },
+        search: true,
+        replace: true,
+      })
+    }
     await Promise.all(
       (entry?.runs.flat() ?? []).map((year) =>
         queryClient.ensureQueryData(fallYearQuery(year)),
