@@ -8,7 +8,14 @@ import {
 import { rankByChange } from '../shared/series.ts'
 import { pairLabel } from './pay-change-labels.ts'
 import { ALL_JOBS, type ChangeRow, type RaiseRow } from './report.ts'
-import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
+import { ALL_OF_UO } from './scope.ts'
+import {
+  METRIC_INFO,
+  REPORT_TAB_LABELS,
+  type ReportMetric,
+  type ReportTab,
+  type YearRange,
+} from './search.ts'
 import type { SpendContribution, VolumeAndPay } from './spend.ts'
 
 /** All jobs' change in a measure since the first census, and the groups among the rows with the largest and smallest change. */
@@ -97,4 +104,16 @@ export function raisesAnswer(
     return null
   }
   return `Chained, the median change for all continuing jobs from Fall ${pairLabel(first)} to ${pairLabel(last)} comes to ${formatChange(chained)}.`
+}
+
+/** The report's h1, naming the scope the filters pick. */
+export function reportHeading(scopeName: string, from: number): string {
+  return scopeName === ALL_OF_UO
+    ? `How University of Oregon jobs and pay have changed since Fall ${from}`
+    : `How jobs and pay have changed in ${scopeName} since Fall ${from}`
+}
+
+/** The parts of the report's browser tab title, most specific first. */
+export function reportTitleParts(tab: ReportTab, scopeName: string): string[] {
+  return [REPORT_TAB_LABELS[tab], scopeName, 'Trends']
 }

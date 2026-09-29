@@ -177,6 +177,9 @@ export function CompareSection({
   )
   const pick = picked ? lines[0] : undefined
   const area = scope.area && inRange([totalsOf(scope.area)], range)[0]
+  const listed = area
+    ? inRange(scope.units.map(totalsOf), range)
+    : inRange(areas, range)
   return (
     <PageSection title="How does it compare?">
       <CompareWith
@@ -194,16 +197,12 @@ export function CompareSection({
         </p>
       )}
       <CompareTable
-        codes={
-          area
-            ? inRange(scope.units.map(totalsOf), range)
-            : inRange(areas, range)
-        }
+        codes={listed}
         totals={[...lines, all]}
         caption={
           area
-            ? `Units in ${area.name}, Fall ${range.from} to Fall ${range.to}`
-            : `Colleges and VP areas, Fall ${range.from} to Fall ${range.to}`
+            ? `${formatCount(listed.length)} units in ${area.name}, Fall ${range.from} to Fall ${range.to}`
+            : `${formatCount(listed.length)} colleges and VP areas, Fall ${range.from} to Fall ${range.to}`
         }
         selected={pick?.code}
       />

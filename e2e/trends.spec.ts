@@ -268,3 +268,71 @@ test('a picked unit is compared with its area by default, and the area can be re
     'CAS English: FTE -28.8% since Fall 2014, against +16.1% for All of UO.',
   )
 })
+
+test('the heading and browser tab name the scope, and a phone opened on a tab folds the headline figures behind their heading', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/trends?tab=raises&area=222000')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'How jobs and pay have changed in Arts & Sciences, College of since Fall 2014',
+  )
+  await expect(page).toHaveTitle(
+    'What raises did people get? · Arts & Sciences, College of · Trends | UO Financials',
+  )
+  const since = page.locator('details', {
+    has: page.getByRole('heading', { name: /^What changed in / }),
+  })
+  const spend = since.getByText('Salary spend', { exact: true })
+  await expect(spend).toBeHidden()
+  await since.getByRole('heading').click()
+  await expect(spend).toBeVisible()
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await expect(since).toHaveCount(0)
+  await expect(
+    page.getByRole('main').getByText('Salary spend', { exact: true }),
+  ).toBeVisible()
+})
+
+test('on a phone a link to the chart over time shows the bars and says why', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/trends?view=chart')
+  await expect(
+    page.getByText('The chart over time is shown on wider screens.'),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('list', { name: /^Change in jobs by group/ }),
+  ).toBeVisible()
+})
+
+test('the comparison table counts the areas it lists', async ({ page }) => {
+  await page.goto('/trends?tab=compare')
+  await expect(
+    page.getByRole('table', {
+      name: /^\d+ colleges and VP areas, Fall 2014 to Fall 2025$/,
+    }),
+  ).toBeVisible()
+})
+
+test('the scope search keeps focus while a picked area loads, and says when nothing matches', async ({
+  page,
+}) => {
+  await page.route('**/data/trends/**', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1_500))
+    await route.continue()
+  })
+  await page.goto('/trends')
+  const search = page.getByRole('combobox', {
+    name: 'College, VP area, or unit',
+  })
+  await search.fill('Athletics')
+  await search.press('Enter')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    'Athletics',
+  )
+  await expect(search).toBeFocused()
+  await search.fill('zzzz')
+  await expect(page.getByText('No matches')).toBeVisible()
+})

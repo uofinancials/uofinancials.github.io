@@ -4,7 +4,7 @@ import type { GrowthView } from '@/lib/trends/search'
 import { IndexChart } from './index-chart'
 import { RankedBars } from './ranked-bars'
 
-/** Each line's change as ranked bars, or the lines over time as an index chart; a phone always shows the bars. */
+/** Each line's change as ranked bars, or the lines over time as an index chart; a phone always shows the bars, saying so when the chart was asked for. */
 export function IndexFigure({
   view,
   labels,
@@ -33,7 +33,12 @@ export function IndexFigure({
   if (view === 'bars') return bars
   return (
     <>
-      <div className="md:hidden">{bars}</div>
+      <div className="space-y-2 md:hidden">
+        {bars}
+        <p className="text-sm text-muted-foreground">
+          The chart over time is shown on wider screens.
+        </p>
+      </div>
       <div className="hidden md:block">
         <IndexChart
           labels={labels}

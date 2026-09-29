@@ -70,6 +70,16 @@ export const REPORT_TABS = [
 ] as const
 export type ReportTab = (typeof REPORT_TABS)[number]
 
+/** Each tab's question, as the tab and the browser tab name it. */
+export const REPORT_TAB_LABELS: Record<ReportTab, string> = {
+  grew: 'Which groups grew?',
+  money: 'Where did the money go?',
+  pay: 'More people, or higher pay?',
+  raises: 'What raises did people get?',
+  compare: 'How does it compare?',
+  groups: 'How are groups defined?',
+}
+
 /** The tabs whose figures follow the Measure filter. */
 export const MEASURED_TABS: readonly ReportTab[] = ['grew', 'compare']
 

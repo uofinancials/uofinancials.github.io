@@ -4,6 +4,8 @@ import {
   moneyAnswer,
   raisesAnswer,
   ratioAnswer,
+  reportHeading,
+  reportTitleParts,
   splitAnswer,
   unindexedNote,
 } from './report-text'
@@ -89,4 +91,18 @@ test('the raises answer chains all continuing jobs over the pairs shown', () => 
     'Chained, the median change for all continuing jobs from Fall 2014-15 to 2015-16 comes to +32.0%.',
   )
   expect(raisesAnswer([], [2014])).toBeNull()
+})
+
+test('the heading and tab title name the scope, and the tab title names the question', () => {
+  expect(reportHeading('All of UO', 2014)).toBe(
+    'How University of Oregon jobs and pay have changed since Fall 2014',
+  )
+  expect(reportHeading('Arts & Sciences, College of', 2018)).toBe(
+    'How jobs and pay have changed in Arts & Sciences, College of since Fall 2018',
+  )
+  expect(reportTitleParts('raises', 'Athletics')).toEqual([
+    'What raises did people get?',
+    'Athletics',
+    'Trends',
+  ])
 })

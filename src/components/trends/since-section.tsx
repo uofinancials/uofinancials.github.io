@@ -33,26 +33,28 @@ function Change({ value }: { value: number | null }) {
   )
 }
 
-/** Spend, jobs, median rate, and the staffing ratio in the last census, each against the first. */
+/** Spend, jobs, median rate, and the staffing ratio in the last census, each against the first; folded, a closed disclosure under its heading. */
 export function SinceSection({
   scopeName,
   first,
   last,
   ratios,
   scopeSources,
+  isFolded,
 }: {
   scopeName: string
   first: TrendPoint
   last: TrendPoint
   ratios: { first: number | null; last: number | null }
   scopeSources: SectionSource[]
+  /** Closed behind its heading, for a phone opened on a tab. */
+  isFolded: boolean
 }) {
   const spend = { first: first.spendCents, last: last.spendCents }
   const median = { first: first.medianRateCents, last: last.medianRateCents }
-  return (
-    <PageSection
-      title={`What changed in ${scopeName} since Fall ${first.year}`}
-    >
+  const title = `What changed in ${scopeName} since Fall ${first.year}`
+  const body = (
+    <>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="Salary spend"
@@ -99,6 +101,15 @@ export function SinceSection({
           ...scopeSources,
         ]}
       />
-    </PageSection>
+    </>
+  )
+  if (!isFolded) return <PageSection title={title}>{body}</PageSection>
+  return (
+    <details className="group">
+      <summary className="cursor-pointer group-open:mb-4">
+        <h2 className="inline text-section">{title}</h2>
+      </summary>
+      <div className="space-y-4">{body}</div>
+    </details>
   )
 }
