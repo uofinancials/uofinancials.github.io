@@ -1,4 +1,5 @@
 import { SeriesChart } from '@/components/charts/series-chart'
+import { SUMMARY_CLASS } from '@/components/layout/disclosure-class'
 import { formatCount, formatOrBlank, formatRatio } from '@/lib/shared/format'
 import { RATIO_COLUMNS, type RatioRow } from '@/lib/trends/report'
 import { ratioAnswer } from '@/lib/trends/report-text'
@@ -28,7 +29,7 @@ export function RatioFigure({ rows }: { rows: RatioRow[] }) {
         jump in 2018 is the year UO restructured them.
       </p>
       <details className="text-sm">
-        <summary className="w-fit cursor-pointer text-muted-foreground hover:text-foreground">
+        <summary className={SUMMARY_CLASS}>
           The jobs counted in every census
         </summary>
         <GroupTable

@@ -1,5 +1,6 @@
 import { Link, Outlet } from '@tanstack/react-router'
 import { NAV_LINK_CLASS } from '@/components/layout/nav-link-class'
+import { cn } from '@/lib/utils'
 
 const REPO_URL = 'https://github.com/uofinancials/uofinancials.github.io'
 const ISSUES_URL = `${REPO_URL}/issues`
@@ -19,7 +20,7 @@ export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
-        <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 md:px-6">
+        <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 md:px-6">
           <Link to="/" className="font-semibold">
             UO Financials
           </Link>
@@ -27,7 +28,10 @@ export function SiteLayout() {
             <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               {NAV_LINKS.map(([to, label]) => (
                 <li key={to}>
-                  <Link to={to} className={NAV_LINK_CLASS}>
+                  <Link
+                    to={to}
+                    className={cn(NAV_LINK_CLASS, 'inline-block py-1')}
+                  >
                     {label}
                   </Link>
                 </li>

@@ -11,7 +11,7 @@ export function RemovableFilter({
       {text}
       <button
         type="button"
-        className="rounded-md border px-2 py-0.5"
+        className="rounded-md border px-2 py-1"
         onClick={onRemove}
       >
         Remove

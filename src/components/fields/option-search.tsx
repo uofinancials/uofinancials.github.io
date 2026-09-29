@@ -184,7 +184,7 @@ export function OptionSearch({
             <button
               type="button"
               aria-label={`Clear ${label}`}
-              className="rounded-full px-2 text-muted-foreground hover:bg-background hover:text-foreground"
+              className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={onClear}
             >
               ×

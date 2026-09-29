@@ -3,6 +3,7 @@ import { SortHeader } from '@/components/fields/sort-header'
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -88,9 +89,7 @@ export function DepartmentTable({
 }) {
   return (
     <Table>
-      <caption className="mb-2 caption-top text-left font-medium">
-        {caption}
-      </caption>
+      <TableCaption>{caption}</TableCaption>
       <TableHeader>
         <TableRow>
           <SortHeader label="Name" sort="name" view={view} onSort={onSort} />

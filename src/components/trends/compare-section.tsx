@@ -132,7 +132,7 @@ function CompareWith({
           <button
             type="button"
             aria-label={`Remove ${name}`}
-            className="rounded-full px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={() =>
               onChange({ with: codes.filter((listed) => listed !== code) })
             }

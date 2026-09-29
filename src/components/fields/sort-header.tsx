@@ -33,7 +33,7 @@ export function SortHeader<S extends string>({
       ) : (
         <button
           type="button"
-          className="underline decoration-dotted"
+          className="py-1 underline decoration-dotted"
           onClick={() =>
             onSort(sort, isSorted && view.dir === 'asc' ? 'desc' : 'asc')
           }

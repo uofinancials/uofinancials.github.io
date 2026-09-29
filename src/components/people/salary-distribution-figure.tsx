@@ -1,5 +1,6 @@
 import { BinTable } from '@/components/charts/bin-table'
 import { StackedBarChart } from '@/components/charts/stacked-bar-chart'
+import { SUMMARY_CLASS } from '@/components/layout/disclosure-class'
 import { stackedCounts, type TrendGroup } from '@/lib/census/groups'
 import {
   binLabel,
@@ -68,9 +69,7 @@ export function SalaryDistributionFigure({
         }}
       />
       <details className="space-y-4">
-        <summary className="cursor-pointer text-sm">
-          The chart’s numbers
-        </summary>
+        <summary className={SUMMARY_CLASS}>The chart’s numbers</summary>
         <Summary distribution={distribution} groups={groups} />
         <BinTable
           bins={distribution.bins}

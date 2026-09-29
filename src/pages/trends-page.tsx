@@ -163,7 +163,7 @@ export function TrendsPage() {
     })
   return (
     <div className="space-y-8">
-      <div className="max-w-3xl space-y-3">
+      <div className="space-y-3">
         <h1 className="text-title">
           How University of Oregon jobs and pay have changed since Fall{' '}
           {view.from}

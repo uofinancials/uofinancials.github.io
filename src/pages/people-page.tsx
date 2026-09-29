@@ -97,10 +97,10 @@ function SummaryChart({
 function Pager({ page, pageCount }: { page: number; pageCount: number }) {
   const turn = (to: number, text: string) =>
     to < 1 || to > pageCount ? (
-      <span className="text-muted-foreground">{text}</span>
+      <span className="py-1 text-muted-foreground">{text}</span>
     ) : (
       <Link
-        className="link"
+        className="link py-1"
         from="/people"
         to="/people"
         search={(previous) => ({ ...previous, page: to })}
@@ -109,7 +109,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
       </Link>
     )
   return (
-    <nav aria-label="Pages" className="flex gap-4 text-sm">
+    <nav aria-label="Pages" className="flex items-center gap-4 text-sm">
       {turn(page - 1, 'Previous')}
       <span className="tabular-nums">
         Page {formatCount(page)} of {formatCount(pageCount)}
