@@ -76,18 +76,21 @@ flowchart LR
 
 - `src/main.tsx` - loads the typeface and stylesheet, creates the query client
   and router, and mounts the app.
-- `src/index.css` - the theme: color tokens for light and dark schemes, the type
-  scale, radius, and the focus and link styles.
+- `src/index.css` - the theme: color tokens for light and dark schemes, native
+  control colors, the type scale, radius, the prose measure, and the focus,
+  link, and table scroll edge styles.
 - `src/app.tsx` - the query and router providers.
 - `src/router.tsx` - the route tree, each route's data loading, each page's code
   loaded on demand, and the default loading, error, and not-found pages.
 - `src/pages` - one component per route.
 - `src/components` - one folder per area:
   - `layout` - the shared layout with the independence notice and error report
-    link, page sections, stat cards, the sources disclosure and inline source
-    citations, the navigation and tab link style, and loading and error states.
-  - `fields` - form fields, the department or area picker, a type-to-search
-    picker, the removable filter, and the sortable column header.
+    link, page headers and sections, stat cards, the sources disclosure and
+    inline source citations, the navigation, tab, and disclosure summary styles,
+    and loading and error states.
+  - `fields` - form fields, the segmented view switch, the department or area
+    picker, a type-to-search picker, the removable filter, the sortable column
+    header, and the button styles.
   - `charts` - line, index, and stacked bar charts, ranked bars of a change,
     bars in table cells, the charts' tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
@@ -105,10 +108,10 @@ flowchart LR
   page's view.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
-- `src/lib` - class name merging and the number cell style, and one folder per
-  domain:
+- `src/lib` - class name merging and the number and wrapping cell styles, and
+  one folder per domain:
   - `shared` - number formatting, table sort order, source citations, and the
-    rules charts draw series by.
+    rules charts draw series and axes by.
   - `census` - census totals, area assignment, employee groups, and the salary
     rate distribution.
   - `trends` - trends by group and by area, the report's indexes, changes, spend
@@ -155,16 +158,16 @@ flowchart LR
 - `e2e/departments.spec.ts` - the departments table's sorting, levels, and
   filters, a unit's and an area's pages, the scenario and pay changes links, and
   narrow layout.
-- `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, and
-  sources.
+- `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, sources,
+  and narrow layout.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
-  and raise freezes, eliminations, cases, unreadable link entries, and narrow
-  layout.
+  and raise freezes, eliminations, cases, unreadable link entries, each
+  section's sources, and narrow layout.
 - `e2e/trends.spec.ts` - the Trends report's tabs, answers, and tables, its
   filters and area or unit scope, older links, scroll position, and narrow
   layout.
 - `e2e/trends-change.spec.ts` - the pay changes page, its filters, its raise
-  comparison, older links to it, and its link from the person page.
+  comparison, its sources, older links to it, and its link from the person page.
 - `e2e/sources.ts` - opening a page's sources disclosures.
 
 ## Pages
