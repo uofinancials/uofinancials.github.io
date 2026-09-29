@@ -1,6 +1,5 @@
 import { CLEAR_BUTTON_CLASS } from '@/components/fields/button-class'
 
-/** A fully round label with a × that removes what it names. */
 export function Chip({
   text,
   onRemove,

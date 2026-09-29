@@ -1,10 +1,7 @@
 import type { ReactNode } from 'react'
 import { tabTitleOf } from '@/lib/shared/format'
 
-/**
- * The page's h1 and the lines under it. The tab title is `tabTitle`, or the h1
- * when it is text; `null` leaves the site's own title.
- */
+/** The page's h1 and the lines under it; the tab title is `tabTitle`, or the h1 when it is text, and `null` keeps the site's own. */
 export function PageHeader({
   title,
   tabTitle,
