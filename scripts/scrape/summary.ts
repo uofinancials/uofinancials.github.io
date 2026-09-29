@@ -1,8 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { budgetYearSchema } from '../../src/data/budget.ts'
-import { fallYearSchema } from '../../src/data/fall.ts'
 import type { Manifest } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
@@ -13,6 +11,10 @@ import {
   type Summary,
   summarySchema,
 } from '../../src/data/summary.ts'
+import {
+  foldedBudgetYearSchema,
+  foldedFallYearSchema,
+} from '../../src/data/unit-aliases.ts'
 import {
   buildSummary,
   buildTrendScopes,
@@ -44,8 +46,10 @@ export function deriveSummary(manifest: Manifest): {
   )
   const inputs: SummaryInputs = {
     manifest,
-    falls: fallPaths.map((file) => fallYearSchema.parse(readJson(file))),
-    budgets: budgetPaths.map((file) => budgetYearSchema.parse(readJson(file))),
+    falls: fallPaths.map((file) => foldedFallYearSchema.parse(readJson(file))),
+    budgets: budgetPaths.map((file) =>
+      foldedBudgetYearSchema.parse(readJson(file)),
+    ),
     outlook: outlookSchema.parse(readJson(OUTLOOK_DATA_PATH)),
     rates: opeRatesSchema.parse(readJson(OPE_DATA_PATH)),
     raiseTerms: raiseTermsSchema.parse(readJson(RAISES_DATA_PATH)),

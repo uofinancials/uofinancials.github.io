@@ -1,3 +1,6 @@
+import { type BudgetYear, budgetYearSchema } from './budget.ts'
+import { type FallYear, fallYearSchema } from './fall.ts'
+
 /** A department code the census published for the unit `sameAs` names, joined by hand review. */
 export type UnitAlias = { code: string; sameAs: string }
 
@@ -36,3 +39,58 @@ export const DISTINCT_UNITS: readonly (readonly [string, string])[] = [
   ['410201', '410230'],
   ['632200', '632810'],
 ]
+
+const SAME_AS = new Map(UNIT_ALIASES.map(({ code, sameAs }) => [code, sameAs]))
+
+/** The code a unit is published under now: `code` itself, unless a hand review joined it to another. */
+export function unitCodeOf(code: string): string {
+  return SAME_AS.get(code) ?? code
+}
+
+/** The other codes a hand review joined to this one. */
+export function aliasCodesOf(code: string): string[] {
+  return UNIT_ALIASES.filter(({ sameAs }) => sameAs === code).map(
+    (alias) => alias.code,
+  )
+}
+
+type Department = FallYear['records'][number]['payDepartment']
+
+function foldDepartment(department: Department): Department {
+  return department.code === null
+    ? department
+    : { ...department, code: unitCodeOf(department.code) }
+}
+
+/** The census with each alias pay and home department code replaced by its unit's code; the names stay as published. */
+export function foldUnitAliases(year: FallYear): FallYear {
+  return {
+    ...year,
+    records: year.records.map((record) => ({
+      ...record,
+      payDepartment: foldDepartment(record.payDepartment),
+      homeDepartment: foldDepartment(record.homeDepartment),
+    })),
+  }
+}
+
+/** The budget with each alias org's lines under its unit's code, and the alias org published under that code where the unit is absent that year. */
+export function foldBudgetAliases(year: BudgetYear): BudgetYear {
+  const orgs: BudgetYear['orgs'] = {}
+  for (const [code, org] of Object.entries(year.orgs)) {
+    const unit = unitCodeOf(code)
+    if (unit === code || !(unit in year.orgs)) orgs[unit] = org
+  }
+  return {
+    ...year,
+    orgs,
+    rows: year.rows.map((row) => ({ ...row, org: unitCodeOf(row.org) })),
+  }
+}
+
+/** A Fall year as the site reads it, with unit aliases folded. */
+export const foldedFallYearSchema = fallYearSchema.transform(foldUnitAliases)
+
+/** A budget year as the site reads it, with unit aliases folded. */
+export const foldedBudgetYearSchema =
+  budgetYearSchema.transform(foldBudgetAliases)

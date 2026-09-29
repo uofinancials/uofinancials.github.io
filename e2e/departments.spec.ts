@@ -16,10 +16,10 @@ test('the departments index ranks areas by budget with their changes, and a head
     table.getByRole('columnheader', { name: 'Budget ▼' }),
   ).toHaveAttribute('aria-sort', 'descending')
   await expect(table.getByRole('row').nth(1)).toContainText('Business Affairs')
-  // 1,273 jobs placed in the area in Fall 2025 against 1,358 in Fall 2024.
+  // 1,273 jobs placed in the area in Fall 2025 against 1,369 in Fall 2024.
   await expect(
     table.getByRole('row', { name: /^Arts & Sciences, College of/ }),
-  ).toContainText(/1,273.*-6\.3%/)
+  ).toContainText(/1,273.*-7\.0%/)
   await table.getByRole('button', { name: 'Jobs', exact: true }).click()
   await expect(page).toHaveURL(/sort=jobs/)
   await expect(page).toHaveURL(/dir=asc/)
@@ -149,7 +149,7 @@ test('an area lists its units, states how its jobs were placed, and does not scr
     'College or VP area: Arts & Sciences, College of',
   )
   await expect(main).toContainText('whose pay department the site places in it')
-  const areaPairs = page.getByRole('row', { name: /^2024-25 938 / })
+  const areaPairs = page.getByRole('row', { name: /^2024-25 946 / })
   await expect(areaPairs).toBeVisible()
   await page
     .getByRole('button', { name: /^Remove College or VP area: / })
@@ -178,4 +178,17 @@ test('a code no source publishes is not found', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Page not found' }),
   ).toBeVisible()
+})
+
+test('an alias code leads to its unit, which names the code it was also published under', async ({
+  page,
+}) => {
+  await page.goto('/departments/530000')
+  await expect(page).toHaveURL(/\/departments\/531111$/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: /Jordan Schnitzer/ }),
+  ).toBeVisible()
+  await expect(page.getByRole('main')).toContainText(
+    'Also published under code 530000',
+  )
 })

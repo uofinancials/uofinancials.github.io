@@ -18,7 +18,7 @@ test('pay changes show each census pair’s median by group, the change counts, 
   await expect(
     page
       .getByRole('table', { name: /changed class, rank, or title/ })
-      .getByRole('row', { name: /^2024-25 4,865 / }),
+      .getByRole('row', { name: /^2024-25 4,873 / }),
   ).toContainText('169 (')
   await expect(
     page
@@ -86,7 +86,7 @@ test('pay changes set each raise group’s median beside its cited across-the-bo
   })
   await expect(
     table.getByRole('row', {
-      name: /^SEIU 503 1,500 \+10\.8% \+6\.6% \+4\.2 points/,
+      name: /^SEIU 503 1,508 \+10\.8% \+6\.6% \+4\.2 points/,
     }),
   ).toBeVisible()
   await expect(

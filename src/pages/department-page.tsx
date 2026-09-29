@@ -191,6 +191,12 @@ function DepartmentHeader({
           Also published as {profile.otherNames.join('; ')}.
         </p>
       )}
+      {profile.aliasCodes.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          Also published under code {profile.aliasCodes.join(', ')}; this site
+          joins those jobs to this code by hand.
+        </p>
+      )}
       {hasBothSources && (
         <p className="text-sm text-muted-foreground">{SPONSORED_NOTE}</p>
       )}

@@ -6,6 +6,10 @@ import { fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
+import {
+  foldedBudgetYearSchema,
+  foldedFallYearSchema,
+} from '../../src/data/unit-aliases.ts'
 import { ORG_LEVEL_AREA } from '../../src/lib/census/areas.ts'
 import {
   HAND_AREAS,
@@ -292,30 +296,33 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   },
 )
 
+/** The censuses as the department pages read them, with unit aliases folded. */
 function readDepartmentCensuses() {
   const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
   const budgets = manifest.budget.map(({ fiscalYear }) =>
-    budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+    foldedBudgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
   )
   const falls = manifest.fall.map(({ year }) =>
-    fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
+    foldedFallYearSchema.parse(
+      readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
+    ),
   )
   return toDepartmentCensuses(manifest, falls, budgets)
 }
 
 /** Each census's jobs by how they are placed, classified temporaries included. */
 const PLACEMENT_BASES = {
-  2014: { published: 4_395, name: 1_375, hand: 311, unassigned: 30 },
-  2015: { published: 4_715, name: 1_538, hand: 363, unassigned: 47 },
-  2016: { published: 4_800, name: 1_453, hand: 289, unassigned: 0 },
-  2017: { published: 4_890, name: 1_572, hand: 141, unassigned: 0 },
+  2014: { published: 4_589, name: 1_220, hand: 302, unassigned: 0 },
+  2015: { published: 4_927, name: 1_379, hand: 357, unassigned: 0 },
+  2016: { published: 4_812, name: 1_447, hand: 283, unassigned: 0 },
+  2017: { published: 4_905, name: 1_557, hand: 141, unassigned: 0 },
   2018: { published: 5_143, name: 1_607, hand: 142, unassigned: 0 },
-  2019: { published: 5_091, name: 1_517, hand: 220, unassigned: 10 },
-  2020: { published: 4_920, name: 1_528, hand: 226, unassigned: 7 },
-  2021: { published: 4_433, name: 1_515, hand: 189, unassigned: 8 },
-  2022: { published: 4_633, name: 1_629, hand: 178, unassigned: 10 },
-  2023: { published: 4_871, name: 1_888, hand: 184, unassigned: 0 },
-  2024: { published: 4_885, name: 1_912, hand: 187, unassigned: 0 },
+  2019: { published: 5_123, name: 1_485, hand: 220, unassigned: 10 },
+  2020: { published: 4_949, name: 1_499, hand: 226, unassigned: 7 },
+  2021: { published: 4_465, name: 1_483, hand: 189, unassigned: 8 },
+  2022: { published: 4_659, name: 1_603, hand: 178, unassigned: 10 },
+  2023: { published: 4_889, name: 1_870, hand: 184, unassigned: 0 },
+  2024: { published: 4_896, name: 1_901, hand: 187, unassigned: 0 },
   2025: { published: 4_896, name: 1_746, hand: 198, unassigned: 0 },
 }
 

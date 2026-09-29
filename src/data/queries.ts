@@ -1,12 +1,12 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
-import { budgetYearSchema, fiscalYearLabel } from './budget.ts'
-import { fallYearSchema } from './fall.ts'
+import { fiscalYearLabel } from './budget.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
 import { raiseTermsSchema } from './raises.ts'
 import { areaTrendsSchema, summarySchema } from './summary.ts'
+import { foldedBudgetYearSchema, foldedFallYearSchema } from './unit-aliases.ts'
 
 const NETWORK_RETRIES = 2
 
@@ -43,7 +43,7 @@ export const outlookQuery = dataQuery('outlook.json', outlookSchema)
 export const summaryQuery = dataQuery('summary.json', summarySchema)
 
 export function fallYearQuery(year: number) {
-  return dataQuery(`fall/${year}.json`, fallYearSchema)
+  return dataQuery(`fall/${year}.json`, foldedFallYearSchema)
 }
 
 /** An area's units' and pay departments' yearly figures. */
@@ -54,7 +54,7 @@ export function areaTrendsQuery(area: string) {
 export function budgetYearQuery(fiscalYear: number) {
   return dataQuery(
     `budget/${fiscalYearLabel(fiscalYear)}.json`,
-    budgetYearSchema,
+    foldedBudgetYearSchema,
   )
 }
 

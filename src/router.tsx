@@ -23,6 +23,7 @@ import {
   raiseTermsQuery,
   summaryQuery,
 } from '@/data/queries'
+import { unitCodeOf } from '@/data/unit-aliases'
 import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { resolveCensusYear } from '@/lib/census/search'
 import {
@@ -170,6 +171,17 @@ const departmentRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/departments/$code',
   validateSearch: departmentSearchSchema,
+  beforeLoad: ({ params: { code }, search }) => {
+    const unit = unitCodeOf(code)
+    if (unit !== code) {
+      throw redirect({
+        to: '/departments/$code',
+        params: { code: unit },
+        search,
+        replace: true,
+      })
+    }
+  },
   loader: async ({ context: { queryClient }, params: { code } }) => {
     if (!orgCode.safeParse(code).success) throw notFound()
     const manifest = await queryClient.ensureQueryData(manifestQuery)
