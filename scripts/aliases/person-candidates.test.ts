@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { FallClassified, FallYear } from '../../src/data/fall.ts'
-import { findPersonCandidates } from './person-candidates.ts'
+import { findPersonCandidates, keepsGivenNames } from './person-candidates.ts'
 
 function job(
   name: string,
@@ -31,15 +31,32 @@ function census(year: number, records: FallYear['records']): FallYear {
   return { censusDate: `${year}-11-01`, records }
 }
 
-test('pairs a surname change on an unchanged job, earlier name first', () => {
+test('pairs a surname change on an unchanged job whose middle initial changes, earlier name first', () => {
   expect(
     findPersonCandidates([
-      census(2021, [job('Roe, Ann B')]),
+      census(2021, [job('Roe, Ann C')]),
       census(2020, [job('Doe, Ann B')]),
     ]),
   ).toEqual([
-    { names: ['Doe, Ann B', 'Roe, Ann B'], code: '111111', reason: 'same-job' },
+    { names: ['Doe, Ann B', 'Roe, Ann C'], code: '111111', reason: 'same-job' },
   ])
+})
+
+test('does not offer a surname change that keeps the given name and middle initial', () => {
+  expect(
+    findPersonCandidates([
+      census(2020, [job('Doe, Ann B')]),
+      census(2021, [job('Roe, Ann Beth')]),
+    ]),
+  ).toEqual([])
+})
+
+test('keepsGivenNames needs a new surname and the same given name and middle initial', () => {
+  expect(keepsGivenNames('Doe, Ann B', 'Roe-Doe, Ann B.')).toBe(true)
+  expect(keepsGivenNames('Doe, Ann', 'Roe, Ann')).toBe(false)
+  expect(keepsGivenNames('Doe, Ann B', 'Roe, Ann')).toBe(false)
+  expect(keepsGivenNames('Doe, Ann B', 'Doe, Ann B')).toBe(false)
+  expect(keepsGivenNames('Doe, Ann B', 'Roe, Anna B')).toBe(false)
 })
 
 test('does not pair an unchanged job whose surname and given name both change', () => {

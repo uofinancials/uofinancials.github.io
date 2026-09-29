@@ -29,6 +29,28 @@ function nameParts(name: string): [string, string] {
   return [surname.trim(), given.trim().split(' ')[0] ?? '']
 }
 
+function middleInitial(name: string): string {
+  const given = name.split(',')[1]?.trim().split(/\s+/) ?? []
+  return given[1]?.[0]?.toLowerCase() ?? ''
+}
+
+/**
+ * A new surname with the given name and a middle initial both kept, on an
+ * unchanged job: linked without review. The rule records no reason for the
+ * change.
+ */
+export function keepsGivenNames(a: string, b: string): boolean {
+  const [surnameA, givenA] = nameParts(a)
+  const [surnameB, givenB] = nameParts(b)
+  const initial = middleInitial(a)
+  return (
+    surnameA !== surnameB &&
+    givenA === givenB &&
+    initial !== '' &&
+    initial === middleInitial(b)
+  )
+}
+
 function sharesOneName(a: string, b: string): boolean {
   const [surnameA, givenA] = nameParts(a)
   const [surnameB, givenB] = nameParts(b)
@@ -60,7 +82,10 @@ function sameJobPairs(ordered: FallYear[]): PersonCandidate[] {
     const later = uniqueJobs(next.records, currentNames)
     return [...earlier].flatMap(([key, from]): PersonCandidate[] => {
       const to = later.get(key)
-      return to && sharesOneName(from.name, to.name) && from.payDepartment.code
+      return to &&
+        sharesOneName(from.name, to.name) &&
+        !keepsGivenNames(from.name, to.name) &&
+        from.payDepartment.code
         ? [
             {
               names: [from.name, to.name],
@@ -111,7 +136,7 @@ function pairKey({ names: [a, b] }: PersonCandidate): string {
   return `${a}|${b}`
 }
 
-/** Every pair of names that an unchanged job or a spelling variant suggests is one person. */
+/** Every pair of names that an unchanged job or a spelling variant suggests is one person, less those `keepsGivenNames` links without review. */
 export function findPersonCandidates(falls: FallYear[]): PersonCandidate[] {
   const ordered = [...falls].sort((a, b) =>
     a.censusDate.localeCompare(b.censusDate),
