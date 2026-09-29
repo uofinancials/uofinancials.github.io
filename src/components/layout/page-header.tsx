@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-/** A page's title with its lead and any caveat beneath it. */
 export function PageHeader({
   title,
   children,
