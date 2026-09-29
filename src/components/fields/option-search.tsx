@@ -4,6 +4,8 @@ import { type CompareOption, matchOptions } from '@/lib/trends/compare'
 import { cn } from '@/lib/utils'
 import { CONTROL_CLASS, FIELD_CLASS } from './select-field'
 
+const NO_MATCHES = 'No matches'
+
 function OptionList({
   id,
   label,
@@ -47,6 +49,25 @@ function OptionList({
         </div>
       ))}
     </div>
+  )
+}
+
+/** How many options match what is typed, announced as it changes; shown only when none does. */
+function MatchStatus({ isTyped, count }: { isTyped: boolean; count: number }) {
+  const status = !isTyped
+    ? ''
+    : count === 0
+      ? NO_MATCHES
+      : `${count} ${count === 1 ? 'match' : 'matches'}`
+  return (
+    <p
+      aria-live="polite"
+      className={
+        status === NO_MATCHES ? 'mt-1 text-sm text-muted-foreground' : 'sr-only'
+      }
+    >
+      {status}
+    </p>
   )
 }
 
@@ -193,6 +214,10 @@ export function OptionSearch({
           )}
         </span>
       </label>
+      <MatchStatus
+        isTyped={isEditing && query.trim() !== ''}
+        count={shown.length}
+      />
       {shown.length > 0 && (
         <OptionList
           id={listId}

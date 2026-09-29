@@ -2,8 +2,10 @@ import { expect, test } from 'vitest'
 import { buildDistribution } from '@/lib/census/salary-distribution'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
+  activeFilters,
   binRangeSearch,
   binsInRange,
+  type CensusNames,
   countNames,
   distinctValues,
   filterPeopleJobs,
@@ -12,7 +14,6 @@ import {
   pageOf,
   resolvePeopleView,
   sortJobs,
-  typedFilters,
 } from './list'
 
 const YEARS = [2024, 2025]
@@ -155,11 +156,41 @@ test('a bin’s range is its floor to its last whole dollar, and the top bin has
   expect(view(binRangeSearch(first)).ceilingCents).toBe(first.ceilingCents)
 })
 
-test('each typed filter reads as a chip with the search that clears it', () => {
-  expect(typedFilters(view({ q: 'smith', min: 50_000, max: 59_999 }))).toEqual([
+const NO_NAMES = { place: { scope: 'all' }, positionName: null } as const
+
+test('each active filter reads as a chip with the search that clears it, in the order of the controls', () => {
+  expect(
+    activeFilters(view({ q: 'smith', min: 50_000, max: 59_999 }), NO_NAMES),
+  ).toStrictEqual([
     { text: 'Name: smith', clear: { q: undefined } },
     { text: 'Rate from $50,000', clear: { min: undefined } },
     { text: 'Rate to $59,999', clear: { max: undefined } },
   ])
-  expect(typedFilters(view({ group: 'Faculty' }))).toEqual([])
+  expect(
+    activeFilters(
+      view({ group: 'Faculty', kind: 'classified', term: 9, year: 2025 }),
+      {
+        place: { scope: 'department', code: '223100', name: 'CAS Biology' },
+        positionName: 'Professor',
+      },
+    ),
+  ).toStrictEqual([
+    { text: 'Group: Faculty', clear: { group: undefined } },
+    { text: 'Staff: Classified', clear: { kind: undefined } },
+    { text: 'Term: 9 months', clear: { term: undefined } },
+    { text: 'Department: CAS Biology (223100)', clear: { dept: undefined } },
+    { text: 'Class or rank: Professor', clear: { position: undefined } },
+  ])
+})
+
+test('an area, and a code no census lists, each read as one chip', () => {
+  const chipsOf = (place: CensusNames['place']) =>
+    activeFilters(view(), { place, positionName: null })
+  expect(chipsOf({ scope: 'area', code: '220000', name: 'CAS' })).toStrictEqual(
+    [{ text: 'College or VP area: CAS', clear: { dept: undefined } }],
+  )
+  expect(chipsOf({ scope: 'unknown', code: '999999' })).toStrictEqual([
+    { text: 'Code: 999999', clear: { dept: undefined } },
+  ])
+  expect(activeFilters(view({ year: 2025 }), NO_NAMES)).toStrictEqual([])
 })

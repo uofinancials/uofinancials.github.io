@@ -158,3 +158,10 @@ export function formatOrBlank(
 ): string {
   return value === null || value === undefined ? NO_VALUE : format(value)
 }
+
+const SITE_NAME = 'UO Financials'
+
+/** A browser tab title: the parts, most specific first, then the site's name. */
+export function tabTitleOf(...parts: string[]): string {
+  return [parts.join(' · '), SITE_NAME].join(' | ')
+}

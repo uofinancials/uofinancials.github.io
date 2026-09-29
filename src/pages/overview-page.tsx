@@ -304,7 +304,7 @@ export function OverviewPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <PageHeader title="UO Financials">
+        <PageHeader title="UO Financials" tabTitle={null}>
           <p>
             An independent look at the salary, headcount, and budget data the
             University of Oregon publishes: see the projected budget gap, test

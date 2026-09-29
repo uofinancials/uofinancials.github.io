@@ -1,12 +1,16 @@
-import { RemovableFilter } from '@/components/fields/removable-filter'
+import { FilterChips } from '@/components/fields/filter-chips'
+import { FilterPanel } from '@/components/fields/filter-panel'
 import { SelectField } from '@/components/fields/select-field'
 import { YearRangeFields } from '@/components/fields/year-range-fields'
 import { staffKindSchema } from '@/data/fall'
 import { TREND_GROUPS } from '@/lib/census/groups'
+import { filterCountText } from '@/lib/shared/filter-chip'
 import {
   ALL_GROUPS,
   GROUP_OPTIONS,
+  type PayChangeNames,
   type PayChangesSearch,
+  payChangeFilters,
   STAFF_KIND_OPTIONS,
   type TrendView,
 } from '@/lib/trends/search'
@@ -43,44 +47,7 @@ function LineToggles({
   )
 }
 
-type FilterNames = {
-  dept: string | null
-  area: string | null
-  position: string | null
-}
-
-function JobFilters({
-  names,
-  onChange,
-}: {
-  names: FilterNames
-  onChange: (search: PayChangesSearch) => void
-}) {
-  return (
-    <>
-      {names.dept !== null && (
-        <RemovableFilter
-          text={`Pay department: ${names.dept}`}
-          onRemove={() => onChange({ dept: undefined })}
-        />
-      )}
-      {names.area !== null && (
-        <RemovableFilter
-          text={`Area: ${names.area}`}
-          onRemove={() => onChange({ area: undefined })}
-        />
-      )}
-      {names.position !== null && (
-        <RemovableFilter
-          text={`Class or rank: ${names.position}`}
-          onRemove={() => onChange({ position: undefined })}
-        />
-      )}
-    </>
-  )
-}
-
-/** The pay changes page's controls, with the pay department, area, and class or rank filters a link sets; each change is a new URL search. */
+/** The pay changes page's filters in a panel, a chip for each one on, including the pay department, area, and class or rank a link sets, and the lines drawn; each change is a new URL search. */
 export function TrendsControls({
   view,
   years,
@@ -91,12 +58,15 @@ export function TrendsControls({
   view: TrendView
   years: number[]
   lines: string[]
-  names: FilterNames
+  names: PayChangeNames
   onChange: (search: PayChangesSearch) => void
 }) {
+  const chips = payChangeFilters(view, names)
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
+      <FilterPanel
+        summary={`Fall ${view.from}-${view.to} · ${filterCountText(chips.length)}`}
+      >
         <SelectField
           label="Group"
           value={view.group ?? ALL_GROUPS}
@@ -124,8 +94,8 @@ export function TrendsControls({
           to={view.to}
           onChange={onChange}
         />
-      </div>
-      <JobFilters names={names} onChange={onChange} />
+      </FilterPanel>
+      <FilterChips chips={chips} onChange={onChange} />
       {lines.length > 0 && (
         <LineToggles lines={lines} hidden={view.hide} onChange={onChange} />
       )}

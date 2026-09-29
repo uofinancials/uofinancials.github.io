@@ -1,19 +1,15 @@
 import { Link } from '@tanstack/react-router'
 import {
+  SCROLL_ROW_CLASS,
   TAB_LINK_CLASS,
   TAB_LIST_CLASS,
 } from '@/components/layout/nav-link-class'
-import { REPORT_TABS, type ReportTab } from '@/lib/trends/search'
+import {
+  REPORT_TAB_LABELS,
+  REPORT_TABS,
+  type ReportTab,
+} from '@/lib/trends/search'
 import { cn } from '@/lib/utils'
-
-const TAB_LABELS: Record<ReportTab, string> = {
-  grew: 'Which groups grew?',
-  money: 'Where did the money go?',
-  pay: 'More people, or higher pay?',
-  raises: 'What raises did people get?',
-  compare: 'How does it compare?',
-  groups: 'How are groups defined?',
-}
 
 /** The report's questions as tabs held in the URL; the row scrolls sideways on a narrow screen. */
 export function ReportTabs({ tab }: { tab: ReportTab }) {
@@ -22,7 +18,8 @@ export function ReportTabs({ tab }: { tab: ReportTab }) {
       <ul
         className={cn(
           TAB_LIST_CLASS,
-          'scroll-edge -mx-4 flex-nowrap overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0',
+          SCROLL_ROW_CLASS,
+          'flex-nowrap md:flex-wrap',
         )}
       >
         {REPORT_TABS.map((option) => (
@@ -35,7 +32,7 @@ export function ReportTabs({ tab }: { tab: ReportTab }) {
               aria-current={option === tab ? 'page' : undefined}
               className={TAB_LINK_CLASS}
             >
-              {TAB_LABELS[option]}
+              {REPORT_TAB_LABELS[option]}
             </Link>
           </li>
         ))}

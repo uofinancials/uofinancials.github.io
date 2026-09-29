@@ -78,19 +78,19 @@ flowchart LR
   and router, and mounts the app.
 - `src/index.css` - the theme: color tokens for light and dark schemes, native
   control colors, the type scale, radius, the prose measure, and the focus,
-  link, and table scroll edge styles.
+  link, table scroll edge, and table key column styles.
 - `src/app.tsx` - the query and router providers.
 - `src/router.tsx` - the route tree, each route's data loading, each page's code
   loaded on demand, and the default loading, error, and not-found pages.
 - `src/pages` - one component per route.
 - `src/components` - one folder per area:
-  - `layout` - the shared layout with the independence notice and error report
-    link, page headers and sections, stat cards, the sources disclosure and
-    inline source citations, the navigation, tab, and disclosure summary styles,
-    and loading and error states.
+  - `layout` - the shared layout with the skip link, independence notice, and
+    error report link, page headers and their browser tab titles, sections, stat
+    cards, the sources disclosure and inline source citations, the navigation,
+    tab, and disclosure summary styles, and loading and error states.
   - `fields` - form fields, the segmented view switch, the department or area
-    picker, a type-to-search picker, the removable filter, the sortable column
-    header, and the button styles.
+    picker, a type-to-search picker, the folding filter panel and its removable
+    chips, the sortable column header, and the button styles.
   - `charts` - line, index, and stacked bar charts, ranked bars of a change,
     bars in table cells, the charts' tables, and series colors.
   - `home` - the home page's scenario answers, area breakdown, and top-paid
@@ -105,13 +105,14 @@ flowchart LR
   - `scenario` - rule editing and the scenario's results, savings, and outlook.
   - `ui` - shadcn/ui components.
 - `src/hooks` - the hooks and queries that load and join the data files for a
-  page's view.
+  page's view, navigation that loads the next view first, and the viewport
+  width.
 - `src/data` - the schemas and types of the committed data files, and the
   queries that fetch and parse them.
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
-  - `shared` - number formatting, table sort order, source citations, and the
-    rules charts draw series and axes by.
+  - `shared` - number formatting, browser tab titles, table sort order, source
+    citations, filter chips, and the rules charts draw series and axes by.
   - `census` - census totals, area assignment, employee groups, and the salary
     rate distribution.
   - `trends` - trends by group and by area, the report's indexes, changes, spend
@@ -149,9 +150,9 @@ flowchart LR
 
 ### End-to-end tests (`e2e/`)
 
-- `e2e/home.spec.ts` - the built site's routes, notice, navigation, a
-  department's jobs link, the people list and person page, sources page, and
-  `404.html`.
+- `e2e/home.spec.ts` - the built site's routes, notice, navigation, skip link,
+  and tab titles, a department's jobs link, the people list, its filter chips,
+  and person page, sources page, and `404.html`.
 - `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
@@ -164,8 +165,8 @@ flowchart LR
   and raise freezes, eliminations, cases, unreadable link entries, each
   section's sources, and narrow layout.
 - `e2e/trends.spec.ts` - the Trends report's tabs, answers, and tables, its
-  filters and area or unit scope, older links, scroll position, and narrow
-  layout.
+  filters, scope search, and area or unit scope, older links, scroll position,
+  and narrow layout.
 - `e2e/trends-change.spec.ts` - the pay changes page, its filters, its raise
   comparison, its sources, older links to it, and its link from the person page.
 - `e2e/sources.ts` - opening a page's sources disclosures.

@@ -62,6 +62,41 @@ test('the nav lists the sections in order and marks the current one apart from t
   )
 })
 
+test('on a phone the nav links sit on one row under the site name', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/sources')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const links = page.getByRole('navigation', { name: 'Main' }).getByRole('link')
+  const tops = await links.evaluateAll((elements) =>
+    elements.map((element) => element.getBoundingClientRect().top),
+  )
+  expect(new Set(tops).size).toBe(1)
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(360)
+})
+
+test('the first tab stop skips to the page content', async ({ page }) => {
+  await page.goto('/sources')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.keyboard.press('Tab')
+  const skip = page.getByRole('link', { name: 'Skip to content' })
+  await expect(skip).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('main')).toBeFocused()
+})
+
+test('each page names itself in the browser tab', async ({ page }) => {
+  await page.goto('/sources')
+  await expect(page).toHaveTitle('Sources | UO Financials')
+  await page.goto('/departments/223100')
+  await expect(page).toHaveTitle(/ 223100 \| UO Financials$/)
+  await page.getByRole('link', { name: 'UO Financials', exact: true }).click()
+  await expect(page).toHaveTitle(/^UO Financials \| An independent look/)
+})
+
 test('an unknown path shows the not-found page', async ({ page }) => {
   await page.goto('/no-such-page')
   await expect(
@@ -127,6 +162,7 @@ test('the people chart shows the latest census by salary rate, and each filter i
     .getByRole('combobox', { name: 'College or VP area' })
     .selectOption({ label: 'Arts & Sciences, College of' })
   await page.getByRole('combobox', { name: 'Fall census' }).selectOption('2014')
+  await expect(page).toHaveURL(/year=2014/)
   await page.reload()
   await expect(
     page.getByRole('heading', { level: 1, name: 'People, Fall 2014' }),
@@ -151,7 +187,9 @@ test('a department page links to its jobs, and the department filter can be remo
   ).toBeVisible()
   const main = page.getByRole('main')
   await expect(main).toContainText('Department: CAS Biology (223100)')
-  await page.getByRole('button', { name: 'Remove' }).click()
+  await page
+    .getByRole('button', { name: 'Remove Department: CAS Biology (223100)' })
+    .click()
   await expect(main).not.toContainText('Department: CAS Biology')
   await page.goto('/people?dept=000000')
   await expect(main).toContainText('No jobs for code 000000 in Fall 2025')
@@ -264,7 +302,7 @@ test('census tabs are held in the link and lead to the class’s jobs, and the s
   await people.last().click()
   await expect(page).toHaveURL(/\/people\?.*position=/)
   await expect(page.getByRole('main')).toContainText('Class or rank: ')
-  await page.getByRole('button', { name: 'Remove' }).click()
+  await page.getByRole('button', { name: /^Remove Class or rank: / }).click()
   await expect(page).not.toHaveURL(/position=/)
   await page.goto('/people?q=smith')
   await openSources(page)
@@ -304,7 +342,7 @@ test('the people list filters, sorts, and pages one census, and its chart sets t
   ).toHaveAttribute('aria-sort', 'descending')
   await page.getByRole('combobox', { name: 'Sort by' }).selectOption('group')
   await expect(page).toHaveURL(/sort=group&dir=desc/)
-  await page.getByRole('button', { name: 'Remove' }).click()
+  await page.getByRole('button', { name: 'Remove Rate from $250,000' }).click()
   await expect(page).not.toHaveURL(/min=/)
   await page.getByText('The chart’s numbers').click()
   await page.getByRole('button', { name: '$50,000 to $59,999' }).click()
@@ -333,6 +371,71 @@ test('the people list does not scroll sideways at 360px', async ({ page }) => {
   ).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+})
+
+test('on a phone the people filters fold behind a button while their chips stay in view', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/people?group=Faculty&q=smith')
+  const name = page.getByRole('searchbox', {
+    name: 'Name',
+    includeHidden: true,
+  })
+  await expect(name).toHaveCount(1)
+  await expect(name).toBeHidden()
+  await expect(
+    page.getByRole('button', { name: 'Remove Group: Faculty' }),
+  ).toBeVisible()
+  const toggle = page.getByRole('button', { name: /Fall 2025 · 2 filters/ })
+  await toggle.click()
+  await expect(name).toBeVisible()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+})
+
+test('on a phone a people year change keeps the filter panel open and the focus in it while the census loads', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/people')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'People, Fall 2025',
+  )
+  await page.route('**/data/fall/**', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1_500))
+    await route.continue()
+  })
+  const toggle = page.getByRole('button', { name: /^Fall 2025 · / })
+  await toggle.click()
+  const year = page.getByRole('combobox', { name: 'Fall census' })
+  await year.focus()
+  await year.selectOption('2014')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'People, Fall 2014',
+  )
+  await expect(year).toBeFocused()
+  await expect(
+    page.getByRole('button', { name: /^Fall 2014 · / }),
+  ).toHaveAttribute('aria-expanded', 'true')
+})
+
+test('clearing all people filters keeps the census year, sort, and columns', async ({
+  page,
+}) => {
+  await page.goto(
+    '/people?year=2020&q=smith&group=Faculty&min=50000&sort=rate&dir=desc&cols=%5B%22title%22%5D',
+  )
+  const chips = page.getByRole('list', { name: 'Active filters' })
+  await expect(chips.getByRole('listitem')).toHaveCount(4)
+  await chips.getByRole('button', { name: 'Clear all' }).click()
+  await expect(chips).toHaveCount(0)
+  const url = new URL(page.url())
+  expect([...url.searchParams.keys()].sort()).toEqual([
+    'cols',
+    'dir',
+    'sort',
+    'year',
+  ])
 })
 
 test('the people list cites its census before the EEO section begins', async ({

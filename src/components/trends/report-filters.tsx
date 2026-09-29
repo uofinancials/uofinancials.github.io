@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { BUTTON_CLASS } from '@/components/fields/button-class'
+import { FilterPanel } from '@/components/fields/filter-panel'
 import { OptionSearch } from '@/components/fields/option-search'
 import { RadioField } from '@/components/fields/radio-field'
 import { YearRangeFields } from '@/components/fields/year-range-fields'
@@ -12,31 +11,6 @@ import {
   type ReportSearch,
   type YearRange,
 } from '@/lib/trends/search'
-import { cn } from '@/lib/utils'
-
-function FiltersToggle({
-  isOpen,
-  summary,
-  onToggle,
-}: {
-  isOpen: boolean
-  summary: string
-  onToggle: () => void
-}) {
-  return (
-    <button
-      type="button"
-      aria-expanded={isOpen}
-      onClick={onToggle}
-      className="flex w-full items-center justify-between gap-2 text-left text-sm md:hidden"
-    >
-      <span>{summary}</span>
-      <span className={cn(BUTTON_CLASS, 'shrink-0 bg-background')}>
-        {isOpen ? 'Close' : 'Filters'}
-      </span>
-    </button>
-  )
-}
 
 /** The report's filters in one card, kept in view as the page scrolls on a wide screen and folded behind a button on a phone; Measure shows only where a tab uses it. */
 export function ReportFilters({
@@ -58,51 +32,41 @@ export function ReportFilters({
   measure: ReportMetric | null
   onChange: (patch: ReportSearch) => void
 }) {
-  const [isOpen, setOpen] = useState(false)
   const picked = [scope.area?.name ?? ALL_OF_UO, scope.unit?.name]
     .filter(Boolean)
     .join(' › ')
   return (
-    <div className="z-10 rounded-xl border bg-muted p-3 md:sticky md:top-2 md:p-4">
-      <FiltersToggle
-        isOpen={isOpen}
-        summary={`Fall ${range.from}-${range.to} · ${picked}`}
-        onToggle={() => setOpen(!isOpen)}
+    <FilterPanel
+      summary={`Fall ${range.from}-${range.to} · ${picked}`}
+      isSticky
+    >
+      <YearRangeFields
+        years={years}
+        from={range.from}
+        to={range.to}
+        onChange={onChange}
       />
-      <div
-        className={cn(
-          'mt-3 flex-wrap items-end gap-4 md:mt-0 md:flex',
-          isOpen ? 'flex' : 'hidden',
-        )}
-      >
-        <YearRangeFields
-          years={years}
-          from={range.from}
-          to={range.to}
-          onChange={onChange}
+      <OptionSearch
+        label="College, VP area, or unit"
+        options={options}
+        selected={
+          options.find(
+            ({ code }) => code === (scope.unit ?? scope.area)?.code,
+          ) ?? null
+        }
+        placeholder={ALL_OF_UO}
+        onAdd={(code) => onChange(scopeSearchOf(areas, code))}
+        onClear={() => onChange({ area: undefined, unit: undefined })}
+      />
+      {measure && (
+        <RadioField
+          legend="Select measure"
+          name="measure"
+          value={measure}
+          options={REPORT_METRIC_OPTIONS}
+          onSelect={(value) => onChange({ measure: value })}
         />
-        <OptionSearch
-          label="College, VP area, or unit"
-          options={options}
-          selected={
-            options.find(
-              ({ code }) => code === (scope.unit ?? scope.area)?.code,
-            ) ?? null
-          }
-          placeholder={ALL_OF_UO}
-          onAdd={(code) => onChange(scopeSearchOf(areas, code))}
-          onClear={() => onChange({ area: undefined, unit: undefined })}
-        />
-        {measure && (
-          <RadioField
-            legend="Select measure"
-            name="measure"
-            value={measure}
-            options={REPORT_METRIC_OPTIONS}
-            onSelect={(value) => onChange({ measure: value })}
-          />
-        )}
-      </div>
-    </div>
+      )}
+    </FilterPanel>
   )
 }

@@ -21,7 +21,7 @@ export function SortControls({
   onSort: (sort: PeopleSort, dir: SortDirection) => void
 }) {
   return (
-    <div className="flex flex-wrap gap-4">
+    <>
       <SelectField
         label="Sort by"
         value={view.sort}
@@ -41,6 +41,6 @@ export function SortControls({
           onSort(view.sort, value === 'desc' ? 'desc' : 'asc')
         }
       />
-    </div>
+    </>
   )
 }
