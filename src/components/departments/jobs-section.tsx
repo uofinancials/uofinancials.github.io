@@ -170,6 +170,7 @@ export function DepartmentJobsSection({
           name="metric"
           value={view.metric}
           options={METRIC_OPTIONS}
+          isSegmented
           onSelect={(metric) => onChange({ metric })}
         />
         <SelectField

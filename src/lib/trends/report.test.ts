@@ -7,6 +7,7 @@ import {
   indexedGroups,
   indexValues,
   raiseRows,
+  ratioChange,
   staffingRows,
 } from './report'
 import type { Trends } from './trends'
@@ -142,4 +143,14 @@ test('a raise line with no median in the pairs asked is left out', () => {
       [2014],
     ),
   ).toEqual([])
+})
+
+test('a ratio change is last less first, and none when either is missing or both are zero', () => {
+  expect(ratioChange(12.5, 14)).toBe(1.5)
+  expect(ratioChange(14, 12.5)).toBe(-1.5)
+  expect(ratioChange(8, 8)).toBe(0)
+  expect(ratioChange(0, 3)).toBe(3)
+  expect(ratioChange(0, 0)).toBeNull()
+  expect(ratioChange(null, 3)).toBeNull()
+  expect(ratioChange(3, null)).toBeNull()
 })

@@ -90,7 +90,7 @@ function Headlines({
 }) {
   const { runRate } = figures
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <DollarCard
         label={`${fiscalYearLabel(runRate.fiscalYear)} projected E&G run rate`}
         cents={runRate.cents}
@@ -301,15 +301,17 @@ export function OverviewPage() {
   const data = useHomeData()
   const { year, fiscalYear, headlines, projection } = data
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="space-y-4">
-        <h1 className="text-title">UO Financials</h1>
-        <p>
-          An independent look at the salary, headcount, and budget data the
-          University of Oregon publishes: see the projected budget gap, test
-          what pay rules would save, follow jobs and pay over twelve years, and
-          look up a department or a person.
-        </p>
+        <div className="space-y-2">
+          <h1 className="text-title">UO Financials</h1>
+          <p>
+            An independent look at the salary, headcount, and budget data the
+            University of Oregon publishes: see the projected budget gap, test
+            what pay rules would save, follow jobs and pay over twelve years,
+            and look up a department or a person.
+          </p>
+        </div>
         <Headlines figures={headlines} year={year} fiscalYear={fiscalYear} />
         <Sources
           sources={[

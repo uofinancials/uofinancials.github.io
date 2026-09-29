@@ -138,6 +138,7 @@ export function DepartmentBudgetSection({
         name="budget"
         value={breakdown}
         options={BREAKDOWN_OPTIONS}
+        isSegmented
         onSelect={onBreakdown}
       />
       <SeriesChart

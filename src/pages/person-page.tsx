@@ -49,13 +49,17 @@ export function PersonPage() {
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
-      <BackButton />
       {person ? (
         <>
           <PersonView
             person={person}
             medians={data.medians}
             year={resolveCensusYear(year, yearsOf(person))}
+            back={
+              <p>
+                <BackButton />
+              </p>
+            }
           />
           <Sources
             sources={[
@@ -68,7 +72,10 @@ export function PersonPage() {
           />
         </>
       ) : (
-        <p>No Fall record is published under the name {name}.</p>
+        <>
+          <BackButton />
+          <p>No Fall record is published under the name {name}.</p>
+        </>
       )}
     </div>
   )

@@ -19,7 +19,7 @@ function Figure({
 }) {
   return (
     <StatCard label={label} value={value}>
-      <p className="mt-1 text-xs text-muted-foreground">{method}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{method}</p>
     </StatCard>
   )
 }

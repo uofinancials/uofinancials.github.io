@@ -30,7 +30,7 @@ function FiltersToggle({
       className="flex w-full items-center justify-between gap-2 text-left text-sm md:hidden"
     >
       <span>{summary}</span>
-      <span className="text-muted-foreground">
+      <span className="shrink-0 rounded-md border bg-background px-2 py-1">
         {isOpen ? 'Close' : 'Filters'}
       </span>
     </button>

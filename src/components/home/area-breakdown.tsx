@@ -40,6 +40,7 @@ export function AreaBreakdown({
         name="measure"
         value={measure}
         options={HOME_MEASURES.map((option) => [option, labels[option]])}
+        isSegmented
         onSelect={onMeasure}
       />
       <Table>

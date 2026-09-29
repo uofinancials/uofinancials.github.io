@@ -46,7 +46,7 @@ export function RadioField<T extends string>({
               )}
             />
             {isSegmented ? (
-              <span className="rounded px-3 py-1 peer-checked:bg-primary peer-checked:text-background peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-[:hover:not(:checked)]:bg-muted">
+              <span className="rounded px-3 py-0.5 peer-checked:bg-primary peer-checked:text-background peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-[:hover:not(:checked)]:bg-muted">
                 {text}
               </span>
             ) : (

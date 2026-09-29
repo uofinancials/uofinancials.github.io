@@ -163,12 +163,12 @@ export function TrendsPage() {
     })
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
+      <div className="space-y-2">
         <h1 className="text-title">
           How University of Oregon jobs and pay have changed since Fall{' '}
           {view.from}
         </h1>
-        <p className="text-muted-foreground">
+        <p>
           Jobs, pay, and salary spend from the Fall census salary reports UO
           publishes, grouped so each group means the same jobs in every year.
         </p>

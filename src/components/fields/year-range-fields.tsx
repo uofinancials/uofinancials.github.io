@@ -16,7 +16,7 @@ export function YearRangeFields({
     `Fall ${year}`,
   ])
   return (
-    <>
+    <div className="flex gap-4">
       <SelectField
         label="From"
         value={String(from)}
@@ -29,6 +29,6 @@ export function YearRangeFields({
         options={options}
         onSelect={(value) => onChange({ to: Number(value) })}
       />
-    </>
+    </div>
   )
 }

@@ -120,6 +120,16 @@ export function changeTable({ series, total }: Trends): ChangeRow[] {
   ]
 }
 
+/** The change between two per-100 ratios; `null` when either is missing or both are zero, since none counted in either census is no change to report. */
+export function ratioChange(
+  first: number | null,
+  last: number | null,
+): number | null {
+  if (first === null || last === null) return null
+  if (first === 0 && last === 0) return null
+  return last - first
+}
+
 /** One census's jobs in each of `RATIO_COLUMNS`, and `RATIO_GROUPS` jobs per 100 `RATIO_BASE_GROUP` jobs; `null` with no faculty job. */
 export type RatioRow = { year: number; jobs: number[]; ratio: number | null }
 

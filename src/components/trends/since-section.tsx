@@ -12,10 +12,12 @@ import {
   formatRatio,
   formatRoundedDollars,
   formatSigned,
-  NO_VALUE,
 } from '@/lib/shared/format'
 import { changeOf } from '@/lib/shared/series'
+import { ratioChange } from '@/lib/trends/report'
 import type { TrendPoint } from '@/lib/trends/trends'
+
+const CHANGE_CLASS = 'block font-medium tabular-nums'
 
 function Detail({ children }: { children: ReactNode }) {
   return (
@@ -27,9 +29,7 @@ function Detail({ children }: { children: ReactNode }) {
 
 function Change({ value }: { value: number | null }) {
   return (
-    <span className="block font-semibold text-primary tabular-nums">
-      {formatOrBlank(value, formatChange)}
-    </span>
+    <span className={CHANGE_CLASS}>{formatOrBlank(value, formatChange)}</span>
   )
 }
 
@@ -80,10 +80,11 @@ export function SinceSection({
           value={formatOrBlank(ratios.last, formatRatio)}
         >
           <Detail>from {formatOrBlank(ratios.first, formatRatio)}</Detail>
-          <span className="block font-semibold text-primary tabular-nums">
-            {ratios.first === null || ratios.last === null
-              ? NO_VALUE
-              : `${formatSigned(ratios.last - ratios.first)} per 100`}
+          <span className={CHANGE_CLASS}>
+            {formatOrBlank(
+              ratioChange(ratios.first, ratios.last),
+              (change) => `${formatSigned(change)} per 100`,
+            )}
           </span>
         </StatCard>
       </div>

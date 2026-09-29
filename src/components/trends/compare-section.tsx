@@ -67,7 +67,7 @@ function CompareTable({
       <GroupTable
         caption={caption}
         heading="Name"
-        columns={['Jobs, last census', 'FTE', 'Salary spend']}
+        columns={['Jobs, last census', 'FTE change', 'Salary spend change']}
         rows={[
           ...compareRows(totals).map((row) =>
             compareRow(row, { isTotal: true, selected }),
