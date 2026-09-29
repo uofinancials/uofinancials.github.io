@@ -128,4 +128,5 @@
     left center / 0.75rem 100% no-repeat scroll,
     radial-gradient(farthest-side at 100% 50%, var(--edge-shadow), transparent)
     right center / 0.75rem 100% no-repeat scroll;
+  background-color: var(--background);
 }

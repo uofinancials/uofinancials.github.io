@@ -7,6 +7,7 @@ import {
   shareOfLargest,
   sparseNote,
   spreadLabels,
+  valueAxis,
 } from './series'
 
 test('a chart is sparse below two valued labels, naming the one it has', () => {
@@ -84,4 +85,25 @@ test('changes rank largest first on one axis from the largest fall to the larges
   ])
   expect(rises.zero).toBe(0)
   expect(rises.ranked.map(({ width }) => width)).toEqual([1, 0.5])
+})
+
+test('a value axis has nice ticks from zero, and a negative smaller than a step is its own floor', () => {
+  expect(valueAxis([-500, 8743, 25], 5)).toEqual({
+    domain: [-500, 10000],
+    ticks: [0, 2500, 5000, 7500, 10000],
+  })
+  expect(valueAxis([60000, null, 80000], 5)).toEqual({
+    domain: [0, 80000],
+    ticks: [0, 20000, 40000, 60000, 80000],
+  })
+  expect(valueAxis([-73, 100], 5)).toEqual({
+    domain: [-100, 100],
+    ticks: [-100, -50, 0, 50, 100],
+  })
+  expect(valueAxis([0.01, 0.14], 5)).toEqual({
+    domain: [0, 0.15],
+    ticks: [0, 0.05, 0.1, 0.15],
+  })
+  expect(valueAxis([0, 0], 5)).toBeNull()
+  expect(valueAxis([], 5)).toBeNull()
 })

@@ -16,6 +16,7 @@ import {
   type ChartMarker,
   isAnyBelowZero,
   sparseNote,
+  valueAxis,
 } from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
 import {
@@ -94,6 +95,10 @@ export function SeriesChart({
   }
   const isBelowZero = isAnyBelowZero(shown.map(({ line }) => line.values))
   const data = chartRows(labels, series)
+  const axis = valueAxis(
+    shown.flatMap(({ line }) => line.values),
+    Y_TICK_COUNT,
+  )
   return (
     <figure aria-label={label}>
       <ChartContainer
@@ -103,17 +108,11 @@ export function SeriesChart({
         <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} />
           {isBelowZero && <BelowZeroBand />}
-          <XAxis
-            dataKey="x"
-            tickLine={false}
-            padding={AXIS_PADDING}
-            interval="preserveStartEnd"
-          />
+          <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />
           <YAxis
             width={AXIS_WIDTH_PX}
             tickLine={false}
-            tickCount={Y_TICK_COUNT}
-            domain={[(dataMin: number) => Math.min(0, dataMin), 'auto']}
+            {...(axis && { domain: axis.domain, ticks: axis.ticks })}
             tickFormatter={(value) => formatAxis(Number(value))}
           />
           {isBelowZero && (

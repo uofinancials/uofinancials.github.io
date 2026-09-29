@@ -20,7 +20,7 @@ export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b">
-        <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 md:px-6">
+        <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 md:px-6">
           <Link to="/" className="font-semibold">
             UO Financials
           </Link>

@@ -17,14 +17,14 @@ export function RadioField<T extends string>({
   onSelect: (value: T) => void
 }) {
   return (
-    <fieldset className="text-sm">
+    <fieldset className="min-w-0 text-sm">
       <legend className="mb-1 text-muted-foreground">{legend}</legend>
       <div
         className={cn(
-          'flex flex-wrap',
+          'flex',
           isSegmented
-            ? 'w-fit max-w-full rounded-md border bg-background p-0.5'
-            : 'gap-4',
+            ? 'scroll-edge w-fit max-w-full overflow-x-auto rounded-md border p-0.5'
+            : 'flex-wrap gap-4',
         )}
       >
         {options.map(([option, text]) => (
@@ -32,7 +32,7 @@ export function RadioField<T extends string>({
             key={option}
             className={cn(
               'flex items-center gap-2',
-              isSegmented && 'relative cursor-pointer',
+              isSegmented && 'relative shrink-0 cursor-pointer',
             )}
           >
             <input
@@ -46,7 +46,7 @@ export function RadioField<T extends string>({
               )}
             />
             {isSegmented ? (
-              <span className="rounded px-3 py-0.5 peer-checked:bg-primary peer-checked:text-background peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-[:hover:not(:checked)]:bg-muted">
+              <span className="rounded px-3 py-0.5 whitespace-nowrap peer-checked:bg-primary peer-checked:text-background peer-focus-visible:outline-2 peer-focus-visible:outline-ring peer-[:hover:not(:checked)]:bg-muted">
                 {text}
               </span>
             ) : (
