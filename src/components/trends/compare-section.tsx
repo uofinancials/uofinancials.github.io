@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { IndexFigure } from '@/components/charts/index-figure'
-import { CLEAR_BUTTON_CLASS } from '@/components/fields/button-class'
+import { Chip } from '@/components/fields/chip'
 import { OptionSearch } from '@/components/fields/option-search'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
@@ -125,22 +125,13 @@ function CompareWith({
   return (
     <div className="flex flex-wrap items-end gap-3">
       {compared.map(({ code, name }) => (
-        <span
+        <Chip
           key={code}
-          className="flex items-center gap-1 rounded-full border py-1 pr-1 pl-3 text-sm"
-        >
-          {name}
-          <button
-            type="button"
-            aria-label={`Remove ${name}`}
-            className={CLEAR_BUTTON_CLASS}
-            onClick={() =>
-              onChange({ with: codes.filter((listed) => listed !== code) })
-            }
-          >
-            ×
-          </button>
-        </span>
+          text={name}
+          onRemove={() =>
+            onChange({ with: codes.filter((listed) => listed !== code) })
+          }
+        />
       ))}
       {codes.length < MAX_COMPARED ? (
         <OptionSearch

@@ -145,11 +145,15 @@ test('an area lists its units, states how its jobs were placed, and does not scr
   await page.getByRole('link', { name: 'Pay changes' }).click()
   await expect(page).toHaveURL(/\/trends\/pay-changes\?area=.*222000/)
   const main = page.getByRole('main')
-  await expect(main).toContainText('Area: Arts & Sciences, College of')
+  await expect(main).toContainText(
+    'College or VP area: Arts & Sciences, College of',
+  )
   await expect(main).toContainText('whose pay department the site places in it')
   const areaPairs = page.getByRole('row', { name: /^2024-25 938 / })
   await expect(areaPairs).toBeVisible()
-  await page.getByRole('button', { name: 'Remove' }).click()
+  await page
+    .getByRole('button', { name: /^Remove College or VP area: / })
+    .click()
   await expect(page).not.toHaveURL(/area=/)
   await expect(areaPairs).toHaveCount(0)
 })

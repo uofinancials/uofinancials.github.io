@@ -9,9 +9,15 @@ import {
   filterJobs,
   type SalaryBin,
 } from '../census/salary-distribution.ts'
-import { type CensusView, resolveCensusView } from '../census/search.ts'
+import {
+  type CensusView,
+  type Place,
+  resolveCensusView,
+} from '../census/search.ts'
+import type { FilterChip } from '../shared/filter-chip.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from '../shared/format.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
+import { staffKindLabel } from '../trends/search.ts'
 import { measureJobs } from '../trends/trends.ts'
 import { positionOf } from './peer-group.ts'
 import { titleOf } from './person-fields.ts'
@@ -205,11 +211,11 @@ export function binRangeSearch({
 }
 
 /** Each typed filter of the view, as a chip's text and the search that clears it. */
-export function typedFilters(
-  view: PeopleView,
-): { text: string; clear: PeopleSearch }[] {
+type PeopleChip = FilterChip<PeopleSearch>
+
+function typedFilters(view: PeopleView): PeopleChip[] {
   const { min, max } = rateRangeDollars(view)
-  const chips: { text: string; clear: PeopleSearch }[] = []
+  const chips: PeopleChip[] = []
   if (view.q) chips.push({ text: `Name: ${view.q}`, clear: { q: undefined } })
   if (view.title) {
     chips.push({ text: `Title: ${view.title}`, clear: { title: undefined } })
@@ -233,6 +239,61 @@ export function typedFilters(
     })
   }
   return chips
+}
+
+function placeText(place: Place): string | null {
+  switch (place.scope) {
+    case 'all':
+      return null
+    case 'area':
+      return `College or VP area: ${place.name}`
+    case 'department':
+      return `Department: ${place.name} (${place.code})`
+    case 'unknown':
+      return `Code: ${place.code}`
+  }
+}
+
+function censusFilters(
+  view: PeopleView,
+  { place, positionName }: CensusNames,
+): PeopleChip[] {
+  const chips: PeopleChip[] = []
+  if (view.group) {
+    chips.push({ text: `Group: ${view.group}`, clear: { group: undefined } })
+  }
+  if (view.kind !== 'all') {
+    chips.push({
+      text: `Staff: ${staffKindLabel(view.kind)}`,
+      clear: { kind: undefined },
+    })
+  }
+  if (view.term !== null) {
+    chips.push({
+      text: `Term: ${view.term} months`,
+      clear: { term: undefined },
+    })
+  }
+  const placeChip = placeText(place)
+  if (placeChip) chips.push({ text: placeChip, clear: { dept: undefined } })
+  if (positionName !== null) {
+    chips.push({
+      text: `Class or rank: ${positionName}`,
+      clear: { position: undefined },
+    })
+  }
+  return chips
+}
+
+/** The names the census filters read by: the department or area picked, and the class or rank. */
+export type CensusNames = { place: Place; positionName: string | null }
+
+/** Each active filter as a chip, in the order the controls list them; the census year is the view, not a filter. */
+export function activeFilters(
+  view: PeopleView,
+  names: CensusNames,
+): PeopleChip[] {
+  return [...typedFilters(view), ...censusFilters(view, names)]
 }
 
 const recordIds = new WeakMap<FallRecord, number>()

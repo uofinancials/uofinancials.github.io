@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { TotalsTable } from '@/components/charts/totals-table'
+import { FilterChips } from '@/components/fields/filter-chips'
+import { FilterPanel } from '@/components/fields/filter-panel'
 import {
   TAB_LINK_CLASS,
   TAB_LIST_CLASS,
@@ -20,7 +22,12 @@ import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { type Matching, usePeople } from '@/hooks/use-people'
 import { RATE_NOTE, type SalaryBin } from '@/lib/census/salary-distribution'
 import { type CategoryTotals, SPEND_METHOD } from '@/lib/census/totals'
-import { binRangeSearch, type PeopleView, pageOf } from '@/lib/people/list'
+import {
+  activeFilters,
+  binRangeSearch,
+  type PeopleView,
+  pageOf,
+} from '@/lib/people/list'
 import { formatYearRanges, matchPeople } from '@/lib/people/person-lookup'
 import {
   type ListColumn,
@@ -29,6 +36,7 @@ import {
   type PeopleSearch,
   type PeopleSort,
 } from '@/lib/people/search'
+import { filterCountText } from '@/lib/shared/filter-chip'
 import { formatCount } from '@/lib/shared/format'
 import type { SortDirection } from '@/lib/shared/sort'
 import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
@@ -201,10 +209,7 @@ function JobsSection({
     })
   return (
     <section className="space-y-3">
-      <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
-        <SortControls view={view} onSort={onSort} />
-        <ColumnPicker columns={view.columns} onChange={handleColumns} />
-      </div>
+      <ColumnPicker columns={view.columns} onChange={handleColumns} />
       <PeopleTable rows={shown.rows} view={view} onSort={onSort} />
       <Pager page={shown.page} pageCount={shown.pageCount} />
     </section>
@@ -222,6 +227,7 @@ export function PeoplePage() {
     })
   const handleSort = (sort: PeopleSort, dir: SortDirection) =>
     change({ sort, dir })
+  const chips = activeFilters(view, census)
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
@@ -232,21 +238,31 @@ export function PeoplePage() {
         </p>
         <p className="text-sm text-muted-foreground">{RATE_NOTE}</p>
       </PageHeader>
-      <PeopleControls
-        view={view}
-        titles={census.titles}
-        categories={census.categories}
-        onChange={(patch) => change(patch)}
-        onType={(patch) => change(patch, true)}
-      />
-      <CensusControls
-        view={view}
-        years={years}
-        areas={census.areas}
-        place={census.place}
-        positionName={census.positionName}
-        onChange={(patch) => change(patch)}
-      />
+      <FilterPanel
+        summary={`Fall ${view.year} · ${filterCountText(chips.length)}`}
+      >
+        <PeopleControls
+          view={view}
+          titles={census.titles}
+          categories={census.categories}
+          onChange={(patch) => change(patch)}
+          onType={(patch) => change(patch, true)}
+        />
+        <CensusControls
+          view={view}
+          years={years}
+          areas={census.areas}
+          place={census.place}
+          onChange={(patch) => change(patch)}
+        />
+        <SortControls view={view} onSort={handleSort} />
+      </FilterPanel>
+      <FilterChips chips={chips} onChange={(patch) => change(patch)} />
+      {census.place.scope === 'unknown' && (
+        <p>
+          No jobs for code {census.place.code} in Fall {view.year}.
+        </p>
+      )}
       <p className="font-medium">
         {formatCount(matching.jobs.length)} jobs,{' '}
         {formatCount(matching.nameCount)} names match

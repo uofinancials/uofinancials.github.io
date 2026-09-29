@@ -5,6 +5,7 @@ import type { TrendGroup } from '../census/groups.ts'
 import { TREND_GROUPS } from '../census/groups.ts'
 import { TERMS } from '../census/salary-distribution.ts'
 import { resolveCensusYear } from '../census/search.ts'
+import type { FilterChip } from '../shared/filter-chip.ts'
 import {
   formatCompactDollars,
   formatCount,
@@ -30,6 +31,11 @@ export const STAFF_KIND_OPTIONS: [string, string][] = [
   ['classified', 'Classified'],
   ['unclassified', 'Unclassified'],
 ]
+
+/** A staff kind as the filters name it. */
+export function staffKindLabel(kind: string): string {
+  return STAFF_KIND_OPTIONS.find(([value]) => value === kind)?.[1] ?? kind
+}
 
 export const TERM_OPTIONS: [string, string][] = [
   ['all', '9 and 12 months'],
@@ -212,6 +218,42 @@ export function resolveTrendView(
     pair:
       fromYears.length > 0 ? resolveCensusYear(search.pair, fromYears) : from,
   }
+}
+
+/** The names the pay changes filters read by, each `null` when its filter is off. */
+export type PayChangeNames = {
+  dept: string | null
+  area: string | null
+  position: string | null
+}
+
+/** Each active pay changes filter as a chip; the years and the lines drawn are the view, not filters. */
+export function payChangeFilters(
+  view: TrendView,
+  names: PayChangeNames,
+): FilterChip<PayChangesSearch>[] {
+  const chips: FilterChip<PayChangesSearch>[] = []
+  if (view.group) {
+    chips.push({
+      text: `Group: ${view.group}`,
+      clear: { group: undefined, hide: undefined },
+    })
+  }
+  if (view.kind !== 'all') {
+    chips.push({
+      text: `Staff: ${staffKindLabel(view.kind)}`,
+      clear: { kind: undefined },
+    })
+  }
+  const named: [string | null, string, PayChangesSearch][] = [
+    [names.dept, 'Pay department', { dept: undefined }],
+    [names.area, 'College or VP area', { area: undefined }],
+    [names.position, 'Class or rank', { position: undefined }],
+  ]
+  for (const [name, label, clear] of named) {
+    if (name !== null) chips.push({ text: `${label}: ${name}`, clear })
+  }
+  return chips
 }
 
 /** The report's year range and its pairs, measure, growth view, and tab. */

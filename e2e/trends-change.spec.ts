@@ -73,7 +73,7 @@ test('a person links to the pay changes of their class or rank, the filter can b
   await expect(main).toContainText('Class or rank: ')
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
-  await page.getByRole('button', { name: 'Remove' }).click()
+  await page.getByRole('button', { name: /^Remove Class or rank: / }).click()
   await expect(page).not.toHaveURL(/position=/)
 })
 

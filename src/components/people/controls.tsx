@@ -1,16 +1,11 @@
 import { memo, useId } from 'react'
-import { RemovableFilter } from '@/components/fields/removable-filter'
 import { SearchField } from '@/components/fields/search-field'
 import {
   CONTROL_CLASS,
   FIELD_CLASS,
   SelectField,
 } from '@/components/fields/select-field'
-import {
-  type PeopleView,
-  rateRangeDollars,
-  typedFilters,
-} from '@/lib/people/list'
+import { type PeopleView, rateRangeDollars } from '@/lib/people/list'
 import type { PeopleSearch } from '@/lib/people/search'
 import { cn } from '@/lib/utils'
 
@@ -79,7 +74,7 @@ function TitleField({
   )
 }
 
-/** The people list's own filters, and a chip for each typed one; `onType` changes the search without a history entry. */
+/** The people list's own filters; `onType` changes the search without a history entry. */
 export function PeopleControls({
   view,
   titles,
@@ -95,50 +90,41 @@ export function PeopleControls({
 }) {
   const range = rateRangeDollars(view)
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <SearchField
-          label="Name"
-          value={view.q}
-          onSearch={(q) => onType({ q })}
-        />
-        <TitleField
-          value={view.title}
-          titles={titles}
-          onSearch={(title) => onType({ title })}
-        />
-        <SelectField
-          label="EEO category"
-          value={view.category ?? ALL}
-          options={[
-            [ALL, 'All categories'],
-            ...categories.map((category): [string, string] => [
-              category,
-              category,
-            ]),
-          ]}
-          onSelect={(value) =>
-            onChange({ category: value === ALL ? undefined : value })
-          }
-        />
-        <DollarField
-          label="Rate from ($)"
-          value={range.min}
-          onChange={(min) => onType({ min })}
-        />
-        <DollarField
-          label="Rate to ($)"
-          value={range.max}
-          onChange={(max) => onType({ max })}
-        />
-      </div>
-      {typedFilters(view).map(({ text, clear }) => (
-        <RemovableFilter
-          key={text}
-          text={text}
-          onRemove={() => onChange(clear)}
-        />
-      ))}
-    </div>
+    <>
+      <SearchField
+        label="Name"
+        value={view.q}
+        onSearch={(q) => onType({ q })}
+      />
+      <TitleField
+        value={view.title}
+        titles={titles}
+        onSearch={(title) => onType({ title })}
+      />
+      <SelectField
+        label="EEO category"
+        value={view.category ?? ALL}
+        options={[
+          [ALL, 'All categories'],
+          ...categories.map((category): [string, string] => [
+            category,
+            category,
+          ]),
+        ]}
+        onSelect={(value) =>
+          onChange({ category: value === ALL ? undefined : value })
+        }
+      />
+      <DollarField
+        label="Rate from ($)"
+        value={range.min}
+        onChange={(min) => onType({ min })}
+      />
+      <DollarField
+        label="Rate to ($)"
+        value={range.max}
+        onChange={(max) => onType({ max })}
+      />
+    </>
   )
 }

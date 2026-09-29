@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import {
+  payChangeFilters,
   pickReportParams,
   resolveReportView,
   resolveTrendView,
@@ -89,4 +90,34 @@ test('a report link keeps its years, measures, area, and unit, and nothing else'
   expect(trendsSearchSchema.parse({ metric: 'fte' })).toEqual({
     metric: undefined,
   })
+})
+
+test('each active pay changes filter reads as a chip; clearing the group shows every line again', () => {
+  const view = resolveTrendView(
+    { group: 'Faculty', kind: 'unclassified', hide: ['Overloads'] },
+    YEARS,
+  )
+  expect(
+    payChangeFilters(view, {
+      dept: 'CAS Biology',
+      area: 'College of Arts and Sciences',
+      position: 'Professor',
+    }),
+  ).toStrictEqual([
+    { text: 'Group: Faculty', clear: { group: undefined, hide: undefined } },
+    { text: 'Staff: Unclassified', clear: { kind: undefined } },
+    { text: 'Pay department: CAS Biology', clear: { dept: undefined } },
+    {
+      text: 'College or VP area: College of Arts and Sciences',
+      clear: { area: undefined },
+    },
+    { text: 'Class or rank: Professor', clear: { position: undefined } },
+  ])
+  expect(
+    payChangeFilters(resolveTrendView({ from: 2020 }, YEARS), {
+      dept: null,
+      area: null,
+      position: null,
+    }),
+  ).toStrictEqual([])
 })
