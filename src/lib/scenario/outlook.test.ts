@@ -4,6 +4,7 @@ import {
   baselines,
   firstShortfallYear,
   outlookRows,
+  scenarioSeries,
   shortfallMarker,
   yearlySavings,
 } from './outlook'
@@ -188,4 +189,26 @@ test('the shortfall year is the first with a fund balance below zero', () => {
     label: 'With savings, below zero from FY28',
   })
   expect(shortfallMarker([row(2027, 0)])).toBeUndefined()
+})
+
+test('each with-savings line takes its measure’s palette slot, beside its published baseline', () => {
+  if (!BASE) throw new Error('The projection has a base')
+  const rows = outlookRows({
+    result: RESULT,
+    fiscalYears: FISCAL_YEARS,
+    baseline: BASE,
+    censusFiscalYear: 2026,
+  })
+  expect(
+    scenarioSeries(rows).series.map(({ key, slot, isBaseline }) => [
+      key,
+      slot,
+      isBaseline ?? false,
+    ]),
+  ).toEqual([
+    ['Run rate', 0, true],
+    ['Run rate with savings', 0, false],
+    ['Ending fund balance', 1, true],
+    ['Fund balance with savings', 1, false],
+  ])
 })

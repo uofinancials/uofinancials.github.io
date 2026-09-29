@@ -45,16 +45,28 @@ export function runRateFor(
 export const RUN_RATE_SERIES = 'Run rate'
 export const FUND_BALANCE_SERIES = 'Ending fund balance'
 
+/** Each outlook measure's fixed place in the chart palette, so it keeps its color and dash wherever it is drawn. */
+export const RUN_RATE_SLOT = 0
+export const FUND_BALANCE_SLOT = 1
+
 /** The chart's fiscal-year labels and its run-rate and ending fund balance lines. */
 export function outlookSeries(projection: Projection): {
   labels: string[]
-  series: { key: string; values: number[] }[]
+  series: { key: string; values: number[]; slot: number }[]
 } {
   return {
     labels: projection.fiscalYears.map(fiscalYearLabel),
     series: [
-      { key: RUN_RATE_SERIES, values: projection.runRateCents },
-      { key: FUND_BALANCE_SERIES, values: projection.endingFundBalanceCents },
+      {
+        key: RUN_RATE_SERIES,
+        values: projection.runRateCents,
+        slot: RUN_RATE_SLOT,
+      },
+      {
+        key: FUND_BALANCE_SERIES,
+        values: projection.endingFundBalanceCents,
+        slot: FUND_BALANCE_SLOT,
+      },
     ],
   }
 }

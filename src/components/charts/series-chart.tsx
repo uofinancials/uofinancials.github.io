@@ -3,7 +3,6 @@ import {
   Legend,
   Line,
   LineChart,
-  ReferenceArea,
   ReferenceLine,
   XAxis,
   YAxis,
@@ -19,11 +18,18 @@ import {
   sparseNote,
 } from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
-import { chartRows, markerLine, seriesKey } from './chart-parts'
+import {
+  BelowZeroBand,
+  chartRows,
+  legendText,
+  markerLine,
+  seriesKey,
+} from './chart-parts'
 import { lineColor } from './line-color'
 
 const LINE_DASHES = ['', '6 3', '2 3', '10 3 2 3']
 const AXIS_WIDTH_PX = 64
+const Y_TICK_COUNT = 5
 const AXIS_PADDING = { left: 16, right: 16 }
 
 type ChartSeries = {
@@ -31,11 +37,14 @@ type ChartSeries = {
   values: (number | null)[]
   /** Drawn thin and grey, as the reference the colored lines are read against. */
   isBaseline?: boolean
+  /** The palette place for its color and dash; defaults to its index, so a measure drawn on several charts can keep one look. */
+  slot?: number
 }
 
 /** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
-function lineStyle({ isBaseline }: ChartSeries, index: number) {
-  const strokeDasharray = LINE_DASHES[index % LINE_DASHES.length]
+function lineStyle({ isBaseline, slot }: ChartSeries, index: number) {
+  const place = slot ?? index
+  const strokeDasharray = LINE_DASHES[place % LINE_DASHES.length]
   return isBaseline
     ? {
         stroke: 'var(--muted-foreground)',
@@ -44,7 +53,7 @@ function lineStyle({ isBaseline }: ChartSeries, index: number) {
         dot: false,
       }
     : {
-        stroke: lineColor(index),
+        stroke: lineColor(place),
         strokeDasharray,
         strokeWidth: 2,
         dot: { r: 3 },
@@ -93,13 +102,18 @@ export function SeriesChart({
       >
         <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} />
-          {isBelowZero && (
-            <ReferenceArea y1={0} fill="var(--muted)" fillOpacity={1} />
-          )}
-          <XAxis dataKey="x" tickLine={false} padding={AXIS_PADDING} />
+          {isBelowZero && <BelowZeroBand />}
+          <XAxis
+            dataKey="x"
+            tickLine={false}
+            padding={AXIS_PADDING}
+            interval="preserveStartEnd"
+          />
           <YAxis
             width={AXIS_WIDTH_PX}
             tickLine={false}
+            tickCount={Y_TICK_COUNT}
+            domain={[(dataMin: number) => Math.min(0, dataMin), 'auto']}
             tickFormatter={(value) => formatAxis(Number(value))}
           />
           {isBelowZero && (
@@ -113,7 +127,9 @@ export function SeriesChart({
               />
             }
           />
-          {shown.length > 1 && <Legend itemSorter={null} />}
+          {shown.length > 1 && (
+            <Legend itemSorter={null} formatter={legendText} />
+          )}
           {shown.map(({ line, dataKey, index }) => (
             <Line
               key={line.key}

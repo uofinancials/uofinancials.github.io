@@ -59,8 +59,8 @@ test('the chart has a run-rate and an ending fund balance line over the fiscal y
   expect(outlookSeries(PROJECTION)).toEqual({
     labels: ['FY26', 'FY27'],
     series: [
-      { key: RUN_RATE_SERIES, values: [100, -100] },
-      { key: FUND_BALANCE_SERIES, values: [150, 50] },
+      { key: RUN_RATE_SERIES, values: [100, -100], slot: 0 },
+      { key: FUND_BALANCE_SERIES, values: [150, 50], slot: 1 },
     ],
   })
 })

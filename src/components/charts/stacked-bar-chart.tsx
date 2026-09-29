@@ -5,6 +5,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { formatCount } from '@/lib/shared/format'
+import { legendText } from './chart-parts'
 import { lineColor } from './line-color'
 
 const STACK = 'stack'
@@ -64,7 +65,7 @@ export function StackedBarChart({
               />
             }
           />
-          <Legend itemSorter={null} />
+          <Legend itemSorter={null} formatter={legendText} />
           {series.map(({ key, position }, index) => (
             <Bar
               key={key}

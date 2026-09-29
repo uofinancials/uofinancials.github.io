@@ -12,8 +12,10 @@ import { fiscalYearLabel } from '@/data/budget'
 import type { ScenarioHistory } from '@/hooks/use-scenario-history'
 import {
   type Baseline,
+  FUND_BALANCE_WITH_SAVINGS_SERIES,
   firstShortfallYear,
   type OutlookRow,
+  RUN_RATE_WITH_SAVINGS_SERIES,
   scenarioSeries,
   shortfallMarker,
 } from '@/lib/scenario/outlook'
@@ -28,8 +30,8 @@ import { NUMBER_CELL } from '@/lib/utils'
 const HEADS = [
   'Savings',
   'Run rate',
-  'Run rate with savings',
-  'Fund balance with savings',
+  RUN_RATE_WITH_SAVINGS_SERIES,
+  FUND_BALANCE_WITH_SAVINGS_SERIES,
   'Weeks of expenses',
 ]
 

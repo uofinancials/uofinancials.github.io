@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
   budgetYearLabel,
+  budgetYearTick,
   departmentSearchSchema,
   departmentsSearchSchema,
   resolveDepartmentsView,
@@ -62,4 +63,9 @@ test('a budget year before year-end names its posting period', () => {
   expect(budgetYearLabel({ fiscalYear: 2027, period: '02' })).toBe(
     'FY27 (period 2)',
   )
+})
+
+test('a chart tick shortens a budget year before year-end to its period', () => {
+  expect(budgetYearTick({ fiscalYear: 2025, period: '14' })).toBe('FY25')
+  expect(budgetYearTick({ fiscalYear: 2027, period: '02' })).toBe('FY27 P2')
 })

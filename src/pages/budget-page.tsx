@@ -24,7 +24,11 @@ import {
   outlookSeries,
   runRateFor,
 } from '@/lib/budget/outlook'
-import { formatCompactDollars, formatDollars } from '@/lib/shared/format'
+import {
+  formatCompactDollars,
+  formatDollars,
+  formatRoundedDollars,
+} from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const GAP_HEADS = ['Revenue', 'Expenses', 'Run rate', 'Ending fund balance']
@@ -180,7 +184,7 @@ export function BudgetPage() {
         />
       </PageSection>
       <PageSection
-        title={`The ${formatCompactDollars(projection.reductionTargetCents)} in reductions`}
+        title={`The ${formatRoundedDollars(projection.reductionTargetCents)} in reductions`}
       >
         <p>
           The materials estimate the budget reductions needed at{' '}

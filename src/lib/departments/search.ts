@@ -106,3 +106,15 @@ export function budgetYearLabel({
     ? label
     : `${label} (period ${Number(period)})`
 }
+
+/** A chart's short form of `budgetYearLabel`: "FY25", or "FY26 P12". */
+export function budgetYearTick({
+  fiscalYear,
+  period,
+}: {
+  fiscalYear: number
+  period: string
+}): string {
+  const label = fiscalYearLabel(fiscalYear)
+  return period === YEAR_END_PERIOD ? label : `${label} P${Number(period)}`
+}
