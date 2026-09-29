@@ -20,41 +20,96 @@ function jobKey(record: FallRecord): string | null {
     : [code, record.jobStartDate, titleOf(record), record.jobType].join('|')
 }
 
-/** The surname and the first given name, lower-cased with punctuation dropped. */
-function nameParts(name: string): [string, string] {
-  const [surname = '', given = ''] = name
-    .toLowerCase()
-    .replace(/[^a-z, ]/g, '')
-    .split(',')
-  return [surname.trim(), given.trim().split(' ')[0] ?? '']
+type NameParts = { surname: string; given: string; initial: string }
+
+/** Most letters a misspelt surname or given name may differ by and still be linked without review. */
+export const MAX_SPELLING_EDITS = 2
+
+const NOT_A_LETTER = /[^a-z]/g
+
+/** The surname, first given name and middle initial, lower-cased with everything but letters dropped. */
+function nameParts(name: string): NameParts {
+  const [surname = '', rest = ''] = name.toLowerCase().split(',')
+  const [given = '', middle = ''] = rest.trim().split(/\s+/)
+  return {
+    surname: surname.replace(NOT_A_LETTER, ''),
+    given: given.replace(NOT_A_LETTER, ''),
+    initial: middle.replace(NOT_A_LETTER, '').slice(0, 1),
+  }
 }
 
-function middleInitial(name: string): string {
-  const given = name.split(',')[1]?.trim().split(/\s+/) ?? []
-  return given[1]?.[0]?.toLowerCase() ?? ''
+function editDistance(a: string, b: string): number {
+  let previous = Array.from({ length: b.length + 1 }, (_, j) => j)
+  for (const [i, charA] of [...a].entries()) {
+    const current = [i + 1]
+    for (const [j, charB] of [...b].entries()) {
+      current.push(
+        Math.min(
+          (previous[j + 1] ?? 0) + 1,
+          (current[j] ?? 0) + 1,
+          (previous[j] ?? 0) + (charA === charB ? 0 : 1),
+        ),
+      )
+    }
+    previous = current
+  }
+  return previous[b.length] ?? 0
+}
+
+function initialsAgree(a: NameParts, b: NameParts): boolean {
+  return a.initial === b.initial || a.initial === '' || b.initial === ''
 }
 
 /**
  * A new surname with the given name and a middle initial both kept, on an
- * unchanged job: linked without review. The rule records no reason for the
- * change.
+ * unchanged job. The rule records no reason for the change.
  */
 export function keepsGivenNames(a: string, b: string): boolean {
-  const [surnameA, givenA] = nameParts(a)
-  const [surnameB, givenB] = nameParts(b)
-  const initial = middleInitial(a)
+  const [partsA, partsB] = [nameParts(a), nameParts(b)]
   return (
-    surnameA !== surnameB &&
-    givenA === givenB &&
-    initial !== '' &&
-    initial === middleInitial(b)
+    partsA.surname !== partsB.surname &&
+    partsA.given === partsB.given &&
+    partsA.initial !== '' &&
+    partsA.initial === partsB.initial
+  )
+}
+
+/** The same name once case and punctuation are dropped, a middle initial on one name only allowed. */
+export function differsOnlyByInitial(a: string, b: string): boolean {
+  const [partsA, partsB] = [nameParts(a), nameParts(b)]
+  return (
+    partsA.surname === partsB.surname &&
+    partsA.given === partsB.given &&
+    initialsAgree(partsA, partsB)
+  )
+}
+
+/** The surname or the given name, not both, misspelt by at most `MAX_SPELLING_EDITS` letters, the middle initials agreeing. */
+export function differsByFewLetters(a: string, b: string): boolean {
+  const [partsA, partsB] = [nameParts(a), nameParts(b)]
+  const edits = [
+    editDistance(partsA.surname, partsB.surname),
+    editDistance(partsA.given, partsB.given),
+  ]
+  return (
+    initialsAgree(partsA, partsB) &&
+    Math.min(...edits) === 0 &&
+    Math.max(...edits) <= MAX_SPELLING_EDITS
+  )
+}
+
+/** A pair of candidate names that a rule links without review. */
+export function isLinkedByRule(a: string, b: string): boolean {
+  return (
+    keepsGivenNames(a, b) ||
+    differsOnlyByInitial(a, b) ||
+    differsByFewLetters(a, b)
   )
 }
 
 function sharesOneName(a: string, b: string): boolean {
-  const [surnameA, givenA] = nameParts(a)
-  const [surnameB, givenB] = nameParts(b)
-  return surnameA === surnameB || givenA === givenB
+  const [partsA, partsB] = [nameParts(a), nameParts(b)]
+  return partsA.surname === partsB.surname || partsA.given === partsB.given
 }
 
 /** Each job key held by exactly one record whose name the other census lacks. */
@@ -82,10 +137,7 @@ function sameJobPairs(ordered: FallYear[]): PersonCandidate[] {
     const later = uniqueJobs(next.records, currentNames)
     return [...earlier].flatMap(([key, from]): PersonCandidate[] => {
       const to = later.get(key)
-      return to &&
-        sharesOneName(from.name, to.name) &&
-        !keepsGivenNames(from.name, to.name) &&
-        from.payDepartment.code
+      return to && sharesOneName(from.name, to.name) && from.payDepartment.code
         ? [
             {
               names: [from.name, to.name],
@@ -107,7 +159,8 @@ function spellingPairs(ordered: FallYear[]): PersonCandidate[] {
   ordered.forEach(({ records }, yearIndex) => {
     for (const { name, payDepartment } of records) {
       if (payDepartment.code === null) continue
-      const key = `${nameParts(name).join(',')}|${payDepartment.code}`
+      const { surname, given } = nameParts(name)
+      const key = `${surname},${given}|${payDepartment.code}`
       const group = groups.get(key) ?? {
         code: payDepartment.code,
         years: new Map(),
@@ -136,7 +189,7 @@ function pairKey({ names: [a, b] }: PersonCandidate): string {
   return `${a}|${b}`
 }
 
-/** Every pair of names that an unchanged job or a spelling variant suggests is one person, less those `keepsGivenNames` links without review. */
+/** Every pair of names that an unchanged job or a spelling variant suggests is one person, less those `isLinkedByRule` links without review. */
 export function findPersonCandidates(falls: FallYear[]): PersonCandidate[] {
   const ordered = [...falls].sort((a, b) =>
     a.censusDate.localeCompare(b.censusDate),
@@ -147,7 +200,8 @@ export function findPersonCandidates(falls: FallYear[]): PersonCandidate[] {
     ...spellingPairs(ordered),
   ]) {
     const key = pairKey(candidate)
-    if (!byPair.has(key)) byPair.set(key, candidate)
+    const [a, b] = candidate.names
+    if (!byPair.has(key) && !isLinkedByRule(a, b)) byPair.set(key, candidate)
   }
   return [...byPair.values()].sort((a, b) =>
     pairKey(a).localeCompare(pairKey(b), 'en'),

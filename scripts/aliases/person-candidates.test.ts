@@ -1,6 +1,11 @@
 import { expect, test } from 'vitest'
 import type { FallClassified, FallYear } from '../../src/data/fall.ts'
-import { findPersonCandidates, keepsGivenNames } from './person-candidates.ts'
+import {
+  differsByFewLetters,
+  differsOnlyByInitial,
+  findPersonCandidates,
+  keepsGivenNames,
+} from './person-candidates.ts'
 
 function job(
   name: string,
@@ -89,15 +94,47 @@ test('does not pair a name that still appears in the other census', () => {
   ).toEqual([])
 })
 
-test('pairs a spelling variant in one pay department across years', () => {
+test('pairs names in one pay department whose middle initials differ, across years', () => {
   expect(
     findPersonCandidates([
       census(2020, [job('Doe, Ann B', { jobStartDate: '2019-01-01' })]),
-      census(2023, [job('DOE, ANN', { jobStartDate: '2022-06-01' })]),
+      census(2023, [job('Doe, Ann C', { jobStartDate: '2022-06-01' })]),
     ]),
   ).toEqual([
-    { names: ['Doe, Ann B', 'DOE, ANN'], code: '111111', reason: 'spelling' },
+    { names: ['Doe, Ann B', 'Doe, Ann C'], code: '111111', reason: 'spelling' },
   ])
+})
+
+test('does not offer a spelling variant that only adds a middle initial', () => {
+  expect(
+    findPersonCandidates([
+      census(2020, [job('Doe, Ann', { jobStartDate: '2019-01-01' })]),
+      census(2023, [job('DOE, ANN B', { jobStartDate: '2022-06-01' })]),
+    ]),
+  ).toEqual([])
+})
+
+test('differsOnlyByInitial ignores case, punctuation and an initial on one name only', () => {
+  expect(
+    differsOnlyByInitial('Al-Samani, Lailek I', 'Alsamani, Lailek I'),
+  ).toBe(true)
+  expect(
+    differsOnlyByInitial('Baker, EmilyClare P', 'Baker, Emily-Clare'),
+  ).toBe(true)
+  expect(differsOnlyByInitial('Doe, Ann B', 'Doe, Ann C')).toBe(false)
+  expect(differsOnlyByInitial('Doe, Ann', 'Doe, Anna')).toBe(false)
+})
+
+test('differsByFewLetters allows two letters in one of the surname or given name', () => {
+  expect(differsByFewLetters('Turner, Mathew W', 'Turner, Matthew W')).toBe(
+    true,
+  )
+  expect(differsByFewLetters('Mondloch, Kate', 'Mondloch, Katie')).toBe(true)
+  expect(differsByFewLetters('Wilson, Emmett R', 'Wilson, Emma R')).toBe(false)
+  expect(differsByFewLetters('Bruno, Charlotte E', 'Bruno, Charlotte F')).toBe(
+    false,
+  )
+  expect(differsByFewLetters('Doe, Kate', 'Roe, Katie')).toBe(false)
 })
 
 test('does not pair spelling variants that appear in the same census', () => {
