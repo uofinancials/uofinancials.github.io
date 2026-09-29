@@ -182,10 +182,14 @@ export function jobHistory(person: Person): {
 }
 
 /** The distinct pay departments with a code among one census's jobs, by code. */
-export function payDepartmentsOf(records: FallRecord[]): Map<string, string> {
+export function payDepartmentsOf(
+  records: FallRecord[],
+): Map<string, FallRecord['payDepartment']> {
   return new Map(
-    records.flatMap(({ payDepartment: { code, name } }) =>
-      code === null ? [] : [[code, name] as const],
+    records.flatMap(({ payDepartment }) =>
+      payDepartment.code === null
+        ? []
+        : [[payDepartment.code, payDepartment] as const],
     ),
   )
 }

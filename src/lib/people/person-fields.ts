@@ -8,14 +8,14 @@ type Field = {
   value: (record: FallRecord) => string | null
 }
 
+/** A department as the census published it: its name, and the code published with it. */
 export function department({
   code,
   name,
-}: {
-  code: string | null
-  name: string
-}) {
-  return code === null ? name : `${name} (${code})`
+  publishedCode,
+}: FallRecord['payDepartment']) {
+  const shown = publishedCode ?? code
+  return shown === null ? name : `${name} (${shown})`
 }
 
 export function titleOf(record: FallRecord): string {

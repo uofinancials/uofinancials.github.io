@@ -69,7 +69,7 @@ export function pairYears(years: number[], from: number, to: number): number[] {
   )
 }
 
-/** How the filter's department and class or rank read, from the first job with them; the code or key itself when no job has it, `null` for one not set. */
+/** How the filter's department and class or rank read, from the first job published with them; the code or key itself when no job has it, `null` for one not set. */
 export function filterNames(
   years: { records: FallRecord[] }[],
   { dept, position }: Pick<TrendFilter, 'dept' | 'position'>,
@@ -81,7 +81,8 @@ export function filterNames(
       if (
         dept !== null &&
         deptName === undefined &&
-        record.payDepartment.code === dept
+        record.payDepartment.code === dept &&
+        !record.payDepartment.publishedCode
       ) {
         deptName = department(record.payDepartment)
       }

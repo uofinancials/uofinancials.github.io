@@ -1,6 +1,5 @@
 import type { BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
-import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { handAreasFor } from './hand-areas.ts'
 
 type Orgs = BudgetYear['orgs']
@@ -27,7 +26,7 @@ function namePrefix(name: string): string {
   return name.split(' ')[0] ?? ''
 }
 
-/** Prefixes whose every published unit, in the budget or the census, sits in one area; a code with folded aliases is left out, since its jobs carry other codes' names. */
+/** Prefixes whose every published unit, in the budget or the census, sits in one area; a folded record is left out, since its name was published with another code. */
 function learnPrefixAreas(
   records: FallRecord[],
   orgs: Orgs,
@@ -42,10 +41,9 @@ function learnPrefixAreas(
     if (org.level === ORG_LEVEL_UNIT && org.parent) note(org.name, org.parent)
   }
   for (const { payDepartment } of records) {
-    const { code, name } = payDepartment
-    if (code !== null && aliasCodesOf(code).length > 0) continue
-    const area = publishedArea(code, orgs)
-    if (area) note(name, area)
+    if (payDepartment.publishedCode) continue
+    const area = publishedArea(payDepartment.code, orgs)
+    if (area) note(payDepartment.name, area)
   }
   return new Map(
     [...areasByPrefix].flatMap(([prefix, areas]) => {

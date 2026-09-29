@@ -26,6 +26,7 @@ test('folds alias pay and home department codes and keeps the published names', 
   expect(folded?.payDepartment).toEqual({
     code: JSMA,
     name: 'UR Jordan Schnitzer Museum',
+    publishedCode: JSMA_ALIAS,
   })
   expect(folded?.homeDepartment.code).toBe(JSMA)
 })

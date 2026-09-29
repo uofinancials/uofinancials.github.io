@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { personFields } from './person-fields'
+import { department, personFields } from './person-fields'
 
 test('a classified year lists only the fields its report publishes, as published', () => {
   const fields = personFields([classifiedJob({ jobEndDate: '2026-06-30' })])
@@ -28,4 +28,11 @@ test('a year with both kinds shows each job’s fields, blank where its report h
   expect(byLabel['Position class']).toEqual(['E0104 Office Specialist 2', '–'])
   expect(byLabel['Salary report']).toEqual(['Classified', 'Unclassified'])
   expect(byLabel['Job end']).toEqual(['–', '–'])
+})
+
+test('a folded department reads with the code the census published, not its unit code', () => {
+  expect(
+    department({ code: '531111', name: 'UR JSMA', publishedCode: '530000' }),
+  ).toBe('UR JSMA (530000)')
+  expect(department({ code: '531111', name: 'JSMA' })).toBe('JSMA (531111)')
 })

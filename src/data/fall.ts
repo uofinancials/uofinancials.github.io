@@ -5,12 +5,13 @@ export const staffKindSchema = z.enum(['classified', 'unclassified'])
 const isoDate = z.iso.date()
 const nonBlank = z.string().min(1)
 
+const departmentCode = z.string().regex(/^\d{6}$/)
+
 const department = z.object({
-  code: z
-    .string()
-    .regex(/^\d{6}$/)
-    .nullable(),
+  code: departmentCode.nullable(),
   name: nonBlank,
+  /** The code the census published, where the site's reader folded it into its unit's `code`; never in a data file. */
+  publishedCode: departmentCode.optional(),
 })
 
 const fallCommon = {

@@ -57,20 +57,26 @@ export function aliasCodesOf(code: string): string[] {
 type Department = FallYear['records'][number]['payDepartment']
 
 function foldDepartment(department: Department): Department {
-  return department.code === null
+  const { code } = department
+  if (code === null) return department
+  const unit = unitCodeOf(code)
+  return unit === code
     ? department
-    : { ...department, code: unitCodeOf(department.code) }
+    : { ...department, code: unit, publishedCode: code }
 }
 
-/** The census with each alias pay and home department code replaced by its unit's code; the names stay as published. */
+/** The census with each alias pay and home department code replaced by its unit's code, the published code kept beside it; the names stay as published. */
 export function foldUnitAliases(year: FallYear): FallYear {
   return {
     ...year,
-    records: year.records.map((record) => ({
-      ...record,
-      payDepartment: foldDepartment(record.payDepartment),
-      homeDepartment: foldDepartment(record.homeDepartment),
-    })),
+    records: year.records.map((record) => {
+      const payDepartment = foldDepartment(record.payDepartment)
+      const homeDepartment = foldDepartment(record.homeDepartment)
+      return payDepartment === record.payDepartment &&
+        homeDepartment === record.homeDepartment
+        ? record
+        : { ...record, payDepartment, homeDepartment }
+    }),
   }
 }
 
@@ -84,7 +90,10 @@ export function foldBudgetAliases(year: BudgetYear): BudgetYear {
   return {
     ...year,
     orgs,
-    rows: year.rows.map((row) => ({ ...row, org: unitCodeOf(row.org) })),
+    rows: year.rows.map((row) => {
+      const org = unitCodeOf(row.org)
+      return org === row.org ? row : { ...row, org }
+    }),
   }
 }
 

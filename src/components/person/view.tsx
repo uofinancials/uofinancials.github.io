@@ -13,6 +13,7 @@ import { PersonRatesFigure } from '@/components/person/rates-figure'
 import { PersonRecordsTable } from '@/components/person/records-table'
 import { peerGroupOf } from '@/lib/people/peer-group'
 import type { PeerMedians } from '@/lib/people/peer-median'
+import { department } from '@/lib/people/person-fields'
 import {
   type Person,
   type PersonYear,
@@ -66,24 +67,24 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
       />
-      {[...departments].map(([code, department]) => (
+      {[...departments].map(([code, payDepartment]) => (
         <p key={code} className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <Link className="link" to="/departments/$code" params={{ code }}>
-            {department} ({code})
+            {department(payDepartment)}
           </Link>
           <Link
             className="link"
             to="/trends/pay-changes"
             search={{ dept: code, pair: entry.year }}
           >
-            Pay changes, {department}
+            Pay changes, {payDepartment.name}
           </Link>
           <Link
             className="link"
             to="/people"
             search={{ dept: code, year: entry.year }}
           >
-            People, {department}, Fall {entry.year}
+            People, {payDepartment.name}, Fall {entry.year}
           </Link>
         </p>
       ))}
