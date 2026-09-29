@@ -393,6 +393,32 @@ test('on a phone the people filters fold behind a button while their chips stay 
   await expect(toggle).toHaveAttribute('aria-expanded', 'true')
 })
 
+test('on a phone a people year change keeps the filter panel open and the focus in it while the census loads', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/people')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'People, Fall 2025',
+  )
+  await page.route('**/data/fall/**', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1_500))
+    await route.continue()
+  })
+  const toggle = page.getByRole('button', { name: /^Fall 2025 · / })
+  await toggle.click()
+  const year = page.getByRole('combobox', { name: 'Fall census' })
+  await year.focus()
+  await year.selectOption('2014')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'People, Fall 2014',
+  )
+  await expect(year).toBeFocused()
+  await expect(
+    page.getByRole('button', { name: /^Fall 2014 · / }),
+  ).toHaveAttribute('aria-expanded', 'true')
+})
+
 test('clearing all people filters keeps the census year, sort, and columns', async ({
   page,
 }) => {
