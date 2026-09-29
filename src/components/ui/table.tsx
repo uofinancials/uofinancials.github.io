@@ -16,6 +16,13 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   )
 }
 
+/** A row's tint, drawn by the row and layered over the paper of its sticky first cell. */
+const ROW_TINT = 'bg-(--row-tint)'
+
+/** The first cell stays in view as the numbers scroll sideways; on a phone it wraps and carries a hairline. */
+const KEY_CELL =
+  'first:sticky first:left-0 first:z-[1] first:bg-background first:bg-[linear-gradient(var(--row-tint),var(--row-tint))] max-md:first:min-w-28 max-md:first:whitespace-normal max-md:first:shadow-[inset_-1px_0_var(--border)]'
+
 function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
   return (
     <thead
@@ -41,7 +48,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<'tfoot'>) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        'border-t bg-muted/50 font-medium [&>tr]:last:border-b-0',
+        'border-t [--row-tint:color-mix(in_oklab,var(--muted)_50%,transparent)] font-medium [&>tr]:last:border-b-0',
         className,
       )}
       {...props}
@@ -54,7 +61,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     <tr
       data-slot="table-row"
       className={cn(
-        'border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted',
+        `border-b transition-colors ${ROW_TINT} hover:[--row-tint:color-mix(in_oklab,var(--muted)_50%,transparent)] has-aria-expanded:[--row-tint:color-mix(in_oklab,var(--muted)_50%,transparent)] data-[state=selected]:[--row-tint:var(--muted)]`,
         className,
       )}
       {...props}
@@ -67,7 +74,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
     <th
       data-slot="table-head"
       className={cn(
-        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        `h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${KEY_CELL}`,
         className,
       )}
       {...props}
@@ -80,7 +87,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
     <td
       data-slot="table-cell"
       className={cn(
-        'h-10 p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        `h-10 p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${KEY_CELL}`,
         className,
       )}
       {...props}

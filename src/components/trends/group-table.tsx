@@ -53,7 +53,10 @@ export function GroupTable({
       </TableHeader>
       <TableBody>
         {rows.map(({ key, label, isTotal, isHighlighted, cells }) => (
-          <TableRow key={key} className={cn(isHighlighted && 'bg-muted')}>
+          <TableRow
+            key={key}
+            className={cn(isHighlighted && '[--row-tint:var(--muted)]')}
+          >
             <TableHead scope="row" className={cn(!isTotal && 'font-normal')}>
               {label ?? key}
             </TableHead>

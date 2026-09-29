@@ -336,3 +336,23 @@ test('the scope search keeps focus while a picked area loads, and says when noth
   await search.fill('zzzz')
   await expect(page.getByText('No matches')).toBeVisible()
 })
+
+test('on a phone a wide table keeps its first column in view as it scrolls', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/trends?tab=compare')
+  const table = page.getByRole('table', { name: /colleges and VP areas/ })
+  const key = table.getByRole('rowheader').first()
+  const box = page
+    .locator('[data-slot=table-container]', { has: table })
+    .first()
+  const leftOf = () =>
+    key.evaluate((element) => element.getBoundingClientRect().left)
+  const before = await leftOf()
+  await box.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth
+  })
+  expect(await box.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)
+  expect(await leftOf()).toBe(before)
+})
