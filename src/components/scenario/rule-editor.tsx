@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { AreaSelect } from '@/components/fields/area-select'
+import { BUTTON_CLASS } from '@/components/fields/button-class'
 import { DraftInput } from '@/components/fields/draft-input'
 import { SelectField } from '@/components/fields/select-field'
 import { ScenarioScopeFields } from '@/components/scenario/scope-fields'
@@ -20,9 +21,6 @@ const AFTER_FREEZE_OPTIONS: [string, string][] = [
   ['refill', 'Refilled'],
   ['eliminate', 'Eliminated'],
 ]
-const BUTTON_CLASS =
-  'inline-flex items-center gap-1 rounded-md border px-2 py-1 text-sm aria-disabled:opacity-50'
-
 function PercentField({
   basisPoints,
   onValue,
@@ -203,7 +201,7 @@ export function ScenarioRuleEditor({
 }) {
   const name = `rule ${position}`
   return (
-    <fieldset className="min-w-0 space-y-3 rounded-md border p-4">
+    <fieldset className="space-y-3 rounded-md border p-4">
       <legend className="px-1 font-medium">
         {position}. {describeRule(rule)}
       </legend>

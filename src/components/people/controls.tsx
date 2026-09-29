@@ -73,17 +73,9 @@ function TitleField({
 }) {
   const listId = useId()
   return (
-    <label className={cn(FIELD_CLASS, 'w-full max-w-sm')}>
-      <span className="text-muted-foreground">Title</span>
-      <input
-        type="search"
-        list={listId}
-        className={cn(CONTROL_CLASS, 'w-full')}
-        value={value}
-        onChange={(event) => onSearch(event.target.value || undefined)}
-      />
+    <SearchField label="Title" value={value} list={listId} onSearch={onSearch}>
       <TitleOptions id={listId} titles={titles} />
-    </label>
+    </SearchField>
   )
 }
 

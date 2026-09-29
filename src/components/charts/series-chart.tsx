@@ -12,12 +12,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-import {
-  type ChartMarker,
-  isAnyBelowZero,
-  sparseNote,
-  valueAxis,
-} from '@/lib/shared/series'
+import { type ChartMarker, sparseNote, valueAxis } from '@/lib/shared/series'
 import { cn } from '@/lib/utils'
 import {
   BelowZeroBand,
@@ -42,7 +37,7 @@ type ChartSeries = {
   slot?: number
 }
 
-/** A line's color and dash, fixed by its place among all the view's lines so hiding one does not restyle the rest. */
+/** A line's color and dash, fixed by its slot or its place among all the view's lines, so hiding one does not restyle the rest. */
 function lineStyle({ isBaseline, slot }: ChartSeries, index: number) {
   const place = slot ?? index
   const strokeDasharray = LINE_DASHES[place % LINE_DASHES.length]
@@ -93,12 +88,12 @@ export function SeriesChart({
   if (note !== null) {
     return <p className="text-sm text-muted-foreground">{note}</p>
   }
-  const isBelowZero = isAnyBelowZero(shown.map(({ line }) => line.values))
   const data = chartRows(labels, series)
   const axis = valueAxis(
     shown.flatMap(({ line }) => line.values),
     Y_TICK_COUNT,
   )
+  const isBelowZero = axis !== null && axis.domain[0] < 0
   return (
     <figure aria-label={label}>
       <ChartContainer

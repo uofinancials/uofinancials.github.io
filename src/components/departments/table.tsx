@@ -18,7 +18,7 @@ import {
   formatOrBlank,
 } from '@/lib/shared/format'
 import type { SortDirection } from '@/lib/shared/sort'
-import { NUMBER_CELL } from '@/lib/utils'
+import { cn, NUMBER_CELL, WRAP_CELL } from '@/lib/utils'
 
 const FIGURES: {
   label: string
@@ -111,10 +111,7 @@ export function DepartmentTable({
       <TableBody>
         {rows.map((row) => (
           <TableRow key={row.code ?? 'unassigned'}>
-            <TableHead
-              scope="row"
-              className="min-w-40 font-normal whitespace-normal"
-            >
+            <TableHead scope="row" className={cn(WRAP_CELL, 'font-normal')}>
               <CodeLink code={row.code} name={row.name} />{' '}
               <span className="text-muted-foreground">{row.code}</span>
             </TableHead>

@@ -108,6 +108,9 @@
   h2 {
     text-wrap: balance;
   }
+  fieldset {
+    min-inline-size: 0;
+  }
   main :where(p, li, dd) {
     max-width: 75ch;
   }
@@ -119,14 +122,21 @@
 
 @utility scroll-edge {
   --edge-shadow: color-mix(in oklab, var(--foreground) 18%, transparent);
-  background:
-    linear-gradient(to right, var(--background) 40%, transparent) left center /
-    2.5rem 100% no-repeat local,
-    linear-gradient(to left, var(--background) 40%, transparent) right center /
-    2.5rem 100% no-repeat local,
-    radial-gradient(farthest-side at 0 50%, var(--edge-shadow), transparent)
-    left center / 0.75rem 100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, var(--edge-shadow), transparent)
-    right center / 0.75rem 100% no-repeat scroll;
-  background-color: var(--background);
+  background-image:
+    linear-gradient(to right, var(--background) 40%, transparent),
+    linear-gradient(to left, var(--background) 40%, transparent),
+    radial-gradient(farthest-side at 0 50%, var(--edge-shadow), transparent),
+    radial-gradient(farthest-side at 100% 50%, var(--edge-shadow), transparent);
+  background-position:
+    left center,
+    right center,
+    left center,
+    right center;
+  background-size:
+    2.5rem 100%,
+    2.5rem 100%,
+    0.75rem 100%,
+    0.75rem 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
 }

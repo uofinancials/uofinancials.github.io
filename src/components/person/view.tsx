@@ -1,8 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
-import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import {
+  TAB_LINK_CLASS,
+  TAB_LIST_CLASS,
+} from '@/components/layout/nav-link-class'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
+import { BackButton } from '@/components/person/back-button'
 import { PersonCards } from '@/components/person/cards'
 import { PersonHistoryTable } from '@/components/person/history-table'
 import { PersonRatesFigure } from '@/components/person/rates-figure'
@@ -32,7 +36,7 @@ function YearTabs({ person, year }: { person: Person; year: number }) {
   if (years.length < MIN_YEAR_TABS) return null
   return (
     <nav aria-label="Census year">
-      <ul className="flex flex-wrap gap-1 border-b">
+      <ul className={TAB_LIST_CLASS}>
         {years.map((entry) => (
           <li key={entry.year}>
             <Link
@@ -115,23 +119,21 @@ export function PersonView({
   person,
   medians,
   year,
-  back,
 }: {
   person: Person
   medians: PeerMedians
   year: number
-  /** The way back, shown under the name. */
-  back: ReactNode
 }) {
   const run = runOf(person, year)
   const entry = run?.years.find((candidate) => candidate.year === year)
   return (
     <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-title">{person.name}</h1>
-        {back}
+      <PageHeader title={person.name}>
+        <p>
+          <BackButton />
+        </p>
         <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
-      </div>
+      </PageHeader>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />
       <YearTabs person={person} year={year} />

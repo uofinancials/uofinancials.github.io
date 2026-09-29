@@ -73,7 +73,6 @@ export function GrowthSection({
           name="view"
           value={view}
           options={GROWTH_VIEW_OPTIONS}
-          isSegmented
           onSelect={(value) => onChange({ view: value })}
         />
       </div>

@@ -9,7 +9,7 @@ import {
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import { formatDollars, formatOrBlank } from '@/lib/shared/format'
-import { NUMBER_CELL } from '@/lib/utils'
+import { cn, NUMBER_CELL, WRAP_CELL } from '@/lib/utils'
 
 /** Each published case's run rate by fiscal year, its present value, and its final ending fund balance. */
 export function OutlookCasesTable({ projection }: { projection: Projection }) {
@@ -43,10 +43,7 @@ export function OutlookCasesTable({ projection }: { projection: Projection }) {
       <TableBody>
         {projection.cases.map((scenario) => (
           <TableRow key={scenario.label}>
-            <TableHead
-              scope="row"
-              className="min-w-40 font-normal whitespace-normal"
-            >
+            <TableHead scope="row" className={cn(WRAP_CELL, 'font-normal')}>
               {scenario.label}
             </TableHead>
             {years.map((year, index) => (

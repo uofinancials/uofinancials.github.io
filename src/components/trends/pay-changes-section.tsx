@@ -28,10 +28,9 @@ import {
   type PayChangesSearch,
   type TrendView,
 } from '@/lib/trends/search'
+import { WRAP_CELL } from '@/lib/utils'
 
 const PAY_CHANGE_METHOD = `${CONTINUING_JOB_METHOD} Class changes compare the class number, whatever its letter prefix; rank changes leave out the renames and unpublished ranks below; title changes compare titles without case, punctuation, or the abbreviations below. A changed class, rank, or title is a changed published label, not necessarily a promotion.`
-
-const LABEL_CELL = 'min-w-40 whitespace-normal'
 
 const RENAME_METHOD =
   "Reading these rank moves as renames, and these words as the same, is this site's method; the ranks and titles are as each census publishes them."
@@ -59,8 +58,8 @@ function LabelTables() {
           {RANK_RENAMES.map(({ toYear, from, to }) => (
             <TableRow key={`${toYear} ${from}`}>
               <TableCell>{pairLabel(toYear - 1)}</TableCell>
-              <TableCell className={LABEL_CELL}>{from}</TableCell>
-              <TableCell className={LABEL_CELL}>{to}</TableCell>
+              <TableCell className={WRAP_CELL}>{from}</TableCell>
+              <TableCell className={WRAP_CELL}>{to}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -79,7 +78,7 @@ function LabelTables() {
           {Object.entries(TITLE_ABBREVIATIONS).map(([word, forms]) => (
             <TableRow key={word}>
               <TableCell>{word}</TableCell>
-              <TableCell className={LABEL_CELL}>{forms.join(', ')}</TableCell>
+              <TableCell className={WRAP_CELL}>{forms.join(', ')}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -88,8 +87,7 @@ function LabelTables() {
         sources={[
           {
             kind: 'fall-range',
-            from: RENAME_RANGE.from,
-            to: RENAME_RANGE.to,
+            ...RENAME_RANGE,
             computed: RENAME_METHOD,
           },
         ]}

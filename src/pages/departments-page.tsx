@@ -4,6 +4,7 @@ import { DepartmentTable } from '@/components/departments/table'
 import { RadioField } from '@/components/fields/radio-field'
 import { SearchField } from '@/components/fields/search-field'
 import { SelectField } from '@/components/fields/select-field'
+import { PageHeader } from '@/components/layout/page-header'
 import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
 import { summaryQuery } from '@/data/queries'
@@ -42,7 +43,6 @@ function TableControls({
         name="level"
         value={view.level}
         options={LEVEL_OPTIONS}
-        isSegmented
         onSelect={(level) => onChange({ level })}
       />
       {view.level === 'units' && (
@@ -93,8 +93,7 @@ export function DepartmentsPage() {
   const fiscal = fiscalYearLabel(now.fiscalYear)
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-title">Departments</h1>
+      <PageHeader title="Departments">
         <p>
           Each college or VP area in the {fiscal} budget, or each unit and Fall{' '}
           {now.year} pay department, with its budget and jobs and their change
@@ -104,7 +103,7 @@ export function DepartmentsPage() {
           A unit’s page shows its budget by year; a pay department’s shows its
           jobs; a code both publish shows both.
         </p>
-      </div>
+      </PageHeader>
       <TableControls view={view} areas={areas} onChange={handleChange} />
       {shown.length === 0 ? (
         <p>No area, unit, or department matches.</p>

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { ScenarioEliminationsTable } from '@/components/scenario/eliminations-table'
@@ -23,8 +24,8 @@ import { toSearchRules } from '@/lib/scenario/search'
 import type { SectionSource } from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 
-const SCENARIO_COMPUTED =
-  'Estimated from this census by the rules above; the method is under "How this is estimated".'
+const METHOD_TITLE = 'How this is estimated'
+const SCENARIO_COMPUTED = `Estimated from this census by the rules above; the method is under "${METHOD_TITLE}".`
 
 const METHODS = [
   SCENARIO_METHOD,
@@ -172,8 +173,7 @@ export function ScenariosPage() {
   const navigate = useNavigate({ from: '/scenarios' })
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-title">Scenarios</h1>
+      <PageHeader title="Scenarios">
         <p>
           Stack rules over the Fall {census.year} census and see what each would
           save, and what the savings would do to the E&G fund projected in “
@@ -184,7 +184,7 @@ export function ScenariosPage() {
           and not a recommendation about any person. Savings are gross: no
           revenue a change would lose is counted.
         </p>
-      </div>
+      </PageHeader>
       <PageSection title="Examples">
         <Examples />
       </PageSection>
@@ -206,7 +206,7 @@ export function ScenariosPage() {
         />
         <ScenarioSources scenario={scenario} />
       </PageSection>
-      <PageSection title="How this is estimated">
+      <PageSection title={METHOD_TITLE}>
         <ul className="list-disc space-y-2 pl-6 text-sm">
           {METHODS.map((method) => (
             <li key={method}>{method}</li>

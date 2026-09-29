@@ -1,7 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { TotalsTable } from '@/components/charts/totals-table'
-import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import {
+  TAB_LINK_CLASS,
+  TAB_LIST_CLASS,
+} from '@/components/layout/nav-link-class'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { CensusControls } from '@/components/people/census-controls'
@@ -38,7 +42,7 @@ const COMPUTED = `the list shows each job as published, in the order chosen, tie
 function ChartTabs({ chart }: { chart: PeopleChart }) {
   return (
     <nav aria-label="Chart">
-      <ul className="flex flex-wrap gap-1 border-b">
+      <ul className={TAB_LIST_CLASS}>
         {PEOPLE_CHARTS.map((option) => (
           <li key={option}>
             <Link
@@ -218,22 +222,16 @@ export function PeoplePage() {
     })
   const handleSort = (sort: PeopleSort, dir: SortDirection) =>
     change({ sort, dir })
-  const listSources = (
-    <Sources
-      sources={[{ kind: 'fall', year: view.year, computed: COMPUTED }]}
-    />
-  )
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
-      <div className="space-y-2">
-        <h1 className="text-title">People, Fall {view.year}</h1>
+      <PageHeader title={`People, Fall ${view.year}`}>
         <p>
           Every job the Fall {view.year} Census salary reports publish, by name,
           as published.
         </p>
         <p className="text-sm text-muted-foreground">{RATE_NOTE}</p>
-      </div>
+      </PageHeader>
       <PeopleControls
         view={view}
         titles={census.titles}
@@ -261,18 +259,14 @@ export function PeoplePage() {
       {view.q && matching.jobs.length === 0 && (
         <OtherCensusNames q={view.q} year={view.year} />
       )}
-      {matching.jobs.length > 0 ? (
-        <>
-          <JobsSection
-            sorted={matching.sorted}
-            view={view}
-            onSort={handleSort}
-          />
-          {listSources}
-          <CategorySpend totals={matching.categories} year={view.year} />
-        </>
-      ) : (
-        listSources
+      {matching.jobs.length > 0 && (
+        <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
+      )}
+      <Sources
+        sources={[{ kind: 'fall', year: view.year, computed: COMPUTED }]}
+      />
+      {matching.jobs.length > 0 && (
+        <CategorySpend totals={matching.categories} year={view.year} />
       )}
     </div>
   )

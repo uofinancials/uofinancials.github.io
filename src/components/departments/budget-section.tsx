@@ -20,7 +20,7 @@ import {
   formatDollars,
   formatOrBlank,
 } from '@/lib/shared/format'
-import { cn, NUMBER_CELL } from '@/lib/utils'
+import { cn, NUMBER_CELL, WRAP_CELL } from '@/lib/utils'
 
 const BREAKDOWN_OPTIONS = [
   ['account', 'Account group'],
@@ -129,10 +129,7 @@ function BudgetTable({
           <TableRow key={key}>
             <TableHead
               scope="row"
-              className={cn(
-                'min-w-40 whitespace-normal',
-                !isGroup && 'pl-6 font-normal',
-              )}
+              className={cn(WRAP_CELL, !isGroup && 'pl-6 font-normal')}
             >
               {label}
             </TableHead>
@@ -172,7 +169,6 @@ export function DepartmentBudgetSection({
         name="budget"
         value={breakdown}
         options={BREAKDOWN_OPTIONS}
-        isSegmented
         onSelect={onBreakdown}
       />
       <BudgetPanels budget={budget} title={title} />

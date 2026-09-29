@@ -6,6 +6,7 @@ import {
   useSearch,
 } from '@tanstack/react-router'
 import { useMemo } from 'react'
+import { PageHeader } from '@/components/layout/page-header'
 import { TrendsControls } from '@/components/trends/controls'
 import { PayChangesSection } from '@/components/trends/pay-changes-section'
 import { censusYearOf } from '@/data/fall'
@@ -96,8 +97,7 @@ export function PayChangesPage() {
     })
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-title">Pay changes of continuing jobs</h1>
+      <PageHeader title="Pay changes of continuing jobs">
         <p className="text-sm">
           <Link className="link" to="/trends">
             All trends
@@ -107,7 +107,7 @@ export function PayChangesPage() {
             How groups are defined
           </Link>
         </p>
-      </div>
+      </PageHeader>
       <TrendsControls
         view={view}
         years={years}

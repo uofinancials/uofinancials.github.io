@@ -1,6 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import {
+  TAB_LINK_CLASS,
+  TAB_LIST_CLASS,
+} from '@/components/layout/nav-link-class'
 import { REPORT_TABS, type ReportTab } from '@/lib/trends/search'
+import { cn } from '@/lib/utils'
 
 const TAB_LABELS: Record<ReportTab, string> = {
   grew: 'Which groups grew?',
@@ -15,7 +19,12 @@ const TAB_LABELS: Record<ReportTab, string> = {
 export function ReportTabs({ tab }: { tab: ReportTab }) {
   return (
     <nav aria-label="Questions">
-      <ul className="scroll-edge -mx-4 flex overflow-x-auto border-b px-4 md:mx-0 md:flex-wrap md:px-0">
+      <ul
+        className={cn(
+          TAB_LIST_CLASS,
+          'scroll-edge -mx-4 flex-nowrap overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0',
+        )}
+      >
         {REPORT_TABS.map((option) => (
           <li key={option} className="shrink-0">
             <Link

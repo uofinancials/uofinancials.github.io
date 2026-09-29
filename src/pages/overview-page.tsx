@@ -9,6 +9,7 @@ import { SeriesChart } from '@/components/charts/series-chart'
 import { AreaBreakdown } from '@/components/home/area-breakdown'
 import { ScenarioAnswers } from '@/components/home/scenario-answers'
 import { TopPaidTable } from '@/components/home/top-paid-table'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { StatCard } from '@/components/layout/stat-card'
@@ -303,15 +304,14 @@ export function OverviewPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <div className="space-y-2">
-          <h1 className="text-title">UO Financials</h1>
+        <PageHeader title="UO Financials">
           <p>
             An independent look at the salary, headcount, and budget data the
             University of Oregon publishes: see the projected budget gap, test
             what pay rules would save, follow jobs and pay over twelve years,
             and look up a department or a person.
           </p>
-        </div>
+        </PageHeader>
         <Headlines figures={headlines} year={year} fiscalYear={fiscalYear} />
         <Sources
           sources={[

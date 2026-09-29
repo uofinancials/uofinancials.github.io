@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { IndexFigure } from '@/components/charts/index-figure'
+import { CLEAR_BUTTON_CLASS } from '@/components/fields/button-class'
 import { OptionSearch } from '@/components/fields/option-search'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
@@ -132,7 +133,7 @@ function CompareWith({
           <button
             type="button"
             aria-label={`Remove ${name}`}
-            className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            className={CLEAR_BUTTON_CLASS}
             onClick={() =>
               onChange({ with: codes.filter((listed) => listed !== code) })
             }

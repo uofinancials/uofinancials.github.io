@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BUTTON_CLASS } from '@/components/fields/button-class'
 import { OptionSearch } from '@/components/fields/option-search'
 import { RadioField } from '@/components/fields/radio-field'
 import { YearRangeFields } from '@/components/fields/year-range-fields'
@@ -30,7 +31,7 @@ function FiltersToggle({
       className="flex w-full items-center justify-between gap-2 text-left text-sm md:hidden"
     >
       <span>{summary}</span>
-      <span className="shrink-0 rounded-md border bg-background px-2 py-1">
+      <span className={cn(BUTTON_CLASS, 'shrink-0 bg-background')}>
         {isOpen ? 'Close' : 'Filters'}
       </span>
     </button>
@@ -98,7 +99,6 @@ export function ReportFilters({
             name="measure"
             value={measure}
             options={REPORT_METRIC_OPTIONS}
-            isSegmented
             onSelect={(value) => onChange({ measure: value })}
           />
         )}

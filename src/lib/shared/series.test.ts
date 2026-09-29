@@ -2,7 +2,6 @@ import { expect, test } from 'vitest'
 import {
   belowZeroMarker,
   changeOf,
-  isAnyBelowZero,
   rankByChange,
   shareOfLargest,
   sparseNote,
@@ -41,16 +40,6 @@ test('each value is its share of the largest, and nothing below zero draws', () 
   expect(shareOfLargest([400, 100, null, 0, -50])).toEqual([1, 0.25, 0, 0, 0])
   expect(shareOfLargest([0, null])).toEqual([0, 0])
   expect(shareOfLargest([])).toEqual([])
-})
-
-test('a chart is below zero when any value in any series is', () => {
-  expect(isAnyBelowZero([[0, null], [3]])).toBe(false)
-  expect(
-    isAnyBelowZero([
-      [0, null],
-      [3, -1],
-    ]),
-  ).toBe(true)
 })
 
 test('a change is a fraction of the first figure, and has none from a missing or non-positive one', () => {

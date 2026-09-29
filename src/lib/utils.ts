@@ -1,6 +1,7 @@
 export { cn } from 'cn'
 
 export const NUMBER_CELL = 'text-right tabular-nums'
+export const WRAP_CELL = 'min-w-40 whitespace-normal'
 
 const PERCENT = 100
 

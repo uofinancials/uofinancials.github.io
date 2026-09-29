@@ -93,28 +93,24 @@ export function resolveDepartmentView(
   }
 }
 
-/** "FY25", or "FY26 (period 12)" for a year not yet at year-end. */
-export function budgetYearLabel({
-  fiscalYear,
-  period,
-}: {
-  fiscalYear: number
-  period: string
-}): string {
+type BudgetYear = { fiscalYear: number; period: string }
+
+function budgetYear(
+  { fiscalYear, period }: BudgetYear,
+  periodSuffix: (period: number) => string,
+): string {
   const label = fiscalYearLabel(fiscalYear)
   return period === YEAR_END_PERIOD
     ? label
-    : `${label} (period ${Number(period)})`
+    : `${label} ${periodSuffix(Number(period))}`
+}
+
+/** "FY25", or "FY26 (period 12)" for a year not yet at year-end. */
+export function budgetYearLabel(year: BudgetYear): string {
+  return budgetYear(year, (period) => `(period ${period})`)
 }
 
 /** A chart's short form of `budgetYearLabel`: "FY25", or "FY26 P12". */
-export function budgetYearTick({
-  fiscalYear,
-  period,
-}: {
-  fiscalYear: number
-  period: string
-}): string {
-  const label = fiscalYearLabel(fiscalYear)
-  return period === YEAR_END_PERIOD ? label : `${label} P${Number(period)}`
+export function budgetYearTick(year: BudgetYear): string {
+  return budgetYear(year, (period) => `P${period}`)
 }

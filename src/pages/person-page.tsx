@@ -1,40 +1,12 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
-import {
-  Link,
-  useCanGoBack,
-  useLoaderData,
-  useParams,
-  useRouter,
-  useSearch,
-} from '@tanstack/react-router'
+import { useLoaderData, useParams, useSearch } from '@tanstack/react-router'
 import { Sources } from '@/components/layout/sources'
+import { BackButton } from '@/components/person/back-button'
 import { PersonView } from '@/components/person/view'
 import { fallYearQuery, toData } from '@/data/queries'
 import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { resolveCensusYear } from '@/lib/census/search'
 import { personOf, yearsOf } from '@/lib/people/person-lookup'
-
-const BACK_CLASS = 'text-sm link'
-
-function BackButton() {
-  const router = useRouter()
-  if (!useCanGoBack()) {
-    return (
-      <Link className={BACK_CLASS} to="/people">
-        Back to people
-      </Link>
-    )
-  }
-  return (
-    <button
-      type="button"
-      className={BACK_CLASS}
-      onClick={() => router.history.back()}
-    >
-      Back
-    </button>
-  )
-}
 
 export function PersonPage() {
   const { name } = useParams({ from: '/people/$name' })
@@ -55,11 +27,6 @@ export function PersonPage() {
             person={person}
             medians={data.medians}
             year={resolveCensusYear(year, yearsOf(person))}
-            back={
-              <p>
-                <BackButton />
-              </p>
-            }
           />
           <Sources
             sources={[

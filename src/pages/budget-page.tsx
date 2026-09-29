@@ -4,6 +4,7 @@ import { OutlookCasesTable } from '@/components/budget/outlook-cases-table'
 import { OutlookLinesTable } from '@/components/budget/outlook-lines-table'
 import { SeriesChart } from '@/components/charts/series-chart'
 import { CitedLine } from '@/components/layout/cited-line'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import {
@@ -137,8 +138,7 @@ export function BudgetPage() {
   const { labels, series } = outlookSeries(projection)
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-title">Budget outlook</h1>
+      <PageHeader title="Budget outlook">
         <p>
           The E&G fund as projected in “{projection.title}”, in the{' '}
           {projection.source.document}.
@@ -156,7 +156,7 @@ export function BudgetPage() {
           </Link>
           .
         </p>
-      </div>
+      </PageHeader>
       <PageSection title="Projected gap by fiscal year">
         <SeriesChart
           labels={labels}

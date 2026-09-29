@@ -15,12 +15,6 @@ export function sparseNote(
   return valued.length === 0 ? 'No figures.' : `Only in ${valued.join(', ')}.`
 }
 
-export function isAnyBelowZero(series: (number | null)[][]): boolean {
-  return series.some((values) =>
-    values.some((value) => value !== null && value < 0),
-  )
-}
-
 /** Marks the first label whose value is below zero, as "{subject} below zero from {label}". */
 export function belowZeroMarker(
   labels: string[],
@@ -128,10 +122,10 @@ export function valueAxis(
   if (high === low) return null
   const step = niceStep((high - low) / (count - 1))
   const onStep = (index: number) => clean(index * step)
-  const top = onStep(Math.ceil(high / step))
+  const last = Math.ceil(high / step)
+  const top = onStep(last)
   const floor = -low < step ? low : onStep(Math.floor(low / step))
   const first = Math.ceil(floor / step)
-  const last = Math.ceil(high / step)
   const ticks = Array.from({ length: last - first + 1 }, (_, index) =>
     onStep(first + index),
   )
