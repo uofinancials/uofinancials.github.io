@@ -15,12 +15,6 @@ export function sparseNote(
   return valued.length === 0 ? 'No figures.' : `Only in ${valued.join(', ')}.`
 }
 
-export function isAnyBelowZero(series: (number | null)[][]): boolean {
-  return series.some((values) =>
-    values.some((value) => value !== null && value < 0),
-  )
-}
-
 /** Marks the first label whose value is below zero, as "{subject} below zero from {label}". */
 export function belowZeroMarker(
   labels: string[],
@@ -101,4 +95,44 @@ export function rankByChange(items: { key: string; change: number | null }[]): {
       width: span === 0 ? 0 : Math.abs(item.change) / span,
     })),
   }
+}
+
+const NICE_STEPS = [1, 2, 2.5, 5, 10]
+const TEN = 10
+const TICK_PRECISION = 12
+
+function niceStep(rough: number): number {
+  const power = TEN ** Math.floor(Math.log10(rough))
+  const step = NICE_STEPS.find((nice) => nice * power >= rough) ?? TEN
+  return step * power
+}
+
+/**
+ * A value axis over `values` that always includes zero, in about `count` nice
+ * ticks; a negative smaller than one step sets the floor itself rather than a
+ * whole step below zero. `null` when every value is equal or missing.
+ */
+export function valueAxis(
+  values: (number | null)[],
+  count: number,
+): { domain: [number, number]; ticks: number[] } | null {
+  const present = values.filter((value): value is number => value !== null)
+  const low = Math.min(0, ...present)
+  const high = Math.max(0, ...present)
+  if (high === low) return null
+  const step = niceStep((high - low) / (count - 1))
+  const onStep = (index: number) => clean(index * step)
+  const last = Math.ceil(high / step)
+  const top = onStep(last)
+  const floor = -low < step ? low : onStep(Math.floor(low / step))
+  const first = Math.ceil(floor / step)
+  const ticks = Array.from({ length: last - first + 1 }, (_, index) =>
+    onStep(first + index),
+  )
+  return { domain: [floor, top], ticks }
+}
+
+/** Drops floating-point residue and negative zero from a tick value. */
+function clean(value: number): number {
+  return Number(value.toPrecision(TICK_PRECISION)) + 0
 }

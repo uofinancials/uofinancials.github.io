@@ -10,6 +10,7 @@ import { useMemo } from 'react'
 import { DepartmentBudgetSection } from '@/components/departments/budget-section'
 import { DepartmentJobsSection } from '@/components/departments/jobs-section'
 import { DepartmentTable } from '@/components/departments/table'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
@@ -156,11 +157,14 @@ function DepartmentHeader({
   links: { canEliminate: boolean; hasPayChanges: boolean }
 }) {
   return (
-    <header className="space-y-2">
-      <h1 className="text-title">
-        {profile.name}{' '}
-        <span className="text-muted-foreground">{profile.code}</span>
-      </h1>
+    <PageHeader
+      title={
+        <>
+          {profile.name}{' '}
+          <span className="text-muted-foreground">{profile.code}</span>
+        </>
+      }
+    >
       <p className="text-sm text-muted-foreground">
         {profile.isArea ? 'College or VP area' : 'Department'}
         {profile.area && (
@@ -189,7 +193,7 @@ function DepartmentHeader({
         <p className="text-sm text-muted-foreground">{SPONSORED_NOTE}</p>
       )}
       <DepartmentLinks code={profile.code} isArea={profile.isArea} {...links} />
-    </header>
+    </PageHeader>
   )
 }
 

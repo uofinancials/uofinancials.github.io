@@ -1,4 +1,5 @@
 import { type KeyboardEvent, useId, useState } from 'react'
+import { CLEAR_BUTTON_CLASS } from '@/components/fields/button-class'
 import { type CompareOption, matchOptions } from '@/lib/trends/compare'
 import { cn } from '@/lib/utils'
 import { CONTROL_CLASS, FIELD_CLASS } from './select-field'
@@ -184,7 +185,7 @@ export function OptionSearch({
             <button
               type="button"
               aria-label={`Clear ${label}`}
-              className="rounded-full px-2 text-muted-foreground hover:bg-background hover:text-foreground"
+              className={CLEAR_BUTTON_CLASS}
               onClick={onClear}
             >
               ×

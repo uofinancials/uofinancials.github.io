@@ -1,5 +1,6 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { useLoaderData, useNavigate, useSearch } from '@tanstack/react-router'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { CompareSection } from '@/components/trends/compare-section'
 import { GroupMapping } from '@/components/trends/group-mapping'
@@ -163,16 +164,14 @@ export function TrendsPage() {
     })
   return (
     <div className="space-y-8">
-      <div className="max-w-3xl space-y-3">
-        <h1 className="text-title">
-          How University of Oregon jobs and pay have changed since Fall{' '}
-          {view.from}
-        </h1>
-        <p className="text-muted-foreground">
+      <PageHeader
+        title={`How University of Oregon jobs and pay have changed since Fall ${view.from}`}
+      >
+        <p>
           Jobs, pay, and salary spend from the Fall census salary reports UO
           publishes, grouped so each group means the same jobs in every year.
         </p>
-      </div>
+      </PageHeader>
       <ReportFilters
         years={years}
         range={{ from: view.from, to: view.to }}

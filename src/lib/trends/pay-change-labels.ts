@@ -46,6 +46,12 @@ export function isRankRename(
   )
 }
 
+/** The censuses the renames span: the one before the first rename to the last. */
+export const RENAME_RANGE = {
+  from: Math.min(...RANK_RENAMES.map(({ toYear }) => toYear)) - 1,
+  to: Math.max(...RANK_RENAMES.map(({ toYear }) => toYear)),
+}
+
 /** Words in published job titles read as the same word, by the form they are compared as. */
 export const TITLE_ABBREVIATIONS: Record<string, string[]> = {
   '1': ['i'],

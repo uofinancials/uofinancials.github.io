@@ -33,7 +33,7 @@ export function PersonRatesFigure({
   return (
     <PageSection title="Salary rate by job">
       {years.length < MIN_LINE_POINTS ? (
-        <p>
+        <p className="text-sm text-muted-foreground">
           Only the Fall {years[0]} census lists this name, so there is no line
           to draw; the table below has the rates.
         </p>
@@ -46,7 +46,7 @@ export function PersonRatesFigure({
           label={label}
         />
       )}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Each job line is its published annual salary rate, gapped where a census
         lists no such job; a job is its job type and pay department, so a new
         title in the same job continues its line. A rate is the full-time annual
@@ -54,7 +54,7 @@ export function PersonRatesFigure({
         the job history shows.
       </p>
       {medianGroups.length > 0 && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {MEDIAN_SERIES} is computed by this site: the median published rate of
           every primary job in that census with the same position class or rank
           and the same 9- or 12-month term as this name's primary job,

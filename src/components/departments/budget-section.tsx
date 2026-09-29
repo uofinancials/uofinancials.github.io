@@ -14,13 +14,13 @@ import type {
   BudgetBreakdown,
   DepartmentBudget,
 } from '@/lib/departments/budget'
-import { budgetYearLabel } from '@/lib/departments/search'
+import { budgetYearLabel, budgetYearTick } from '@/lib/departments/search'
 import {
   formatCompactDollars,
   formatDollars,
   formatOrBlank,
 } from '@/lib/shared/format'
-import { cn, NUMBER_CELL } from '@/lib/utils'
+import { cn, NUMBER_CELL, WRAP_CELL } from '@/lib/utils'
 
 const BREAKDOWN_OPTIONS = [
   ['account', 'Account group'],
@@ -30,6 +30,40 @@ const BUDGET_NOTE =
   'Figures are UO’s Total Expenditure Budget as published: a plan, not spending. They include budget reserves, internal sales reimbursements, and transfers, and exclude sponsored research, plant, loan, and agency funds.'
 const COMPUTED =
   'each figure sums the published rows for the unit, or for every unit the area lists that year, over funds and posting periods. Account groups are this site’s grouping of UO’s account types; the table lists the types in each.'
+
+const PANELS_NOTE =
+  'One chart per line, each on its own scale; the table below has the figures.'
+
+/** One small chart per budget line, each on its own scale, so a small line is not flattened by a large one. */
+function BudgetPanels({
+  budget,
+  title,
+}: {
+  budget: DepartmentBudget
+  title: string
+}) {
+  const labels = budget.years.map(budgetYearTick)
+  return (
+    <>
+      <p className="text-sm text-muted-foreground">{PANELS_NOTE}</p>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {budget.series.map((line) => (
+          <div key={line.key} className="space-y-1">
+            <h3 className="text-sm font-medium">{line.key}</h3>
+            <SeriesChart
+              labels={labels}
+              series={[line]}
+              format={formatDollars}
+              formatAxis={formatCompactDollars}
+              label={`${title}: ${line.key}`}
+              className="h-48"
+            />
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
 
 type BudgetTableRow = {
   key: string
@@ -95,7 +129,7 @@ function BudgetTable({
           <TableRow key={key}>
             <TableHead
               scope="row"
-              className={cn(!isGroup && 'pl-6 font-normal')}
+              className={cn(WRAP_CELL, !isGroup && 'pl-6 font-normal')}
             >
               {label}
             </TableHead>
@@ -137,13 +171,7 @@ export function DepartmentBudgetSection({
         options={BREAKDOWN_OPTIONS}
         onSelect={onBreakdown}
       />
-      <SeriesChart
-        labels={budget.years.map(budgetYearLabel)}
-        series={budget.series}
-        format={formatDollars}
-        formatAxis={formatCompactDollars}
-        label={title}
-      />
+      <BudgetPanels budget={budget} title={title} />
       <BudgetTable budget={budget} breakdown={breakdown} />
       {first && last && (
         <Sources

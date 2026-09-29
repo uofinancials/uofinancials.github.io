@@ -1,4 +1,4 @@
-import { ReferenceLine } from 'recharts'
+import { ReferenceLine, usePlotArea, useYAxisScale } from 'recharts'
 import type { ChartMarker } from '@/lib/shared/series'
 
 const MARKER_DASH = '4 4'
@@ -33,10 +33,33 @@ export function markerLine(marker: ChartMarker) {
       strokeDasharray={MARKER_DASH}
       label={{
         value: marker.label,
-        position: 'insideBottomRight',
+        position: 'insideTopRight',
         fill: 'var(--foreground)',
         fontSize: 12,
       }}
+    />
+  )
+}
+
+/** A legend entry's text in the text color; its swatch keeps the series color. */
+export function legendText(value: string) {
+  return <span className="text-foreground">{value}</span>
+}
+
+/** Tints the plot below zero across its full width, not only between the first and last points. */
+export function BelowZeroBand() {
+  const plot = usePlotArea()
+  const yScale = useYAxisScale()
+  const zero = yScale?.(0)
+  if (!plot || zero === undefined) return null
+  const bottom = plot.y + plot.height
+  return (
+    <rect
+      x={plot.x}
+      y={zero}
+      width={plot.width}
+      height={Math.max(0, bottom - zero)}
+      fill="var(--muted)"
     />
   )
 }

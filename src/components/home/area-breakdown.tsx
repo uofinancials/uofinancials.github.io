@@ -12,6 +12,7 @@ import type { AreaFigure } from '@/lib/departments/table'
 import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home/home'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
 import { shareOfLargest } from '@/lib/shared/series'
+import { cn, WRAP_CELL } from '@/lib/utils'
 
 const SHOWN_AREAS = 10
 
@@ -57,10 +58,7 @@ export function AreaBreakdown({
         <TableBody>
           {bars.map((area, index) => (
             <TableRow key={area.code ?? 'unassigned'}>
-              <TableHead
-                scope="row"
-                className="min-w-40 font-normal whitespace-normal"
-              >
+              <TableHead scope="row" className={cn(WRAP_CELL, 'font-normal')}>
                 {area.code === null ? (
                   area.name
                 ) : (

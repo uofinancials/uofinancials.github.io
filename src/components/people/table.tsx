@@ -32,9 +32,7 @@ export function PeopleTable({
   )
   return (
     <Table>
-      <TableCaption className="mt-0 mb-2 caption-top text-left">
-        Fall {view.year} jobs
-      </TableCaption>
+      <TableCaption>Fall {view.year} jobs</TableCaption>
       <TableHeader>
         <TableRow>
           <SortHeader label="Name" sort="name" view={view} onSort={onSort} />

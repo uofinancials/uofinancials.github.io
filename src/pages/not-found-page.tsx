@@ -1,14 +1,14 @@
 import { Link } from '@tanstack/react-router'
+import { PageHeader } from '@/components/layout/page-header'
 
 export function NotFoundPage() {
   return (
-    <div className="space-y-2">
-      <h1 className="text-title">Page not found</h1>
+    <PageHeader title="Page not found">
       <p>
         <Link to="/" className="link">
           Go to the home page
         </Link>
       </p>
-    </div>
+    </PageHeader>
   )
 }

@@ -1,7 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import {
+  TAB_LINK_CLASS,
+  TAB_LIST_CLASS,
+} from '@/components/layout/nav-link-class'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
+import { BackButton } from '@/components/person/back-button'
 import { PersonCards } from '@/components/person/cards'
 import { PersonHistoryTable } from '@/components/person/history-table'
 import { PersonRatesFigure } from '@/components/person/rates-figure'
@@ -24,11 +29,15 @@ import { cn } from '@/lib/utils'
 const SAME_NAME_NOTE =
   'UO publishes no person identifier. Records are grouped by the name exactly as published, so one name may be more than one person, and one person may appear under more than one name.'
 
+const MIN_YEAR_TABS = 2
+
 function YearTabs({ person, year }: { person: Person; year: number }) {
+  const years = personYearsOf(person)
+  if (years.length < MIN_YEAR_TABS) return null
   return (
     <nav aria-label="Census year">
-      <ul className="flex flex-wrap gap-1 border-b">
-        {personYearsOf(person).map((entry) => (
+      <ul className={TAB_LIST_CLASS}>
+        {years.map((entry) => (
           <li key={entry.year}>
             <Link
               to="/people/$name"
@@ -58,7 +67,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         caption={`${name}, Fall ${entry.year}`}
       />
       {[...departments].map(([code, department]) => (
-        <p key={code} className="flex flex-wrap gap-x-4 text-sm">
+        <p key={code} className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <Link className="link" to="/departments/$code" params={{ code }}>
             {department} ({code})
           </Link>
@@ -79,7 +88,7 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         </p>
       ))}
       {positionsOf(entry.records).map(({ position, label }) => (
-        <p key={position} className="flex flex-wrap gap-x-4 text-sm">
+        <p key={position} className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <Link
             className="link"
             to="/people"
@@ -119,8 +128,12 @@ export function PersonView({
   const entry = run?.years.find((candidate) => candidate.year === year)
   return (
     <section className="space-y-6">
-      <h1 className="text-title">{person.name}</h1>
-      <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
+      <PageHeader title={person.name}>
+        <p>
+          <BackButton />
+        </p>
+        <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
+      </PageHeader>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />
       <YearTabs person={person} year={year} />

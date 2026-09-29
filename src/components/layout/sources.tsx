@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { CitedSourceText } from '@/components/layout/cited-source-text'
+import { SUMMARY_CLASS } from '@/components/layout/disclosure-class'
 import { manifestQuery } from '@/data/queries'
 import {
   citeSource,
@@ -48,7 +49,7 @@ export function Sources({
 }) {
   return (
     <details className="text-xs text-muted-foreground">
-      <summary className="w-fit cursor-pointer text-sm hover:text-foreground">
+      <summary className={SUMMARY_CLASS}>
         {sourcesSummary(sources, methods.length > 0)}
       </summary>
       <ul className="mt-2 space-y-2">

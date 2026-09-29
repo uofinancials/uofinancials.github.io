@@ -3,6 +3,7 @@ import { SortHeader } from '@/components/fields/sort-header'
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -17,7 +18,7 @@ import {
   formatOrBlank,
 } from '@/lib/shared/format'
 import type { SortDirection } from '@/lib/shared/sort'
-import { NUMBER_CELL } from '@/lib/utils'
+import { cn, NUMBER_CELL, WRAP_CELL } from '@/lib/utils'
 
 const FIGURES: {
   label: string
@@ -88,9 +89,7 @@ export function DepartmentTable({
 }) {
   return (
     <Table>
-      <caption className="mb-2 caption-top text-left font-medium">
-        {caption}
-      </caption>
+      <TableCaption>{caption}</TableCaption>
       <TableHeader>
         <TableRow>
           <SortHeader label="Name" sort="name" view={view} onSort={onSort} />
@@ -112,10 +111,7 @@ export function DepartmentTable({
       <TableBody>
         {rows.map((row) => (
           <TableRow key={row.code ?? 'unassigned'}>
-            <TableHead
-              scope="row"
-              className="min-w-40 font-normal whitespace-normal"
-            >
+            <TableHead scope="row" className={cn(WRAP_CELL, 'font-normal')}>
               <CodeLink code={row.code} name={row.name} />{' '}
               <span className="text-muted-foreground">{row.code}</span>
             </TableHead>

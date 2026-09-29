@@ -34,7 +34,9 @@ test('pay changes show each census pair’s median by group, the change counts, 
   await expect(main).toContainText('Teaching Assistant Professor')
   await openSources(page)
   await expect(
-    page.getByRole('link', { name: 'Fall 2014-2025 Census salary reports' }),
+    page
+      .getByRole('link', { name: 'Fall 2014-2025 Census salary reports' })
+      .first(),
   ).toBeVisible()
   await page.goto('/trends/pay-changes?dept=000000')
   await expect(main).toContainText('Pay department: 000000')
@@ -117,4 +119,19 @@ test('changing a filter far down the page keeps the reader where they are', asyn
   await pair.selectOption('2021')
   await expect(page).toHaveURL(/pair=2021/)
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+})
+
+test('the renames and abbreviations close with their source and method', async ({
+  page,
+}) => {
+  await page.goto('/trends/pay-changes')
+  const section = page.locator('section', {
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Renames and abbreviations',
+    }),
+  })
+  await expect(section.locator('details > summary')).toHaveText(
+    /^Sources? and method/,
+  )
 })

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { IndexFigure } from '@/components/charts/index-figure'
+import { CLEAR_BUTTON_CLASS } from '@/components/fields/button-class'
 import { OptionSearch } from '@/components/fields/option-search'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
@@ -67,7 +68,7 @@ function CompareTable({
       <GroupTable
         caption={caption}
         heading="Name"
-        columns={['Jobs, last census', 'FTE', 'Salary spend']}
+        columns={['Jobs, last census', 'FTE change', 'Salary spend change']}
         rows={[
           ...compareRows(totals).map((row) =>
             compareRow(row, { isTotal: true, selected }),
@@ -132,7 +133,7 @@ function CompareWith({
           <button
             type="button"
             aria-label={`Remove ${name}`}
-            className="rounded-full px-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className={CLEAR_BUTTON_CLASS}
             onClick={() =>
               onChange({ with: codes.filter((listed) => listed !== code) })
             }

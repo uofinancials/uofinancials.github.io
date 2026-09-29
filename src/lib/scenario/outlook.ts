@@ -3,7 +3,9 @@ import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
 import {
   FUND_BALANCE_SERIES,
+  FUND_BALANCE_SLOT,
   RUN_RATE_SERIES,
+  RUN_RATE_SLOT,
   sectionTotal,
 } from '../budget/outlook.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
@@ -194,25 +196,49 @@ export function shortfallMarker(rows: OutlookRow[]): ChartMarker | undefined {
   )
 }
 
-/** The outlook chart's fiscal-year labels, its published lines as baselines, and its with-savings lines. */
+export const RUN_RATE_WITH_SAVINGS_SERIES = 'Run rate with savings'
+export const FUND_BALANCE_WITH_SAVINGS_SERIES = 'Fund balance with savings'
+
+/** The outlook chart's fiscal-year labels, its published lines as baselines, and its with-savings lines in their measure's palette slot. */
 export function scenarioSeries(rows: OutlookRow[]): {
   labels: string[]
-  series: { key: string; values: number[]; isBaseline?: boolean }[]
+  series: {
+    key: string
+    values: number[]
+    slot: number
+    isBaseline?: boolean
+  }[]
 } {
-  const line = (key: string, pick: (row: OutlookRow) => number) => ({
-    key,
-    values: rows.map(pick),
-  })
+  const line = (
+    key: string,
+    slot: number,
+    pick: (row: OutlookRow) => number,
+  ) => ({ key, slot, values: rows.map(pick) })
   return {
     labels: rows.map((row) => fiscalYearLabel(row.fiscalYear)),
     series: [
-      { ...line(RUN_RATE_SERIES, (row) => row.runRateCents), isBaseline: true },
-      line('Run rate with savings', (row) => row.remainingRunRateCents),
       {
-        ...line(FUND_BALANCE_SERIES, (row) => row.endingFundBalanceCents),
+        ...line(RUN_RATE_SERIES, RUN_RATE_SLOT, (row) => row.runRateCents),
         isBaseline: true,
       },
-      line('Fund balance with savings', (row) => row.remainingFundBalanceCents),
+      line(
+        RUN_RATE_WITH_SAVINGS_SERIES,
+        RUN_RATE_SLOT,
+        (row) => row.remainingRunRateCents,
+      ),
+      {
+        ...line(
+          FUND_BALANCE_SERIES,
+          FUND_BALANCE_SLOT,
+          (row) => row.endingFundBalanceCents,
+        ),
+        isBaseline: true,
+      },
+      line(
+        FUND_BALANCE_WITH_SAVINGS_SERIES,
+        FUND_BALANCE_SLOT,
+        (row) => row.remainingFundBalanceCents,
+      ),
     ],
   }
 }

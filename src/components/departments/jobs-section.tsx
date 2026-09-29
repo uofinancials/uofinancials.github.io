@@ -7,6 +7,7 @@ import { TrendsFigure } from '@/components/trends/figure'
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -47,9 +48,7 @@ const AREA_NOTE = `${AREA_PLACEMENT_METHOD} The table shows how many were placed
 function ClassTable({ kind, rows }: { kind: StaffKind; rows: ClassRow[] }) {
   return (
     <Table>
-      <caption className="mb-2 caption-top text-left font-medium">
-        {KIND_TITLES[kind]}
-      </caption>
+      <TableCaption>{KIND_TITLES[kind]}</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead scope="col">
@@ -97,9 +96,7 @@ function ClassTable({ kind, rows }: { kind: StaffKind; rows: ClassRow[] }) {
 function PlacementTable({ placements }: { placements: AreaPlacement[] }) {
   return (
     <Table>
-      <caption className="mb-2 caption-top text-left font-medium">
-        How the area’s jobs were placed
-      </caption>
+      <TableCaption>How the area’s jobs were placed</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead scope="col">Fall</TableHead>

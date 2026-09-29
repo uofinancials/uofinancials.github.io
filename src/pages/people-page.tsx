@@ -1,7 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { TotalsTable } from '@/components/charts/totals-table'
-import { TAB_LINK_CLASS } from '@/components/layout/nav-link-class'
+import {
+  TAB_LINK_CLASS,
+  TAB_LIST_CLASS,
+} from '@/components/layout/nav-link-class'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { CensusControls } from '@/components/people/census-controls'
@@ -38,7 +42,7 @@ const COMPUTED = `the list shows each job as published, in the order chosen, tie
 function ChartTabs({ chart }: { chart: PeopleChart }) {
   return (
     <nav aria-label="Chart">
-      <ul className="flex flex-wrap gap-1 border-b">
+      <ul className={TAB_LIST_CLASS}>
         {PEOPLE_CHARTS.map((option) => (
           <li key={option}>
             <Link
@@ -97,10 +101,10 @@ function SummaryChart({
 function Pager({ page, pageCount }: { page: number; pageCount: number }) {
   const turn = (to: number, text: string) =>
     to < 1 || to > pageCount ? (
-      <span className="text-muted-foreground">{text}</span>
+      <span className="py-1 text-muted-foreground">{text}</span>
     ) : (
       <Link
-        className="link"
+        className="link py-1"
         from="/people"
         to="/people"
         search={(previous) => ({ ...previous, page: to })}
@@ -109,7 +113,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
       </Link>
     )
   return (
-    <nav aria-label="Pages" className="flex gap-4 text-sm">
+    <nav aria-label="Pages" className="flex items-center gap-4 text-sm">
       {turn(page - 1, 'Previous')}
       <span className="tabular-nums">
         Page {formatCount(page)} of {formatCount(pageCount)}
@@ -221,11 +225,13 @@ export function PeoplePage() {
   return (
     <div className="space-y-6">
       <meta name="robots" content="noindex" />
-      <h1 className="text-title">People, Fall {view.year}</h1>
-      <p className="text-sm text-muted-foreground">
-        Every job the Fall {view.year} Census salary reports publish, by name,
-        as published. {RATE_NOTE}
-      </p>
+      <PageHeader title={`People, Fall ${view.year}`}>
+        <p>
+          Every job the Fall {view.year} Census salary reports publish, by name,
+          as published.
+        </p>
+        <p className="text-sm text-muted-foreground">{RATE_NOTE}</p>
+      </PageHeader>
       <PeopleControls
         view={view}
         titles={census.titles}
@@ -254,24 +260,14 @@ export function PeoplePage() {
         <OtherCensusNames q={view.q} year={view.year} />
       )}
       {matching.jobs.length > 0 && (
-        <>
-          <JobsSection
-            sorted={matching.sorted}
-            view={view}
-            onSort={handleSort}
-          />
-          <CategorySpend totals={matching.categories} year={view.year} />
-        </>
+        <JobsSection sorted={matching.sorted} view={view} onSort={handleSort} />
       )}
       <Sources
-        sources={[
-          {
-            kind: 'fall',
-            year: view.year,
-            computed: COMPUTED,
-          },
-        ]}
+        sources={[{ kind: 'fall', year: view.year, computed: COMPUTED }]}
       />
+      {matching.jobs.length > 0 && (
+        <CategorySpend totals={matching.categories} year={view.year} />
+      )}
     </div>
   )
 }

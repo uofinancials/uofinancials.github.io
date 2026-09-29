@@ -49,15 +49,17 @@ test('the nav lists the sections in order and marks the current one apart from t
   await expect(other).not.toHaveAttribute('aria-current')
   const styleOf = (link: typeof current) =>
     link.evaluate((element) => {
-      const { color, fontWeight } = getComputedStyle(element)
-      return { color, fontWeight }
+      const { color, textDecorationLine } = getComputedStyle(element)
+      return { color, textDecorationLine }
     })
   const [currentStyle, otherStyle] = await Promise.all([
     styleOf(current),
     styleOf(other),
   ])
   expect(currentStyle.color).not.toBe(otherStyle.color)
-  expect(currentStyle.fontWeight).not.toBe(otherStyle.fontWeight)
+  expect(currentStyle.textDecorationLine).not.toBe(
+    otherStyle.textDecorationLine,
+  )
 })
 
 test('an unknown path shows the not-found page', async ({ page }) => {
@@ -331,4 +333,21 @@ test('the people list does not scroll sideways at 360px', async ({ page }) => {
   ).toBeVisible()
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
+})
+
+test('the people list cites its census before the EEO section begins', async ({
+  page,
+}) => {
+  await page.goto('/people')
+  const eeo = page.locator('section', {
+    has: page.getByRole('heading', {
+      level: 2,
+      name: 'Salary spend by EEO category',
+    }),
+  })
+  await expect(eeo).toBeVisible()
+  await expect(
+    eeo.locator('xpath=preceding-sibling::*[1]').locator('summary'),
+  ).toHaveText(/^Sources? and method/)
+  await expect(eeo.locator('xpath=following-sibling::details')).toHaveCount(0)
 })

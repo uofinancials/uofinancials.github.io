@@ -1,13 +1,18 @@
 import { memo, useId } from 'react'
 import { RemovableFilter } from '@/components/fields/removable-filter'
 import { SearchField } from '@/components/fields/search-field'
-import { SelectField } from '@/components/fields/select-field'
+import {
+  CONTROL_CLASS,
+  FIELD_CLASS,
+  SelectField,
+} from '@/components/fields/select-field'
 import {
   type PeopleView,
   rateRangeDollars,
   typedFilters,
 } from '@/lib/people/list'
 import type { PeopleSearch } from '@/lib/people/search'
+import { cn } from '@/lib/utils'
 
 const ALL = 'all'
 
@@ -21,14 +26,14 @@ function DollarField({
   onChange: (value: number | undefined) => void
 }) {
   return (
-    <label className="flex w-36 flex-col gap-1 text-sm">
+    <label className={FIELD_CLASS}>
       <span className="text-muted-foreground">{label}</span>
       <input
         type="number"
         inputMode="numeric"
         min={0}
         step={1000}
-        className="rounded-md border bg-background px-2 py-1"
+        className={cn(CONTROL_CLASS, 'w-36')}
         value={value ?? ''}
         onChange={(event) => {
           const dollars = Math.round(event.target.valueAsNumber)
@@ -68,17 +73,9 @@ function TitleField({
 }) {
   const listId = useId()
   return (
-    <label className="flex max-w-sm flex-col gap-1 text-sm">
-      <span className="text-muted-foreground">Title</span>
-      <input
-        type="search"
-        list={listId}
-        className="rounded-md border bg-background px-2 py-1"
-        value={value}
-        onChange={(event) => onSearch(event.target.value || undefined)}
-      />
+    <SearchField label="Title" value={value} list={listId} onSearch={onSearch}>
       <TitleOptions id={listId} titles={titles} />
-    </label>
+    </SearchField>
   )
 }
 

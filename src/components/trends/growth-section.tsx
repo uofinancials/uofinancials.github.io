@@ -1,5 +1,6 @@
 import { IndexFigure } from '@/components/charts/index-figure'
 import { RadioField } from '@/components/fields/radio-field'
+import { SUMMARY_CLASS } from '@/components/layout/disclosure-class'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { TrendsTable } from '@/components/trends/table'
@@ -72,7 +73,6 @@ export function GrowthSection({
           name="view"
           value={view}
           options={GROWTH_VIEW_OPTIONS}
-          isSegmented
           onSelect={(value) => onChange({ view: value })}
         />
       </div>
@@ -111,7 +111,7 @@ export function GrowthSection({
         }))}
       />
       <details className="text-sm">
-        <summary className="w-fit cursor-pointer text-muted-foreground hover:text-foreground">
+        <summary className={SUMMARY_CLASS}>
           {METRIC_INFO[metric].label} by group in every census
         </summary>
         <TrendsTable

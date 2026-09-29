@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import {
   Table,
@@ -17,7 +18,7 @@ import { listCitedDocuments, sourceAnchor } from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
-const HASH_CELL = 'font-mono text-xs'
+const HASH_CELL = 'min-w-48 font-mono text-xs break-all whitespace-normal'
 const NOT_STATED = 'not stated'
 
 function SourceTable({
@@ -213,15 +214,14 @@ export function SourcesPage() {
   const [firstBudget] = manifest.budget
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-title">Sources</h1>
+      <PageHeader title="Sources">
         <p>
           Every figure on this site comes from reports the University of Oregon
           publishes for public consumption. The site extracts the figures into
           its own files and links to the originals; it does not rehost them.
           Figures the site computes are labelled as computed.
         </p>
-      </div>
+      </PageHeader>
       <PageSection title="Fall Census salary reports">
         {firstFall && (
           <p>

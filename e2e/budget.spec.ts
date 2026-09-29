@@ -49,3 +49,17 @@ test('the budget page does not scroll sideways at 360px', async ({ page }) => {
   const width = await page.evaluate(() => document.documentElement.scrollWidth)
   expect(width).toBeLessThanOrEqual(360)
 })
+
+test('on a phone the alternative cases show their first figure beside the wrapped case name', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/budget')
+  const figure = page
+    .getByRole('row', { name: /^100 fewer nonresident/ })
+    .getByRole('cell')
+    .first()
+  const box = await figure.boundingBox()
+  expect(box).not.toBeNull()
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390)
+})

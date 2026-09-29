@@ -1,3 +1,4 @@
+import { SUMMARY_CLASS } from '@/components/layout/disclosure-class'
 import { LIST_FIELDS } from '@/lib/people/person-fields'
 import type { ListColumn } from '@/lib/people/search'
 
@@ -19,7 +20,7 @@ export function ColumnPicker({
     )
   return (
     <details className="text-sm">
-      <summary className="cursor-pointer">Columns</summary>
+      <summary className={SUMMARY_CLASS}>Columns</summary>
       <fieldset className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
         <legend className="sr-only">Columns shown</legend>
         {LIST_FIELDS.map(({ column, label }) => (
