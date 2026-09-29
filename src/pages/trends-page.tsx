@@ -1,10 +1,5 @@
 import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
-import {
-  useLoaderData,
-  useNavigate,
-  useRouter,
-  useSearch,
-} from '@tanstack/react-router'
+import { useLoaderData, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { CompareSection } from '@/components/trends/compare-section'
@@ -18,12 +13,12 @@ import { SinceSection } from '@/components/trends/since-section'
 import { SplitSection } from '@/components/trends/split-section'
 import { areaTrendsQuery, summaryQuery, toData } from '@/data/queries'
 import { useIsWide } from '@/hooks/use-is-wide'
+import { usePreloadedNavigate } from '@/hooks/use-preloaded-navigate'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import type { SectionSource } from '@/lib/shared/citation'
-import { tabTitleOf } from '@/lib/shared/format'
 import { compareOptions } from '@/lib/trends/compare'
 import { staffingRows } from '@/lib/trends/report'
-import { reportHeading, reportTitleParts } from '@/lib/trends/report-text'
+import { reportHeading, reportTabTitle } from '@/lib/trends/report-text'
 import {
   areaOfCode,
   comparedCodes,
@@ -161,29 +156,24 @@ function TabPanel({
 
 /** The trends report: one set of filters, the headline figures, and a tab for each question about the Fall censuses. */
 export function TrendsPage() {
-  const navigate = useNavigate({ from: '/trends' })
-  const router = useRouter()
-  const search = useSearch({ from: '/trends' })
+  const navigate = usePreloadedNavigate()
   const report = useReport()
   const isWide = useIsWide()
   const { years, summary, view, scope, trends, ratios } = report
   const first = trends.total[0]
   const last = trends.total.at(-1)
-  // Loading the next view's files first keeps this page, and the focus in it, in place of the router's pending page.
-  const handleChange = async (patch: ReportSearch) => {
-    const next = {
+  const handleChange = (patch: ReportSearch) =>
+    navigate({
+      from: '/trends',
       to: '/trends',
-      search: { ...search, ...patch },
+      search: (previous) => ({ ...previous, ...patch }),
       resetScroll: false,
-    } as const
-    await router.preloadRoute(next)
-    await navigate(next)
-  }
+    })
   return (
     <div className="space-y-8">
       <PageHeader
         title={reportHeading(scope.name, view.from)}
-        tabTitle={tabTitleOf(...reportTitleParts(view.tab, scope.name))}
+        tabTitle={reportTabTitle(view.tab, scope.name)}
       >
         <p>
           Jobs, pay, and salary spend from the Fall census salary reports UO

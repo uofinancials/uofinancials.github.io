@@ -20,6 +20,7 @@ import { PeopleTable } from '@/components/people/table'
 import type { FallRecord } from '@/data/fall'
 import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { type Matching, usePeople } from '@/hooks/use-people'
+import { usePreloadedNavigate } from '@/hooks/use-preloaded-navigate'
 import { RATE_NOTE, type SalaryBin } from '@/lib/census/salary-distribution'
 import { type CategoryTotals, SPEND_METHOD } from '@/lib/census/totals'
 import {
@@ -217,10 +218,12 @@ function JobsSection({
 }
 
 export function PeoplePage() {
-  const navigate = useNavigate({ from: '/people' })
+  const navigate = usePreloadedNavigate()
   const { years, view, census, matching } = usePeople()
   const change = (patch: PeopleSearch, replace = false) =>
     navigate({
+      from: '/people',
+      to: '/people',
       search: (previous) => ({ ...previous, ...patch, page: undefined }),
       replace,
       resetScroll: false,

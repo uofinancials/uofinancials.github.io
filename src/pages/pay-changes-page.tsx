@@ -1,10 +1,5 @@
 import { useSuspenseQueries } from '@tanstack/react-query'
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useSearch,
-} from '@tanstack/react-router'
+import { Link, useLoaderData, useSearch } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
 import { TrendsControls } from '@/components/trends/controls'
@@ -13,6 +8,7 @@ import { censusYearOf } from '@/data/fall'
 import { fallYearQuery, toData } from '@/data/queries'
 import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
 import { usePayChanges } from '@/hooks/use-pay-changes'
+import { usePreloadedNavigate } from '@/hooks/use-preloaded-navigate'
 import { areaTrendFilter } from '@/lib/departments/codes'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import { peerKeyFor } from '@/lib/people/peer-group'
@@ -79,7 +75,7 @@ function usePayChangesView() {
 
 /** Continuing jobs' changes in salary rate between census pairs, for a group, staff kind, department, area, or class or rank. */
 export function PayChangesPage() {
-  const navigate = useNavigate({ from: '/trends/pay-changes' })
+  const navigate = usePreloadedNavigate()
   const { years, view, names, changes, area } = usePayChangesView()
   const filterSources: SectionSource[] = area
     ? [
@@ -92,6 +88,8 @@ export function PayChangesPage() {
     : []
   const handleChange = (patch: PayChangesSearch) =>
     navigate({
+      from: '/trends/pay-changes',
+      to: '/trends/pay-changes',
       search: (previous) => ({ ...previous, ...patch }),
       resetScroll: false,
     })

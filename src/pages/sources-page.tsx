@@ -147,7 +147,7 @@ function RateSources({ rates }: { rates: NonNullable<Manifest['rates']> }) {
         <TableBody>
           {rates.pages.map((page) => (
             <TableRow key={page.url}>
-              <TableCell className="break-all">
+              <TableCell>
                 <a className="link" href={page.url}>
                   {page.url}
                 </a>

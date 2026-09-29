@@ -17,7 +17,11 @@ import {
 import type { FilterChip } from '../shared/filter-chip.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from '../shared/format.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
-import { staffKindLabel } from '../trends/search.ts'
+import {
+  optionLabel,
+  STAFF_KIND_OPTIONS,
+  TERM_OPTIONS,
+} from '../trends/search.ts'
 import { measureJobs } from '../trends/trends.ts'
 import { positionOf } from './peer-group.ts'
 import { titleOf } from './person-fields.ts'
@@ -210,7 +214,6 @@ export function binRangeSearch({
   })
 }
 
-/** Each typed filter of the view, as a chip's text and the search that clears it. */
 type PeopleChip = FilterChip<PeopleSearch>
 
 function typedFilters(view: PeopleView): PeopleChip[] {
@@ -264,13 +267,13 @@ function censusFilters(
   }
   if (view.kind !== 'all') {
     chips.push({
-      text: `Staff: ${staffKindLabel(view.kind)}`,
+      text: `Staff: ${optionLabel(STAFF_KIND_OPTIONS, view.kind)}`,
       clear: { kind: undefined },
     })
   }
   if (view.term !== null) {
     chips.push({
-      text: `Term: ${view.term} months`,
+      text: `Term: ${optionLabel(TERM_OPTIONS, String(view.term))}`,
       clear: { term: undefined },
     })
   }

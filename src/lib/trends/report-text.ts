@@ -4,6 +4,7 @@ import {
   formatList,
   formatRatio,
   formatShare,
+  tabTitleOf,
 } from '../shared/format.ts'
 import { rankByChange } from '../shared/series.ts'
 import { pairLabel } from './pay-change-labels.ts'
@@ -113,7 +114,7 @@ export function reportHeading(scopeName: string, from: number): string {
     : `How jobs and pay have changed in ${scopeName} since Fall ${from}`
 }
 
-/** The parts of the report's browser tab title, most specific first. */
-export function reportTitleParts(tab: ReportTab, scopeName: string): string[] {
-  return [REPORT_TAB_LABELS[tab], scopeName, 'Trends']
+/** The report's browser tab title: the question, then the scope. */
+export function reportTabTitle(tab: ReportTab, scopeName: string): string {
+  return tabTitleOf(REPORT_TAB_LABELS[tab], scopeName, 'Trends')
 }

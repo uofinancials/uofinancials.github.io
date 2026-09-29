@@ -1,5 +1,8 @@
 import { Link, Outlet } from '@tanstack/react-router'
-import { NAV_LINK_CLASS } from '@/components/layout/nav-link-class'
+import {
+  NAV_LINK_CLASS,
+  SCROLL_ROW_CLASS,
+} from '@/components/layout/nav-link-class'
 import { cn } from '@/lib/utils'
 
 const REPO_URL = 'https://github.com/uofinancials/uofinancials.github.io'
@@ -37,7 +40,12 @@ export function SiteLayout() {
             UO Financials
           </Link>
           <nav aria-label="Main" className="w-full md:w-auto">
-            <ul className="scroll-edge -mx-4 flex gap-x-4 overflow-x-auto px-4 pb-2.5 text-sm md:mx-0 md:flex-wrap md:gap-y-1 md:overflow-visible md:px-0 md:pb-0">
+            <ul
+              className={cn(
+                SCROLL_ROW_CLASS,
+                'flex gap-x-4 pb-2.5 text-sm md:flex-wrap md:gap-y-1 md:overflow-visible md:pb-0',
+              )}
+            >
               {NAV_LINKS.map(([to, label]) => (
                 <li key={to}>
                   <Link

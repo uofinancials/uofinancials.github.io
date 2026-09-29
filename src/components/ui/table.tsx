@@ -1,6 +1,10 @@
 import { cn } from 'cn'
 import type * as React from 'react'
 
+/** A table with row headers keeps its first column in view as its numbers scroll sideways, on a paper fill under the row's tint; on a phone that column wraps and carries a hairline. */
+const KEY_COLUMN =
+  'key-cell:sticky key-cell:left-0 key-cell:z-[1] key-cell:bg-background key-cell:bg-[linear-gradient(var(--row-tint),var(--row-tint))] max-md:key-cell:min-w-28 max-md:key-cell:whitespace-normal max-md:key-cell:shadow-[inset_-1px_0_var(--border)]'
+
 function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
@@ -9,19 +13,12 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
     >
       <table
         data-slot="table"
-        className={cn('w-full caption-bottom text-sm', className)}
+        className={cn(`w-full caption-bottom text-sm ${KEY_COLUMN}`, className)}
         {...props}
       />
     </div>
   )
 }
-
-/** A row's tint, drawn by the row and layered over the paper of its sticky first cell. */
-const ROW_TINT = 'bg-(--row-tint)'
-
-/** The first cell stays in view as the numbers scroll sideways; on a phone it wraps and carries a hairline. */
-const KEY_CELL =
-  'first:sticky first:left-0 first:z-[1] first:bg-background first:bg-[linear-gradient(var(--row-tint),var(--row-tint))] max-md:first:min-w-28 max-md:first:whitespace-normal max-md:first:shadow-[inset_-1px_0_var(--border)]'
 
 function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
   return (
@@ -48,7 +45,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<'tfoot'>) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        'border-t [--row-tint:color-mix(in_oklab,var(--muted)_50%,transparent)] font-medium [&>tr]:last:border-b-0',
+        'border-t [--row-tint:var(--row-hover)] font-medium [&>tr]:last:border-b-0',
         className,
       )}
       {...props}
@@ -61,7 +58,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     <tr
       data-slot="table-row"
       className={cn(
-        `border-b transition-colors ${ROW_TINT} hover:[--row-tint:color-mix(in_oklab,var(--muted)_50%,transparent)] has-aria-expanded:[--row-tint:color-mix(in_oklab,var(--muted)_50%,transparent)] data-[state=selected]:[--row-tint:var(--muted)]`,
+        'border-b bg-(--row-tint) transition-colors hover:[--row-tint:var(--row-hover)] has-aria-expanded:[--row-tint:var(--row-hover)] data-[state=selected]:[--row-tint:var(--muted)]',
         className,
       )}
       {...props}
@@ -74,7 +71,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
     <th
       data-slot="table-head"
       className={cn(
-        `h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${KEY_CELL}`,
+        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         className,
       )}
       {...props}
@@ -87,7 +84,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
     <td
       data-slot="table-cell"
       className={cn(
-        `h-10 p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] ${KEY_CELL}`,
+        'h-10 p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         className,
       )}
       {...props}

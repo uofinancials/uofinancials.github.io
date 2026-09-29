@@ -5,7 +5,7 @@ import {
   raisesAnswer,
   ratioAnswer,
   reportHeading,
-  reportTitleParts,
+  reportTabTitle,
   splitAnswer,
   unindexedNote,
 } from './report-text'
@@ -100,9 +100,7 @@ test('the heading and tab title name the scope, and the tab title names the ques
   expect(reportHeading('Arts & Sciences, College of', 2018)).toBe(
     'How jobs and pay have changed in Arts & Sciences, College of since Fall 2018',
   )
-  expect(reportTitleParts('raises', 'Athletics')).toEqual([
-    'What raises did people get?',
-    'Athletics',
-    'Trends',
-  ])
+  expect(reportTabTitle('raises', 'Athletics')).toBe(
+    'What raises did people get? · Athletics · Trends | UO Financials',
+  )
 })

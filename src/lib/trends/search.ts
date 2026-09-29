@@ -32,9 +32,12 @@ export const STAFF_KIND_OPTIONS: [string, string][] = [
   ['unclassified', 'Unclassified'],
 ]
 
-/** A staff kind as the filters name it. */
-export function staffKindLabel(kind: string): string {
-  return STAFF_KIND_OPTIONS.find(([value]) => value === kind)?.[1] ?? kind
+/** An option's value as its select names it. */
+export function optionLabel(
+  options: [string, string][],
+  value: string,
+): string {
+  return options.find(([option]) => option === value)?.[1] ?? value
 }
 
 export const TERM_OPTIONS: [string, string][] = [
@@ -251,17 +254,27 @@ export function payChangeFilters(
   }
   if (view.kind !== 'all') {
     chips.push({
-      text: `Staff: ${staffKindLabel(view.kind)}`,
+      text: `Staff: ${optionLabel(STAFF_KIND_OPTIONS, view.kind)}`,
       clear: { kind: undefined },
     })
   }
-  const named: [string | null, string, PayChangesSearch][] = [
-    [names.dept, 'Pay department', { dept: undefined }],
-    [names.area, 'College or VP area', { area: undefined }],
-    [names.position, 'Class or rank', { position: undefined }],
-  ]
-  for (const [name, label, clear] of named) {
-    if (name !== null) chips.push({ text: `${label}: ${name}`, clear })
+  if (names.dept !== null) {
+    chips.push({
+      text: `Pay department: ${names.dept}`,
+      clear: { dept: undefined },
+    })
+  }
+  if (names.area !== null) {
+    chips.push({
+      text: `College or VP area: ${names.area}`,
+      clear: { area: undefined },
+    })
+  }
+  if (names.position !== null) {
+    chips.push({
+      text: `Class or rank: ${names.position}`,
+      clear: { position: undefined },
+    })
   }
   return chips
 }

@@ -162,6 +162,7 @@ test('the people chart shows the latest census by salary rate, and each filter i
     .getByRole('combobox', { name: 'College or VP area' })
     .selectOption({ label: 'Arts & Sciences, College of' })
   await page.getByRole('combobox', { name: 'Fall census' }).selectOption('2014')
+  await expect(page).toHaveURL(/year=2014/)
   await page.reload()
   await expect(
     page.getByRole('heading', { level: 1, name: 'People, Fall 2014' }),
