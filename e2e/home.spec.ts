@@ -62,6 +62,41 @@ test('the nav lists the sections in order and marks the current one apart from t
   )
 })
 
+test('on a phone the nav links sit on one row under the site name', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/sources')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const links = page.getByRole('navigation', { name: 'Main' }).getByRole('link')
+  const tops = await links.evaluateAll((elements) =>
+    elements.map((element) => element.getBoundingClientRect().top),
+  )
+  expect(new Set(tops).size).toBe(1)
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(360)
+})
+
+test('the first tab stop skips to the page content', async ({ page }) => {
+  await page.goto('/sources')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.keyboard.press('Tab')
+  const skip = page.getByRole('link', { name: 'Skip to content' })
+  await expect(skip).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('main')).toBeFocused()
+})
+
+test('each page names itself in the browser tab', async ({ page }) => {
+  await page.goto('/sources')
+  await expect(page).toHaveTitle('Sources | UO Financials')
+  await page.goto('/departments/223100')
+  await expect(page).toHaveTitle(/ 223100 \| UO Financials$/)
+  await page.getByRole('link', { name: 'UO Financials', exact: true }).click()
+  await expect(page).toHaveTitle(/^UO Financials \| An independent look/)
+})
+
 test('an unknown path shows the not-found page', async ({ page }) => {
   await page.goto('/no-such-page')
   await expect(

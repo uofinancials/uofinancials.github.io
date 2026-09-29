@@ -35,6 +35,7 @@ import {
   latestTableYears,
   sortRows,
 } from '@/lib/departments/table'
+import { tabTitleOf } from '@/lib/shared/format'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const SPONSORED_NOTE =
@@ -158,6 +159,7 @@ function DepartmentHeader({
 }) {
   return (
     <PageHeader
+      tabTitle={tabTitleOf(`${profile.name} ${profile.code}`)}
       title={
         <>
           {profile.name}{' '}
