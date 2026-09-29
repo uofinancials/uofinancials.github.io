@@ -15,6 +15,9 @@ export const MIN_MOVED_JOBS = 3
 /** Fewest words a normalised name needs before another code's name that starts with it marks the codes as candidates. */
 export const MIN_PREFIX_WORDS = 3
 
+/** Fewest censuses two codes both pay jobs in for them to count as separate orgs side by side, not one unit recoded. */
+export const MIN_SHARED_CENSUSES = 3
+
 const ABBREVIATIONS: readonly [RegExp, string][] = [
   [/&/g, ' and '],
   [/\blang\b/g, 'language'],
@@ -176,7 +179,26 @@ function isBudgetPayPair(
   return !isTakenOver && paying.some((year) => unitYears.has(year))
 }
 
-/** Every pair of codes that a shared normalised name, one name beginning another, or a move of most of a code's jobs suggests is one unit, less the budget-unit and pay-code pairs. */
+/**
+ * Whether folding one code into the other could join census jobs: both codes
+ * pay jobs in the census, in fewer than `MIN_SHARED_CENSUSES` of the same
+ * censuses, and they are not a budget unit and its pay code.
+ */
+function isJoinable(
+  codes: readonly [string, string],
+  budgetYears: Map<string, Set<number>>,
+  payYears: Map<string, Set<number>>,
+): boolean {
+  const [yearsA, yearsB] = codes.map((code) => payYears.get(code))
+  if (!yearsA || !yearsB) return false
+  const shared = [...yearsA].filter((year) => yearsB.has(year)).length
+  return (
+    shared < MIN_SHARED_CENSUSES &&
+    !isBudgetPayPair(codes, budgetYears, payYears)
+  )
+}
+
+/** Every joinable pair of codes that a shared normalised name, one name beginning another, or a move of most of a code's jobs suggests is one unit. */
 export function findUnitCandidates(
   falls: FallYear[],
   budgets: BudgetYear[],
@@ -197,5 +219,5 @@ export function findUnitCandidates(
       const [a = '', b = ''] = key.split('|')
       return { codes: [a, b], reason }
     })
-    .filter(({ codes }) => !isBudgetPayPair(codes, budgetYears, payYears))
+    .filter(({ codes }) => isJoinable(codes, budgetYears, payYears))
 }

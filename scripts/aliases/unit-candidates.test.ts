@@ -57,13 +57,40 @@ test('normalises case, punctuation and the published abbreviations', () => {
   )
 })
 
-test('pairs a census code and a budget code with the same normalised name', () => {
+test('pairs two census codes with the same normalised name', () => {
+  expect(
+    findUnitCandidates(
+      [
+        census(2020, [job('Doe, Ann', '630900', 'Rsch Material Sci Ctr')]),
+        census(2021, [job('Doe, Ann', '630901', 'RSCH Material Sci Center')]),
+      ],
+      [],
+    ),
+  ).toEqual([{ codes: ['630900', '630901'], reason: 'same-name' }])
+})
+
+test('leaves out a pair where one code pays no census jobs', () => {
   expect(
     findUnitCandidates(
       [census(2020, [job('Doe, Ann', '630900', 'Rsch Material Sci Ctr')])],
       [budget({ '630899': 'RSCH Material Sci Center' })],
     ),
-  ).toEqual([{ codes: ['630899', '630900'], reason: 'same-name' }])
+  ).toEqual([])
+})
+
+test('leaves out codes that both pay jobs in three or more of the same censuses', () => {
+  const years = [2020, 2021, 2022]
+  expect(
+    findUnitCandidates(
+      years.map((year) =>
+        census(year, [
+          job('Doe, Ann', '410800', 'Safety and Risk Services'),
+          job('Roe, Bea', '410810', 'Safety and Risk Services'),
+        ]),
+      ),
+      [],
+    ),
+  ).toEqual([])
 })
 
 test('pairs a code whose name, of three words or more, begins another code name', () => {
