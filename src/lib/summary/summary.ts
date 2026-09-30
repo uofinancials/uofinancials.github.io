@@ -44,7 +44,6 @@ export type SummaryInputs = {
   outlook: Outlook
   rates: OpeRates
   raiseTerms: RaiseTerms
-  /** Classified temporaries' FY pay by unit, derived from the FY files. */
   fyTemps: FyTemps
 }
 

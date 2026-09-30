@@ -43,7 +43,6 @@ import { NotFoundPage } from '@/pages/not-found-page'
 const SPONSORED_NOTE =
   'The budget excludes sponsored research funds, so a unit’s budgeted salaries can fall well short of its jobs’ salary spend.'
 
-/** The years a department page reads, and classified temporaries' FY pay by unit. */
 type DepartmentData = {
   budgets: BudgetYear[]
   censuses: DepartmentCensus[]
