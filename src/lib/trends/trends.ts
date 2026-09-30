@@ -231,7 +231,6 @@ function keptJobs(
   })
 }
 
-const lineOfJob = ({ line }: KeptJob) => line
 const recordsOf = (jobs: KeptJob[] = []) => jobs.map(({ record }) => record)
 
 /** One series per group (or per published category of an opened group), and their total, per census in range; `temps` are the scope's classified temporaries' FY figures by census year. */
@@ -246,7 +245,11 @@ export function buildTrends(
     .sort((a, b) => a.year - b.year)
     .map((census) => {
       const jobs = keptJobs(census, filter)
-      return { year: census.year, jobs, byLine: groupBy(jobs, lineOfJob) }
+      return {
+        year: census.year,
+        jobs,
+        byLine: groupBy(jobs, ({ line }) => line),
+      }
     })
   const seeded =
     filter.group === null && kept.some(({ year }) => tempsIn(year))

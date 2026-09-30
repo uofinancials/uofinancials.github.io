@@ -102,13 +102,16 @@ function averageRates(
 function groupRates(
   records: FallRecord[],
   keyOf: (record: FallRecord) => string | null,
-): Map<string | null, number> {
-  return new Map(
-    [...groupBy(records, keyOf)].map(([key, members]) => [
+): Map<string, number> {
+  const rates = new Map<string, number>()
+  for (const [key, members] of groupBy(records, keyOf)) {
+    if (key === null) continue
+    rates.set(
       key,
       mean(members.map(({ annualSalaryRateCents }) => annualSalaryRateCents)),
-    ]),
-  )
+    )
+  }
+  return rates
 }
 
 function mean(values: number[]): number {

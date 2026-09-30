@@ -127,29 +127,22 @@ export function payChangeTrends(
     ratio,
     line: lineOf(from, group, opened),
   }))
-  const byYear = groupBy(keyed, ({ fromYear }) => fromYear)
-  const byLine = groupBy(keyed, ({ line, fromYear }) => `${line}|${fromYear}`)
-  const seriesOf = (
-    key: string,
-    bucketOf: (fromYear: number) => { ratio: number }[] | undefined,
-  ): ChangeSeries => ({
+  const ratios = new Map([
+    ...groupBy(keyed, ({ fromYear }) => `${ALL_PAIRS}|${fromYear}`),
+    ...groupBy(keyed, ({ line, fromYear }) => `${line}|${fromYear}`),
+  ])
+  const lines = [...new Set(keyed.map(({ line }) => line))].sort(
+    compareLines(opened),
+  )
+  return [ALL_PAIRS, ...lines].map((key) => ({
     key,
     points: fromYears.map((fromYear) =>
       measure(
         fromYear,
-        bucketOf(fromYear)?.map(({ ratio }) => ratio),
+        ratios.get(`${key}|${fromYear}`)?.map(({ ratio }) => ratio),
       ),
     ),
-  })
-  const lines = [...new Set(keyed.map(({ line }) => line))].sort(
-    compareLines(opened),
-  )
-  return [
-    seriesOf(ALL_PAIRS, (fromYear) => byYear.get(fromYear)),
-    ...lines.map((line) =>
-      seriesOf(line, (fromYear) => byLine.get(`${line}|${fromYear}`)),
-    ),
-  ]
+  }))
 }
 
 const BIN_FLOOR_POINTS = -5
