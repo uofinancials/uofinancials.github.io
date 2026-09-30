@@ -52,6 +52,9 @@ and those files.
   the department table's rows, the home page's figures, and every person's
   census years and other published names with the class and rank medians;
   derived from the other data files by `scripts/scrape`.
+- `public/data/fy-temps.json` - classified temporaries' actual pay, jobs, and
+  estimated FTE by fiscal year and unit, with each unit's area; derived with the
+  summary by `scripts/scrape`.
 - `public/data/trends/<area>.json` - one college or VP area's, and each of its
   units' and pay departments', jobs by group in every census and continuing
   jobs' median pay change by group; derived with the summary by
@@ -125,11 +128,12 @@ flowchart LR
     citations, filter chips, and the rules charts draw series and axes by.
   - `census` - census totals, area assignment, employee groups, and the salary
     rate distribution.
-  - `trends` - trends by group and by area, the report's indexes, changes, spend
-    shares, and answers, continuing jobs' pay changes, and raise groups beside
-    their terms.
+  - `trends` - trends by group and by area, with classified temporaries measured
+    by their FY pay, the report's indexes, changes, spend shares, and answers,
+    continuing jobs' pay changes, and raise groups beside their terms.
   - `departments` - a department's budget and jobs, the department index, the
-    department table, and FY department names resolved to codes.
+    department table, FY department names resolved to codes, and classified
+    temporaries' FY pay by unit.
   - `people` - the people list, names joined as one person by hand review or by
     name-matching rules, person links and lookup, and a person's computed
     figures and peer medians.
@@ -227,8 +231,9 @@ flowchart LR
   and position class in one census, for an area its units in the department
   table and how its jobs were placed, the codes joined to it, and links to a
   scenario eliminating it and to its pay changes, with an alias code leading to
-  its unit; driven by `src/lib/departments` over every Fall and budget year, and
-  the outlook file for the scenario's budget year.
+  its unit; driven by `src/lib/departments` over every Fall and budget year and
+  temporaries' FY pay by unit, and the outlook file for the scenario's budget
+  year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   a chart of the matching jobs by salary rate, with primary-job percentiles, or
   a table of them by group, their salary spend by EEO category, and names from
@@ -256,10 +261,10 @@ flowchart LR
   year, its budget year, the budget year of the first savings year, the OPE
   rates, the raise terms, and the outlook file, and every Fall year from 2019
   when a hiring freeze is present.
-- `/sources` - every Fall, budget, and rate source file in the manifest and
-  every document the raise terms and the budget outlook cite, with retrieval
-  dates, hashes, and counts; driven by `src/data`, `src/lib/shared`, and
-  `src/lib/budget`.
+- `/sources` - every Fall, FY total pay, budget, and rate source file in the
+  manifest and every document the raise terms and the budget outlook cite, with
+  retrieval dates, hashes, and counts; driven by `src/data`, `src/lib/shared`,
+  and `src/lib/budget`.
 - Any other path - the not-found page, inside the shared layout.
 
 ## Deployment
