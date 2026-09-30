@@ -1,30 +1,10 @@
 import { expect, test } from 'vitest'
-import type { FallClassified, FallYear } from '../../src/data/fall.ts'
 import type { FyYear } from '../../src/data/fy.ts'
+import { census, classifiedJob } from '../../src/test/fall-records.ts'
 import { findFyNameCandidates } from './fy-department-candidates.ts'
 
-function fallJob(
-  name: string,
-  code: string,
-  department: string,
-): FallClassified {
-  return {
-    kind: 'classified',
-    name,
-    jobType: 'Primary',
-    jobStatus: 'Active',
-    jobStartDate: '2020-01-01',
-    jobEndDate: null,
-    homeDepartment: { code: null, name: 'Home' },
-    payDepartment: { code, name: department },
-    annualSalaryRateCents: 5_000_000,
-    apptPercent: 100,
-    termOfServiceMonths: 12,
-    eeoCategory: 'Other/Temp',
-    sourcePage: 1,
-    jobTitle: 'Helper',
-    positionClass: { code: 'TS901', title: 'Temporary Non-Regular' },
-  }
+function paidBy(name: string, code: string, department: string) {
+  return classifiedJob({ name, payDepartment: { code, name: department } })
 }
 
 function fyJob(name: string, payDepartment: string): FyYear['records'][number] {
@@ -46,21 +26,15 @@ function fyJob(name: string, payDepartment: string): FyYear['records'][number] {
 }
 
 test('lists each unresolved name with its people’s pay departments, units of the same name in any year, and units sharing its first words', () => {
-  const falls: FallYear[] = [
-    {
-      censusDate: '2016-11-01',
-      records: [
-        fallJob('Doe, Ann', '222520', 'CAS Invented Studies Operations'),
-      ],
-    },
-    {
-      censusDate: '2024-11-01',
-      records: [
-        fallJob('Doe, Ann', '222515', 'CAS Invented Studies'),
-        fallJob('Roe, Bo', '222515', 'CAS Invented Studies'),
-        fallJob('Poe, Cy', '100001', 'Known Unit'),
-      ],
-    },
+  const falls = [
+    census(2016, [
+      paidBy('Doe, Ann', '100020', 'CAS Invented Studies Operations'),
+    ]),
+    census(2024, [
+      paidBy('Doe, Ann', '100015', 'CAS Invented Studies'),
+      paidBy('Roe, Bo', '100015', 'CAS Invented Studies'),
+      paidBy('Poe, Cy', '100001', 'Known Unit'),
+    ]),
   ]
   const fys: FyYear[] = [
     {
@@ -80,7 +54,7 @@ test('lists each unresolved name with its people’s pay departments, units of t
       codes: [],
       people: [
         {
-          code: '222515',
+          code: '100015',
           name: 'CAS Invented Studies',
           census: 2024,
           people: 2,
@@ -88,13 +62,20 @@ test('lists each unresolved name with its people’s pay departments, units of t
       ],
       sameName: [
         {
-          code: '222520',
+          code: '100020',
           name: 'CAS Invented Studies Operations',
           censuses: [2016],
           budgets: [],
         },
       ],
-      prefixUnits: [{ code: '222515', name: 'CAS Invented Studies' }],
+      prefixUnits: [
+        {
+          code: '100015',
+          name: 'CAS Invented Studies',
+          censuses: [2024],
+          budgets: [],
+        },
+      ],
     },
   ])
 })

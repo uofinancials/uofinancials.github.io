@@ -1,8 +1,8 @@
 import type { StaffKind } from '../../../src/data/fall.ts'
 import type { FyRecord } from '../../../src/data/fy.ts'
-import { type PageFailure, readBlocks, TITLE_LINE } from '../fall/blocks.ts'
-import { lineText, type PdfPage, readPdfPages } from '../fall/pdf-lines.ts'
-import { parseDate } from '../fall/record.ts'
+import { type PageFailure, readBlocks, TITLE_LINE } from '../pdf/blocks.ts'
+import { parseDate } from '../pdf/fields.ts'
+import { lineText, type PdfPage, readPdfPages } from '../pdf/pdf-lines.ts'
 import { FY_FOOTER, FY_HEADER, FY_LAYOUT, toFyRecord } from './record.ts'
 
 const ON_RECORD_LINE = /^Employees on Record\b/
@@ -19,7 +19,10 @@ export type FyFile = {
 
 /** A total pay report, or `null` for the June 30 "Employees on Record" lists kept beside them. */
 export async function parseFyFile(bytes: Uint8Array): Promise<FyFile | null> {
-  const pages = await readPdfPages(bytes)
+  const pages = await readPdfPages(
+    bytes,
+    (headerPage) => !isOnRecordList(headerPage),
+  )
   const identity = identifyFyFile(pages)
   if (!identity) return null
   const { blocks, failures } = readBlocks(pages, FY_LAYOUT)
@@ -34,11 +37,16 @@ export async function parseFyFile(bytes: Uint8Array): Promise<FyFile | null> {
   return { ...identity, pages: pages.length, records, failures }
 }
 
+function isOnRecordList(headerPage: PdfPage): boolean {
+  return headerPage.lines.some((line) => ON_RECORD_LINE.test(lineText(line)))
+}
+
 function identifyFyFile(
   pages: PdfPage[],
 ): Pick<FyFile, 'kind' | 'fiscalYear' | 'extractDate'> | null {
-  const text = pages[1]?.lines.map(lineText) ?? []
-  if (text.some((line) => ON_RECORD_LINE.test(line))) return null
+  const headerPage = pages[1]
+  if (!headerPage || isOnRecordList(headerPage)) return null
+  const text = headerPage.lines.map(lineText)
   const title = text.map((line) => TITLE_LINE.exec(line)).find(Boolean)
   const header = text.map((line) => FY_HEADER.exec(line)).find(Boolean)
   const footer = text.map((line) => FY_FOOTER.exec(line)).find(Boolean)

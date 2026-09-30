@@ -1,6 +1,7 @@
 import type { BudgetYear } from '../../data/budget.ts'
-import { censusYearOf, type FallYear } from '../../data/fall.ts'
+import type { FallYear } from '../../data/fall.ts'
 import { FY_DEPARTMENTS } from '../../data/fy-departments.ts'
+import { fiscalYearOf } from '../census/totals.ts'
 
 /** Where an FY department name's code came from; the site's join, not UO's. */
 export type FyDepartmentCode =
@@ -43,40 +44,42 @@ function orgCodes(budgets: FyCodeSources['budgets']): CodesByName {
 }
 
 /**
- * A resolver for one fiscal year's department names, by the reviewed table,
- * then the pay departments of the Fall census inside the year, the year's
- * budget orgs, and the censuses either side. A source that gives a name two
- * codes leaves it unresolved.
+ * A resolver for one fiscal year's department names: the pay departments of
+ * the Fall census inside the year, then the year's budget orgs, then the
+ * censuses either side, then the reviewed table. A name the first source that
+ * knows it gives two codes goes straight to the table.
  */
 export function createFyCodeResolver(
   fiscalYear: number,
   { falls, budgets }: FyCodeSources,
 ): (name: string) => FyDepartmentCode {
-  const censusIn = fiscalYear - 1
   const fallsIn = (years: number[]) =>
-    falls.filter(({ censusDate }) => years.includes(censusYearOf(censusDate)))
+    falls.filter(({ censusDate }) => years.includes(fiscalYearOf(censusDate)))
   const sources = [
-    ['census', payDepartmentCodes(fallsIn([censusIn]))],
+    ['census', payDepartmentCodes(fallsIn([fiscalYear]))],
     [
       'budget',
       orgCodes(budgets.filter((budget) => budget.fiscalYear === fiscalYear)),
     ],
     [
       'nearby census',
-      payDepartmentCodes(fallsIn([censusIn - 1, censusIn + 1])),
+      payDepartmentCodes(fallsIn([fiscalYear - 1, fiscalYear + 1])),
     ],
   ] as const
   return (name) => {
-    const reviewed = REVIEWED.get(name)
-    if (reviewed !== undefined) return { basis: 'reviewed', code: reviewed }
     for (const [basis, byName] of sources) {
       const [code, ...others] = byName.get(name) ?? []
       if (code === undefined) continue
-      if (others.length > 0) {
-        return { basis: 'unresolved', codes: [code, ...others].sort() }
-      }
-      return { basis, code }
+      if (others.length === 0) return { basis, code }
+      return reviewedOr(name, [code, ...others])
     }
-    return { basis: 'unresolved', codes: [] }
+    return reviewedOr(name, [])
   }
+}
+
+function reviewedOr(name: string, codes: string[]): FyDepartmentCode {
+  const code = REVIEWED.get(name)
+  return code === undefined
+    ? { basis: 'unresolved', codes: codes.sort() }
+    : { basis: 'reviewed', code }
 }

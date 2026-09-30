@@ -4,8 +4,7 @@ import {
   type BlockLayout,
   type RawBlock,
   REPORT_CHROME,
-} from '../fall/blocks.ts'
-import { repairMojibake } from '../fall/mojibake.ts'
+} from '../pdf/blocks.ts'
 import {
   checkLabels,
   describeIssue,
@@ -13,7 +12,8 @@ import {
   parseDate,
   parseInteger,
   parsePositionClass,
-} from '../fall/record.ts'
+} from '../pdf/fields.ts'
+import { repairMojibake } from '../pdf/mojibake.ts'
 
 const CENTS_PER_DOLLAR = 100
 
@@ -40,7 +40,6 @@ export const FY_FOOTER = /^Source: IDR, (\d{1,2}\/\d{1,2}\/\d{4})/
 
 export const FY_LAYOUT: BlockLayout<FyLabel> = {
   labels: FY_LABELS,
-  firstLabel: 'JOB TYPE',
   skip: [...REPORT_CHROME, FY_HEADER, FY_FOOTER, /^JOB STATUS$/],
   aliases: [
     [/^TMSHT DEPARTMENT$/, 'PAY DEPARTMENT'],
@@ -61,14 +60,10 @@ const COMMON_LABELS: FyLabel[] = [
   'TOTAL PAY',
 ]
 
-const LABELS_BY_KIND: Record<
-  StaffKind,
-  { required: FyLabel[]; optional: FyLabel[] }
-> = {
-  classified: { required: [...COMMON_LABELS, 'JOB TITLE'], optional: [] },
+const LABELS_BY_KIND: Record<StaffKind, { required: FyLabel[] }> = {
+  classified: { required: [...COMMON_LABELS, 'JOB TITLE'] },
   unclassified: {
     required: [...COMMON_LABELS, 'ACADEMIC TITLE', 'OA SALARY GRADE'],
-    optional: [],
   },
 }
 

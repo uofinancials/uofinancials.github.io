@@ -1,6 +1,12 @@
 import { expect, test } from 'vitest'
-import { readFallBlocks } from './blocks.ts'
-import { line, page } from './test-lines.ts'
+import { readBlocks } from '../pdf/blocks.ts'
+import type { PdfPage } from '../pdf/pdf-lines.ts'
+import { line, page } from '../pdf/test-lines.ts'
+import { FALL_LAYOUT } from './blocks.ts'
+
+function readFallBlocks(pages: PdfPage[]) {
+  return readBlocks(pages, FALL_LAYOUT)
+}
 
 const LEFT = 10
 const LEFT_VALUE = 120

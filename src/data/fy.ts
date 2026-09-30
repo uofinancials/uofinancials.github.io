@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { staffKindSchema } from './fall.ts'
+import { positionClassSchema, staffKindSchema } from './fall.ts'
 
 const isoDate = z.iso.date()
 const nonBlank = z.string().min(1)
@@ -15,10 +15,7 @@ const fyCommon = {
   homeDepartment: nonBlank,
   /** Published as `PAY DEPARTMENT`, or `TMSHT DEPARTMENT` from FY2025-26. */
   payDepartment: nonBlank,
-  positionClass: z.strictObject({
-    code: z.string().regex(/^[A-Z0-9]{5}$/),
-    title: nonBlank.nullable(),
-  }),
+  positionClass: positionClassSchema,
   termOfServiceMonths: z.union([z.literal(9), z.literal(12)]).nullable(),
   /** Paid in the fiscal year for the job and department; negative where UO prints it in parentheses. */
   totalPayCents: z.number().int(),

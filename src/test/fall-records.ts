@@ -1,5 +1,9 @@
-import type { FallClassified, FallUnclassified, FallYear } from '@/data/fall'
-import type { FallEntry } from '@/data/manifest'
+import type {
+  FallClassified,
+  FallUnclassified,
+  FallYear,
+} from '../data/fall.ts'
+import type { FallEntry } from '../data/manifest.ts'
 
 const COMMON = {
   name: 'Doe, Ann',

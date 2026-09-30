@@ -7,7 +7,13 @@ export type PdfPage = { pageNumber: number; lines: TextLine[] }
 const SAME_LINE_TOLERANCE_PT = 2
 const SAME_WORD_GAP_PT = 1
 
-export async function readPdfPages(bytes: Uint8Array): Promise<PdfPage[]> {
+const HEADER_PAGE = 2
+
+/** Every page, or only the first two when `isWanted` rejects the second, where each report's header is. */
+export async function readPdfPages(
+  bytes: Uint8Array,
+  isWanted: (headerPage: PdfPage) => boolean = () => true,
+): Promise<PdfPage[]> {
   const pdf = await getDocumentProxy(bytes)
   const pages: PdfPage[] = []
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
@@ -19,7 +25,9 @@ export async function readPdfPages(bytes: Uint8Array): Promise<PdfPage[]> {
       if (x === undefined || y === undefined) return []
       return [{ x, y, end: x + entry.width, text: entry.str }]
     })
-    pages.push({ pageNumber, lines: groupIntoLines(items) })
+    const read = { pageNumber, lines: groupIntoLines(items) }
+    pages.push(read)
+    if (pageNumber === HEADER_PAGE && !isWanted(read)) break
   }
   await pdf.cleanup()
   return pages

@@ -7,6 +7,11 @@ const nonBlank = z.string().min(1)
 
 const departmentCode = z.string().regex(/^\d{6}$/)
 
+export const positionClassSchema = z.object({
+  code: z.string().regex(/^[A-Z0-9]{5}$/),
+  title: nonBlank.nullable(),
+})
+
 const department = z.object({
   code: departmentCode.nullable(),
   name: nonBlank,
@@ -33,12 +38,7 @@ const fallClassifiedSchema = z.strictObject({
   kind: z.literal(staffKindSchema.enum.classified),
   ...fallCommon,
   jobTitle: nonBlank,
-  positionClass: z
-    .object({
-      code: z.string().regex(/^[A-Z0-9]{5}$/),
-      title: nonBlank.nullable(),
-    })
-    .nullable(),
+  positionClass: positionClassSchema.nullable(),
 })
 
 const fallUnclassifiedSchema = z.strictObject({

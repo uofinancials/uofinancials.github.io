@@ -1,25 +1,11 @@
-import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { promisify } from 'node:util'
 import { beforeAll, describe, expect, test } from 'vitest'
 import { FALL_SOURCE_DIR, hasFallSources, listPdfs } from '../cache.ts'
+import { countJobTypeLines } from '../pdf/test-lines.ts'
 import { type FallFile, parseFallFile } from './file.ts'
 
 const PARSE_ALL_TIMEOUT_MS = 300_000
-const PDFTOTEXT_MAX_BYTES = 64 * 1024 * 1024
-
-const run = promisify(execFile)
-
-async function countJobTypeLines(file: string): Promise<number> {
-  const { stdout } = await run('pdftotext', ['-layout', file, '-'], {
-    encoding: 'utf8',
-    maxBuffer: PDFTOTEXT_MAX_BYTES,
-  })
-  return (
-    stdout.match(/^JOB TYPE\s+(Primary|Secondary|Overload)\b/gm)?.length ?? 0
-  )
-}
 
 describe.skipIf(!hasFallSources)('every downloaded Fall PDF', () => {
   const parsed = new Map<string, FallFile>()

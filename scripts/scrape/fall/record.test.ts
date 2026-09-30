@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
-import type { FallLabel, RawBlock } from './blocks.ts'
+import type { RawBlock } from '../pdf/blocks.ts'
+import type { FallLabel } from './blocks.ts'
 import { toFallRecord } from './record.ts'
 
 const COMMON: [FallLabel, string][] = [
@@ -14,7 +15,7 @@ const COMMON: [FallLabel, string][] = [
   ['TERM OF SVC', '9'],
 ]
 
-function block(pairs: [FallLabel, string][]): RawBlock {
+function block(pairs: [FallLabel, string][]): RawBlock<FallLabel> {
   return {
     name: 'Example, Pat Q',
     page: 7,

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
-import { type RawBlock, readBlocks } from '../fall/blocks.ts'
-import { line, page } from '../fall/test-lines.ts'
+import { type RawBlock, readBlocks } from '../pdf/blocks.ts'
+import { line, page } from '../pdf/test-lines.ts'
 import {
   FY_LAYOUT,
   type FyLabel,

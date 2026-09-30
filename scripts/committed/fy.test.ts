@@ -5,7 +5,7 @@ import { fallYearSchema } from '../../src/data/fall.ts'
 import { type FyYear, fyYearSchema } from '../../src/data/fy.ts'
 import { FY_DEPARTMENTS } from '../../src/data/fy-departments.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
-import { TEMP_POSITION_CLASS } from '../../src/lib/census/totals.ts'
+import { isClassifiedTemp } from '../../src/lib/census/totals.ts'
 import { createFyCodeResolver } from '../../src/lib/departments/fy-codes.ts'
 import {
   budgetDataPath,
@@ -15,8 +15,8 @@ import {
   readJson,
 } from '../scrape/cache.ts'
 
-/** Parsing every census, budget and FY year takes several seconds. */
-const ALL_YEARS_TIMEOUT_MS = 30_000
+/** Parsing every census, budget and FY year takes a second or two. */
+const ALL_YEARS_TIMEOUT_MS = 20_000
 
 // Counted independently from the PDFs' text before the parser was written.
 const PINS = [
@@ -28,8 +28,14 @@ const PINS = [
   [2026, 2_805, 6_932, 727, 566_438_100],
 ] as const
 
+const years = new Map<number, FyYear>()
+
 function readYear(fiscalYear: number): FyYear {
-  return fyYearSchema.parse(readJson(fyDataPath(fiscalYear)))
+  const year =
+    years.get(fiscalYear) ??
+    fyYearSchema.parse(readJson(fyDataPath(fiscalYear)))
+  years.set(fiscalYear, year)
+  return year
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
@@ -55,11 +61,7 @@ test.skipIf(!existsSync(MANIFEST_PATH)).each(PINS)(
   'FY%i: %i classified and %i unclassified jobs; %i temporaries paid %i cents',
   (fiscalYear, classified, unclassified, temps, tempPayCents) => {
     const { records } = readYear(fiscalYear)
-    const temporaries = records.filter(
-      (record) =>
-        record.kind === 'classified' &&
-        TEMP_POSITION_CLASS.test(record.positionClass.code),
-    )
+    const temporaries = records.filter(isClassifiedTemp)
     expect({
       classified: records.filter((record) => record.kind === 'classified')
         .length,
@@ -75,7 +77,7 @@ test.skipIf(!existsSync(MANIFEST_PATH)).each(PINS)(
 )
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every FY department name resolves to one code, and every reviewed name is used and published',
+  'every FY department name resolves to one code, and every reviewed name is needed and published',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const sources = {
@@ -86,13 +88,14 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
       ),
     }
-    const used = new Set<string>()
+    const needed = new Set<string>()
     const unresolved = new Set<string>()
     for (const { fiscalYear } of manifest.fy) {
       const resolve = createFyCodeResolver(fiscalYear, sources)
       for (const { payDepartment } of readYear(fiscalYear).records) {
-        used.add(payDepartment)
-        if (resolve(payDepartment).basis === 'unresolved') {
+        const { basis } = resolve(payDepartment)
+        if (basis === 'reviewed') needed.add(payDepartment)
+        if (basis === 'unresolved') {
           unresolved.add(`FY${fiscalYear} ${payDepartment}`)
         }
       }
@@ -110,7 +113,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect([...unresolved]).toEqual([])
     expect(
       FY_DEPARTMENTS.filter(
-        ({ name, code }) => !used.has(name) || !published.has(code),
+        ({ name, code }) => !needed.has(name) || !published.has(code),
       ),
     ).toEqual([])
   },
