@@ -20,6 +20,8 @@ const SKILLED: OpeGroupRef = {
   leave: null,
 }
 const TECHNICAL: OpeGroupRef = { group: 'Classified Technical', leave: null }
+/** BRP's Temps group: hourly faculty and staff, and temporary support staff. */
+export const TEMPS_OPE_GROUP: OpeGroupRef = { group: 'Temps', leave: null }
 
 /** Classified EEO categories as published Fall 2019-2025, by OPE group. */
 const CLASSIFIED_CATEGORY_GROUPS: Record<string, OpeGroupRef> = {
@@ -39,7 +41,7 @@ const NINE_MONTHS = 9
 const HALF_TIME_PERCENT = 50
 
 export const OPE_GROUP_METHOD =
-  "Each job's OPE rate group is this site's estimate, since UO publishes no employee class: overloads carry no OPE and temporaries are left out; jobs paid from Athletics (org 480000) are Athletics; position class J is Classified Technical; other classified jobs follow their EEO category (service and protective jobs to Service, clerical and skilled craft to Skilled/Clerical, technical and professional to Technical); executives and postdoctoral scholars are Faculty/Staff B, executives at the Exec leave rate; other unclassified jobs under 50% FTE are Faculty/Staff C; 9-month jobs in the faculty and ranked librarian categories are Faculty/Staff B; every other unclassified job is Faculty/Staff A."
+  "Each job's OPE rate group is this site's estimate, since UO publishes no employee class: overloads carry no OPE; classified temporaries are Temps; jobs paid from Athletics (org 480000) are Athletics; position class J is Classified Technical; other classified jobs follow their EEO category (service and protective jobs to Service, clerical and skilled craft to Skilled/Clerical, technical and professional to Technical); executives and postdoctoral scholars are Faculty/Staff B, executives at the Exec leave rate; other unclassified jobs under 50% FTE are Faculty/Staff C; 9-month jobs in the faculty and ranked librarian categories are Faculty/Staff B; every other unclassified job is Faculty/Staff A."
 
 function classifiedGroup(
   record: FallClassified,
@@ -57,7 +59,7 @@ function classifiedGroup(
   return group
 }
 
-/** A job's estimated OPE rate group; `null` for overloads and classified temporaries, which carry no OPE here. */
+/** A census job's estimated OPE rate group; `null` for overloads, which carry no OPE, and classified temporaries, whose FY pay is costed at `TEMPS_OPE_GROUP` instead. */
 export function opeGroupOf(
   record: FallRecord,
   group: TrendGroup,

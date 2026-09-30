@@ -1,12 +1,14 @@
 import type { FallRecord } from '../../data/fall.ts'
+import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import type { OpeRates } from '../../data/ope.ts'
-import { trendGroupOf } from '../census/groups.ts'
+import { TEMPS_GROUP, trendGroupOf } from '../census/groups.ts'
 import { filterJobs, type JobFilter } from '../census/salary-distribution.ts'
 import { placeJobs } from '../census/search.ts'
 import { isClassifiedTemp, jobSpendCents } from '../census/totals.ts'
-import type { DepartmentCensus } from '../departments/jobs.ts'
+import { isInScope, type TempsScope } from '../departments/fy-temps.ts'
+import { type DepartmentCensus, isAreaCode } from '../departments/jobs.ts'
 import { egShareOf } from './eg-share.ts'
-import { type OpeGroupRef, opeGroupOf } from './ope-groups.ts'
+import { type OpeGroupRef, opeGroupOf, TEMPS_OPE_GROUP } from './ope-groups.ts'
 
 /** Which jobs a rule reaches: the /people filters. */
 export type ScenarioScope = JobFilter & { dept: string | null }
@@ -37,13 +39,16 @@ export const BASIS_BIG = 10_000n
 export const FULL_COST_METHOD =
   "Full cost is salary x (1 - leave rate) x (1 + OPE rate), following BRP's rate guidance, with each job's OPE rate group estimated by this site. It uses the OPE rate for the fiscal year stated and the latest published leave rate. The PERS side-account charge is left out, because the census does not say which fund pays a job. Overloads are costed at salary, with no OPE."
 
+/** A census job at its current rate, or one unit's classified temporaries at their current FY pay (`rateCents`). */
 export type Job = {
-  record: FallRecord
   rateCents: number
   isRemoved: boolean
   group: OpeGroupRef | null
   shareBasisPoints: number
-}
+} & (
+  | { kind: 'census'; record: FallRecord }
+  | { kind: 'temps'; unit: FyTempsUnit }
+)
 
 export type JobCost = {
   salaryCents: number
@@ -118,14 +123,18 @@ function fullCostOf(
   return Number(divideHalfUp(product, BASIS_BIG * BASIS_BIG))
 }
 
+/** A job's salary spend at its current rate, or a unit's temporaries' current FY pay, removed or not. */
+export function salaryCentsOf(job: Job): number {
+  return job.kind === 'temps'
+    ? job.rateCents
+    : jobSpendCents({ ...job.record, annualSalaryRateCents: job.rateCents })
+}
+
 /** A job's cost at its current rate; zero once removed. */
 export function costOf(job: Job, rates: Rates): JobCost {
   if (job.isRemoved)
     return { salaryCents: 0, fullCostCents: rates ? 0 : null, egCents: 0 }
-  const salaryCents = jobSpendCents({
-    ...job.record,
-    annualSalaryRateCents: job.rateCents,
-  })
+  const salaryCents = salaryCentsOf(job)
   const fullCostCents = fullCostOf(salaryCents, job.group, rates)
   const egCents = Number(
     divideHalfUp(
@@ -153,6 +162,11 @@ export function addCost(savings: Savings, cost: JobCost, sign: 1 | -1): void {
   }
 }
 
+/** The jobs a job stands for: one, or a unit's FY jobs. */
+export function jobCount(job: Job): number {
+  return job.kind === 'temps' ? job.unit.jobs : 1
+}
+
 export function scopeJobs(
   census: DepartmentCensus,
   scope: ScenarioScope,
@@ -160,17 +174,63 @@ export function scopeJobs(
   return new Set(filterJobs(placeJobs(census, scope.dept), scope, census.year))
 }
 
+/** Whether a scope reaches a unit's temporaries: it names no term or position, and its group, kind, and department admit them. */
+function reachesTemps(
+  census: DepartmentCensus,
+  scope: ScenarioScope,
+): (unit: FyTempsUnit) => boolean {
+  const { dept } = scope
+  const isAdmitted =
+    (scope.group === null || scope.group === TEMPS_GROUP) &&
+    scope.kind !== 'unclassified' &&
+    scope.term === null &&
+    scope.position === null
+  if (!isAdmitted) return () => false
+  const tempsScope: TempsScope =
+    dept === null
+      ? { kind: 'all' }
+      : { kind: isAreaCode(dept, [census]) ? 'area' : 'unit', code: dept }
+  return (unit) => isInScope(unit, tempsScope)
+}
+
+/** Whether a scope reaches a job: a census job through the /people filters, a unit's temporaries by their unit and area. */
+export function scopeReach(
+  census: DepartmentCensus,
+  scope: ScenarioScope,
+): (job: Job) => boolean {
+  const records = scopeJobs(census, scope)
+  const temps = reachesTemps(census, scope)
+  return (job) =>
+    job.kind === 'census' ? records.has(job.record) : temps(job.unit)
+}
+
+/** The census's jobs but its classified temporaries, then one job per unit of `temps`, their FY pay. */
 export function toJobs(
   census: DepartmentCensus,
   shares: Map<string, number>,
+  temps: FyTempsUnit[],
 ): Job[] {
-  return census.records
+  const jobs: Job[] = census.records
     .filter((record) => !isClassifiedTemp(record))
     .map((record) => ({
+      kind: 'census',
       record,
       rateCents: record.annualSalaryRateCents,
       isRemoved: false,
       group: opeGroupOf(record, trendGroupOf(record, census.year), census.year),
-      shareBasisPoints: egShareOf(record, census, shares),
+      shareBasisPoints: egShareOf(census.assign(record).area, shares),
     }))
+  return [
+    ...jobs,
+    ...temps.map(
+      (unit): Job => ({
+        kind: 'temps',
+        unit,
+        rateCents: unit.payCents,
+        isRemoved: false,
+        group: TEMPS_OPE_GROUP,
+        shareBasisPoints: egShareOf(unit.area, shares),
+      }),
+    ),
+  ]
 }

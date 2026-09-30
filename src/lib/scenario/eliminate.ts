@@ -1,7 +1,7 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
+import type { FallRecord } from '../../data/fall.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { placeJobs } from '../census/search.ts'
-import { jobSpendCents } from '../census/totals.ts'
 import {
   type AccountGroup,
   accountGroupOf,
@@ -10,7 +10,7 @@ import { unitsOf } from '../departments/budget.ts'
 import type { IndexArea } from '../departments/codes.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import { EG_FUND_TYPE, SALARY_ACCOUNT_TYPES } from './eg-share.ts'
-import type { Job } from './jobs.ts'
+import { ANY_SCOPE, type Job, salaryCentsOf, scopeReach } from './jobs.ts'
 
 export type EliminateRule = { kind: 'eliminate'; code: string }
 
@@ -26,12 +26,12 @@ export type EliminationResult = {
   code: string
   name: string
   isArea: boolean
-  /** Census jobs left out of every other rule, less those an earlier elimination took. */
+  /** Census jobs, classified temporaries included, left out of every other rule, less those an earlier elimination took. */
   jobs: number
   eg: EliminatedLines
   egCents: number
   allFundsCents: number
-  /** A unit whose census pay under its code and the codes joined to it is under half its budgeted salaries; never an area, nor a code an earlier elimination covered. */
+  /** A unit whose census pay under its code and the codes joined to it, with its temporaries' FY pay, is under half its budgeted salaries; never an area, nor a code an earlier elimination covered. */
   isPartlyMatched: boolean
   /** Every unit the code covers was taken by an earlier elimination. */
   isCovered: boolean
@@ -46,7 +46,7 @@ const LINE_OF_GROUP: Partial<Record<AccountGroup, keyof EliminatedLines>> = {
 const PARTLY_MATCHED_DIVISOR = 2
 
 export const ELIMINATE_METHOD =
-  "An elimination saves a unit's or area's budgeted salaries and pay, OPE and benefits, and services and supplies (account types 61-67, 69, and 71) for the budget year stated, summed as published, so a negative line reduces the savings; student aid, other expenses, transfers, and reserves are not counted. The E&G figure is the budget's fund type 11, the fund the projection covers. An elimination applies before every other rule: its census jobs are left out of them all, and a unit already inside an eliminated area saves nothing more. A unit's census jobs are those whose pay department is the unit's code or a code this site joins to it by hand; the census still files some staff under codes the budget does not use and this site joins to no unit, and where a unit's census pay is under half its budgeted salaries, pay rules may also count some of its staff. Savings are gross: the tuition and other revenue a department brings in is not published by department and is not counted."
+  "An elimination saves a unit's or area's budgeted salaries and pay, OPE and benefits, and services and supplies (account types 61-67, 69, and 71) for the budget year stated, summed as published, so a negative line reduces the savings; student aid, other expenses, transfers, and reserves are not counted. The E&G figure is the budget's fund type 11, the fund the projection covers. An elimination applies before every other rule: its census jobs and its units' classified temporaries' FY pay are left out of them all, and a unit already inside an eliminated area saves nothing more. A unit's census jobs, classified temporaries included, are those whose pay department is the unit's code or a code this site joins to it by hand; the census still files some staff under codes the budget does not use and this site joins to no unit, and where a unit's census pay and its temporaries' FY pay are under half its budgeted salaries, pay rules may also count some of its staff. Savings are gross: the tuition and other revenue a department brings in is not published by department and is not counted."
 
 function sumLines(rows: BudgetRow[], budget: BudgetYear) {
   const eg: EliminatedLines = { payCents: 0, opeCents: 0, servicesCents: 0 }
@@ -77,17 +77,25 @@ function isPartlyMatched(code: string, budget: BudgetYear, censusPay: number) {
   return censusPay * PARTLY_MATCHED_DIVISOR < salaryCents
 }
 
-/** Marks the code's census jobs removed, returning how many it newly removed and the census pay placed there. */
-function excludeJobs(code: string, census: DepartmentCensus, jobs: Job[]) {
-  const placed = new Set(placeJobs(census, code))
+/** Marks the code's census jobs and temporaries' FY pay removed; returns the census records it newly takes, temporaries included, and the pay placed there. */
+function excludeJobs(
+  code: string,
+  census: DepartmentCensus,
+  jobs: Job[],
+  takenRecords: Set<FallRecord>,
+) {
   let excluded = 0
+  for (const record of placeJobs(census, code)) {
+    if (takenRecords.has(record)) continue
+    takenRecords.add(record)
+    excluded += 1
+  }
+  const reaches = scopeReach(census, { ...ANY_SCOPE, dept: code })
   let censusPay = 0
   for (const job of jobs) {
-    if (!placed.has(job.record)) continue
-    censusPay += jobSpendCents(job.record)
-    if (job.isRemoved) continue
+    if (!reaches(job)) continue
+    censusPay += salaryCentsOf(job)
     job.isRemoved = true
-    excluded += 1
   }
   return { excluded, censusPay }
 }
@@ -101,6 +109,7 @@ export function eliminationSavings(options: {
 }): EliminationResult[] {
   const { census, jobs, budget } = options
   const taken = new Set<string>()
+  const takenRecords = new Set<FallRecord>()
   return options.eliminations.map(({ code }) => {
     const covered = [...(unitsOf(code, budget.orgs) ?? [])]
     const units = new Set(covered.filter((unit) => !taken.has(unit)))
@@ -109,7 +118,12 @@ export function eliminationSavings(options: {
       budget.rows.filter((row) => units.has(row.org)),
       budget,
     )
-    const { excluded, censusPay } = excludeJobs(code, census, jobs)
+    const { excluded, censusPay } = excludeJobs(
+      code,
+      census,
+      jobs,
+      takenRecords,
+    )
     const isCovered = covered.length > 0 && units.size === 0
     return {
       kind: 'eliminate',

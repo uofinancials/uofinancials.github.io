@@ -190,8 +190,8 @@ flowchart LR
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, sources,
   and narrow layout.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
-  and raise freezes, eliminations, cases, unreadable link entries, each
-  section's sources, and narrow layout.
+  and raise freezes, eliminations, classified temporaries' removal, cases,
+  unreadable link entries, each section's sources, and narrow layout.
 - `e2e/trends.spec.ts` - the Trends report's tabs, answers, and tables, its
   filters, scope search, and area or unit scope, older links, scroll position,
   and narrow layout.
@@ -261,9 +261,9 @@ flowchart LR
   sources, the savings set against the E&G projection or one of its cases by
   fiscal year, example questions, the stated methods, and the sources, with the
   rules and case held in the URL; driven by `src/lib/scenario` over one Fall
-  year, its budget year, the budget year of the first savings year, the OPE
-  rates, the raise terms, and the outlook file, and every Fall year from 2019
-  when a hiring freeze is present.
+  year, its budget year, its classified temporaries' FY pay by unit, the budget
+  year of the first savings year, the OPE rates, the raise terms, and the
+  outlook file, and every Fall year from 2019 when a hiring freeze is present.
 - `/sources` - every Fall, FY total pay, budget, and rate source file in the
   manifest and every document the raise terms and the budget outlook cite, with
   retrieval dates, hashes, and counts; driven by `src/data`, `src/lib/shared`,

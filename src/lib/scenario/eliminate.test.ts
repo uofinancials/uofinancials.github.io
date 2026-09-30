@@ -60,6 +60,7 @@ FY27.orgs[MATH] = { name: 'CAS Mathematics', level: 5, parent: AREA }
 function run(rules: Rule[]) {
   return runScenario({
     census: CENSUS,
+    temps: [],
     rules,
     rates: RATES,
     egShares: new Map([[AREA, 10_000]]),

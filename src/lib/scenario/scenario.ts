@@ -1,7 +1,9 @@
 import type { BudgetYear } from '../../data/budget.ts'
-import type { FallRecord } from '../../data/fall.ts'
+import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
+import type { SectionSource } from '../shared/citation.ts'
+import { fyPaySource } from '../trends/trends.ts'
 import {
   type EliminateRule,
   type EliminationResult,
@@ -15,12 +17,13 @@ import {
   emptySavings,
   growCents,
   type Job,
+  jobCount,
   latestLeaveYear,
   type Rates,
   ratesFor,
   type Savings,
   type ScenarioScope,
-  scopeJobs,
+  scopeReach,
   toJobs,
 } from './jobs.ts'
 import {
@@ -82,29 +85,41 @@ export type ScenarioResult = {
   censusEgByYear: number[]
   /** `null` when the scenario has no elimination. */
   eliminated: EliminatedTotal | null
-  /** Classified temporaries left out of the base. */
-  temporaries: number
+  /** The classified temporaries' FY jobs and pay in the base; `null` when the census's fiscal year publishes no pay. */
+  temps: { jobs: number; payCents: number } | null
   /** `null` when no OPE rate is published for the requested fiscal year. */
   opeFiscalYear: number | null
   leaveFiscalYear: number
 }
 
 export const SCENARIO_METHOD =
-  'A scenario is an estimate over one Fall census, not a prediction. Its base is every job except classified temporaries, whose annualised hourly rates overstate pay. Rules apply in order, each to what the rules before it left: a removed job drops out of every later rule, and a cut rate is the rate later rules see, so no job is counted twice. A threshold compares the published full-time annual rate with the threshold and cuts only the part above it. Savings are gross: no revenue a change would lose is counted.'
+  "A scenario is an estimate over one Fall census, not a prediction. Its base is every job, with classified temporaries counted not at their annualised hourly rates, which overstate pay, but at their actual pay in the fiscal year the census falls in, from the FY total pay reports, summed by the unit their department resolves to and placed in its area; until that year's pay is published, they are left out. Rules apply in order, each to what the rules before it left: a removed job drops out of every later rule, and a cut rate is the rate later rules see, so no job is counted twice. A threshold compares the published full-time annual rate with the threshold and cuts only the part above it, so it never reaches temporaries, whose pay has no rate. Other rules reach a unit's temporaries when their scope names no term or position and admits their group, staff kind, and unit or area; their jobs are counted as the reports list them. Savings are gross: no revenue a change would lose is counted."
+
+const TEMPS_COMPUTED =
+  "Classified temporaries' actual pay in the fiscal year, summed by unit; scenarios count it in place of their annualised rates, as the method says."
+
+/** The FY total pay reports a scenario's classified temporaries come from, with how scenarios count them. */
+export function scenarioTempsSources(fiscalYears: number[]): SectionSource[] {
+  return fyPaySource(fiscalYears).map((source) => ({
+    ...source,
+    computed: TEMPS_COMPUTED,
+  }))
+}
 
 function scaleRate(rateCents: number, keepBasisPoints: number): number {
   return Math.round((rateCents * keepBasisPoints) / BASIS)
 }
 
-/** The rate a job has after a rule, or `null` when the rule removes it. */
-function rateAfter(rule: CensusRule, rateCents: number): number | null {
+/** The rate a job has after a rule, or `null` when the rule removes it; a threshold leaves temporaries' pay, which has no rate to compare. */
+function rateAfter(rule: CensusRule, job: Job): number | null {
+  const { rateCents } = job
   switch (rule.kind) {
     case 'remove':
       return null
     case 'cut':
       return scaleRate(rateCents, BASIS - rule.cutBasisPoints)
     case 'threshold':
-      return rateCents <= rule.overCents
+      return job.kind === 'temps' || rateCents <= rule.overCents
         ? rateCents
         : rule.overCents +
             scaleRate(rateCents - rule.overCents, BASIS - rule.cutBasisPoints)
@@ -115,14 +130,14 @@ function rateAfter(rule: CensusRule, rateCents: number): number | null {
 function applyRule(
   rule: CensusRule,
   jobs: Job[],
-  inScope: Set<FallRecord>,
+  reaches: (job: Job) => boolean,
   rates: Rates,
   savedEg: Map<Job, number>,
 ): Savings {
   const savings = emptySavings(rates)
   for (const job of jobs) {
-    if (job.isRemoved || !inScope.has(job.record)) continue
-    const rateCents = rateAfter(rule, job.rateCents)
+    if (job.isRemoved || !reaches(job)) continue
+    const rateCents = rateAfter(rule, job)
     if (rateCents === job.rateCents) continue
     const before = costOf(job, rates)
     if (rateCents === null) job.isRemoved = true
@@ -130,7 +145,7 @@ function applyRule(
     const after = costOf(job, rates)
     addCost(savings, before, 1)
     addCost(savings, after, -1)
-    savings.jobs += 1
+    savings.jobs += jobCount(job)
     savedEg.set(job, (savedEg.get(job) ?? 0) + before.egCents - after.egCents)
   }
   return savings
@@ -195,12 +210,12 @@ function sumSavings(parts: Savings[], rates: Rates): Savings {
 /** Each job's E&G saving grown to each projected year's pay, summed per growth path and rounded once per path and year. */
 function censusEgByYear(
   savedEg: Map<Job, number>,
-  payGrowthOf: (record: FallRecord) => bigint[],
+  payGrowthOf: (job: Job) => bigint[],
   projectedYears: number,
 ): number[] {
   const savedByPath = new Map<bigint[], number>()
   for (const [job, saved] of savedEg) {
-    const path = payGrowthOf(job.record)
+    const path = payGrowthOf(job)
     savedByPath.set(path, (savedByPath.get(path) ?? 0) + saved)
   }
   const years = Array.from({ length: projectedYears }, () => 0)
@@ -217,7 +232,7 @@ function applyCensusRules(
   options: Parameters<typeof runScenario>[0],
   jobs: Job[],
   rates: Rates,
-  payGrowthOf: (record: FallRecord) => bigint[],
+  payGrowthOf: (job: Job) => bigint[],
 ): { results: Savings[]; egByYear: number[] } {
   const savedEg = new Map<Job, number>()
   const results = options.rules
@@ -226,7 +241,7 @@ function applyCensusRules(
       applyRule(
         rule,
         jobs,
-        scopeJobs(options.census, rule.scope),
+        scopeReach(options.census, rule.scope),
         rates,
         savedEg,
       ),
@@ -242,7 +257,7 @@ function freezeResults(
   options: Parameters<typeof runScenario>[0],
   jobs: Job[],
   rates: Rates,
-  payGrowthOf: (record: FallRecord) => bigint[],
+  payGrowthOf: (job: Job) => bigint[],
 ): { freezes: FreezeResult[]; raiseFreezes: RaiseFreezeResult[] } {
   const { census, rules, projectedYears } = options
   const { results: freezes, filled } = freezeSavings({
@@ -266,14 +281,24 @@ function freezeResults(
   return { freezes, raiseFreezes }
 }
 
+function tempsOf(temps: FyTempsUnit[]): ScenarioResult['temps'] {
+  if (temps.length === 0) return null
+  return {
+    jobs: temps.reduce((sum, unit) => sum + unit.jobs, 0),
+    payCents: temps.reduce((sum, unit) => sum + unit.payCents, 0),
+  }
+}
+
 /**
- * Runs the rules over one census: eliminations first, from
+ * Runs the rules over one census, with its classified temporaries as `temps`,
+ * their FY pay by unit: eliminations first, from
  * `eliminationBudget`, then the census rules in order, then hiring freezes,
  * which take their rates from `history` and lay their savings over
  * `projectedYears`, then raise freezes at `raiseRates`.
  */
 export function runScenario(options: {
   census: DepartmentCensus
+  temps: FyTempsUnit[]
   rules: Rule[]
   rates: OpeRates
   egShares: Map<string, number>
@@ -285,10 +310,12 @@ export function runScenario(options: {
 }): ScenarioResult {
   const { census, rules, rates, egShares, opeFiscalYear } = options
   const yearRates = ratesFor(rates, opeFiscalYear)
-  const jobs = toJobs(census, egShares)
+  const jobs = toJobs(census, egShares, options.temps)
   const base = emptySavings(yearRates)
-  for (const job of jobs) addCost(base, costOf(job, yearRates), 1)
-  base.jobs = jobs.length
+  for (const job of jobs) {
+    addCost(base, costOf(job, yearRates), 1)
+    base.jobs += jobCount(job)
+  }
   const eliminations = eliminationSavings({
     census,
     jobs,
@@ -323,7 +350,7 @@ export function runScenario(options: {
     total: sumSavings(censusRules.results, yearRates),
     censusEgByYear: censusRules.egByYear,
     eliminated,
-    temporaries: census.records.length - jobs.length,
+    temps: tempsOf(options.temps),
     opeFiscalYear: yearRates ? opeFiscalYear : null,
     leaveFiscalYear: latestLeaveYear(rates),
   }

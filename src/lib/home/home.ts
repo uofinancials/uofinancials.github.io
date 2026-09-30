@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
+import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
@@ -82,13 +83,16 @@ export function exampleAnswers(options: {
   censusFiscalYear: number
   /** The first savings year's raise rates. */
   raiseRates: RaiseRate[]
+  /** The census's classified temporaries' FY pay by unit. */
+  temps: FyTempsUnit[]
 }): ExampleAnswer[] {
-  const { census, budget, projection, censusFiscalYear } = options
-  const shares = egShares(census, budget)
+  const { census, budget, projection, censusFiscalYear, temps } = options
+  const shares = egShares(census, budget, temps)
   const runRate = runRateAfter(projection, censusFiscalYear)
   return HOME_EXAMPLES.map(({ question, rules }) => {
     const result = projectScenario({
       census,
+      temps,
       censusFiscalYear,
       rules,
       rates: options.rates,

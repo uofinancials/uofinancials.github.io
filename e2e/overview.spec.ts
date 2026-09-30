@@ -41,7 +41,7 @@ test('a scenario answer states its estimate and opens the same savings on the sc
   await page.goto('/')
   const main = page.getByRole('main')
   await expect(main).toContainText(
-    'About $1,442,675 of E&G savings in FY27, 6.3% of the projected FY27 shortfall.',
+    'About $1,433,029 of E&G savings in FY27, 6.3% of the projected FY27 shortfall.',
   )
   await expect(main).toContainText('not recommendations about any person')
   await page
@@ -50,7 +50,7 @@ test('a scenario answer states its estimate and opens the same savings on the sc
   await expect(page).toHaveURL(/\/scenarios\?rules=/)
   const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
   await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
-    '$1,442,675',
+    '$1,433,029',
   )
 })
 

@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { expect, test } from 'vitest'
+import { fyTempsSchema } from '../../src/data/fy-temps.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
@@ -8,12 +9,13 @@ import {
   foldedBudgetYearSchema,
   foldedFallYearSchema,
 } from '../../src/data/unit-aliases.ts'
-import { trendGroupOf } from '../../src/lib/census/groups.ts'
+import { TEMPS_GROUP, trendGroupOf } from '../../src/lib/census/groups.ts'
 import {
   fiscalYearOf,
   isClassifiedTemp,
   jobSpendCents,
 } from '../../src/lib/census/totals.ts'
+import { censusTemps } from '../../src/lib/departments/fy-temps.ts'
 import { toDepartmentCensuses } from '../../src/lib/departments/jobs.ts'
 import { egShareOf, egShares } from '../../src/lib/scenario/eg-share.ts'
 import { freezeHistoryCensuses } from '../../src/lib/scenario/freeze.ts'
@@ -82,11 +84,16 @@ const FY26 = BUDGETS.find(
   ({ fiscalYear }) => fiscalYear === FALL_2025.fiscalYear,
 )
 if (!FY26) throw new Error('The budget Fall 2025 is joined to is not loaded')
-const SHARES_2025 = egShares(FALL_2025, FY26)
+const TEMPS_2025 = censusTemps(
+  fyTempsSchema.parse(readJson(path.join(DATA_DIR, 'fy-temps.json'))),
+  2025,
+)
+const SHARES_2025 = egShares(FALL_2025, FY26, TEMPS_2025)
 const FY27_RATES = ratesFor(RATES, 2027)
 
-/** A Fall 2025 job's FY27 raise, read straight from its raise row. */
+/** A Fall 2025 job's FY27 raise, read straight from its raise row; temporaries are in none. */
 function firstRaiseOf(job: Job): number {
+  if (job.kind === 'temps') return PROJECTED_RAISE_BASIS_POINTS
   const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
   return RATE_OF_ROW.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
 }
@@ -140,23 +147,24 @@ test('every job in Fall 2019-2025 maps to an OPE group, and 2019 and 2025 match 
   })
 })
 
-test('Fall 2025 against the FY26 budget: $504.8M of pay, $297.2M of it E&G, and Athletics and Housing at 0%', () => {
+test('Fall 2025 against the FY26 budget: $504.8M of census pay, $295.3M of it E&G with temporaries’ FY pay in each area’s share, and Athletics and Housing at 0%', () => {
   const jobs = FALL_2025.records.filter((record) => !isClassifiedTemp(record))
   const payCents = jobs.reduce((sum, record) => sum + jobSpendCents(record), 0)
   const egPayCents = jobs.reduce(
     (sum, record) =>
       sum +
-      (jobSpendCents(record) * egShareOf(record, FALL_2025, SHARES_2025)) /
+      (jobSpendCents(record) *
+        egShareOf(FALL_2025.assign(record).area, SHARES_2025)) /
         10_000,
     0,
   )
   expect(FY26.fiscalYear).toBe(2026)
   expect(SHARES_2025.size).toBe(44)
   expect(Math.round(payCents / 10_000_000)).toBe(5_048)
-  expect(Math.round(egPayCents / 10_000_000)).toBe(2_972)
+  expect(Math.round(egPayCents / 10_000_000)).toBe(2_953)
   expect(SHARES_2025.get('480000')).toBe(0)
   expect(SHARES_2025.get('470000')).toBe(0)
-  expect(SHARES_2025.get('222000')).toBe(8_633)
+  expect(SHARES_2025.get('222000')).toBe(8_583)
 })
 
 function censusSavings(result: ScenarioResult) {
@@ -176,6 +184,7 @@ function runFall2025(rules: Rule[], baselineIndex = 0) {
   if (!baseline) throw new Error(`No baseline ${baselineIndex}`)
   const options = {
     census: FALL_2025,
+    temps: TEMPS_2025,
     censusFiscalYear: fiscalYearOf(FALL_2025_DATE),
     fiscalYears: PROJECTION.fiscalYears,
   }
@@ -224,7 +233,7 @@ test('question 2: 10% off pay above $200,000 reaches 263 jobs and saves $1.4M of
       jobs: 263,
       salaryCents: 390_002_400,
       fullCostCents: 531_755_250,
-      egCents: 138_719_911,
+      egCents: 137_789_802,
     },
   ])
 })
@@ -243,7 +252,7 @@ test('question 6: a $250,000 cap reaches 127 jobs and saves $31.2M of pay, $6.8M
       jobs: 127,
       salaryCents: 3_118_342_649,
       fullCostCents: 4_186_184_049,
-      egCents: 684_768_357,
+      egCents: 679_615_961,
     },
   ])
 })
@@ -262,18 +271,18 @@ test('question 7: executives -10% saves $1.3M of E&G; then everyone -2% saves $9
       jobs: 35,
       salaryCents: 140_175_380,
       fullCostCents: 191_049_126,
-      egCents: 126_930_775,
+      egCents: 125_843_580,
     },
     {
-      jobs: 6_291,
-      salaryCents: 1_006_820_603,
-      fullCostCents: 1_548_837_709,
-      egCents: 916_363_650,
+      jobs: 7_018,
+      salaryCents: 1_018_149_365,
+      fullCostCents: 1_563_488_428,
+      egCents: 915_383_283,
     },
   ])
 })
 
-test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 positions empty and saves $9.3M of E&G in FY27', () => {
+test('question 4: a one-year classified freeze at 10.33% turnover leaves 264 positions empty and saves $9.6M of E&G in FY27', () => {
   const { result, rows } = runFall2025([
     {
       kind: 'freeze',
@@ -286,9 +295,9 @@ test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 pos
   if (freeze?.kind !== 'freeze') throw new Error('The rule is a freeze')
   expect(result.opeFiscalYear).toBe(2027)
   expect(freeze.rateBasisPoints).toBe(1_033)
-  // 10.33% of each classified job's E&G cost, in FY27 pay at its raise row's rate.
-  const classified = toJobs(FALL_2025, SHARES_2025).filter(
-    (job) => job.record.kind === 'classified',
+  // 10.33% of each classified job's and each unit's temporaries' E&G cost, in FY27 pay at its raise row's rate.
+  const classified = toJobs(FALL_2025, SHARES_2025, TEMPS_2025).filter(
+    (job) => job.kind === 'temps' || job.record.kind === 'classified',
   )
   const directCents = classified.reduce((sum, job) => {
     const { egCents } = costOf(job, FY27_RATES)
@@ -299,14 +308,14 @@ test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 pos
     classified.length,
   )
   expect(freeze.byYear.map(({ jobs, egCents }) => [jobs, egCents])).toEqual([
-    [189, 934_578_209],
+    [264, 955_767_018],
     [0, 0],
     [0, 0],
     [0, 0],
     [0, 0],
   ])
   expect(rows.map((row) => row.savingsCents)).toEqual([
-    0, 934_578_209, 0, 0, 0, 0,
+    0, 955_767_018, 0, 0, 0, 0,
   ])
 })
 
@@ -318,9 +327,9 @@ test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn 
   ])
   const [freeze] = result.rules
   if (freeze?.kind !== 'freeze') throw new Error('The rule is a freeze')
-  // Each job over $150,000 keeps 95% of the part above it; its E&G saving takes the job's FY27 raise.
-  const cut = toJobs(FALL_2025, SHARES_2025).filter(
-    (job) => job.rateCents > overCents,
+  // Each census job over $150,000 keeps 95% of the part above it; its E&G saving takes the job's FY27 raise.
+  const cut = toJobs(FALL_2025, SHARES_2025, TEMPS_2025).filter(
+    (job) => job.kind === 'census' && job.rateCents > overCents,
   )
   const directCents = cut.reduce((sum, job) => {
     const kept = {
@@ -340,16 +349,16 @@ test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn 
     censusCents + (freeze.byYear[0]?.egCents ?? 0),
   )
   expect(rows.map((row) => row.savingsCents)).toEqual([
-    0, 4_929_758_927, 165_387_739, 170_349_372, 175_459_853, 180_723_650,
+    0, 4_923_430_353, 164_364_713, 169_295_653, 174_374_523, 179_605_759,
   ])
   expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
-    448_500_000, 2_652_699_627, -4_159_334_161, -5_509_099_928, -6_779_743_047,
-    -7_133_663_150,
+    448_500_000, 2_646_371_053, -4_160_357_187, -5_510_153_647, -6_780_828_377,
+    -7_134_781_041,
   ])
   expect(
     rows.find((row) => row.remainingFundBalanceCents < 0)?.fiscalYear,
   ).toBe(2030)
-  expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_513_784_859)
+  expect(rows.at(-1)?.remainingFundBalanceCents).toBe(-8_524_393_399)
 })
 
 test('question 13: the same stack against state funding $20M below projection leaves the balance negative from FY30', () => {
@@ -364,18 +373,18 @@ test('question 13: the same stack against state funding $20M below projection le
   ]
   const { rows } = runFall2025(stack, STATE_FUNDING_BELOW)
   expect(rows.map((row) => row.remainingRunRateCents)).toEqual([
-    448_500_000, 2_652_699_627, -6_159_334_161, -7_619_099_928, -8_974_143_047,
-    -9_415_839_150,
+    448_500_000, 2_646_371_053, -6_160_357_187, -7_620_153_647, -8_975_228_377,
+    -9_416_957_041,
   ])
   expect(rows.map((row) => row.remainingFundBalanceCents)).toEqual([
-    12_415_355_700, 15_068_055_427, 8_908_721_266, 1_289_621_338,
-    -7_684_521_709, -17_100_360_859,
+    12_415_355_700, 15_061_726_853, 8_901_369_666, 1_281_216_019,
+    -7_694_012_358, -17_110_969_399,
   ])
   expect(rows.every((row) => row.remainingWeeks === null)).toBe(true)
 })
 
 // Budget figures below match an independent sum of public/data/budget/FY27.json rows.
-test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines and takes its 1,219 census jobs from the other rules', () => {
+test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines and takes its 1,273 census jobs, 54 of them classified temporaries, from the other rules', () => {
   const { result, rows } = runFall2025([
     { kind: 'eliminate', code: '222000' },
     { kind: 'remove', scope: { ...ALL, dept: '222000' } },
@@ -386,7 +395,7 @@ test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines a
       code: '222000',
       name: 'Arts & Sciences, College of',
       isArea: true,
-      jobs: 1_219,
+      jobs: 1_273,
       eg: {
         payCents: 10_721_399_400,
         opeCents: 7_236_959_350,
@@ -459,20 +468,47 @@ test("question 17: a one-year raise freeze saves $18.1M of E&G in FY27, each job
   ])
   const [freeze] = result.rules
   if (freeze?.kind !== 'raises') throw new Error('No raise freeze result')
-  const directCents = toJobs(FALL_2025, SHARES_2025).reduce((sum, job) => {
-    const { egCents } = costOf(job, FY27_RATES)
-    return sum + Math.round((egCents * firstRaiseOf(job)) / 10_000)
-  }, 0)
+  const directCents = toJobs(FALL_2025, SHARES_2025, TEMPS_2025).reduce(
+    (sum, job) => {
+      const { egCents } = costOf(job, FY27_RATES)
+      return sum + Math.round((egCents * firstRaiseOf(job)) / 10_000)
+    },
+    0,
+  )
   expect(freeze.byYear[0]?.egCents).toBe(directCents)
   const years = [
-    1_812_143_671, 1_866_507_955, 1_922_503_123, 1_980_178_281, 2_039_583_596,
+    1_808_012_417, 1_862_252_768, 1_918_120_327, 1_975_663_966, 2_034_933_878,
   ]
   expect(freeze.byYear.map(({ egCents }) => egCents)).toEqual(years)
-  expect(freeze.byYear.every(({ jobs }) => jobs === 6_291)).toBe(true)
+  expect(freeze.byYear.every(({ jobs }) => jobs === 7_018)).toBe(true)
   // Each later year is the one before x 1.03, give or take a cent per job.
   years.slice(1).forEach((cents, index) => {
     const before = years[index] ?? 0
-    expect(Math.abs(cents - before * 1.03)).toBeLessThan(6_291)
+    expect(Math.abs(cents - before * 1.03)).toBeLessThan(7_018)
   })
   expect(rows.map((row) => row.savingsCents)).toEqual([0, ...years])
+})
+
+test('removing classified temporaries saves their 727 FY2025-26 jobs and $5,664,381 of pay at FY27 Temps rates; eliminating Arts & Sciences first takes its temporaries', () => {
+  const temps = { ...ALL, group: TEMPS_GROUP }
+  const [removed] = censusSavings(
+    runFall2025([{ kind: 'remove', scope: temps }]).result,
+  )
+  // Each unit's pay x (1 - 2.25%) x (1 + 32.30%), rounded half up, then weighted by its area's share.
+  const egCents = TEMPS_2025.reduce((sum, { payCents, area }) => {
+    const fullCents = Math.round((payCents * 9_775 * 13_230) / 10 ** 8)
+    const share = area === null ? 0 : (SHARES_2025.get(area) ?? 0)
+    return sum + Math.round((fullCents * share) / 10_000)
+  }, 0)
+  expect(removed).toEqual({
+    jobs: 727,
+    salaryCents: 566_438_100,
+    fullCostCents: 732_536_159,
+    egCents,
+  })
+  const afterArts = runFall2025([
+    { kind: 'eliminate', code: '222000' },
+    { kind: 'remove', scope: { ...temps, dept: '222000' } },
+  ]).result
+  expect(censusSavings(afterArts)[1]).toMatchObject({ jobs: 0, salaryCents: 0 })
 })

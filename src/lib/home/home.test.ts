@@ -104,6 +104,7 @@ test("each example's first-year E&G savings is set against that year's shortfall
       [acrossTheBoardTerm('United Academics', 500, '2026-09-01')],
       2027,
     ),
+    temps: [],
   })
   // 10% of the 10,000,000 over $200,000, and all 5,000,000 over $250,000, each x 0.9 (leave) x 1.7 (OPE),
   // then x 1.05, the career instructor's FY27 raise: 1,530,000 and 7,650,000 become 1,606,500 and 8,032,500.

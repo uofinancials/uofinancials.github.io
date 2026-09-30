@@ -1,5 +1,6 @@
 /// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
+import { openSources } from './sources.ts'
 
 test('an example loads its rules into the link and shows what they save', async ({
   page,
@@ -20,7 +21,7 @@ test('an example loads its rules into the link and shows what they save', async 
     '263',
     '$3,900,024',
     '$5,317,553',
-    '$1,387,199',
+    '$1,377,898',
   ])
   await expect(
     page
@@ -52,7 +53,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   ).toContainText('turnover a year')
   const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
   await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
-    '$26,526,996',
+    '$26,463,711',
   )
   await expect(outlook.getByRole('row', { name: /^FY30/ })).toContainText(
     '-0.9',
@@ -65,7 +66,7 @@ test('a freeze loads the past censuses and is counted year by year against a cho
   })
   await expect(page).toHaveURL(/case=.*State/)
   await expect(outlook.getByRole('row', { name: /^FY31/ })).toContainText(
-    '-$171,003,609',
+    '-$171,109,694',
   )
   await expect(page.getByRole('main')).toContainText(
     'Weeks of expenses are not computed for this case',
@@ -96,7 +97,7 @@ test('rules are added, edited, moved, and removed in place, and held in the link
     page
       .getByRole('row', { name: /^1\. Pay capped at \$250,000/ })
       .getByRole('cell'),
-  ).toHaveText(['127', '$31,183,426', '$41,861,840', '$6,847,684'])
+  ).toHaveText(['127', '$31,183,426', '$41,861,840', '$6,796,160'])
   await page.getByRole('button', { name: 'Hiring freeze' }).click()
   await page
     .getByRole('group', { name: /^2\./ })
@@ -209,8 +210,8 @@ test("a raise freeze saves each group's FY27 raise and shows the rates and sourc
     .getByRole('link', { name: 'What would a one-year raise freeze save?' })
     .click()
   const row = page.getByRole('row', { name: /^1\. Raises frozen for 1 year/ })
-  await expect(row.getByRole('cell').first()).toHaveText('6,291')
-  await expect(row.getByRole('cell').last()).toHaveText('$18,121,437')
+  await expect(row.getByRole('cell').first()).toHaveText('7,018')
+  await expect(row.getByRole('cell').last()).toHaveText('$18,080,124')
   const rates = page.getByRole('table', { name: /^Raise rates in FY27/ })
   await expect(
     rates.getByRole('row', { name: /^Officers of Administration/ }),
@@ -220,7 +221,7 @@ test("a raise freeze saves each group's FY27 raise and shows the rates and sourc
   )
   const outlook = page.getByRole('table', { name: /savings by fiscal year/ })
   await expect(outlook.getByRole('row', { name: /^FY27/ })).toContainText(
-    '$18,121,437',
+    '$18,080,124',
   )
   await expect(page.getByRole('main')).toContainText('with no catch-up')
 })
@@ -270,4 +271,28 @@ test('each section with computed figures closes with its sources and method', as
       /^Sources and method \(\d+\)$/,
     )
   }
+})
+
+test('removing classified temporaries saves their FY2025-26 pay by unit, and cites the FY total pay report', async ({
+  page,
+}) => {
+  await page.goto(
+    `/scenarios?rules=${encodeURIComponent(JSON.stringify([{ kind: 'remove', scope: { group: 'Classified temporaries' } }]))}`,
+  )
+  const cells = page
+    .getByRole('row', { name: /^1\. Jobs removed/ })
+    .getByRole('cell')
+  await expect(cells.nth(0)).toHaveText('727')
+  await expect(cells.nth(1)).toHaveText('$5,664,381')
+  await expect(cells.nth(2)).toHaveText('$7,325,362')
+  const rules = page.locator('section', {
+    has: page.getByRole('heading', { level: 2, name: 'Rules', exact: true }),
+  })
+  await expect(rules).toContainText(
+    "727 of them are classified temporaries' jobs in FY2025-26, counted at their actual pay of $5,664,381.",
+  )
+  await openSources(page)
+  await expect(rules).toContainText(
+    'FY2025-26 total pay reports, UO Office of Data Enablement',
+  )
 })
