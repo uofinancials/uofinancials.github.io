@@ -5,7 +5,6 @@ import type { FallEntry } from '../../src/data/manifest.ts'
 import { sha256Hex, today } from './manifest-file.ts'
 import type { PageFailure } from './pdf/blocks.ts'
 
-/** What a salary report parser returns for one file. */
 export type ParsedReport<Row> = {
   kind: StaffKind
   extractDate: string
@@ -57,7 +56,6 @@ export function sourceProblems(
   return [...fileCounts, ...failures]
 }
 
-/** A year's records from all its files, by name, then kind, then page. */
 export function sortedRecords<Row extends SortableRow>(
   sources: SourcePdf<ParsedReport<Row>>[],
 ): Row[] {
