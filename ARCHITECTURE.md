@@ -4,18 +4,22 @@
 
 UO Financials is a static single-page site built with Vite and React. GitHub
 Pages serves it from the `uofinancials.github.io` repository. An import script
-turns the University of Oregon's Fall Census salary report PDFs, its operational
-expenditure budget workbooks, and its blended OPE rate pages into JSON files
-committed under `public/data/`, then derives from those files a summary of the
-figures the pages show by default. Raise terms from collective bargaining
-agreements and the E&G fund projection from Board of Trustees materials are
-entered by hand. The site reads nothing but its bundle and those files.
+turns the University of Oregon's Fall Census and fiscal year total pay salary
+report PDFs, its operational expenditure budget workbooks, and its blended OPE
+rate pages into JSON files committed under `public/data/`, then derives from
+those files a summary of the figures the pages show by default. Raise terms from
+collective bargaining agreements and the E&G fund projection from Board of
+Trustees materials are entered by hand. The site reads nothing but its bundle
+and those files.
 
 ## Data
 
 - Fall Census salary reports - classified and unclassified PDFs, one pair per
   census year, published on the Office of Data Enablement's salary reports page
   and downloaded by hand into the gitignored `.cache/sources/fall/`.
+- Fiscal year total pay reports - classified and unclassified PDFs, one pair per
+  fiscal year, from the same page, downloaded by hand into the gitignored
+  `.cache/sources/fy/`.
 - Operational expenditure budgets - one XLSX workbook per fiscal year, linked
   from the Budget and Resource Planning office's Budget Reports page and
   downloaded by `scripts/scrape` into the gitignored `.cache/sources/budget/`.
@@ -28,6 +32,9 @@ entered by hand. The site reads nothing but its bundle and those files.
   by hand for `public/data/outlook.json`.
 - `public/data/fall/<year>.json` - one census year's job records; written by
   `scripts/scrape`.
+- `public/data/fy/<year>.json` - one fiscal year's job records with their total
+  pay and published department names, named for the year it ends in; written by
+  `scripts/scrape`. The site does not read them.
 - `public/data/budget/FY<yy>.json` - one fiscal year's budget rows by
   department, fund, account type, and posting period, with that year's names;
   written by `scripts/scrape`.
@@ -58,6 +65,7 @@ entered by hand. The site reads nothing but its bundle and those files.
 ```mermaid
 flowchart LR
   pdfs[Fall Census PDFs] --> scrape[scripts/scrape]
+  pay[FY total pay PDFs] --> scrape
   xlsx[Budget workbooks] --> scrape
   html[OPE rate pages] --> scrape
   cba[Agreements] --> hand[Hand entry]
@@ -108,8 +116,9 @@ flowchart LR
   page's view, navigation that loads the next view first, and the viewport
   width.
 - `src/data` - the schemas and types of the committed data files, the queries
-  that fetch and parse them, and the hand-reviewed unit and person alias tables,
-  with the unit alias fold every Fall and budget year is read through.
+  that fetch and parse them, the hand-reviewed unit and person alias tables,
+  with the unit alias fold every Fall and budget year is read through, and the
+  hand-reviewed codes of FY department names no census or budget resolves.
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
   - `shared` - number formatting, browser tab titles, table sort order, source
@@ -119,8 +128,8 @@ flowchart LR
   - `trends` - trends by group and by area, the report's indexes, changes, spend
     shares, and answers, continuing jobs' pay changes, and raise groups beside
     their terms.
-  - `departments` - a department's budget and jobs, the department index, and
-    the department table.
+  - `departments` - a department's budget and jobs, the department index, the
+    department table, and FY department names resolved to codes.
   - `people` - the people list, names joined as one person by hand review or by
     name-matching rules, person links and lookup, and a person's computed
     figures and peer medians.
@@ -142,15 +151,23 @@ flowchart LR
 - `scripts/scrape/manifest-file.ts` - reading and writing the manifest.
 - `scripts/scrape/net` - network access: robots.txt rules, identification,
   request spacing, and the conditional download cache.
-- `scripts/scrape/fall` - the Fall step: PDF pages as text lines, record blocks,
-  typed records, and encoding repair.
+- `scripts/scrape/pdf` - the salary reports' PDF pages as text lines, record
+  blocks by label layout, field parsing, and encoding repair.
+- `scripts/scrape/source-pdfs.ts` - reading downloaded salary report PDFs,
+  checking a year's files, and their manifest entries.
+- `scripts/scrape/fall` - the Fall step: the census report layout and typed
+  records.
+- `scripts/scrape/fy` - the FY step: the total pay report layout and typed
+  records.
 - `scripts/scrape/budget` - the budget step: the workbook links on the Budget
   Reports page, and each workbook as a typed budget year.
 - `scripts/scrape/rates` - the rates step: the OPE rate pages as typed rates.
-- `scripts/aliases` - the finder of department codes that may name one unit.
+- `scripts/aliases` - the finders of department codes that may name one unit,
+  and of FY department names no census or budget resolves, with their evidence.
 - `scripts/committed` - checks of the committed data files, and of the figures
-  derived from them, against their sources, and that every unit and name pair
-  the alias finders offer has been reviewed.
+  derived from them, against their sources, that every unit and name pair the
+  alias finders offer has been reviewed, and that every FY department name
+  resolves to a code.
 
 ### End-to-end tests (`e2e/`)
 
@@ -239,9 +256,10 @@ flowchart LR
   year, its budget year, the budget year of the first savings year, the OPE
   rates, the raise terms, and the outlook file, and every Fall year from 2019
   when a hiring freeze is present.
-- `/sources` - every source file in the manifest and every document the raise
-  terms and the budget outlook cite, with retrieval dates, hashes, and counts;
-  driven by `src/data`, `src/lib/shared`, and `src/lib/budget`.
+- `/sources` - every Fall, budget, and rate source file in the manifest and
+  every document the raise terms and the budget outlook cite, with retrieval
+  dates, hashes, and counts; driven by `src/data`, `src/lib/shared`, and
+  `src/lib/budget`.
 - Any other path - the not-found page, inside the shared layout.
 
 ## Deployment
