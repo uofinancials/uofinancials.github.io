@@ -1,9 +1,22 @@
 import { existsSync } from 'node:fs'
 import { expect, test } from 'vitest'
+import { budgetYearSchema } from '../../src/data/budget.ts'
+import { fallYearSchema } from '../../src/data/fall.ts'
 import { type FyYear, fyYearSchema } from '../../src/data/fy.ts'
+import { FY_DEPARTMENTS } from '../../src/data/fy-departments.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { TEMP_POSITION_CLASS } from '../../src/lib/census/totals.ts'
-import { fyDataPath, MANIFEST_PATH, readJson } from '../scrape/cache.ts'
+import { createFyCodeResolver } from '../../src/lib/departments/fy-codes.ts'
+import {
+  budgetDataPath,
+  fallDataPath,
+  fyDataPath,
+  MANIFEST_PATH,
+  readJson,
+} from '../scrape/cache.ts'
+
+/** Parsing every census, budget and FY year takes several seconds. */
+const ALL_YEARS_TIMEOUT_MS = 30_000
 
 // Counted independently from the PDFs' text before the parser was written.
 const PINS = [
@@ -59,4 +72,47 @@ test.skipIf(!existsSync(MANIFEST_PATH)).each(PINS)(
       ),
     }).toEqual({ classified, unclassified, temps, tempPayCents })
   },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'every FY department name resolves to one code, and every reviewed name is used and published',
+  () => {
+    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+    const sources = {
+      falls: manifest.fall.map(({ year }) =>
+        fallYearSchema.parse(readJson(fallDataPath(year))),
+      ),
+      budgets: manifest.budget.map(({ fiscalYear }) =>
+        budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+      ),
+    }
+    const used = new Set<string>()
+    const unresolved = new Set<string>()
+    for (const { fiscalYear } of manifest.fy) {
+      const resolve = createFyCodeResolver(fiscalYear, sources)
+      for (const { payDepartment } of readYear(fiscalYear).records) {
+        used.add(payDepartment)
+        if (resolve(payDepartment).basis === 'unresolved') {
+          unresolved.add(`FY${fiscalYear} ${payDepartment}`)
+        }
+      }
+    }
+    const published = new Set([
+      ...sources.falls.flatMap(({ records }) =>
+        records.flatMap(({ homeDepartment, payDepartment }) =>
+          [homeDepartment.code, payDepartment.code].filter(
+            (code) => code !== null,
+          ),
+        ),
+      ),
+      ...sources.budgets.flatMap(({ orgs }) => Object.keys(orgs)),
+    ])
+    expect([...unresolved]).toEqual([])
+    expect(
+      FY_DEPARTMENTS.filter(
+        ({ name, code }) => !used.has(name) || !published.has(code),
+      ),
+    ).toEqual([])
+  },
+  ALL_YEARS_TIMEOUT_MS,
 )

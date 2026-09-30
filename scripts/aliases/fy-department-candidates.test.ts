@@ -49,13 +49,15 @@ test('lists each unresolved name with its people’s pay departments, units of t
   const falls: FallYear[] = [
     {
       censusDate: '2016-11-01',
-      records: [fallJob('Doe, Ann', '222520', 'CAS Asian Studies Operations')],
+      records: [
+        fallJob('Doe, Ann', '222520', 'CAS Invented Studies Operations'),
+      ],
     },
     {
       censusDate: '2024-11-01',
       records: [
-        fallJob('Doe, Ann', '222515', 'CAS Asian Studies'),
-        fallJob('Roe, Bo', '222515', 'CAS Asian Studies'),
+        fallJob('Doe, Ann', '222515', 'CAS Invented Studies'),
+        fallJob('Roe, Bo', '222515', 'CAS Invented Studies'),
         fallJob('Poe, Cy', '100001', 'Known Unit'),
       ],
     },
@@ -64,30 +66,35 @@ test('lists each unresolved name with its people’s pay departments, units of t
     {
       fiscalYear: 2025,
       records: [
-        fyJob('Doe, Ann', 'CAS Asian Studies Operations'),
-        fyJob('Roe, Bo', 'CAS Asian Studies Operations'),
+        fyJob('Doe, Ann', 'CAS Invented Studies Operations'),
+        fyJob('Roe, Bo', 'CAS Invented Studies Operations'),
         fyJob('Poe, Cy', 'Known Unit'),
       ],
     },
   ]
   expect(findFyNameCandidates(fys, { falls, budgets: [] })).toEqual([
     {
-      name: 'CAS Asian Studies Operations',
+      name: 'CAS Invented Studies Operations',
       fiscalYears: [2025],
       jobs: 2,
       codes: [],
       people: [
-        { code: '222515', name: 'CAS Asian Studies', census: 2024, people: 2 },
+        {
+          code: '222515',
+          name: 'CAS Invented Studies',
+          census: 2024,
+          people: 2,
+        },
       ],
       sameName: [
         {
           code: '222520',
-          name: 'CAS Asian Studies Operations',
+          name: 'CAS Invented Studies Operations',
           censuses: [2016],
           budgets: [],
         },
       ],
-      prefixUnits: [{ code: '222515', name: 'CAS Asian Studies' }],
+      prefixUnits: [{ code: '222515', name: 'CAS Invented Studies' }],
     },
   ])
 })

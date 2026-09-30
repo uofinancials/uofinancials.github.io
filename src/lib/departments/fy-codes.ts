@@ -4,8 +4,7 @@ import { FY_DEPARTMENTS } from '../../data/fy-departments.ts'
 
 /** Where an FY department name's code came from; the site's join, not UO's. */
 export type FyDepartmentCode =
-  | { basis: 'census' | 'budget' | 'nearby census'; code: string }
-  | { basis: 'reviewed'; code: string | null }
+  | { basis: 'reviewed' | 'census' | 'budget' | 'nearby census'; code: string }
   | { basis: 'unresolved'; codes: string[] }
 
 export type FyCodeSources = {

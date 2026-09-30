@@ -52,6 +52,22 @@ test('tries the census inside the fiscal year, then its budget, then the censuse
   })
 })
 
+test('takes a reviewed name’s code over a census that gives it two', () => {
+  const knightCampus = createFyCodeResolver(2021, {
+    falls: [
+      census(2020, [
+        paidBy('110400', 'Knight Campus'),
+        paidBy('110401', 'Knight Campus'),
+      ]),
+    ],
+    budgets: [],
+  })
+  expect(knightCampus('Knight Campus')).toEqual({
+    basis: 'reviewed',
+    code: '110400',
+  })
+})
+
 test('leaves a name unresolved where the first source that has it gives two codes', () => {
   expect(resolve('Twice')).toEqual({
     basis: 'unresolved',
