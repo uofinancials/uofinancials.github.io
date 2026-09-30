@@ -50,7 +50,7 @@ function classifiedPair(fromCents: number, toCents: number) {
   ] satisfies [FallRecord, FallRecord]
 }
 
-test('pairs leave out temporaries, staff kind moves, and term changes, and group by the earlier job', () => {
+test('pairs leave out staff kind moves and term changes, keep temporaries, and group by the earlier job', () => {
   const pairs = continuingPairs(
     linkedYears(2020, [
       classifiedPair(5_000_000, 5_350_000),
@@ -67,13 +67,24 @@ test('pairs leave out temporaries, staff kind moves, and term changes, and group
           eeoCategory: 'Other Professionals',
         }),
       ],
+      [
+        classifiedJob({ positionClass: { code: 'TS901', title: null } }),
+        classifiedJob(),
+      ],
     ]),
   )
   expect(
-    pairs.map(({ from, group, ratio }) => [from.name, group, ratio]),
+    pairs.map(({ from, group, ratio, isClassChanged }) => [
+      from.name,
+      group,
+      ratio,
+      isClassChanged,
+    ]),
   ).toEqual([
-    ['Person 0', 'Classified staff', 0.07],
-    ['Person 4', 'Faculty', -0.05],
+    ['Person 0', 'Classified staff', 0.07, false],
+    ['Person 1', 'Classified temporaries', 0, false],
+    ['Person 4', 'Faculty', -0.05, null],
+    ['Person 5', 'Classified temporaries', 0, true],
   ])
 })
 

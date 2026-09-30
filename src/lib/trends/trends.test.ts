@@ -35,7 +35,7 @@ test('the median of an even count is the mean of the middle two, rounded to the 
   expect(medianRateCents([])).toBeNull()
 })
 
-test('each group gets a point per census; temps count only through FY figures; spend needs three paid jobs and median three primary rates', () => {
+test('each group gets a point per census; temps count in spend and FTE only through FY figures and in the median by rate; spend needs three paid jobs and median three primary rates', () => {
   const trends = buildTrends(
     [
       {
@@ -95,7 +95,7 @@ test('each group gets a point per census; temps count only through FY figures; s
     jobs: 4,
     spendCents: 9_000_000 + 100_000 + 5_000_000,
     fteHundredths: 100 + 10 + 100,
-    medianRateCents: null,
+    medianRateCents: 9_000_000,
   })
 })
 

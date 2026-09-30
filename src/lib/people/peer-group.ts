@@ -14,11 +14,12 @@ export function positionOf(record: FallRecord): string | null {
 /** The jobs a person's rate is shown beside: one position class number, one rank, or one OA salary grade. */
 export type PeerGroup = { key: string; label: string }
 
-/** A classified job's class number (any letter prefix), an unclassified job's rank, or for no rank its OA salary grade; `null` for temporaries and jobs with none published. */
+/** A classified job's class number (any letter prefix; a temporaries class's whole code), an unclassified job's rank, or for no rank its OA salary grade; `null` for jobs with none published. */
 export function peerGroupOf(record: FallRecord): PeerGroup | null {
   if (record.kind === 'classified') {
-    if (!record.positionClass || isClassifiedTemp(record)) return null
-    const number = record.positionClass.code.slice(1)
+    if (!record.positionClass) return null
+    const { code } = record.positionClass
+    const number = isClassifiedTemp(record) ? code : code.slice(1)
     const title = record.positionClass.title ?? 'Position class'
     return { key: `class ${number}`, label: `${title} (class ${number})` }
   }

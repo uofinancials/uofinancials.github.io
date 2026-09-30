@@ -56,7 +56,7 @@ test('the report answers each question in its tab, with the exact figures and th
     page
       .getByRole('table', { name: /^Median change in salary rate/ })
       .getByRole('row', {
-        name: /^All continuing jobs 0\.0% \+2\.2% .* \+7\.9% \+40\.8%$/,
+        name: /^All continuing jobs 0\.0% \+2\.2% .* \+7\.9% \+40\.5%$/,
       }),
   ).toBeVisible()
   await openSources(page)

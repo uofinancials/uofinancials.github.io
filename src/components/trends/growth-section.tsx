@@ -33,7 +33,7 @@ import { RatioFigure } from './ratio-figure'
 /** The first census after UO restructured its EEO categories. */
 const RESTRUCTURE_YEAR = 2018
 
-const METHOD = `Each line is a group’s figure in each census over its figure in the first census shown, times 100. Change is the last census’s figure over the first’s, less one. ${SPEND_METHOD} FTE is each job’s appointment percent, summed, and covers the jobs spend covers. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is not shown for fewer than ${MIN_JOBS_SHOWN} paid jobs, nor a median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Dollars are as published, not adjusted for inflation.`
+const METHOD = `Each line is a group’s figure in each census over its figure in the first census shown, times 100. Change is the last census’s figure over the first’s, less one. ${SPEND_METHOD} FTE is each job’s appointment percent, summed, and covers the jobs spend covers. Median salary rate is the median published annual salary rate of primary jobs. Spend is not shown for fewer than ${MIN_JOBS_SHOWN} paid jobs, nor a median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Dollars are as published, not adjusted for inflation.`
 
 const RATIO_METHOD = `${RATIO_GROUPS.join(' and ')} jobs over ${RATIO_BASE_GROUP} jobs in each census, times 100, counting jobs rather than people or FTE.`
 

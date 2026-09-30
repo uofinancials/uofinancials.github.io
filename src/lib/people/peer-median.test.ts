@@ -9,7 +9,7 @@ const analyst = (code: string, annualSalaryRateCents: number) =>
     annualSalaryRateCents,
   })
 
-test('classified jobs group by class number whatever the prefix, ranks by rank, and no rank by OA grade', () => {
+test('classified jobs group by class number whatever the prefix, temporaries by their whole class, ranks by rank, and no rank by OA grade', () => {
   expect(peerGroupOf(analyst('C1464', 1))).toEqual({
     key: 'class 1464',
     label: 'Analyst Programmer (class 1464)',
@@ -19,7 +19,7 @@ test('classified jobs group by class number whatever the prefix, ranks by rank, 
     peerGroupOf(
       classifiedJob({ positionClass: { code: 'TS401', title: null } }),
     ),
-  ).toBeNull()
+  ).toEqual({ key: 'class TS401', label: 'Position class (class TS401)' })
   expect(peerGroupOf(classifiedJob({ positionClass: null }))).toBeNull()
   expect(peerGroupOf(unclassifiedJob())?.label).toBe('Instructor')
   expect(

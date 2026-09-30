@@ -152,7 +152,7 @@ test('the people chart shows the latest census by salary rate, and each filter i
       .locator('.recharts-bar-rectangle'),
   ).not.toHaveCount(0)
   await page.getByText('The chart’s numbers').click()
-  await expect(main).toContainText('$75,787')
+  await expect(main).toContainText('$72,797')
   await expect(main).toContainText('$9,400,000')
   await expect(
     page.getByRole('rowheader', { name: '$250,000 and over' }),

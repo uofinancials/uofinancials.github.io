@@ -7,7 +7,6 @@ import {
   type TrendGroup,
   trendGroupOf,
 } from '../census/groups.ts'
-import { isClassifiedTemp } from '../census/totals.ts'
 import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
 import { titleOf } from '../people/person-fields.ts'
 import { findPersonLinks, type PersonLink } from '../people/person-links.ts'
@@ -20,7 +19,7 @@ import {
   type TrendFilter,
 } from './trends.ts'
 
-/** A person link whose two primary jobs are the same staff kind and term, neither a classified temporary; grouped by the earlier job. */
+/** A person link whose two primary jobs are the same staff kind and term; grouped by the earlier job. */
 export type ContinuingPair = {
   fromYear: number
   from: FallRecord
@@ -79,8 +78,6 @@ export function continuingPairs(years: FallYear[]): ContinuingPair[] {
   return findPersonLinks(years).flatMap((link) => {
     const { from, to } = link
     return from.kind !== to.kind ||
-      isClassifiedTemp(from) ||
-      isClassifiedTemp(to) ||
       from.termOfServiceMonths !== to.termOfServiceMonths
       ? []
       : [toPair(link)]

@@ -18,7 +18,7 @@ const GROUP_RULES: Partial<Record<TrendGroup, string>> = {
   Executives: `Unclassified jobs in the categories ${publishedCategoriesOf('Executives').join(', ')}, or with the OA salary grade ${EXECUTIVE_GRADE} whatever their category, a grade UO publishes from Fall 2016. Opened, the jobs placed by the grade alone are one line, “${EXEC_OTHER_CATEGORY}”.`,
   'Admins and professionals': `Unclassified jobs in the categories ${publishedCategoriesOf('Admins and professionals').join(', ')}, without the ${EXECUTIVE_GRADE} grade.`,
   'Classified temporaries':
-    'Classified jobs with a TS position class, or none (Fall 2015). Their published rates are annualised hourly rates, so their spend and FTE come from their actual pay in the FY total pay reports, from Fall 2020.',
+    'Classified jobs with a TS position class, or none (Fall 2015). Their published rates are annualised hourly rates, so their spend and FTE come from their actual pay in the FY total pay reports, from Fall 2020. Their rates count in the median and rate measures like any job’s.',
   Overloads:
     'Jobs of type Overload, in every year. UO publishes an Overload category from 2019; before, overloads carried the holder’s category.',
   'Classified staff': 'Every other classified job, whatever its category.',
