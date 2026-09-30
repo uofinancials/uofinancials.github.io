@@ -45,6 +45,7 @@ export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
 export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')
 export const OUTLOOK_DATA_PATH = path.join(DATA_DIR, 'outlook.json')
 export const SUMMARY_DATA_PATH = path.join(DATA_DIR, 'summary.json')
+export const FY_TEMPS_DATA_PATH = path.join(DATA_DIR, 'fy-temps.json')
 
 export const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
 

@@ -9,11 +9,11 @@ import {
 } from '../scrape/summary.ts'
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'the committed summary and area trends are what the committed data files derive; run `pnpm scrape summary` if not',
+  'the committed summary, area trends and temporaries’ FY pay are what the committed data files derive; run `pnpm scrape summary` if not',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    const { summary, areas, files } = deriveSummary(manifest)
-    const texts = serializeDerived(summary, areas)
+    const { summary, areas, fyTemps, files } = deriveSummary(manifest)
+    const texts = serializeDerived(summary, areas, fyTemps)
     for (const [file, text] of texts) {
       expect(JSON.parse(readFileSync(file, 'utf8')), file).toEqual(
         JSON.parse(text),

@@ -10,6 +10,7 @@ import {
   type AreaAssignment,
   createAreaAssigner,
   ORG_LEVEL_AREA,
+  type PayDepartmentOf,
 } from '../census/areas.ts'
 import { fiscalYearForCensus } from '../census/totals.ts'
 import {
@@ -29,7 +30,7 @@ export type DepartmentCensus = {
   records: FallRecord[]
   fiscalYear: number
   orgs: BudgetYear['orgs']
-  assign: (record: FallRecord) => AreaAssignment
+  assign: (record: PayDepartmentOf) => AreaAssignment
 }
 
 const joinedCensuses = new WeakMap<
