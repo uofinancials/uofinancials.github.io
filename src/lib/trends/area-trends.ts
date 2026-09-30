@@ -4,23 +4,9 @@ import type { AreaTrends, ScopeTrends } from '../../data/summary.ts'
 import { departmentIndex } from '../departments/codes.ts'
 import { tempsByCensus } from '../departments/fy-temps.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
+import { groupBy } from '../shared/group.ts'
 import { type ContinuingPair, payChangeTrends } from './pay-changes.ts'
 import { buildTrends, pairYears, type TrendFilter } from './trends.ts'
-
-function groupBy<T>(
-  items: T[],
-  keyOf: (item: T) => string | null,
-): Map<string, T[]> {
-  const groups = new Map<string, T[]>()
-  for (const item of items) {
-    const key = keyOf(item)
-    if (key === null) continue
-    const members = groups.get(key) ?? []
-    members.push(item)
-    groups.set(key, members)
-  }
-  return groups
-}
 
 /** The censuses and pairs every scope is built from, the range they cover, and each scope's classified temporaries' FY figures. */
 type Frame = {

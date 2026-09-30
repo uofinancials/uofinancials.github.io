@@ -9,6 +9,7 @@ import {
   UNASSIGNED_AREA,
 } from '../census/totals.ts'
 import { formatDollars } from '../shared/format.ts'
+import { groupBy } from '../shared/group.ts'
 import { changeOf } from '../shared/series.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
 import {
@@ -188,21 +189,14 @@ export function departmentRows(
   }
   const years = { now: now.census.year, before: before.census.year, fyTemps }
   const row = (input: RowInput) => toRow(input, sums, years)
-  const earlierByCode = new Map<string | null, FallRecord[]>()
-  const earlierByArea = new Map<string | null, FallRecord[]>()
-  const add = (
-    groups: Map<string | null, FallRecord[]>,
-    key: string | null,
-    record: FallRecord,
-  ) => {
-    const group = groups.get(key)
-    if (group) group.push(record)
-    else groups.set(key, [record])
-  }
-  for (const record of before.census.records) {
-    add(earlierByCode, record.payDepartment.code, record)
-    add(earlierByArea, before.census.assign(record).area, record)
-  }
+  const earlierByCode = groupBy(
+    before.census.records,
+    ({ payDepartment }) => payDepartment.code,
+  )
+  const earlierByArea = groupBy(
+    before.census.records,
+    (record) => before.census.assign(record).area,
+  )
   const { orgs } = now.census
   const { units, areaJobs } = placeDepartments(now.census)
   return {

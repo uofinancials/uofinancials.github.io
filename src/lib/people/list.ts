@@ -16,6 +16,7 @@ import {
 } from '../census/search.ts'
 import type { FilterChip } from '../shared/filter-chip.ts'
 import { CENTS_PER_DOLLAR, formatDollars } from '../shared/format.ts'
+import { groupBy } from '../shared/group.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
 import {
   optionLabel,
@@ -173,13 +174,7 @@ export type GroupRow = {
 
 /** Each group with a job: its job count and median rate, as `measureJobs` gives them. */
 export function groupSummary(records: FallRecord[], year: number): GroupRow[] {
-  const byGroup = new Map<TrendGroup, FallRecord[]>()
-  for (const record of records) {
-    const group = trendGroupOf(record, year)
-    const members = byGroup.get(group) ?? []
-    members.push(record)
-    byGroup.set(group, members)
-  }
+  const byGroup = groupBy(records, (record) => trendGroupOf(record, year))
   return TREND_GROUPS.flatMap((group) => {
     const members = byGroup.get(group)
     if (!members) return []
