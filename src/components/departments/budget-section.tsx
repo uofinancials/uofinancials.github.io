@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { SeriesChart } from '@/components/charts/series-chart'
 import { RadioField } from '@/components/fields/radio-field'
 import { PageSection } from '@/components/layout/page-section'
@@ -35,7 +36,7 @@ const PANELS_NOTE =
   'One chart per line, each on its own scale; the table below has the figures.'
 
 /** One small chart per budget line, each on its own scale, so a small line is not flattened by a large one. */
-function BudgetPanels({
+const BudgetPanels = memo(function BudgetPanels({
   budget,
   title,
 }: {
@@ -63,7 +64,7 @@ function BudgetPanels({
       </div>
     </>
   )
-}
+})
 
 type BudgetTableRow = {
   key: string
