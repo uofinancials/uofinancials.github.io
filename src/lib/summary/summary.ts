@@ -158,6 +158,7 @@ function summarizePeople(falls: FallYear[]): Summary['people'] {
   return {
     names: indexPeople(falls).map((person) => ({
       name: person.name,
+      ...(person.otherNames.length > 0 && { otherNames: person.otherNames }),
       runs: person.runs.map((run) => run.years.map(({ year }) => year)),
       possibleStudent: personYearsOf(person).some(({ records }) =>
         records.some((record) => record.possibleStudent),

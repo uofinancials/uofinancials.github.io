@@ -94,6 +94,7 @@ test('a code is described by what each source publishes under it', () => {
     code: '223100',
     name: 'CAS Biology',
     otherNames: ['Biology'],
+    aliasCodes: [],
     isArea: false,
     hasBudget: true,
     hasJobs: true,

@@ -255,7 +255,7 @@ test('a person’s computed figures, rate chart, and class median are labelled, 
   await openLinkedPerson(page)
   const main = page.getByRole('main')
   await expect(main).toContainText(
-    'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the exact name and the same pay department of a single primary job.',
+    'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the name, or on names this site joins as one person, and the same pay department of a single primary job.',
   )
   await expect(
     page.getByRole('figure', { name: /annual salary rate by job/ }),
@@ -453,4 +453,20 @@ test('the people list cites its census before the EEO section begins', async ({
     eeo.locator('xpath=preceding-sibling::*[1]').locator('summary'),
   ).toHaveText(/^Sources? and method/)
   await expect(eeo.locator('xpath=following-sibling::details')).toHaveCount(0)
+})
+
+test('an earlier name leads to the person under their latest name, whose history shows each name as published', async ({
+  page,
+}) => {
+  await page.goto(`/people/${encodeURIComponent('Turner, Mathew W')}?year=2020`)
+  await expect(page).toHaveURL(/\/people\/Turner[^?]*Matthew[^?]*\?year=2020$/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Turner, Matthew W' }),
+  ).toBeVisible()
+  await expect(page.getByRole('main')).toContainText(
+    'Also published as Turner, Mathew W.',
+  )
+  await expect(
+    page.getByRole('columnheader', { name: 'Name as published' }),
+  ).toBeVisible()
 })

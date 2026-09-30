@@ -1,11 +1,14 @@
 import { existsSync } from 'node:fs'
-import path from 'node:path'
 import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../../src/data/budget.ts'
 import { fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
+import {
+  foldedBudgetYearSchema,
+  foldedFallYearSchema,
+} from '../../src/data/unit-aliases.ts'
 import { ORG_LEVEL_AREA } from '../../src/lib/census/areas.ts'
 import {
   HAND_AREAS,
@@ -47,7 +50,7 @@ import {
 } from '../scrape/budget/file.ts'
 import {
   budgetDataPath,
-  DATA_DIR,
+  fallDataPath,
   MANIFEST_PATH,
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
@@ -62,22 +65,22 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const years = manifest.fall.map((entry) => {
-      const year = fallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
+      const year = foldedFallYearSchema.parse(
+        readJson(fallDataPath(entry.year)),
       )
       const expected = entry.files.reduce((sum, file) => sum + file.records, 0)
       expect(year.censusDate).toBe(entry.censusDate)
       expect(year.records.length).toBe(expected)
       return year
     })
-    expect(findPersonLinks(years)).toHaveLength(52_880)
+    expect(findPersonLinks(years)).toHaveLength(53_328)
     const people = indexPeople(years)
     const runs = people.flatMap((person) => person.runs)
-    expect(people).toHaveLength(15_916)
-    expect(runs).toHaveLength(19_593)
+    expect(people).toHaveLength(15_644)
+    expect(runs).toHaveLength(19_144)
     const linked = runs.filter(({ isLinked }) => isLinked)
-    expect(linked).toHaveLength(13_189)
-    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(13_189)
+    expect(linked).toHaveLength(12_992)
+    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(12_992)
   },
   ALL_YEARS_TIMEOUT_MS,
 )
@@ -86,9 +89,7 @@ function loadFallCensuses() {
   const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
   return manifest.fall.map(({ year }) => ({
     year,
-    records: fallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-    ).records,
+    records: fallYearSchema.parse(readJson(fallDataPath(year))).records,
   }))
 }
 
@@ -292,30 +293,31 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   },
 )
 
+/** The censuses as the department pages read them, with unit aliases folded. */
 function readDepartmentCensuses() {
   const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
   const budgets = manifest.budget.map(({ fiscalYear }) =>
-    budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+    foldedBudgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
   )
   const falls = manifest.fall.map(({ year }) =>
-    fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
+    foldedFallYearSchema.parse(readJson(fallDataPath(year))),
   )
   return toDepartmentCensuses(manifest, falls, budgets)
 }
 
 /** Each census's jobs by how they are placed, classified temporaries included. */
 const PLACEMENT_BASES = {
-  2014: { published: 4_395, name: 1_375, hand: 311, unassigned: 30 },
-  2015: { published: 4_715, name: 1_538, hand: 363, unassigned: 47 },
-  2016: { published: 4_800, name: 1_453, hand: 289, unassigned: 0 },
-  2017: { published: 4_890, name: 1_572, hand: 141, unassigned: 0 },
+  2014: { published: 4_589, name: 1_220, hand: 302, unassigned: 0 },
+  2015: { published: 4_927, name: 1_379, hand: 357, unassigned: 0 },
+  2016: { published: 4_812, name: 1_447, hand: 283, unassigned: 0 },
+  2017: { published: 4_905, name: 1_557, hand: 141, unassigned: 0 },
   2018: { published: 5_143, name: 1_607, hand: 142, unassigned: 0 },
-  2019: { published: 5_091, name: 1_517, hand: 220, unassigned: 10 },
-  2020: { published: 4_920, name: 1_528, hand: 226, unassigned: 7 },
-  2021: { published: 4_433, name: 1_515, hand: 189, unassigned: 8 },
-  2022: { published: 4_633, name: 1_629, hand: 178, unassigned: 10 },
-  2023: { published: 4_871, name: 1_888, hand: 184, unassigned: 0 },
-  2024: { published: 4_885, name: 1_912, hand: 187, unassigned: 0 },
+  2019: { published: 5_123, name: 1_485, hand: 220, unassigned: 10 },
+  2020: { published: 4_949, name: 1_499, hand: 226, unassigned: 7 },
+  2021: { published: 4_465, name: 1_483, hand: 189, unassigned: 8 },
+  2022: { published: 4_659, name: 1_603, hand: 178, unassigned: 10 },
+  2023: { published: 4_889, name: 1_870, hand: 184, unassigned: 0 },
+  2024: { published: 4_896, name: 1_901, hand: 187, unassigned: 0 },
   2025: { published: 4_896, name: 1_746, hand: 198, unassigned: 0 },
 }
 
@@ -392,9 +394,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'the Fall 2025 salary distribution matches an independent computation',
   () => {
-    const { records } = fallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
-    )
+    const { records } = fallYearSchema.parse(readJson(fallDataPath(2025)))
     const { bins, counts, maxRateCents, percentiles } = buildDistribution(
       records,
       2025,
@@ -474,7 +474,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2025 class and rank medians match an independent computation',
   () => {
     const { censusDate, records } = fallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+      readJson(fallDataPath(2025)),
     )
     const medians = peerMedians([{ censusDate, records }])
     const analyst = records.find(
@@ -506,19 +506,17 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2024-2025 pay changes match an independent computation',
   () => {
     const years = [2024, 2025].map((year) =>
-      fallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-      ),
+      foldedFallYearSchema.parse(readJson(fallDataPath(year))),
     )
     const pairs = continuingPairs(years)
     const [all] = payChangeTrends(pairs, [2024], null)
-    expect(all?.points[0]?.pairs).toBe(4_865)
+    expect(all?.points[0]?.pairs).toBe(4_895)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)
     expect(changeCounts(pairs, [2024])[0]).toMatchObject({
-      unclassified: 3_338,
-      rankChanged: 169,
+      unclassified: 3_355,
+      rankChanged: 170,
       rankUnpublished: 0,
-      classified: 1_527,
+      classified: 1_540,
       classChanged: 48,
     })
     const raises = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
@@ -533,11 +531,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ]),
     )
     expect(rowsByLabel).toMatchObject({
-      'SEIU 503': [1_500, '0.1083', 661],
-      'United Academics, tenure-related': [754, '0.0790', 790],
-      'United Academics, pro tem, visiting, and retired': [187, '0.0659', 659],
-      'Officers of Administration': [1_360, '0.0300', 300],
+      'SEIU 503': [1_513, '0.1083', 661],
+      'United Academics, tenure-related': [758, '0.0790', 790],
+      'United Academics, pro tem, visiting, and retired': [188, '0.0659', 659],
+      'Officers of Administration': [1_370, '0.0300', 300],
     })
-    expect(comparison.unplaced).toBe(151)
+    expect(comparison.unplaced).toBe(152)
   },
 )

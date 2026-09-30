@@ -119,7 +119,7 @@ test('a year’s pay departments are listed once each, by code', () => {
       classifiedJob({ jobType: 'Secondary' }),
       unclassifiedJob({ payDepartment: { code: null, name: 'None' } }),
     ]),
-  ]).toEqual([['111111', 'Dept']])
+  ]).toEqual([['111111', { code: '111111', name: 'Dept' }]])
 })
 
 test('changes and years format with a sign and one decimal', () => {

@@ -111,3 +111,39 @@ test('a person built from the censuses an index entry lists is the one the censu
       ),
   ).toEqual([[2015], [2017]])
 })
+
+test('names joined as one person are one entry under the latest name, which a search for either finds', () => {
+  const people = indexPeople([
+    census(2020, [classifiedJob({ name: 'Doe, Ann B' })]),
+    census(2021, [classifiedJob({ name: 'Roe, Ann B' })]),
+  ])
+  expect(
+    people.map(({ name, otherNames, runs }) => ({
+      name,
+      otherNames,
+      years: runs.map((run) => run.years.map(({ year }) => year)),
+    })),
+  ).toEqual([
+    { name: 'Roe, Ann B', otherNames: ['Doe, Ann B'], years: [[2020, 2021]] },
+  ])
+  expect(matchPeople(people, 'doe')?.matches.map(({ name }) => name)).toEqual([
+    'Roe, Ann B',
+  ])
+})
+
+test('a person built from an index entry with other names holds the records under each name', () => {
+  const years = [
+    census(2020, [classifiedJob({ name: 'Doe, Ann B' })]),
+    census(2021, [classifiedJob({ name: 'Roe, Ann B' })]),
+  ]
+  const [person] = indexPeople(years)
+  const [entry] = indexNames([
+    {
+      name: 'Roe, Ann B',
+      otherNames: ['Doe, Ann B'],
+      runs: [[2020, 2021]],
+      possibleStudent: false,
+    },
+  ])
+  expect(person && entry && personOf(entry, years)).toEqual(person)
+})

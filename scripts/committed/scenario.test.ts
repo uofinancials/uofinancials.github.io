@@ -1,11 +1,13 @@
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { budgetYearSchema } from '../../src/data/budget.ts'
-import { fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
+import {
+  foldedBudgetYearSchema,
+  foldedFallYearSchema,
+} from '../../src/data/unit-aliases.ts'
 import { trendGroupOf } from '../../src/lib/census/groups.ts'
 import {
   fiscalYearOf,
@@ -38,6 +40,7 @@ import { raiseRowOf } from '../../src/lib/trends/raise-groups.ts'
 import {
   budgetDataPath,
   DATA_DIR,
+  fallDataPath,
   MANIFEST_PATH,
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
@@ -48,13 +51,14 @@ const MANIFEST = manifestSchema.parse(readJson(MANIFEST_PATH))
 const RATES = opeRatesSchema.parse(readJson(OPE_DATA_PATH))
 const CENSUSES = freezeHistoryCensuses(MANIFEST, RATES)
 const FALLS = CENSUSES.map(({ year }) =>
-  fallYearSchema.parse(readJson(path.join(DATA_DIR, 'fall', `${year}.json`))),
+  foldedFallYearSchema.parse(readJson(fallDataPath(year))),
 )
 const BUDGETS = [...new Set(CENSUSES.map(({ fiscalYear }) => fiscalYear))].map(
-  (fiscalYear) => budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+  (fiscalYear) =>
+    foldedBudgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
 )
 const HISTORY = toDepartmentCensuses(MANIFEST, FALLS, BUDGETS)
-const FY27 = budgetYearSchema.parse(readJson(budgetDataPath(2027)))
+const FY27 = foldedBudgetYearSchema.parse(readJson(budgetDataPath(2027)))
 const RAISE_RATES = raiseRates(
   raiseTermsSchema.parse(readJson(RAISES_DATA_PATH)).terms,
   2027,

@@ -113,6 +113,8 @@ const nameEntrySchema = z.strictObject({
   name: z.string().min(1),
   /** Census years, split where no person link joins one year to the next. */
   runs: z.array(z.array(year).min(1)).min(1),
+  /** The other names this person's records were published under, where the site joins more than one. */
+  otherNames: z.array(z.string().min(1)).min(1).optional(),
   /** Whether any of the name's records is flagged as a possible student. */
   possibleStudent: z.boolean(),
 })

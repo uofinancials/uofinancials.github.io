@@ -13,6 +13,7 @@ import { PersonRatesFigure } from '@/components/person/rates-figure'
 import { PersonRecordsTable } from '@/components/person/records-table'
 import { peerGroupOf } from '@/lib/people/peer-group'
 import type { PeerMedians } from '@/lib/people/peer-median'
+import { department } from '@/lib/people/person-fields'
 import {
   type Person,
   type PersonYear,
@@ -27,7 +28,7 @@ import {
 import { cn } from '@/lib/utils'
 
 const SAME_NAME_NOTE =
-  'UO publishes no person identifier. Records are grouped by the name exactly as published, so one name may be more than one person, and one person may appear under more than one name.'
+  'UO publishes no person identifier. Records are grouped by the name as published, and this site joins some names as one person by hand review or by a name-matching rule, so one name may be more than one person, and one person may still appear under more than one name.'
 
 const MIN_YEAR_TABS = 2
 
@@ -66,24 +67,24 @@ function YearRecords({ name, entry }: { name: string; entry: PersonYear }) {
         records={entry.records}
         caption={`${name}, Fall ${entry.year}`}
       />
-      {[...departments].map(([code, department]) => (
+      {[...departments].map(([code, payDepartment]) => (
         <p key={code} className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <Link className="link" to="/departments/$code" params={{ code }}>
-            {department} ({code})
+            {department(payDepartment)}
           </Link>
           <Link
             className="link"
             to="/trends/pay-changes"
             search={{ dept: code, pair: entry.year }}
           >
-            Pay changes, {department}
+            Pay changes, {payDepartment.name}
           </Link>
           <Link
             className="link"
             to="/people"
             search={{ dept: code, year: entry.year }}
           >
-            People, {department}, Fall {entry.year}
+            People, {payDepartment.name}, Fall {entry.year}
           </Link>
         </p>
       ))}
@@ -133,6 +134,11 @@ export function PersonView({
           <BackButton />
         </p>
         <p className="text-sm text-muted-foreground">{SAME_NAME_NOTE}</p>
+        {person.otherNames.length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Also published as {person.otherNames.join('; ')}.
+          </p>
+        )}
       </PageHeader>
       {run && <PersonCards run={run} />}
       <PersonRatesFigure person={person} medians={medians} />

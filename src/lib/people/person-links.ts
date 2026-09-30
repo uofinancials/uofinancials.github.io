@@ -4,12 +4,18 @@ import {
   type FallYear,
   isPrimaryJob,
 } from '../../data/fall.ts'
+import {
+  type PersonNames,
+  personNameOf,
+  personNamesOf,
+} from './person-names.ts'
 
 /**
- * A computed link between a name's records in `fromYear` and `fromYear + 1`:
- * the name is identical and each year's one primary job, `from` and `to`,
- * shares its pay department. UO publishes no person identifier; this is not a
- * source figure.
+ * A computed link between a person's records in `fromYear` and `fromYear + 1`:
+ * the name is identical, or joined by `personNamesOf`, and each year's one
+ * primary job, `from` and `to`, shares its pay department. `name` is the
+ * person's latest name. UO publishes no person identifier; this is not a source
+ * figure.
  */
 export type PersonLink = {
   name: string
@@ -18,21 +24,26 @@ export type PersonLink = {
   to: FallRecord
 }
 
-/** Each name's one primary job, or `null` for a name with more than one. */
-function primaryJobs(records: FallRecord[]): Map<string, FallRecord | null> {
+/** Each person's one primary job, or `null` for a person with more than one. */
+function primaryJobs(
+  records: FallRecord[],
+  names: PersonNames,
+): Map<string, FallRecord | null> {
   const jobs = new Map<string, FallRecord | null>()
   for (const record of records) {
     if (!isPrimaryJob(record)) continue
-    jobs.set(record.name, jobs.has(record.name) ? null : record)
+    const name = personNameOf(names, record.name)
+    jobs.set(name, jobs.has(name) ? null : record)
   }
   return jobs
 }
 
 export function findPersonLinks(years: FallYear[]): PersonLink[] {
+  const names = personNamesOf(years)
   const jobsByYear = new Map(
     years.map((year) => [
       censusYearOf(year.censusDate),
-      primaryJobs(year.records),
+      primaryJobs(year.records, names),
     ]),
   )
   return [...jobsByYear]

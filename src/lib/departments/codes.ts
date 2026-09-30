@@ -1,5 +1,6 @@
 import type { BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
+import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { UNASSIGNED_AREA } from '../census/totals.ts'
 import { type DepartmentCensus, departmentYears, isAreaCode } from './jobs.ts'
@@ -75,6 +76,8 @@ export type CodeProfile = {
   /** The latest published name: the budget's where it has one, else the census's. */
   name: string
   otherNames: string[]
+  /** Codes the census also published this unit's jobs under, joined by hand review. */
+  aliasCodes: string[]
   isArea: boolean
   hasBudget: boolean
   hasJobs: boolean
@@ -126,6 +129,7 @@ export function describeCode(
     code,
     name,
     otherNames: rest,
+    aliasCodes: aliasCodesOf(code),
     isArea,
     hasBudget: budgetNames.length > 0,
     hasJobs: isArea || jobs.length > 0,

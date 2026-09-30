@@ -26,7 +26,7 @@ function namePrefix(name: string): string {
   return name.split(' ')[0] ?? ''
 }
 
-/** Prefixes whose every published unit, in the budget or the census, sits in one area. */
+/** Prefixes whose every published unit, in the budget or the census, sits in one area; a folded record is left out, since its name was published with another code. */
 function learnPrefixAreas(
   records: FallRecord[],
   orgs: Orgs,
@@ -41,6 +41,7 @@ function learnPrefixAreas(
     if (org.level === ORG_LEVEL_UNIT && org.parent) note(org.name, org.parent)
   }
   for (const { payDepartment } of records) {
+    if (payDepartment.publishedCode) continue
     const area = publishedArea(payDepartment.code, orgs)
     if (area) note(payDepartment.name, area)
   }

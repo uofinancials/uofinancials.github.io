@@ -57,14 +57,12 @@ export const HAND_AREAS: readonly HandArea[] = [
   // 228840 Law CRES
   { code: '228841', area: LAW, from: 2015, to: 2025 },
   // name only
-  { code: '611116', area: RESEARCH, from: 2015, to: 2025 },
+  { code: '611116', area: RESEARCH, from: 2014, to: 2025 },
   { code: '100000', area: PROVOST, from: 2024, to: 2025 },
   // Pres: every FY21 Pres unit sits in 100100
   { code: '110000', area: PRESIDENT, from: 2015, to: 2015 },
   { code: '110300', area: PRESIDENT, from: 2016, to: 2018 },
   { code: '211150', area: PRESIDENT, from: 2017, to: 2017 },
-  // 101200 Pres Investn & Civil Rights Comp Op
-  { code: '444000', area: PRESIDENT, from: 2014, to: 2016 },
   // Prov and Acad Aff: every FY21 Prov unit sits in 120000, and 229300 is Prov
   // in Fall 2014 and Acad Aff in Fall 2015; SOMD Bach units from FY21
   { code: '229300', area: PROVOST, from: 2014, to: 2015 },
@@ -80,7 +78,6 @@ export const HAND_AREAS: readonly HandArea[] = [
   { code: '611111', area: RESEARCH, from: 2014, to: 2016 },
   { code: '611112', area: RESEARCH, from: 2014, to: 2016 },
   { code: '611113', area: RESEARCH, from: 2014, to: 2016 },
-  { code: '611114', area: RESEARCH, from: 2014, to: 2014 },
   { code: '621000', area: RESEARCH, from: 2014, to: 2016 },
   { code: '630500', area: RESEARCH, from: 2014, to: 2015 },
   { code: '630610', area: RESEARCH, from: 2015, to: 2016 },
@@ -96,11 +93,11 @@ export const HAND_AREAS: readonly HandArea[] = [
   { code: '632010', area: RESEARCH, from: 2014, to: 2016 },
   { code: '632110', area: RESEARCH, from: 2014, to: 2016 },
   { code: '632200', area: RESEARCH, from: 2014, to: 2016 },
-  { code: '632401', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '223529', area: RESEARCH, from: 2014, to: 2016 },
   { code: '632501', area: RESEARCH, from: 2014, to: 2016 },
   { code: '641251', area: RESEARCH, from: 2014, to: 2016 },
   { code: '641401', area: RESEARCH, from: 2014, to: 2016 },
-  { code: '641511', area: RESEARCH, from: 2014, to: 2016 },
+  { code: '110511', area: RESEARCH, from: 2014, to: 2016 },
   { code: '660110', area: RESEARCH, from: 2014, to: 2016 },
   { code: '660200', area: RESEARCH, from: 2014, to: 2016 },
   { code: '660310', area: RESEARCH, from: 2014, to: 2015 },
