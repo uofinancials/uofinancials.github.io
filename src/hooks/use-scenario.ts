@@ -4,6 +4,7 @@ import { useDeferredValue, useMemo } from 'react'
 import {
   budgetYearQuery,
   fallYearQuery,
+  fyTempsQuery,
   manifestQuery,
   opeRatesQuery,
   outlookQuery,
@@ -11,6 +12,7 @@ import {
 } from '@/data/queries'
 import { useScenarioHistory } from '@/hooks/use-scenario-history'
 import { fiscalYearOf } from '@/lib/census/totals'
+import { censusTemps } from '@/lib/departments/fy-temps'
 import {
   type DepartmentCensus,
   toDepartmentCensus,
@@ -42,12 +44,17 @@ function useScenarioData() {
   const { data: rates } = useSuspenseQuery(opeRatesQuery)
   const { data: outlook } = useSuspenseQuery(outlookQuery)
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
+  const { data: fyTemps } = useSuspenseQuery(fyTempsQuery)
   const [projection] = outlook.projections
   const census = useMemo(
     () => toDepartmentCensus({ year, records: fall.records }, budget),
     [year, fall, budget],
   )
-  const shares = useMemo(() => egShares(census, budget, []), [census, budget])
+  const temps = useMemo(() => censusTemps(fyTemps, year), [fyTemps, year])
+  const shares = useMemo(
+    () => egShares(census, budget, temps),
+    [census, budget, temps],
+  )
   const historyCensuses = useMemo(
     () => freezeHistoryCensuses(manifest, rates),
     [manifest, rates],
@@ -65,6 +72,7 @@ function useScenarioData() {
     rates,
     projection,
     census,
+    temps,
     shares,
     historyCensuses,
     options,
@@ -82,12 +90,12 @@ function useScenarioResult(
   history: DepartmentCensus[],
 ) {
   const { census, censusFiscalYear, rates, shares, projection, budget } = data
-  const { eliminationBudget, raiseRates } = data
+  const { eliminationBudget, raiseRates, temps } = data
   const result = useMemo(
     () =>
       projectScenario({
         census,
-        temps: [],
+        temps,
         censusFiscalYear,
         rules,
         rates,
@@ -99,6 +107,7 @@ function useScenarioResult(
       }),
     [
       census,
+      temps,
       censusFiscalYear,
       rules,
       rates,

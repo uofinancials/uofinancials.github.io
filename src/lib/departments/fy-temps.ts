@@ -117,6 +117,16 @@ function mean(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length
 }
 
+/** A census's classified temporaries' FY pay by unit; none when its fiscal year publishes no pay. */
+export function censusTemps(
+  fyTemps: FyTemps,
+  censusYear: number,
+): FyTempsUnit[] {
+  return (
+    fyTemps.years.find((year) => year.censusYear === censusYear)?.units ?? []
+  )
+}
+
 /** The site-wide total, an area's units (`null` for those placed in no area), or one unit. */
 export type TempsScope =
   | { kind: 'all' }

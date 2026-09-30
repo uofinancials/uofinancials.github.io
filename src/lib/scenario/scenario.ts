@@ -2,6 +2,7 @@ import type { BudgetYear } from '../../data/budget.ts'
 import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
+import type { SectionSource } from '../shared/citation.ts'
 import {
   type EliminateRule,
   type EliminationResult,
@@ -91,7 +92,20 @@ export type ScenarioResult = {
 }
 
 export const SCENARIO_METHOD =
-  'A scenario is an estimate over one Fall census, not a prediction. Its base is every job except classified temporaries, whose annualised hourly rates overstate pay. Rules apply in order, each to what the rules before it left: a removed job drops out of every later rule, and a cut rate is the rate later rules see, so no job is counted twice. A threshold compares the published full-time annual rate with the threshold and cuts only the part above it. Savings are gross: no revenue a change would lose is counted.'
+  "A scenario is an estimate over one Fall census, not a prediction. Its base is every job, with classified temporaries counted not at their annualised hourly rates, which overstate pay, but at their actual pay in the fiscal year the census falls in, from the FY total pay reports, summed by the unit their department resolves to and placed in its area; until that year's pay is published, they are left out. Rules apply in order, each to what the rules before it left: a removed job drops out of every later rule, and a cut rate is the rate later rules see, so no job is counted twice. A threshold compares the published full-time annual rate with the threshold and cuts only the part above it, so it never reaches temporaries, whose pay has no rate. Other rules reach a unit's temporaries when their scope names no term or position and admits their group, staff kind, and unit or area; their jobs are counted as the reports list them. Savings are gross: no revenue a change would lose is counted."
+
+const TEMPS_COMPUTED =
+  "Classified temporaries' actual pay in the fiscal year, summed by unit; scenarios count it in place of their annualised rates, as the method says."
+
+/** The FY total pay reports a scenario's classified temporaries come from: one per fiscal year given. */
+export function scenarioTempsSources(fiscalYears: number[]): SectionSource[] {
+  return fiscalYears.map((fiscalYear) => ({
+    kind: 'fy-range',
+    from: fiscalYear,
+    to: fiscalYear,
+    computed: TEMPS_COMPUTED,
+  }))
+}
 
 function scaleRate(rateCents: number, keepBasisPoints: number): number {
   return Math.round((rateCents * keepBasisPoints) / BASIS)

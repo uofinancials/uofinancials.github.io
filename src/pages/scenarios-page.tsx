@@ -19,9 +19,13 @@ import { totalEgCents } from '@/lib/scenario/labels'
 import { OPE_GROUP_METHOD } from '@/lib/scenario/ope-groups'
 import { SCENARIO_OUTLOOK_METHOD } from '@/lib/scenario/outlook'
 import { RAISE_FREEZE_METHOD } from '@/lib/scenario/raises'
-import { SCENARIO_METHOD, usesRaiseRates } from '@/lib/scenario/scenario'
+import {
+  SCENARIO_METHOD,
+  scenarioTempsSources,
+  usesRaiseRates,
+} from '@/lib/scenario/scenario'
 import { toSearchRules } from '@/lib/scenario/search'
-import type { SectionSource } from '@/lib/shared/citation'
+import { fyLabel, type SectionSource } from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 
 const METHOD_TITLE = 'How this is estimated'
@@ -66,6 +70,9 @@ function ScenarioSources({
   const [first] = historyCensuses
   const sources: SectionSource[] = [
     { kind: 'fall', year: census.year, computed: SCENARIO_COMPUTED },
+    ...scenarioTempsSources(
+      scenario.result.temps ? [scenario.censusFiscalYear] : [],
+    ),
     { kind: 'budget', fiscalYear: census.fiscalYear },
     ...(eliminationBudget.fiscalYear === census.fiscalYear
       ? []
@@ -119,8 +126,10 @@ function RulesSection({
         Fall {census.year} has {formatCount(result.base.jobs)} jobs a scenario
         can change, costing {formatDollars(result.base.salaryCents)} in salary
         and {formatDollars(result.base.egCents)} in E&G at{' '}
-        {fiscalYearLabel(scenario.firstYear)} rates; classified temporaries are
-        left out.
+        {fiscalYearLabel(scenario.firstYear)} rates.{' '}
+        {result.temps
+          ? `${formatCount(result.temps.jobs)} of them are classified temporaries' jobs in ${fyLabel(scenario.censusFiscalYear)}, counted at their actual pay of ${formatDollars(result.temps.payCents)}.`
+          : `Classified temporaries are left out until their ${fyLabel(scenario.censusFiscalYear)} pay is published.`}
       </p>
       <ScenarioSources scenario={scenario} />
     </PageSection>

@@ -12,7 +12,7 @@ export const SALARY_ACCOUNT_TYPES = new Set(['61', '62', '63', '64'])
 const FULL_SHARE = 10_000
 
 export const EG_SHARE_METHOD =
-  "Each job's E&G share is this site's estimate for its college or VP area, not for the job: the area's E&G salary budget (fund type 11, which BRP's OPE rate page labels E&G; salary account types 61-64) over its census salary spend, capped at 100%. Grant-funded pay is in no budget, so an area paid partly from grants has a share below 100%."
+  "Each job's E&G share is this site's estimate for its college or VP area, not for the job: the area's E&G salary budget (fund type 11, which BRP's OPE rate page labels E&G; salary account types 61-64) over its census salary spend plus its classified temporaries' FY pay, capped at 100%. Grant-funded pay is in no budget, so an area paid partly from grants has a share below 100%."
 
 function egSalaryBudgets(budget: BudgetYear): Map<string, number> {
   const areaOf = (row: BudgetRow) => publishedArea(row.org, budget.orgs)

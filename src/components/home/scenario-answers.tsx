@@ -50,6 +50,7 @@ export function ScenarioAnswers({
   fiscalYear,
   projection,
   raiseSources,
+  tempsSources,
 }: {
   answers: ExampleAnswer[]
   year: number
@@ -57,6 +58,8 @@ export function ScenarioAnswers({
   projection: Projection
   /** The raise terms the first year's savings are grown by. */
   raiseSources: CitedSource[]
+  /** The FY total pay reports the census's classified temporaries come from. */
+  tempsSources: SectionSource[]
 }) {
   return (
     <PageSection title="What could close it?">
@@ -81,6 +84,7 @@ export function ScenarioAnswers({
         methods={METHODS}
         sources={[
           { kind: 'fall', year },
+          ...tempsSources,
           { kind: 'budget', fiscalYear },
           { kind: 'rates' },
           { kind: 'document', source: projection.source },

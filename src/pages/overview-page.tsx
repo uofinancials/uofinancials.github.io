@@ -32,6 +32,7 @@ import {
 } from '@/lib/home/home'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
 import { raiseRates, raiseSources } from '@/lib/scenario/raises'
+import { scenarioTempsSources } from '@/lib/scenario/scenario'
 import {
   formatCompactDollars,
   formatCount,
@@ -60,6 +61,7 @@ function useHomeData() {
     raiseSources: raiseSources(firstYearRaises),
     jobsByYear: jobsByCensus(manifest),
     fySources: fyPaySource(fyPayYears(manifest, [home.year])),
+    tempsSources: scenarioTempsSources(fyPayYears(manifest, [home.year])),
   }
 }
 
@@ -339,6 +341,7 @@ export function OverviewPage() {
         fiscalYear={fiscalYear}
         projection={projection}
         raiseSources={data.raiseSources}
+        tempsSources={data.tempsSources}
       />
       <JobsTrend jobsByYear={data.jobsByYear} />
       <DepartmentsPreview data={data} />

@@ -7,7 +7,7 @@ import type { Outlook } from '../../data/outlook.ts'
 import type { RaiseTerms } from '../../data/raises.ts'
 import type { AreaTrends, Summary } from '../../data/summary.ts'
 import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
-import { tempsByCensus } from '../departments/fy-temps.ts'
+import { censusTemps, tempsByCensus } from '../departments/fy-temps.ts'
 import {
   type DepartmentCensus,
   toDepartmentCensuses,
@@ -147,6 +147,7 @@ function summarizeHome(
       inputs.raiseTerms.terms,
       firstSavingsYear(projection.fiscalYears, censusFiscalYear),
     ),
+    temps: censusTemps(inputs.fyTemps, year),
   })
   return {
     year,

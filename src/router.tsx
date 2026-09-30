@@ -321,6 +321,7 @@ async function loadScenario({
     queryClient.ensureQueryData(budgetYearQuery(fiscalYear)),
     queryClient.ensureQueryData(opeRatesQuery),
     queryClient.ensureQueryData(raiseTermsQuery),
+    queryClient.ensureQueryData(fyTempsQuery),
   ])
   return {
     year: census.year,
