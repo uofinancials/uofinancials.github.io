@@ -77,11 +77,7 @@ function isPartlyMatched(code: string, budget: BudgetYear, censusPay: number) {
   return censusPay * PARTLY_MATCHED_DIVISOR < salaryCents
 }
 
-/**
- * Marks the code's census jobs and temporaries' FY pay removed, returning how
- * many census records it newly takes, classified temporaries included, and
- * the pay placed there.
- */
+/** Marks the code's census jobs and temporaries' FY pay removed; returns the census records it newly takes, temporaries included, and the pay placed there. */
 function excludeJobs(
   code: string,
   census: DepartmentCensus,
