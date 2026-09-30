@@ -138,7 +138,6 @@ function uniqueJobs(
   return new Map([...jobs].filter(([key]) => counts.get(key) === 1))
 }
 
-/** Name pairs on one job held by exactly one record in consecutive censuses, the job identified by `codeOf`'s pay department code. */
 function sameJobPairs(ordered: FallYear[], codeOf: CodeOf): NamePair[] {
   return ordered.slice(1).flatMap((next, i) => {
     const current = ordered[i]?.records ?? []
