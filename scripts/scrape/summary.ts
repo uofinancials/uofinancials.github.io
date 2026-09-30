@@ -84,11 +84,15 @@ export function deriveSummary(manifest: Manifest): {
 }
 
 /** Each derived file's text by its path: the summary, temporaries' FY pay, then one file per area. */
-export function serializeDerived(
-  summary: Summary,
-  areas: AreaTrends[],
-  fyTemps: FyTemps,
-): Map<string, string> {
+export function serializeDerived({
+  summary,
+  areas,
+  fyTemps,
+}: {
+  summary: Summary
+  areas: AreaTrends[]
+  fyTemps: FyTemps
+}): Map<string, string> {
   return new Map([
     [SUMMARY_DATA_PATH, `${JSON.stringify(summarySchema.parse(summary))}\n`],
     [FY_TEMPS_DATA_PATH, `${JSON.stringify(fyTempsSchema.parse(fyTemps))}\n`],
@@ -119,17 +123,20 @@ function isOnDisk(texts: Map<string, string>): boolean {
 
 /** Writes the summary and the area trends files, replacing any area file no longer derived; the manifest's derivation date moves only when a file or its inputs change. */
 export async function runSummary(manifest: Manifest): Promise<StepResult> {
-  const { summary, areas, fyTemps, files } = deriveSummary(manifest)
-  const texts = serializeDerived(summary, areas, fyTemps)
+  const derived = deriveSummary(manifest)
+  const texts = serializeDerived(derived)
   const isUnchanged =
     isOnDisk(texts) &&
-    JSON.stringify(manifest.summary?.files) === JSON.stringify(files)
+    JSON.stringify(manifest.summary?.files) === JSON.stringify(derived.files)
   if (isUnchanged) return { manifest, problems: [] }
   await rm(AREA_TRENDS_DIR, { recursive: true, force: true })
   await mkdir(AREA_TRENDS_DIR)
   await Promise.all([...texts].map(([file, text]) => writeFile(file, text)))
   return {
-    manifest: { ...manifest, summary: { derivedOn: today(), files } },
+    manifest: {
+      ...manifest,
+      summary: { derivedOn: today(), files: derived.files },
+    },
     problems: [],
   }
 }

@@ -9,7 +9,7 @@ import {
   foldedFallYearSchema,
 } from '../../src/data/unit-aliases.ts'
 import { isClassifiedTemp, summarize } from '../../src/lib/census/totals.ts'
-import { tempsLookup } from '../../src/lib/departments/fy-temps.ts'
+import { tempsByCensus } from '../../src/lib/departments/fy-temps.ts'
 import {
   departmentYears,
   toDepartmentCensus,
@@ -32,8 +32,8 @@ import {
 function readFall2025() {
   const { records } = foldedFallYearSchema.parse(readJson(fallDataPath(2025)))
   const budget = foldedBudgetYearSchema.parse(readJson(budgetDataPath(2026)))
-  const tempsOf = tempsLookup(fyTempsSchema.parse(readJson(FY_TEMPS_DATA_PATH)))
-  return { records, budget, tempsOf }
+  const fyTemps = fyTempsSchema.parse(readJson(FY_TEMPS_DATA_PATH))
+  return { records, budget, fyTemps }
 }
 
 /** FY2025-26 temporaries' pay, the FY pins' figure. */
@@ -57,10 +57,13 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'an area matches an independent computation',
   () => {
-    const { records, budget, tempsOf } = readFall2025()
+    const { records, budget, fyTemps } = readFall2025()
     const census = toDepartmentCensus({ year: 2025, records }, budget)
-    const areas = areaFigures(census, budget, tempsOf)
-    const artsTemps = tempsOf({ kind: 'area', code: '222000' }, 2025)
+    const areas = areaFigures(census, budget, fyTemps)
+    const artsTemps = tempsByCensus(fyTemps, {
+      kind: 'area',
+      code: '222000',
+    }).get(2025)
     const artsJobs =
       departmentYears('222000', [census]).years.at(-1)?.records ?? []
     // The 81 units whose parent is 222000, summed in Python from FY26.json.
@@ -80,7 +83,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'the home headlines, jobs per census, and top-paid jobs match the committed files',
   () => {
-    const { records, budget, tempsOf } = readFall2025()
+    const { records, budget } = readFall2025()
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const [projection] = outlookSchema.parse(
       readJson(path.join(DATA_DIR, 'outlook.json')),
@@ -91,7 +94,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         budget,
         projection,
         censusFiscalYear: 2026,
-        temps: tempsOf({ kind: 'all' }, 2025),
+        tempsPayCents: TEMPS_PAY_2025_CENTS,
       }),
     ).toEqual({
       runRate: { fiscalYear: 2027, cents: -2_277_059_300 },

@@ -6,7 +6,7 @@ import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
 import { runRateFor } from '../budget/outlook.ts'
 import type { AreaAssignment } from '../census/areas.ts'
-import { isClassifiedTemp, summarize } from '../census/totals.ts'
+import { isClassifiedTemp, summarize, sumSpendCents } from '../census/totals.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import type { AreaFigure } from '../departments/table.ts'
 import { sortJobs } from '../people/list.ts'
@@ -20,7 +20,6 @@ import {
 import type { RaiseRate } from '../scenario/raises.ts'
 import type { Rule } from '../scenario/scenario.ts'
 import { compareKeys } from '../shared/sort.ts'
-import type { TempsFigure } from '../trends/trends.ts'
 
 /** The projection's run rate in the first projected year after the census. */
 function runRateAfter(projection: Projection, censusFiscalYear: number) {
@@ -41,8 +40,8 @@ export function headlineFigures(options: {
   budget: BudgetYear
   projection: Projection
   censusFiscalYear: number
-  /** Classified temporaries' FY figures for the census, `null` where its fiscal year publishes no pay. */
-  temps: TempsFigure | null
+  /** Classified temporaries' FY pay for the census, 0 where its fiscal year publishes none. */
+  tempsPayCents: number
 }): HeadlineFigures {
   const { records, budget } = options
   return {
@@ -52,8 +51,8 @@ export function headlineFigures(options: {
       0,
     ),
     spendCents:
-      summarize(records.filter((record) => !isClassifiedTemp(record)))
-        .spendCents + (options.temps?.payCents ?? 0),
+      sumSpendCents(records.filter((record) => !isClassifiedTemp(record))) +
+      options.tempsPayCents,
     people: summarize(records).people,
   }
 }

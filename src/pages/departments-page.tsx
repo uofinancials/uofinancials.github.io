@@ -7,7 +7,7 @@ import { SelectField } from '@/components/fields/select-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
-import { summaryQuery } from '@/data/queries'
+import { manifestQuery, summaryQuery } from '@/data/queries'
 import {
   type DepartmentsSearch,
   type DepartmentsView,
@@ -18,7 +18,7 @@ import {
   filterRows,
   sortRows,
 } from '@/lib/departments/table'
-import { fyPaySource } from '@/lib/trends/trends'
+import { fyPaySource, fyPayYears } from '@/lib/trends/trends'
 
 const PLACEMENT_NOTE =
   'Areas and units are the budget’s level-3 and level-5 organisations. Pay departments the budget does not publish are placed in an area by a department-name prefix, or by hand, as on the overview.'
@@ -70,6 +70,7 @@ function TableControls({
 
 export function DepartmentsPage() {
   const { data } = useSuspenseQuery(summaryQuery)
+  const { data: manifest } = useSuspenseQuery(manifestQuery)
   const { now, before, rows } = data.departments
   const areas = rows.areas.flatMap(({ code, name }) =>
     code === null ? [] : [{ code, name }],
@@ -130,11 +131,7 @@ export function DepartmentsPage() {
             from: before.year,
             to: now.year,
           },
-          ...fyPaySource(
-            [before, now]
-              .filter(({ hasFyPay }) => hasFyPay)
-              .map(({ year }) => year),
-          ),
+          ...fyPaySource(fyPayYears(manifest, [before.year, now.year])),
         ]}
       />
     </div>

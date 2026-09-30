@@ -12,15 +12,15 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'the committed summary, area trends and temporaries’ FY pay are what the committed data files derive; run `pnpm scrape summary` if not',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    const { summary, areas, fyTemps, files } = deriveSummary(manifest)
-    const texts = serializeDerived(summary, areas, fyTemps)
+    const derived = deriveSummary(manifest)
+    const texts = serializeDerived(derived)
     for (const [file, text] of texts) {
       expect(JSON.parse(readFileSync(file, 'utf8')), file).toEqual(
         JSON.parse(text),
       )
     }
     expect(listAreaTrendsFiles().filter((file) => !texts.has(file))).toEqual([])
-    expect(manifest.summary?.files).toEqual(files)
+    expect(manifest.summary?.files).toEqual(derived.files)
   },
   30_000,
 )

@@ -1,5 +1,6 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
+import type { FyTemps } from '../../data/fy-temps.ts'
 import type { FallEntry, Manifest } from '../../data/manifest.ts'
 import { listAreas } from '../census/areas.ts'
 import {
@@ -14,12 +15,11 @@ import {
   comparablePoints,
   MIN_JOBS_SHOWN,
   measureJobs,
-  type TempsFigure,
   type TrendPoint,
 } from '../trends/trends.ts'
 import { sumBy, unitsOf } from './budget.ts'
 import { placeDepartments } from './codes.ts'
-import type { TempsScope } from './fy-temps.ts'
+import { type TempsScope, tempsByCensus } from './fy-temps.ts'
 import type { DepartmentCensus } from './jobs.ts'
 
 /** A census joined to the budget year that names its areas. */
@@ -87,24 +87,19 @@ type RowInput = Pick<DepartmentRow, 'code' | 'name' | 'area'> & {
   temps: TempsScope
 }
 
-/** A scope's classified temporaries' FY figures in one census, `null` where its fiscal year publishes no pay. */
-export type TempsOf = (scope: TempsScope, year: number) => TempsFigure | null
-
 function toRow(
   input: RowInput,
   sums: { now: BudgetSums; before: BudgetSums },
-  years: { now: number; before: number; tempsOf: TempsOf },
+  years: { now: number; before: number; fyTemps: FyTemps },
 ): DepartmentRow {
   const { code, name, area } = input
   const { now, before } = sums
-  const figures = measureJobs(
-    input.records,
-    years.tempsOf(input.temps, years.now),
-  )
+  const temps = tempsByCensus(years.fyTemps, input.temps)
+  const figures = measureJobs(input.records, temps.get(years.now) ?? null)
   const [comparedEarlier, compared] = comparablePoints([
     {
       year: years.before,
-      ...measureJobs(input.earlier, years.tempsOf(input.temps, years.before)),
+      ...measureJobs(input.earlier, temps.get(years.before) ?? null),
     },
     { year: years.now, ...figures },
   ])
@@ -162,14 +157,14 @@ export type AreaFigure = Pick<
 export function areaFigures(
   census: DepartmentCensus,
   budget: BudgetYear,
-  tempsOf: TempsOf,
+  fyTemps: FyTemps,
 ): AreaFigure[] {
   const totals = sumBy(budget.rows, (row) => row.org)
   const { areaJobs } = placeDepartments(census)
   return placedAreas(census.orgs, areaJobs).map(({ code, name, records }) => {
     const { jobs, spendCents } = measureJobs(
       records,
-      tempsOf({ kind: 'area', code }, census.year),
+      tempsByCensus(fyTemps, { kind: 'area', code }).get(census.year) ?? null,
     )
     return {
       code,
@@ -185,13 +180,13 @@ export function areaFigures(
 export function departmentRows(
   now: TableYear,
   before: TableYear,
-  tempsOf: TempsOf,
+  fyTemps: FyTemps,
 ): { areas: DepartmentRow[]; units: DepartmentRow[] } {
   const sums = {
     now: toBudgetSums(now.budget),
     before: toBudgetSums(before.budget),
   }
-  const years = { now: now.census.year, before: before.census.year, tempsOf }
+  const years = { now: now.census.year, before: before.census.year, fyTemps }
   const row = (input: RowInput) => toRow(input, sums, years)
   const earlierByCode = new Map<string | null, FallRecord[]>()
   const earlierByArea = new Map<string | null, FallRecord[]>()

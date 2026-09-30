@@ -11,7 +11,7 @@ import { type DepartmentCensus, toDepartmentCensuses } from './jobs.ts'
 
 const HUNDREDTHS = 100
 
-export type FyTempsInputs = {
+type FyTempsInputs = {
   manifest: Manifest
   falls: FallYear[]
   budgets: BudgetYear[]
@@ -104,7 +104,9 @@ function groupRates(
   for (const record of records) {
     const key = keyOf(record)
     if (key === null) continue
-    rates.set(key, [...(rates.get(key) ?? []), record.annualSalaryRateCents])
+    const values = rates.get(key) ?? []
+    values.push(record.annualSalaryRateCents)
+    rates.set(key, values)
   }
   return new Map([...rates].map(([key, values]) => [key, mean(values)]))
 }
@@ -126,19 +128,20 @@ function isInScope(unit: FyTempsUnit, scope: TempsScope): boolean {
     : unit.code === scope.code
 }
 
-/** A scope's classified temporaries' FY figures in every census whose fiscal year publishes pay, zero where it paid none. */
+/** A scope's classified temporaries' FY figures by census year, in every census whose fiscal year publishes pay, zero where it paid none. */
 export function tempsByCensus(
   fyTemps: FyTemps,
   scope: TempsScope,
 ): Map<number, TempsFigure> {
   return new Map(
-    fyTemps.years.map(({ censusYear, units }) => {
+    fyTemps.years.map(({ fiscalYear, censusYear, units }) => {
       const inScope = units.filter((unit) => isInScope(unit, scope))
       const sum = (pick: (unit: FyTempsUnit) => number) =>
         inScope.reduce((total, unit) => total + pick(unit), 0)
       return [
         censusYear,
         {
+          fiscalYear,
           jobs: sum(({ jobs }) => jobs),
           payCents: sum(({ payCents }) => payCents),
           fteHundredths: sum(({ fteHundredths }) => fteHundredths),
@@ -146,17 +149,4 @@ export function tempsByCensus(
       ]
     }),
   )
-}
-
-/** Looks up any scope's figures in one census from the derived file. */
-export function tempsLookup(
-  fyTemps: FyTemps,
-): (scope: TempsScope, year: number) => TempsFigure | null {
-  const cache = new Map<string, Map<number, TempsFigure>>()
-  return (scope, year) => {
-    const key = JSON.stringify(scope)
-    const byCensus = cache.get(key) ?? tempsByCensus(fyTemps, scope)
-    cache.set(key, byCensus)
-    return byCensus.get(year) ?? null
-  }
 }

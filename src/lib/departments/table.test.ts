@@ -118,7 +118,7 @@ const BEFORE = {
   budget: FY25,
 }
 
-const { areas, units } = departmentRows(NOW, BEFORE, () => null)
+const { areas, units } = departmentRows(NOW, BEFORE, { years: [] })
 const byCode = (rows: DepartmentRow[], code: string | null) =>
   rows.find((found) => found.code === code)
 const NO_CHANGES = { budget: null, jobs: null, spend: null, median: null }

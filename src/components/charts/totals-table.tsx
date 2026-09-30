@@ -19,9 +19,9 @@ import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
 import { BarCell } from './bar-cell'
 
-const NUMBER_HEADS = ['People', 'Jobs', 'FTE', 'Salary spend', 'Share']
 /** Classified temporaries' figures a list of jobs cannot give, since their pay is known by unit. */
-const BLANK_FIGURES = NUMBER_HEADS.slice(2)
+const BLANK_FIGURES = ['FTE', 'Salary spend', 'Share']
+const NUMBER_HEADS = ['People', 'Jobs', ...BLANK_FIGURES]
 
 function CountCells({ totals }: { totals: Totals }) {
   return (

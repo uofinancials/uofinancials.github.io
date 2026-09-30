@@ -9,7 +9,6 @@ import {
   foldedFallYearSchema,
 } from '../../src/data/unit-aliases.ts'
 import { isClassifiedTemp } from '../../src/lib/census/totals.ts'
-import { tempsByCensus } from '../../src/lib/departments/fy-temps.ts'
 import {
   departmentTrends,
   departmentYears,
@@ -90,23 +89,14 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ),
     )
     const fyTemps = fyTempsSchema.parse(readJson(FY_TEMPS_DATA_PATH))
-    const pageTotals = (code: string, isArea: boolean) =>
-      departmentTrends(
-        departmentYears(code, censuses),
-        'all',
-        tempsByCensus(
-          fyTemps,
-          isArea ? { kind: 'area', code } : { kind: 'unit', code },
-        ),
-      ).total
+    const pageTotals = (code: string) =>
+      departmentTrends(departmentYears(code, censuses), 'all', fyTemps).total
     const athletics = areaTrendsSchema.parse(readJson(areaTrendsPath('480000')))
     const emu = areaTrendsSchema.parse(readJson(areaTrendsPath('425000')))
     const unit = emu.units.find(({ code }) => code === '267100')
-    expect(pageTotals('480000', true)).toEqual(athletics.trends.total)
-    expect(pageTotals('267100', false)).toEqual(unit?.trends.total)
-    expect(athletics.trends.total.at(-1)?.fyTemps?.spendCents).toBeGreaterThan(
-      0,
-    )
+    expect(pageTotals('480000')).toEqual(athletics.trends.total)
+    expect(pageTotals('267100')).toEqual(unit?.trends.total)
+    expect(athletics.trends.total.at(-1)?.fyTemps?.fiscalYear).toBe(2026)
   },
   ALL_YEARS_TIMEOUT_MS,
 )

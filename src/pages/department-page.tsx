@@ -19,7 +19,6 @@ import { fallYearQuery, fyTempsQuery, toData } from '@/data/queries'
 import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
 import { departmentBudget } from '@/lib/departments/budget'
 import { type CodeProfile, describeCode } from '@/lib/departments/codes'
-import { tempsByCensus, tempsLookup } from '@/lib/departments/fy-temps'
 import {
   type DepartmentCensus,
   departmentClasses,
@@ -119,8 +118,7 @@ function AreaUnitsSection({
     return (
       years && {
         ...years,
-        units: departmentRows(years.now, years.before, tempsLookup(fyTemps))
-          .units,
+        units: departmentRows(years.now, years.before, fyTemps).units,
       }
     )
   }, [censuses, budgets, fyTemps])
@@ -153,9 +151,11 @@ function AreaUnitsSection({
             to: now.census.year,
           },
           ...fyPaySource(
-            [before.census.year, now.census.year].filter((year) =>
-              fyTemps.years.some(({ censusYear }) => censusYear === year),
-            ),
+            fyTemps.years
+              .filter(({ censusYear }) =>
+                [before.census.year, now.census.year].includes(censusYear),
+              )
+              .map(({ fiscalYear }) => fiscalYear),
           ),
         ]}
       />
@@ -237,16 +237,8 @@ function useDepartmentView(
   )
   const { kind, year } = view
   const trends = useMemo(
-    () =>
-      departmentTrends(
-        jobs,
-        kind,
-        tempsByCensus(
-          fyTemps,
-          jobs.placements ? { kind: 'area', code } : { kind: 'unit', code },
-        ),
-      ),
-    [jobs, kind, fyTemps, code],
+    () => departmentTrends(jobs, kind, fyTemps),
+    [jobs, kind, fyTemps],
   )
   const classRows = useMemo(
     () => departmentClasses(jobs, { kind, year }),

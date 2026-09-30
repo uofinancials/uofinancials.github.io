@@ -53,7 +53,7 @@ const AREAS = areaTrends(
     toDepartmentCensus({ year: 2025, records: FALL_2025 }, BUDGET),
   ],
   continuingPairs([census(2024, FALL_2024), census(2025, FALL_2025)]),
-  () => null,
+  { years: [] },
 )
 
 test('an area’s jobs are those each census places in it, by group, and a unit’s those paid under its code', () => {
@@ -117,5 +117,5 @@ test('a unit with no job in any census is left out, and an area keeps a census w
 })
 
 test('no census gives no areas', () => {
-  expect(areaTrends([], [], () => null)).toEqual([])
+  expect(areaTrends([], [], { years: [] })).toEqual([])
 })

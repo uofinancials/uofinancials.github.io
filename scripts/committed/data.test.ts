@@ -172,15 +172,19 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'an opened group leaves spend and median blank on a point under three jobs',
   () => {
     const years = loadFallCensuses()
-    const opened = buildTrends(years, {
-      kind: 'all',
-      group: 'Unclassified staff',
-      dept: null,
-      position: null,
-      jobs: null,
-      from: 2014,
-      to: 2025,
-    }).series
+    const opened = buildTrends(
+      years,
+      {
+        kind: 'all',
+        group: 'Unclassified staff',
+        dept: null,
+        position: null,
+        jobs: null,
+        from: 2014,
+        to: 2025,
+      },
+      new Map(),
+    ).series
     const pointOf = (key: string, year: number) =>
       opened
         .find((line) => line.key === key)

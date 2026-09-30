@@ -11,6 +11,8 @@ import {
   toDepartmentCensus,
 } from './jobs'
 
+const NO_FY_PAY = { years: [] }
+
 const ORGS: BudgetYear['orgs'] = {
   '222000': { name: 'Arts & Sciences, College of', level: 3, parent: null },
   '223100': { name: 'CAS Biology', level: 5, parent: '222000' },
@@ -134,7 +136,7 @@ test('trend points under three jobs lose spend and median, keeping FTE', () => {
   const jobs = departmentYears('111111', [
     census(2025, [unclassifiedJob(), unclassifiedJob(), classifiedJob()]),
   ])
-  const trends = departmentTrends(jobs, 'all', new Map())
+  const trends = departmentTrends(jobs, 'all', NO_FY_PAY)
   expect(trends.series[0]?.points[0]).toMatchObject({
     jobs: 2,
     spendCents: null,
@@ -150,7 +152,7 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
     census(2023, [unclassifiedJob({ payDepartment: elsewhere })]),
   ])
   expect(
-    departmentTrends(jobs, 'all', new Map()).total.map(({ year }) => year),
+    departmentTrends(jobs, 'all', NO_FY_PAY).total.map(({ year }) => year),
   ).toEqual([2024, 2025])
   expect(departmentClasses(jobs, { kind: 'all', year: 2025 })).toMatchObject({
     unclassified: [{ label: 'Other ranks (fewer than 3 jobs each)', jobs: 1 }],
@@ -160,7 +162,7 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
     departmentClasses(jobs, { kind: 'classified', year: 2025 }).unclassified,
   ).toEqual([])
   expect(
-    departmentTrends(jobs, 'classified', new Map()).total.map(
+    departmentTrends(jobs, 'classified', NO_FY_PAY).total.map(
       ({ jobs: count }) => count,
     ),
   ).toEqual([0, 0])

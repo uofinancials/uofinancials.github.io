@@ -38,7 +38,7 @@ import {
   formatDollars,
   formatRoundedDollars,
 } from '@/lib/shared/format'
-import { fyPaySource, MIN_JOBS_SHOWN } from '@/lib/trends/trends'
+import { fyPaySource, fyPayYears, MIN_JOBS_SHOWN } from '@/lib/trends/trends'
 
 const COMPACT_CHART = 'h-64'
 
@@ -59,6 +59,7 @@ function useHomeData() {
     answers: answersOf(home.answers),
     raiseSources: raiseSources(firstYearRaises),
     jobsByYear: jobsByCensus(manifest),
+    fySources: fyPaySource(fyPayYears(manifest, [home.year])),
   }
 }
 
@@ -254,7 +255,7 @@ function DepartmentsPreview({
             year,
             computed: `an area's jobs are the census jobs placed in it; ${SPEND_METHOD} Spend is blank for fewer than ${MIN_JOBS_SHOWN} paid jobs.`,
           },
-          ...(data.hasFyPay ? fyPaySource([year]) : []),
+          ...data.fySources,
         ]}
       />
     </PageSection>
@@ -328,7 +329,7 @@ export function OverviewPage() {
               year,
               computed: `people are distinct published names; ${SPEND_METHOD}`,
             },
-            ...(data.hasFyPay ? fyPaySource([year]) : []),
+            ...data.fySources,
           ]}
         />
       </div>

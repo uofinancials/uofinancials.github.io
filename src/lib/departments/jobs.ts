@@ -5,6 +5,7 @@ import {
   type FallYear,
   type StaffKind,
 } from '../../data/fall.ts'
+import type { FyTemps } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import {
   type AreaAssignment,
@@ -17,10 +18,10 @@ import {
   buildTrends,
   MIN_JOBS_SHOWN,
   measureJobs,
-  type TempsFigure,
   type TrendPoint,
   type Trends,
 } from '../trends/trends.ts'
+import { type TempsScope, tempsByCensus } from './fy-temps.ts'
 
 export const AREA_PLACEMENT_METHOD =
   'An area’s jobs are those whose pay department the site places in it: by UO’s budget hierarchy for the census’s fiscal year, by a department-name prefix every placed department shares, or by hand.'
@@ -92,6 +93,8 @@ export type DepartmentYears = {
   yearsWithJobs: number[]
   /** `null` unless the code is an area. */
   placements: AreaPlacement[] | null
+  /** Where the department's classified temporaries' FY pay is summed: its area, or its unit. */
+  tempsScope: TempsScope
 }
 
 export function isAreaCode(
@@ -147,14 +150,15 @@ export function departmentYears(
     placements: isArea
       ? placed.flatMap(({ placement }) => (placement ? [placement] : []))
       : null,
+    tempsScope: isArea ? { kind: 'area', code } : { kind: 'unit', code },
   }
 }
 
 /** The department's jobs over its censuses with jobs. */
 export function departmentTrends(
-  { years, yearsWithJobs }: DepartmentYears,
+  { years, yearsWithJobs, tempsScope }: DepartmentYears,
   kind: StaffKind | 'all',
-  temps: ReadonlyMap<number, TempsFigure>,
+  fyTemps: FyTemps,
 ): Trends {
   return buildTrends(
     years,
@@ -167,7 +171,7 @@ export function departmentTrends(
       from: yearsWithJobs[0] ?? 0,
       to: yearsWithJobs.at(-1) ?? 0,
     },
-    temps,
+    tempsByCensus(fyTemps, tempsScope),
   )
 }
 

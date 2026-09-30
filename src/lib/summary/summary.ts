@@ -7,7 +7,7 @@ import type { Outlook } from '../../data/outlook.ts'
 import type { RaiseTerms } from '../../data/raises.ts'
 import type { AreaTrends, Summary } from '../../data/summary.ts'
 import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
-import { tempsByCensus, tempsLookup } from '../departments/fy-temps.ts'
+import { tempsByCensus } from '../departments/fy-temps.ts'
 import {
   type DepartmentCensus,
   toDepartmentCensuses,
@@ -16,7 +16,6 @@ import {
   areaFigures,
   departmentRows,
   latestTableYears,
-  type TempsOf,
 } from '../departments/table.ts'
 import {
   exampleAnswers,
@@ -78,7 +77,7 @@ export function buildTrendScopes({
     areas: areaTrends(
       toDepartmentCensuses(manifest, falls, budgets),
       pairs,
-      tempsLookup(fyTemps),
+      fyTemps,
     ),
   }
 }
@@ -118,24 +117,22 @@ function summarizeTrends(
 
 function summarizeDepartments(
   years: { now: TableYear; before: TableYear },
-  tempsOf: TempsOf,
+  fyTemps: FyTemps,
 ): Summary['departments'] {
   const tableYear = ({ census }: TableYear) => ({
     year: census.year,
     fiscalYear: census.fiscalYear,
-    hasFyPay: tempsOf({ kind: 'all' }, census.year) !== null,
   })
   return {
     now: tableYear(years.now),
     before: tableYear(years.before),
-    rows: departmentRows(years.now, years.before, tempsOf),
+    rows: departmentRows(years.now, years.before, fyTemps),
   }
 }
 
 function summarizeHome(
   inputs: SummaryInputs,
   { census, budget }: TableYear,
-  tempsOf: TempsOf,
 ): Summary['home'] {
   const { year, records, fiscalYear } = census
   const { censusDate } = selectOverviewSources(inputs.manifest).census
@@ -152,22 +149,21 @@ function summarizeHome(
       firstSavingsYear(projection.fiscalYears, censusFiscalYear),
     ),
   })
-  const temps = tempsOf({ kind: 'all' }, year)
   return {
     year,
     censusDate,
     fiscalYear,
-    hasFyPay: temps !== null,
     period: budget.period,
     headlines: headlineFigures({
       records,
       budget,
       projection,
       censusFiscalYear,
-      temps,
+      tempsPayCents:
+        tempsByCensus(inputs.fyTemps, { kind: 'all' }).get(year)?.payCents ?? 0,
     }),
     answers: answers.map(({ rules, ...answer }) => answer),
-    areas: areaFigures(census, budget, tempsOf),
+    areas: areaFigures(census, budget, inputs.fyTemps),
     bases: placementBases(census),
     topPaid: topPaidJobs({ year, records }, TOP_PAID_COUNT),
   }
@@ -190,11 +186,10 @@ export function buildSummary(
   scopes: TrendScopes,
 ): Summary {
   const years = latestYears(inputs)
-  const tempsOf = tempsLookup(inputs.fyTemps)
   return {
     trends: summarizeTrends(inputs, scopes),
-    departments: summarizeDepartments(years, tempsOf),
-    home: summarizeHome(inputs, years.now, tempsOf),
+    departments: summarizeDepartments(years, inputs.fyTemps),
+    home: summarizeHome(inputs, years.now),
     people: summarizePeople(inputs.falls),
   }
 }
