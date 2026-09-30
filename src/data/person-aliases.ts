@@ -11,6 +11,7 @@ export const PERSON_ALIASES: readonly PersonAlias[] = [
   ['Bentz, Ann H', 'Herz, Ann K'],
   ['Bradley, Autumn L', 'Lorraine, Autumn'],
   ['Bramhall, Ronnie C', 'Bramhall, Ronald C'],
+  ['Chang, Tse Chun', 'Chang, James T'],
   ['Cooper, Michelle L', 'Cooper, Shelly L'],
   ['Curiel, Candelaria', 'Erspamer, Candelaria C'],
   ['Devi, Anita', 'Karan, Anita'],

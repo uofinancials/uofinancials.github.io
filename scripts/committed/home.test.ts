@@ -1,10 +1,12 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { budgetYearSchema } from '../../src/data/budget.ts'
-import { fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
+import {
+  foldedBudgetYearSchema,
+  foldedFallYearSchema,
+} from '../../src/data/unit-aliases.ts'
 import { isClassifiedTemp, summarize } from '../../src/lib/census/totals.ts'
 import {
   departmentYears,
@@ -19,15 +21,14 @@ import {
 import {
   budgetDataPath,
   DATA_DIR,
+  fallDataPath,
   MANIFEST_PATH,
   readJson,
 } from '../scrape/cache.ts'
 
 function readFall2025() {
-  const { records } = fallYearSchema.parse(
-    readJson(path.join(DATA_DIR, 'fall', '2025.json')),
-  )
-  const budget = budgetYearSchema.parse(readJson(budgetDataPath(2026)))
+  const { records } = foldedFallYearSchema.parse(readJson(fallDataPath(2025)))
+  const budget = foldedBudgetYearSchema.parse(readJson(budgetDataPath(2026)))
   return { records, budget }
 }
 

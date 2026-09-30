@@ -1,22 +1,25 @@
 import type { BudgetYear } from '../../src/data/budget.ts'
 import type { FallYear } from '../../src/data/fall.ts'
+import { fiscalYearOf } from '../../src/lib/census/totals.ts'
 
-export type UnitCandidateReason = 'same-name' | 'name-prefix' | 'jobs-moved'
+type UnitCandidateReason = 'same-name' | 'name-prefix' | 'jobs-moved'
+
+type CodePair = readonly [string, string]
 
 /** Two department codes that may name one unit, in code order. */
 export type UnitCandidate = {
-  codes: readonly [string, string]
+  codes: CodePair
   reason: UnitCandidateReason
 }
 
 /** Fewest continuing jobs whose move from one code to another marks the codes as candidates. */
-export const MIN_MOVED_JOBS = 3
+const MIN_MOVED_JOBS = 3
 
 /** Fewest words a normalised name needs before another code's name that starts with it marks the codes as candidates. */
-export const MIN_PREFIX_WORDS = 3
+const MIN_PREFIX_WORDS = 3
 
 /** Fewest censuses two codes both pay jobs in for them to count as separate orgs side by side, not one unit recoded. */
-export const MIN_SHARED_CENSUSES = 3
+const MIN_SHARED_CENSUSES = 3
 
 const ABBREVIATIONS: readonly [RegExp, string][] = [
   [/&/g, ' and '],
@@ -38,8 +41,9 @@ export function normalizeUnitName(name: string): string {
     .trim()
 }
 
-function pairKey(a: string, b: string): string {
-  return a < b ? `${a}|${b}` : `${b}|${a}`
+/** Two department codes in code order, so a pair has one spelling whichever way it was found. */
+export function unitPair(a: string, b: string): CodePair {
+  return a < b ? [a, b] : [b, a]
 }
 
 function codesByNormalizedName(
@@ -64,18 +68,18 @@ function codesByNormalizedName(
   return codesByName
 }
 
-function crossPairs(left: Set<string>, right: Set<string>): string[] {
+function crossPairs(left: Set<string>, right: Set<string>): CodePair[] {
   return [...left].flatMap((a) =>
-    [...right].filter((b) => b !== a).map((b) => pairKey(a, b)),
+    [...right].filter((b) => b !== a).map((b) => unitPair(a, b)),
   )
 }
 
-function sameNamePairs(codesByName: Map<string, Set<string>>): string[] {
+function sameNamePairs(codesByName: Map<string, Set<string>>): CodePair[] {
   return [...codesByName.values()].flatMap((codes) => crossPairs(codes, codes))
 }
 
 /** Code pairs where one code's normalised name, of at least `MIN_PREFIX_WORDS` words, begins the other's. */
-function namePrefixPairs(codesByName: Map<string, Set<string>>): string[] {
+function namePrefixPairs(codesByName: Map<string, Set<string>>): CodePair[] {
   const names = [...codesByName.keys()]
   return names
     .filter((name) => name.split(' ').length >= MIN_PREFIX_WORDS)
@@ -105,7 +109,7 @@ function payCodesByJob(year: FallYear): Map<string, string> {
 }
 
 /** Code pairs where most of one code's continuing jobs appear under the other in the next census. */
-function jobsMovedPairs(falls: FallYear[]): string[] {
+function jobsMovedPairs(falls: FallYear[]): CodePair[] {
   const ordered = [...falls].sort((a, b) =>
     a.censusDate.localeCompare(b.censusDate),
   )
@@ -126,7 +130,7 @@ function jobsMovedPairs(falls: FallYear[]): string[] {
           ([to, moved]) =>
             to !== from && moved >= MIN_MOVED_JOBS && moved * 2 >= continuing,
         )
-        .map(([to]) => pairKey(from, to))
+        .map(([to]) => unitPair(from, to))
     })
   })
 }
@@ -142,11 +146,11 @@ function budgetYearsByCode(budgets: BudgetYear[]): Map<string, Set<number>> {
   return years
 }
 
-/** The fiscal years each pay code has jobs in: Fall census Y falls in fiscal year Y + 1. */
+/** The fiscal years each pay code has jobs in. */
 function payYearsByCode(falls: FallYear[]): Map<string, Set<number>> {
   const years = new Map<string, Set<number>>()
   for (const { censusDate, records } of falls) {
-    const fiscalYear = Number(censusDate.slice(0, 4)) + 1
+    const fiscalYear = fiscalYearOf(censusDate)
     for (const { payDepartment } of records) {
       const { code } = payDepartment
       if (code !== null) {
@@ -164,7 +168,7 @@ function payYearsByCode(falls: FallYear[]): Map<string, Set<number>> {
  * between the datasets, not a second code for the unit.
  */
 function isBudgetPayPair(
-  [a, b]: readonly [string, string],
+  [a, b]: CodePair,
   budgetYears: Map<string, Set<number>>,
   payYears: Map<string, Set<number>>,
 ): boolean {
@@ -185,7 +189,7 @@ function isBudgetPayPair(
  * censuses, and they are not a budget unit and its pay code.
  */
 function isJoinable(
-  codes: readonly [string, string],
+  codes: CodePair,
   budgetYears: Map<string, Set<number>>,
   payYears: Map<string, Set<number>>,
 ): boolean {
@@ -204,20 +208,20 @@ export function findUnitCandidates(
   budgets: BudgetYear[],
 ): UnitCandidate[] {
   const codesByName = codesByNormalizedName(falls, budgets)
-  const reasons = new Map<string, UnitCandidateReason>()
-  const note = (keys: string[], reason: UnitCandidateReason) => {
-    for (const key of keys) if (!reasons.has(key)) reasons.set(key, reason)
+  const candidates = new Map<string, UnitCandidate>()
+  const note = (pairs: CodePair[], reason: UnitCandidateReason) => {
+    for (const codes of pairs) {
+      const key = codes.join('|')
+      if (!candidates.has(key)) candidates.set(key, { codes, reason })
+    }
   }
   note(sameNamePairs(codesByName), 'same-name')
   note(namePrefixPairs(codesByName), 'name-prefix')
   note(jobsMovedPairs(falls), 'jobs-moved')
   const budgetYears = budgetYearsByCode(budgets)
   const payYears = payYearsByCode(falls)
-  return [...reasons]
+  return [...candidates]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, reason]): UnitCandidate => {
-      const [a = '', b = ''] = key.split('|')
-      return { codes: [a, b], reason }
-    })
+    .map(([, candidate]) => candidate)
     .filter(({ codes }) => isJoinable(codes, budgetYears, payYears))
 }

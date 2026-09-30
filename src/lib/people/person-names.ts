@@ -1,6 +1,6 @@
 import { censusYearOf, type FallYear } from '../../data/fall.ts'
 import { DISTINCT_PEOPLE, PERSON_ALIASES } from '../../data/person-aliases.ts'
-import { findNamePairs, isLinkedByRule } from './name-pairs.ts'
+import { findNamePairs, isLinkedByRule, namePairKey } from './name-pairs.ts'
 
 /** Each published name joined to another as one person, mapped to that person's latest published name. */
 export type PersonNames = Map<string, string>
@@ -20,10 +20,10 @@ function lastYearByName(years: FallYear[]): Map<string, number> {
 
 /** The name pairs joined as one person: every hand-reviewed pair, and every pair a rule links that no review rejected. */
 function joinedPairs(years: FallYear[]): (readonly [string, string])[] {
-  const rejected = new Set(DISTINCT_PEOPLE.map((pair) => pair.join('|')))
+  const rejected = new Set(DISTINCT_PEOPLE.map(namePairKey))
   const byRule = findNamePairs(years)
     .filter(
-      (pair) => isLinkedByRule(pair) && !rejected.has(pair.names.join('|')),
+      (pair) => isLinkedByRule(pair) && !rejected.has(namePairKey(pair.names)),
     )
     .map(({ names }) => names)
   return [...PERSON_ALIASES, ...byRule]

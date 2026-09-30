@@ -7,9 +7,17 @@ import {
   DISTINCT_PEOPLE,
   PERSON_ALIASES,
 } from '../../src/data/person-aliases.ts'
-import { DISTINCT_UNITS, UNIT_ALIASES } from '../../src/data/unit-aliases.ts'
-import { findPersonCandidates } from '../aliases/person-candidates.ts'
-import { findUnitCandidates } from '../aliases/unit-candidates.ts'
+import {
+  DISTINCT_UNITS,
+  foldUnitAliases,
+  UNIT_ALIASES,
+} from '../../src/data/unit-aliases.ts'
+import {
+  findNamePairs,
+  isLinkedByRule,
+  namePairKey,
+} from '../../src/lib/people/name-pairs.ts'
+import { findUnitCandidates, unitPair } from '../aliases/unit-candidates.ts'
 import {
   budgetDataPath,
   fallDataPath,
@@ -20,12 +28,8 @@ import {
 /** Parsing every census and budget and searching them takes several seconds. */
 const ALL_YEARS_TIMEOUT_MS = 20_000
 
-function unitKey(a: string, b: string): string {
-  return a < b ? `${a}|${b}` : `${b}|${a}`
-}
-
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'every unit and person candidate in the committed data has been reviewed',
+  'every unit candidate in the committed data, and every name pair no rule links in it as the site reads it, has been reviewed',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const falls = manifest.fall.map(({ year }) =>
@@ -35,22 +39,23 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
     )
     const reviewedUnits = new Set([
-      ...UNIT_ALIASES.map(({ code, sameAs }) => unitKey(code, sameAs)),
-      ...DISTINCT_UNITS.map(([a, b]) => unitKey(a, b)),
+      ...UNIT_ALIASES.map(({ code, sameAs }) =>
+        unitPair(code, sameAs).join('|'),
+      ),
+      ...DISTINCT_UNITS.map(([a, b]) => unitPair(a, b).join('|')),
     ])
     const reviewedPeople = new Set(
-      [...PERSON_ALIASES, ...DISTINCT_PEOPLE].map(
-        ([earlier, later]) => `${earlier}|${later}`,
-      ),
+      [...PERSON_ALIASES, ...DISTINCT_PEOPLE].map(namePairKey),
     )
     expect(
       findUnitCandidates(falls, budgets).filter(
-        ({ codes: [a, b] }) => !reviewedUnits.has(unitKey(a, b)),
+        ({ codes }) => !reviewedUnits.has(codes.join('|')),
       ),
     ).toEqual([])
     expect(
-      findPersonCandidates(falls).filter(
-        ({ names: [a, b] }) => !reviewedPeople.has(`${a}|${b}`),
+      findNamePairs(falls.map(foldUnitAliases)).filter(
+        (pair) =>
+          !isLinkedByRule(pair) && !reviewedPeople.has(namePairKey(pair.names)),
       ),
     ).toEqual([])
   },

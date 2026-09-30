@@ -1,16 +1,13 @@
 import type { FallRecord, FallYear } from '../../data/fall.ts'
+import { titleOf } from './person-fields.ts'
 
-export type NamePairReason = 'same-job' | 'spelling'
+type NamePairReason = 'same-job' | 'spelling'
 
 /** Two published names that may be one person, the earlier first, and the pay department they share. */
 export type NamePair = {
   names: readonly [string, string]
   code: string
   reason: NamePairReason
-}
-
-function titleOf(record: FallRecord): string {
-  return record.kind === 'classified' ? record.jobTitle : record.academicTitle
 }
 
 function jobKey(record: FallRecord): string | null {
@@ -23,7 +20,7 @@ function jobKey(record: FallRecord): string | null {
 type NameParts = { surname: string; given: string; initial: string }
 
 /** Most letters a misspelt surname or given name may differ by and still be linked without review. */
-export const MAX_SPELLING_EDITS = 2
+const MAX_SPELLING_EDITS = 2
 
 const NOT_A_LETTER = /[^a-z]/g
 
@@ -74,17 +71,7 @@ export function keepsGivenNames(a: string, b: string): boolean {
   )
 }
 
-/** The same name once case and punctuation are dropped, a middle initial on one name only allowed. */
-export function differsOnlyByInitial(a: string, b: string): boolean {
-  const [partsA, partsB] = [nameParts(a), nameParts(b)]
-  return (
-    partsA.surname === partsB.surname &&
-    partsA.given === partsB.given &&
-    initialsAgree(partsA, partsB)
-  )
-}
-
-/** The surname or the given name, not both, misspelt by at most `MAX_SPELLING_EDITS` letters, the middle initials agreeing. */
+/** The surname or the given name, not both, misspelt by at most `MAX_SPELLING_EDITS` letters, the middle initials agreeing; with no letter changed, the same name once case and punctuation are dropped, a middle initial on one name only allowed. */
 export function differsByFewLetters(a: string, b: string): boolean {
   const [partsA, partsB] = [nameParts(a), nameParts(b)]
   const edits = [
@@ -117,7 +104,6 @@ export function isLinkedByRule({
 }: Pick<NamePair, 'names' | 'reason'>): boolean {
   const isUnchangedJob = reason === 'same-job'
   return (
-    differsOnlyByInitial(a, b) ||
     differsByFewLetters(a, b) ||
     (isUnchangedJob && (keepsGivenNames(a, b) || changesMiddleInitial(a, b)))
   )
@@ -172,11 +158,18 @@ function spellingPairs(ordered: FallYear[]): NamePair[] {
     string,
     { code: string; years: Map<string, number[]> }
   >()
+  const keys = new Map<string, string>()
+  const nameKey = (name: string) => {
+    const known = keys.get(name)
+    if (known !== undefined) return known
+    const { surname, given } = nameParts(name)
+    keys.set(name, `${surname},${given}`)
+    return `${surname},${given}`
+  }
   ordered.forEach(({ records }, yearIndex) => {
     for (const { name, payDepartment } of records) {
       if (payDepartment.code === null) continue
-      const { surname, given } = nameParts(name)
-      const key = `${surname},${given}|${payDepartment.code}`
+      const key = `${nameKey(name)}|${payDepartment.code}`
       const group = groups.get(key) ?? {
         code: payDepartment.code,
         years: new Map(),
@@ -199,8 +192,12 @@ function spellingPairs(ordered: FallYear[]): NamePair[] {
   })
 }
 
-function pairKey({ names: [a, b] }: NamePair): string {
-  return `${a}|${b}`
+/** A key for a pair of names, the earlier first. */
+export function namePairKey([earlier, later]: readonly [
+  string,
+  string,
+]): string {
+  return `${earlier}|${later}`
 }
 
 /** Every pair of names that an unchanged job or a spelling variant suggests is one person, each pair once, under its unchanged-job reason where it has both. */
@@ -213,10 +210,10 @@ export function findNamePairs(falls: FallYear[]): NamePair[] {
     ...sameJobPairs(ordered),
     ...spellingPairs(ordered),
   ]) {
-    const key = pairKey(candidate)
+    const key = namePairKey(candidate.names)
     if (!byPair.has(key)) byPair.set(key, candidate)
   }
-  return [...byPair.values()].sort((a, b) =>
-    pairKey(a).localeCompare(pairKey(b), 'en'),
-  )
+  return [...byPair]
+    .sort(([a], [b]) => a.localeCompare(b, 'en'))
+    .map(([, pair]) => pair)
 }

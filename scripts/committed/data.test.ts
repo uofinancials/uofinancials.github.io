@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import path from 'node:path'
 import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../../src/data/budget.ts'
 import { fallYearSchema } from '../../src/data/fall.ts'
@@ -51,7 +50,7 @@ import {
 } from '../scrape/budget/file.ts'
 import {
   budgetDataPath,
-  DATA_DIR,
+  fallDataPath,
   MANIFEST_PATH,
   OPE_DATA_PATH,
   RAISES_DATA_PATH,
@@ -67,21 +66,21 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const years = manifest.fall.map((entry) => {
       const year = foldedFallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${entry.year}.json`)),
+        readJson(fallDataPath(entry.year)),
       )
       const expected = entry.files.reduce((sum, file) => sum + file.records, 0)
       expect(year.censusDate).toBe(entry.censusDate)
       expect(year.records.length).toBe(expected)
       return year
     })
-    expect(findPersonLinks(years)).toHaveLength(53_327)
+    expect(findPersonLinks(years)).toHaveLength(53_328)
     const people = indexPeople(years)
     const runs = people.flatMap((person) => person.runs)
-    expect(people).toHaveLength(15_645)
-    expect(runs).toHaveLength(19_145)
+    expect(people).toHaveLength(15_644)
+    expect(runs).toHaveLength(19_144)
     const linked = runs.filter(({ isLinked }) => isLinked)
-    expect(linked).toHaveLength(12_993)
-    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(12_993)
+    expect(linked).toHaveLength(12_992)
+    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(12_992)
   },
   ALL_YEARS_TIMEOUT_MS,
 )
@@ -90,9 +89,7 @@ function loadFallCensuses() {
   const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
   return manifest.fall.map(({ year }) => ({
     year,
-    records: fallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-    ).records,
+    records: fallYearSchema.parse(readJson(fallDataPath(year))).records,
   }))
 }
 
@@ -303,9 +300,7 @@ function readDepartmentCensuses() {
     foldedBudgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
   )
   const falls = manifest.fall.map(({ year }) =>
-    foldedFallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-    ),
+    foldedFallYearSchema.parse(readJson(fallDataPath(year))),
   )
   return toDepartmentCensuses(manifest, falls, budgets)
 }
@@ -399,9 +394,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'the Fall 2025 salary distribution matches an independent computation',
   () => {
-    const { records } = fallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
-    )
+    const { records } = fallYearSchema.parse(readJson(fallDataPath(2025)))
     const { bins, counts, maxRateCents, percentiles } = buildDistribution(
       records,
       2025,
@@ -481,7 +474,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2025 class and rank medians match an independent computation',
   () => {
     const { censusDate, records } = fallYearSchema.parse(
-      readJson(path.join(DATA_DIR, 'fall', '2025.json')),
+      readJson(fallDataPath(2025)),
     )
     const medians = peerMedians([{ censusDate, records }])
     const analyst = records.find(
@@ -513,9 +506,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2024-2025 pay changes match an independent computation',
   () => {
     const years = [2024, 2025].map((year) =>
-      foldedFallYearSchema.parse(
-        readJson(path.join(DATA_DIR, 'fall', `${year}.json`)),
-      ),
+      foldedFallYearSchema.parse(readJson(fallDataPath(year))),
     )
     const pairs = continuingPairs(years)
     const [all] = payChangeTrends(pairs, [2024], null)
