@@ -109,7 +109,7 @@ export const RAISE_ROW_METHOD =
 
 /** The jobs `raiseRowOf` places in no row. */
 export const UNPLACED_JOBS =
-  'executives, coaches, postdoctoral scholars, police sergeants, and unclassified jobs with neither a rank nor an OA salary grade'
+  'classified temporaries, executives, coaches, postdoctoral scholars, police sergeants, and unclassified jobs with neither a rank nor an OA salary grade'
 
 /** The raise row a job is estimated to be in, from its class, rank, grade, and title; `null` for temporaries, executives, coaches, postdoctoral scholars, and jobs with no rank or OA grade. */
 export function raiseRowOf(

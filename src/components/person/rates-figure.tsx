@@ -57,12 +57,13 @@ export function PersonRatesFigure({
         <p className="text-sm text-muted-foreground">
           {MEDIAN_SERIES} is computed by this site: the median published rate of
           every primary job in that census with the same position class or rank
-          and the same 9- or 12-month term as this name's primary job,
-          classified temporaries left out, and shown only for {MIN_JOBS_SHOWN}{' '}
-          or more jobs. Classified classes are matched on the class number,
-          whatever its letter prefix, whose meaning UO does not publish;
-          unclassified jobs with no rank are matched on their OA salary grade,
-          published from 2016. Groups used: {medianGroups.join('; ')}.
+          and the same 9- or 12-month term as this name's primary job, shown
+          only for {MIN_JOBS_SHOWN} or more jobs. Classified classes are matched
+          on the class number, whatever its one-letter prefix, whose meaning UO
+          does not publish; a code with a two-letter prefix, as on classified
+          temporaries' TS classes, is matched whole; unclassified jobs with no
+          rank are matched on their OA salary grade, published from 2016. Groups
+          used: {medianGroups.join('; ')}.
         </p>
       )}
       <Table>

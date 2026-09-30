@@ -268,8 +268,7 @@ function PeoplePreview({ data }: { data: ReturnType<typeof useHomeData> }) {
     <PageSection title="Highest salary rates">
       <p>
         The {TOP_PAID_COUNT} highest published annual salary rates in the Fall{' '}
-        {year} census, one row per job as published; classified temporaries are
-        left out.{' '}
+        {year} census, one row per job as published.{' '}
         <Link
           to="/people"
           search={{ sort: 'rate', dir: 'desc' }}

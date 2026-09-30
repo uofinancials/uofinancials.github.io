@@ -37,7 +37,7 @@ export type TrendPoint = {
   spendCents: number | null
   /** As spend: temporaries count only where `fyTemps` is set. */
   fteHundredths: number | null
-  /** Median published annual salary rate over primary jobs, temporaries excluded. */
+  /** Median published annual salary rate over primary jobs. */
   medianRateCents: number | null
   /** Set where spend and FTE include classified temporaries' FY figures: the fiscal year they come from, and the spend and FTE without them. */
   fyTemps?: {
@@ -159,14 +159,15 @@ export function medianRateCents(rates: number[]): number | null {
  * which are left out when they cover one or two jobs. FTE is `null` with
  * nothing to count; spend is `null` when the other jobs are one or two, since
  * temporaries' pay shows on its own line, or under `MIN_JOBS_SHOWN` jobs in
- * all; the median is `null` under `MIN_JOBS_SHOWN` primary rates.
+ * all; the median, over every primary job's rate, temporaries' included, is
+ * `null` under `MIN_JOBS_SHOWN` of them.
  */
 export function measureJobs(
   records: FallRecord[],
   temps: TempsFigure | null = null,
 ): Omit<TrendPoint, 'year'> {
   const paid = records.filter((record) => !isClassifiedTemp(record))
-  const rates = paid
+  const rates = records
     .filter(isPrimaryJob)
     .map((record) => record.annualSalaryRateCents)
   const counted =

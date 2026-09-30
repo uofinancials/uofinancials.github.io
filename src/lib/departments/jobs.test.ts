@@ -116,7 +116,7 @@ test('classes of three or more jobs get a row; smaller ones fold into one row pe
   })
 })
 
-test('a class of temporaries shows neither spend nor FTE, which their FY pay gives by unit', () => {
+test('a class of temporaries shows its median rate but neither spend nor FTE, which their FY pay gives by unit', () => {
   const temp = classifiedJob({
     apptPercent: 10,
     positionClass: { code: 'TS401', title: 'Temp' },
@@ -127,7 +127,7 @@ test('a class of temporaries shows neither spend nor FTE, which their FY pay giv
       jobs: 3,
       fteHundredths: null,
       spendCents: null,
-      medianRateCents: null,
+      medianRateCents: 5_000_000,
     },
   ])
 })

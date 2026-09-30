@@ -12,7 +12,6 @@ import {
   type TrendGroup,
   trendGroupOf,
 } from './groups.ts'
-import { isClassifiedTemp } from './totals.ts'
 
 const SALARY_BIN_CENTS = 1_000_000
 const TOP_BIN_FLOOR_CENTS = 25_000_000
@@ -39,7 +38,7 @@ export type Distribution = {
   bins: SalaryBin[]
   counts: GroupCounts
   maxRateCents: number | null
-  /** Over primary jobs, temporaries left out; `null` when fewer than `MIN_JOBS_SHOWN`. */
+  /** Over primary jobs; `null` when fewer than `MIN_JOBS_SHOWN`. */
   percentiles: Record<Percentile, number> | null
 }
 
@@ -47,7 +46,7 @@ function primaryPercentiles(
   records: FallRecord[],
 ): Distribution['percentiles'] {
   const rates = records
-    .filter((record) => isPrimaryJob(record) && !isClassifiedTemp(record))
+    .filter(isPrimaryJob)
     .map((record) => record.annualSalaryRateCents)
     .sort((a, b) => a - b)
   if (rates.length < MIN_JOBS_SHOWN) return null

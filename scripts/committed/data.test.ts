@@ -164,7 +164,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       total
         .filter((point) => [2014, 2025].includes(point.year))
         .map((point) => point.medianRateCents),
-    ).toEqual([5_171_100, 7_578_700])
+    ).toEqual([4_963_200, 7_279_700])
   },
 )
 
@@ -442,11 +442,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Classified temporaries': 549,
     })
     expect(percentiles).toEqual({
-      10: 4_749_600,
-      25: 5_923_100,
-      50: 7_578_700,
-      75: 10_560_350,
-      90: 14_855_160,
+      10: 4_285_880,
+      25: 5_559_500,
+      50: 7_279_700,
+      75: 10_250_100,
+      90: 14_420_000,
     })
     expect(bins.find((bin) => bin.floorCents === 5_000_000)?.counts).toEqual({
       ...none,
@@ -506,6 +506,13 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         record.jobType === 'Primary' &&
         record.termOfServiceMonths === 12,
     )
+    const temporary = records.find(
+      (record) =>
+        record.kind === 'classified' &&
+        record.positionClass?.code === 'TS901' &&
+        record.jobType === 'Primary' &&
+        record.termOfServiceMonths === 12,
+    )
     const professor = records.find(
       (record) =>
         record.kind === 'unclassified' &&
@@ -521,6 +528,10 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       medianCents: 15_440_700,
       jobs: 363,
     })
+    expect(temporary && peerMedianFor(medians, 2025, temporary)).toMatchObject({
+      medianCents: 4_159_800,
+      jobs: 351,
+    })
   },
 )
 
@@ -532,14 +543,14 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     )
     const pairs = continuingPairs(years)
     const [all] = payChangeTrends(pairs, [2024], null)
-    expect(all?.points[0]?.pairs).toBe(4_895)
+    expect(all?.points[0]?.pairs).toBe(5_197)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)
     expect(changeCounts(pairs, [2024])[0]).toMatchObject({
       unclassified: 3_355,
       rankChanged: 170,
       rankUnpublished: 0,
-      classified: 1_540,
-      classChanged: 48,
+      classified: 1_842,
+      classChanged: 59,
     })
     const raises = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
     const window = censusWindow(years, 2024)
@@ -553,11 +564,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ]),
     )
     expect(rowsByLabel).toMatchObject({
-      'SEIU 503': [1_513, '0.1083', 661],
+      'SEIU 503': [1_516, '0.1083', 661],
       'United Academics, tenure-related': [758, '0.0790', 790],
       'United Academics, pro tem, visiting, and retired': [188, '0.0659', 659],
       'Officers of Administration': [1_370, '0.0300', 300],
     })
-    expect(comparison.unplaced).toBe(152)
+    expect(comparison.unplaced).toBe(451)
   },
 )

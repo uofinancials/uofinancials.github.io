@@ -185,7 +185,7 @@ test('an area sums its units’ budget and its placed jobs, and each job’s pla
   })
 })
 
-test('the top-paid jobs are the highest rates, ties by name, without temporaries', () => {
+test('the top-paid jobs are the highest rates, ties by name, temporaries included', () => {
   const rated = (name: string, cents: number) =>
     unclassifiedJob({ name, annualSalaryRateCents: cents })
   const top = topPaidJobs(
@@ -200,7 +200,7 @@ test('the top-paid jobs are the highest rates, ties by name, without temporaries
     },
     2,
   )
-  expect(top.map(({ name }) => name)).toEqual(['Abe, Ada', 'Zed, Zoe'])
+  expect(top.map(({ name }) => name)).toEqual(['Temp, Tia', 'Abe, Ada'])
 })
 
 test('area bars keep the largest with a value, largest first, ties by name', () => {

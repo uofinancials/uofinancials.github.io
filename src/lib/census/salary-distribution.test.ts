@@ -63,20 +63,20 @@ test('stacks list only the groups with a job, keeping each group’s place', () 
   expect(stacks[0]?.values[0]).toBe(1)
 })
 
-test('percentiles cover primary jobs without temporaries, and need three of them', () => {
+test('percentiles cover primary jobs, temporaries included, and need three of them', () => {
   const overload = unclassifiedJob({
     jobType: 'Overload',
     annualSalaryRateCents: 100,
   })
   const secondary = classifiedJob({ jobType: 'Secondary' })
   expect(
-    buildDistribution([at(1), at(2), overload, secondary, temp], 2025)
-      .percentiles,
+    buildDistribution([at(1), overload, secondary, temp], 2025).percentiles,
   ).toBeNull()
+  const hourly = { ...temp, annualSalaryRateCents: 400 }
   expect(
-    buildDistribution([at(100), at(200), at(300), overload, temp], 2025)
+    buildDistribution([at(100), at(200), at(300), overload, hourly], 2025)
       .percentiles,
-  ).toEqual({ 10: 120, 25: 150, 50: 200, 75: 250, 90: 280 })
+  ).toEqual({ 10: 130, 25: 175, 50: 250, 75: 325, 90: 370 })
   expect(buildDistribution([], 2025).maxRateCents).toBeNull()
 })
 
