@@ -115,6 +115,7 @@ test('the overview uses the latest census and the budget of its fiscal year, or 
   const selected = (fall: number[], budgets: number[]) => {
     const { census: entry, fiscalYear } = selectOverviewSources({
       fall: fall.map(census),
+      fy: [],
       budget: budgets.map(budget),
       rates: null,
       summary: null,

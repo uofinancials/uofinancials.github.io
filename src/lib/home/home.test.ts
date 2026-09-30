@@ -127,6 +127,7 @@ test('jobs per census are the summed file records, oldest first', () => {
   })
   const manifest: Manifest = {
     fall: [entry(2025, [10, 5]), entry(2014, [3])],
+    fy: [],
     budget: [],
     rates: null,
     summary: null,

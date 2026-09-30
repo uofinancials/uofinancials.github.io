@@ -301,6 +301,152 @@
       ]
     }
   ],
+  "fy": [
+    {
+      "fiscalYear": 2021,
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "CLASSIFIED PERSONNEL LIST_FY Total Pay_2020-21.pdf",
+          "sha256": "985b27d1a4834693d016022e85561d06fdda1365c607b98a41d4eb7f2a0aa5a8",
+          "pages": 298,
+          "extractDate": "2021-07-15",
+          "retrievedOn": "2026-09-24",
+          "records": 2076
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "UNCLASSIFIED PERSONNEL LIST_FY Total Pay 2020-21.pdf",
+          "sha256": "0ab53864fd97bf79e233c14bbd3b8ae617b1997c99850df801d8cf08ca3886b6",
+          "pages": 1053,
+          "extractDate": "2021-07-15",
+          "retrievedOn": "2026-09-24",
+          "records": 6311
+        }
+      ]
+    },
+    {
+      "fiscalYear": 2022,
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "CLASSIFIED PERSONNEL LIST_FY Total Pay_2021-22.pdf",
+          "sha256": "4aa3cd73c6245bf9f33a9daffd4cfebdc9325640ccd1c60ab843176a7d15eabb",
+          "pages": 373,
+          "extractDate": "2022-08-17",
+          "retrievedOn": "2026-09-24",
+          "records": 2599
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "UNCLASSIFIED PERSONNEL LIST_FY Total Pay_2021-22.pdf",
+          "sha256": "69172cdb34664f965fc123d66e176eaa4c0a497400804f9947cb73a5c9eba3c4",
+          "pages": 1207,
+          "extractDate": "2022-08-17",
+          "retrievedOn": "2026-09-24",
+          "records": 7233
+        }
+      ]
+    },
+    {
+      "fiscalYear": 2023,
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "CLASSIFIED PERSONNEL LIST_FY Total Pay_2022-23.pdf",
+          "sha256": "b944418d2c6bada6fcac007ce3dbc5fe7f0541cacf013f375f10b7d910fb880c",
+          "pages": 421,
+          "extractDate": "2023-09-21",
+          "retrievedOn": "2026-09-24",
+          "records": 2934
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "UNCLASSIFIED PERSONNEL LIST_FY Total Pay_2022-23.pdf",
+          "sha256": "2a7fec2702b6eeb4c5dd1d02349a73d64c566c0a62385d8bdb17bc2b16a40e60",
+          "pages": 1208,
+          "extractDate": "2023-09-21",
+          "retrievedOn": "2026-09-24",
+          "records": 7238
+        }
+      ]
+    },
+    {
+      "fiscalYear": 2024,
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "CLASSIFIED PERSONNEL LIST_FY Total Pay_2023-24.pdf",
+          "sha256": "e414874011c5f5c79fc712441c33aedea422ea558a70c986c5ad1ccd20fad5ff",
+          "pages": 436,
+          "extractDate": "2024-08-20",
+          "retrievedOn": "2026-09-24",
+          "records": 3041
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "UNCLASSIFIED PERSONNEL LIST_FY Total Pay_2023-24.pdf",
+          "sha256": "cc0ef5d4d10afe0b6098737ca2c75297ca3539cb41c53783ce79f9b1b4b2b003",
+          "pages": 1226,
+          "extractDate": "2024-08-20",
+          "retrievedOn": "2026-09-24",
+          "records": 7346
+        }
+      ]
+    },
+    {
+      "fiscalYear": 2025,
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "CLASSIFIED PERSONNEL LIST_FY Total Pay_2024-25.pdf",
+          "sha256": "e8072f03e73d5af9c05367ceccb06f5f2c6bfa2147a209a2786456bda02c53fd",
+          "pages": 420,
+          "extractDate": "2025-08-28",
+          "retrievedOn": "2026-09-24",
+          "records": 2929
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "UNCLASSIFIED PERSONNEL LIST_FY Total Pay_2024-25.pdf",
+          "sha256": "68f70f014c972053971145718f6abf1992a7e93bb321923fd01147007c1a86e0",
+          "pages": 1218,
+          "extractDate": "2025-08-28",
+          "retrievedOn": "2026-09-24",
+          "records": 7301
+        }
+      ]
+    },
+    {
+      "fiscalYear": 2026,
+      "sourcePage": "https://data.uoregon.edu/employees/salary-reports",
+      "files": [
+        {
+          "kind": "classified",
+          "fileName": "CLASSIFIED PERSONNEL LIST_FY Total Pay_2025-26.pdf",
+          "sha256": "e28c45119a2b07a908c775e25b41267fa019e349f73f4954b6f547f54f41d312",
+          "pages": 402,
+          "extractDate": "2026-08-27",
+          "retrievedOn": "2026-09-24",
+          "records": 2805
+        },
+        {
+          "kind": "unclassified",
+          "fileName": "UNCLASSIFIED PERSONNEL LIST_FY Total Pay_2025-26.pdf",
+          "sha256": "661ddf101f7e306c0bd49e56786c49597b8910e784d77a0b4069a5cb0e0dd19b",
+          "pages": 1157,
+          "extractDate": "2026-08-27",
+          "retrievedOn": "2026-09-24",
+          "records": 6932
+        }
+      ]
+    }
+  ],
   "budget": [
     {
       "fiscalYear": 2021,

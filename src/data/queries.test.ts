@@ -4,6 +4,7 @@ import { budgetYearQuery, manifestQuery } from './queries'
 
 const EMPTY_MANIFEST = {
   fall: [],
+  fy: [],
   budget: [],
   rates: null,
   summary: null,

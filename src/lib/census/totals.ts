@@ -20,7 +20,7 @@ export type CategoryTotals = {
 }
 
 const UNPAID_STATUS = /^On Leave (No|Without) Pay|^Terminated$/
-const TEMP_POSITION_CLASS = /^TS/
+export const TEMP_POSITION_CLASS = /^TS/
 const PERCENT = 100
 export const NO_CATEGORY = 'No category'
 const FISCAL_YEAR_START_MONTH = 7

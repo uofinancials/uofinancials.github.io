@@ -44,11 +44,8 @@ const LABELS_BY_KIND: Record<
 }
 
 export function toFallRecord(block: RawBlock, kind: StaffKind): FallRecord {
-  checkLabels(block, kind)
-  const field = (label: FallLabel) => {
-    const value = repairMojibake(block.fields.get(label) ?? '').trim()
-    return value === '' ? null : value
-  }
+  checkLabels(block, LABELS_BY_KIND[kind], kind)
+  const field = fieldReader(block)
   const common = {
     name: repairMojibake(block.name),
     jobType: field('JOB TYPE'),
@@ -90,8 +87,21 @@ export function toFallRecord(block: RawBlock, kind: StaffKind): FallRecord {
   return parsed.data
 }
 
-function checkLabels(block: RawBlock, kind: StaffKind): void {
-  const { required, optional } = LABELS_BY_KIND[kind]
+/** A block's field as published, mojibake repaired, or `null` when blank. */
+export function fieldReader<Label extends string>(
+  block: RawBlock<Label>,
+): (label: Label) => string | null {
+  return (label) => {
+    const value = repairMojibake(block.fields.get(label) ?? '').trim()
+    return value === '' ? null : value
+  }
+}
+
+export function checkLabels<Label extends string>(
+  block: RawBlock<Label>,
+  { required, optional }: { required: Label[]; optional: Label[] },
+  kind: StaffKind,
+): void {
   const missing = required.filter((label) => !block.fields.has(label))
   const unexpected = [...block.fields.keys()].filter(
     (label) => !required.includes(label) && !optional.includes(label),
@@ -103,7 +113,7 @@ function checkLabels(block: RawBlock, kind: StaffKind): void {
   }
 }
 
-function describeIssue(issue: {
+export function describeIssue(issue: {
   path: PropertyKey[]
   message: string
 }): string {
@@ -132,7 +142,7 @@ function parseDepartment(
     : { code: null, name: value }
 }
 
-function parsePositionClass(
+export function parsePositionClass(
   value: string | null,
 ): FallClassified['positionClass'] {
   if (value === null) return null
@@ -156,7 +166,7 @@ function parsePercent(value: string | null): number | null {
   return Number(match[1])
 }
 
-function parseInteger(value: string | null): number | null {
+export function parseInteger(value: string | null): number | null {
   if (value === null) return null
   if (!/^\d+$/.test(value)) throw new Error(`not an integer: "${value}"`)
   return Number(value)

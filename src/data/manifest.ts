@@ -25,6 +25,13 @@ const fallEntrySchema = z.strictObject({
   files: z.array(sourceFileSchema),
 })
 
+const fyEntrySchema = z.strictObject({
+  /** The year the fiscal year ends in. */
+  fiscalYear: z.number().int(),
+  sourcePage: z.url(),
+  files: z.array(sourceFileSchema),
+})
+
 const fetchedFileFields = {
   url: z.url(),
   sha256,
@@ -58,11 +65,13 @@ const summaryEntrySchema = z.strictObject({
 
 export const manifestSchema = z.strictObject({
   fall: z.array(fallEntrySchema),
+  fy: z.array(fyEntrySchema),
   budget: z.array(budgetEntrySchema),
   rates: ratesEntrySchema.nullable(),
   summary: summaryEntrySchema.nullable(),
 })
 
 export type FallEntry = z.infer<typeof fallEntrySchema>
+export type FyEntry = z.infer<typeof fyEntrySchema>
 export type BudgetEntry = z.infer<typeof budgetEntrySchema>
 export type Manifest = z.infer<typeof manifestSchema>
