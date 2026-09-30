@@ -17,6 +17,7 @@ import {
   areaTrendsQuery,
   budgetYearQuery,
   fallYearQuery,
+  fyTempsQuery,
   manifestQuery,
   opeRatesQuery,
   outlookQuery,
@@ -189,6 +190,7 @@ const departmentRoute = createRoute({
     const [eliminationFiscalYear, fiscalYears] = await Promise.all([
       loadEliminationYear(queryClient, manifest),
       loadBudgetYears(queryClient),
+      queryClient.ensureQueryData(fyTempsQuery),
       ...fallYears.map((year) =>
         queryClient.ensureQueryData(fallYearQuery(year)),
       ),

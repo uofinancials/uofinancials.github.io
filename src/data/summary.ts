@@ -13,6 +13,9 @@ const trendPointSchema = z.strictObject({
   spendCents: cents.nullable(),
   fteHundredths: count.nullable(),
   medianRateCents: cents.nullable(),
+  fyTemps: z
+    .strictObject({ spendCents: cents, fteHundredths: count, paidJobs: count })
+    .optional(),
 })
 
 const trendsSchema = z.strictObject({
@@ -54,7 +57,10 @@ export const areaTrendsSchema = scopeTrendsSchema.extend({
 
 const areaSchema = z.strictObject({ code: z.string(), name: z.string() })
 
-const tableYearSchema = z.strictObject({ year, fiscalYear: year })
+/** Whether a census's figures include classified temporaries' pay from the FY total pay reports. */
+const hasFyPay = z.boolean()
+
+const tableYearSchema = z.strictObject({ year, fiscalYear: year, hasFyPay })
 
 const departmentRowSchema = z.strictObject({
   code: z.string().nullable(),
@@ -76,6 +82,7 @@ const homeSchema = z.strictObject({
   year,
   censusDate: z.iso.date(),
   fiscalYear: year,
+  hasFyPay,
   period: budgetPeriodSchema,
   headlines: z.strictObject({
     runRate: z.strictObject({ fiscalYear: year, cents }),

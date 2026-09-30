@@ -1,7 +1,9 @@
 import type { FallRecord } from '../../data/fall.ts'
 import type { AreaTrends, ScopeTrends } from '../../data/summary.ts'
 import { departmentIndex } from '../departments/codes.ts'
+import type { TempsScope } from '../departments/fy-temps.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
+import type { TempsOf } from '../departments/table.ts'
 import { type ContinuingPair, payChangeTrends } from './pay-changes.ts'
 import { buildTrends, pairYears, type TrendFilter } from './trends.ts'
 
@@ -20,18 +22,20 @@ function groupBy<T>(
   return groups
 }
 
-/** The censuses and pairs every scope is built from, and the range they cover. */
+/** The censuses and pairs every scope is built from, the range they cover, and each scope's classified temporaries' FY figures. */
 type Frame = {
   censuses: DepartmentCensus[]
   pairs: ContinuingPair[]
   filter: TrendFilter
   fromYears: number[]
+  tempsOf: TempsOf
 }
 
 /** Builds a scope's trends and pay changes from the jobs and pairs whose key, by `recordKey`, is its code. */
 function scopeBuilder(
-  { censuses, pairs, filter, fromYears }: Frame,
+  { censuses, pairs, filter, fromYears, tempsOf }: Frame,
   recordKey: (record: FallRecord, year: number) => string | null,
+  scopeOf: (code: string) => TempsScope,
 ) {
   const placed = censuses.map(({ year, records }) => ({
     year,
@@ -49,6 +53,12 @@ function scopeBuilder(
         records: records.get(code) ?? [],
       })),
       filter,
+      new Map(
+        placed.flatMap(({ year }) => {
+          const temps = tempsOf(scopeOf(code), year)
+          return temps ? [[year, temps]] : []
+        }),
+      ),
     ),
     payChanges: payChangeTrends(pairsOf.get(code) ?? [], fromYears, null),
   })
@@ -65,6 +75,7 @@ function scopeBuilder(
 export function areaTrends(
   censuses: DepartmentCensus[],
   pairs: ContinuingPair[],
+  tempsOf: TempsOf,
 ): AreaTrends[] {
   const sorted = [...censuses].sort((a, b) => a.year - b.year)
   const latest = sorted.at(-1)
@@ -87,13 +98,19 @@ export function areaTrends(
       first.year,
       latest.year,
     ),
+    tempsOf,
   }
   const byYear = new Map(sorted.map((census) => [census.year, census]))
   const areaScope = scopeBuilder(
     frame,
     (record, year) => byYear.get(year)?.assign(record).area ?? null,
+    (code) => ({ kind: 'area', code }),
   )
-  const unitScope = scopeBuilder(frame, (record) => record.payDepartment.code)
+  const unitScope = scopeBuilder(
+    frame,
+    (record) => record.payDepartment.code,
+    (code) => ({ kind: 'unit', code }),
+  )
   return departmentIndex(latest).flatMap(({ code, name, entries }) =>
     code === null
       ? []

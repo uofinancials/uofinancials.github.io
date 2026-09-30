@@ -6,6 +6,7 @@ import {
 import {
   compareLines,
   lineOf,
+  TEMPS_GROUP,
   type TrendGroup,
   trendGroupOf,
 } from '../census/groups.ts'
@@ -16,16 +17,27 @@ import {
 } from '../census/totals.ts'
 import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
 import { department } from '../people/person-fields.ts'
+import type { SectionSource } from '../shared/citation.ts'
+
+/** Classified temporaries' actual FY pay and estimated FTE in one scope and census, and how many FY jobs they cover. */
+export type TempsFigure = {
+  jobs: number
+  payCents: number
+  fteHundredths: number
+}
 
 /** Each figure is `null` when the line has no job it applies to that year. */
 export type TrendPoint = {
   year: number
   jobs: number
-  /** Excludes classified temporaries. */
+  /** Rate × FTE over every job but classified temporaries, plus their FY pay where `fyTemps` is set. */
   spendCents: number | null
+  /** As spend: temporaries count only where `fyTemps` is set. */
   fteHundredths: number | null
   /** Median published annual salary rate over primary jobs, temporaries excluded. */
   medianRateCents: number | null
+  /** The part of spend and FTE that is classified temporaries' FY pay and its FTE estimate, and the other jobs spend covers; set only where the census's fiscal year publishes pay. */
+  fyTemps?: { spendCents: number; fteHundredths: number; paidJobs: number }
 }
 
 export type TrendSeries = { key: string; points: TrendPoint[] }
@@ -134,32 +146,80 @@ export function medianRateCents(rates: number[]): number | null {
   return median === null ? null : Math.round(median)
 }
 
-/** Jobs, spend and FTE, and the median rate of a set of jobs; FTE `null` when the set is empty, spend `null` under `MIN_JOBS_SHOWN` paid jobs, and median `null` under `MIN_JOBS_SHOWN` primary rates. */
-export function measureJobs(records: FallRecord[]): Omit<TrendPoint, 'year'> {
+/**
+ * Jobs, spend and FTE, and the median rate of a set of jobs. Classified
+ * temporaries count in spend and FTE only through `temps`, their FY figures,
+ * which are left out when they cover one or two jobs. FTE is `null` with
+ * nothing to count; spend is `null` when the other jobs are one or two, since
+ * temporaries' pay shows on its own line, or under `MIN_JOBS_SHOWN` jobs in
+ * all; the median is `null` under `MIN_JOBS_SHOWN` primary rates.
+ */
+export function measureJobs(
+  records: FallRecord[],
+  temps: TempsFigure | null = null,
+): Omit<TrendPoint, 'year'> {
   const paid = records.filter((record) => !isClassifiedTemp(record))
   const rates = paid
     .filter(isPrimaryJob)
     .map((record) => record.annualSalaryRateCents)
+  const counted =
+    temps && (temps.jobs === 0 || temps.jobs >= MIN_JOBS_SHOWN) ? temps : null
+  const spendJobs = paid.length + (counted?.jobs ?? 0)
+  const isPaidShown = paid.length === 0 || paid.length >= MIN_JOBS_SHOWN
   return {
     jobs: records.length,
-    spendCents: paid.length < MIN_JOBS_SHOWN ? null : sumSpendCents(paid),
-    fteHundredths: records.length === 0 ? null : sumFteHundredths(records),
+    spendCents:
+      !isPaidShown || spendJobs < MIN_JOBS_SHOWN
+        ? null
+        : sumSpendCents(paid) + (counted?.payCents ?? 0),
+    fteHundredths:
+      spendJobs === 0
+        ? null
+        : sumFteHundredths(paid) + (counted?.fteHundredths ?? 0),
     medianRateCents:
       rates.length < MIN_JOBS_SHOWN ? null : medianRateCents(rates),
+    ...(counted && {
+      fyTemps: {
+        spendCents: counted.payCents,
+        fteHundredths: counted.fteHundredths,
+        paidJobs: paid.length,
+      },
+    }),
   }
 }
 
-function measure(year: number, records: FallRecord[]): TrendPoint {
-  return { year, ...measureJobs(records) }
+function measure(
+  year: number,
+  records: FallRecord[],
+  temps: TempsFigure | null,
+): TrendPoint {
+  return { year, ...measureJobs(records, temps) }
 }
 
-/** One series per group (or per published category of an opened group), and their total, per census in range. */
+/** Whether a filter keeps classified temporaries whole, so their FY figures for the scope apply: not narrowed to unclassified jobs, a pay department, a class or rank, listed jobs, or another group. */
+function keepsTempsWhole(filter: TrendFilter): boolean {
+  return (
+    filter.kind !== 'unclassified' &&
+    filter.dept === null &&
+    filter.position === null &&
+    filter.jobs === null &&
+    (filter.group === null || filter.group === TEMPS_GROUP)
+  )
+}
+
+/** One series per group (or per published category of an opened group), and their total, per census in range; `temps` are the scope's classified temporaries' FY figures by census year. */
 export function buildTrends(
   years: { year: number; records: FallRecord[] }[],
   filter: TrendFilter,
+  temps: ReadonlyMap<number, TempsFigure> = new Map(),
 ): Trends {
   const inRange = [...years].sort((a, b) => a.year - b.year)
+  const tempsIn = (year: number) =>
+    keepsTempsWhole(filter) ? (temps.get(year) ?? null) : null
   const lines = new Map<string, Map<number, FallRecord[]>>()
+  if (filter.group === null && inRange.some(({ year }) => tempsIn(year))) {
+    lines.set(TEMPS_GROUP, new Map())
+  }
   const total: TrendPoint[] = []
   for (const { year, records } of inRange) {
     const shown: FallRecord[] = []
@@ -174,14 +234,18 @@ export function buildTrends(
       byYear.set(year, members)
       lines.set(key, byYear)
     }
-    total.push(measure(year, shown))
+    total.push(measure(year, shown, tempsIn(year)))
   }
   const series = [...lines.keys()]
     .sort(compareLines(filter.group))
     .map((key) => ({
       key,
       points: inRange.map(({ year }) =>
-        measure(year, lines.get(key)?.get(year) ?? []),
+        measure(
+          year,
+          lines.get(key)?.get(year) ?? [],
+          key === TEMPS_GROUP ? tempsIn(year) : null,
+        ),
       ),
     }))
   return sliceTrends({ series, total }, filter.from, filter.to)
@@ -193,7 +257,75 @@ export function sliceTrends(trends: Trends, from: number, to: number): Trends {
   return {
     series: trends.series
       .map(({ key, points }) => ({ key, points: points.filter(isInRange) }))
-      .filter(({ points }) => points.some(({ jobs }) => jobs > 0)),
+      .filter(({ points }) =>
+        points.some(({ jobs, fyTemps }) => jobs > 0 || fyTemps),
+      ),
     total: trends.total.filter(isInRange),
   }
+}
+
+/**
+ * Points with classified temporaries' FY figures taken out of every one when
+ * some census with jobs has none, so no change compares a year with them to a
+ * year without; spend is `null` where too few other jobs remain to show it.
+ */
+export function comparablePoints(points: TrendPoint[]): TrendPoint[] {
+  const isMissing = ({ jobs, fyTemps }: TrendPoint) => jobs > 0 && !fyTemps
+  if (!points.some(({ fyTemps }) => fyTemps) || !points.some(isMissing)) {
+    return points
+  }
+  return points.map(({ fyTemps, ...point }) => {
+    if (!fyTemps) return point
+    const minus = (value: number | null, part: number) =>
+      value === null ? null : value - part
+    return {
+      ...point,
+      spendCents:
+        fyTemps.paidJobs < MIN_JOBS_SHOWN
+          ? null
+          : minus(point.spendCents, fyTemps.spendCents),
+      fteHundredths:
+        fyTemps.paidJobs === 0
+          ? null
+          : minus(point.fteHundredths, fyTemps.fteHundredths),
+    }
+  })
+}
+
+/** Trends whose every line and total leave classified temporaries out at both ends of the range when some census in it has no FY figures for them. */
+export function comparableTemps({ series, total }: Trends): Trends {
+  return {
+    series: series.map(({ key, points }) => ({
+      key,
+      points: comparablePoints(points),
+    })),
+    total: comparablePoints(total),
+  }
+}
+
+/** A Fall census falls in the fiscal year that ends the June after it. */
+const CENSUS_TO_FISCAL_YEAR = 1
+
+/** How classified temporaries' FY figures are made, for the FY total pay reports' citation. */
+export const FY_PAY_METHOD = `Classified temporaries, whose published rates annualise hourly wages and overstate their pay, count by their actual pay in the fiscal year each Fall census falls in, from UO’s FY total pay reports: summed by the unit their published department name resolves to, through that census, the year’s budget, the censuses either side, or a reviewed list, and placed in that unit’s area. Their FTE is that pay over the average annual rate of the unit’s temporaries in the census, or its area’s, or UO’s, an estimate. Only temporaries count by actual pay; for other jobs, actual pay in these reports runs 3% to 12% above the rate × FTE estimate. Figures under ${MIN_JOBS_SHOWN} FY jobs are left out.`
+
+/** The FY total pay reports for the fiscal years the given Fall censuses fall in, with how their figures are made; none for no census. */
+export function fyPaySource(censusYears: number[]): SectionSource[] {
+  if (censusYears.length === 0) return []
+  const fiscalYears = censusYears.map((year) => year + CENSUS_TO_FISCAL_YEAR)
+  return [
+    {
+      kind: 'fy-range',
+      from: Math.min(...fiscalYears),
+      to: Math.max(...fiscalYears),
+      computed: FY_PAY_METHOD,
+    },
+  ]
+}
+
+/** The FY total pay reports the points' spend and FTE draw on; none when no point includes temporaries' FY figures. */
+export function fySource(points: TrendPoint[]): SectionSource[] {
+  return fyPaySource(
+    points.filter(({ fyTemps }) => fyTemps).map(({ year }) => year),
+  )
 }

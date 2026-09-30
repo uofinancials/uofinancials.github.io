@@ -3,6 +3,7 @@ import { EXEC_OTHER_CATEGORY } from '@/lib/census/groups'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
   buildTrends,
+  comparableTemps,
   filterNames,
   medianRateCents,
   type TrendFilter,
@@ -31,7 +32,7 @@ test('the median of an even count is the mean of the middle two, rounded to the 
   expect(medianRateCents([])).toBeNull()
 })
 
-test('each group gets a point per census; temps count in FTE only; spend needs three paid jobs and median three primary rates', () => {
+test('each group gets a point per census; temps count only through FY figures; spend needs three paid jobs and median three primary rates', () => {
   const trends = buildTrends(
     [
       {
@@ -82,16 +83,114 @@ test('each group gets a point per census; temps count in FTE only; spend needs t
     year: 2025,
     jobs: 1,
     spendCents: null,
-    fteHundredths: 10,
+    fteHundredths: null,
     medianRateCents: null,
   })
   expect(trends.total[1]).toEqual({
     year: 2025,
     jobs: 4,
     spendCents: 9_000_000 + 100_000 + 5_000_000,
-    fteHundredths: 100 + 10 + 100 + 10,
+    fteHundredths: 100 + 10 + 100,
     medianRateCents: null,
   })
+})
+
+const THREE_PAID = [unclassifiedJob(), unclassifiedJob(), unclassifiedJob()]
+
+test('a census’s FY figures give temporaries spend and FTE, in their line and the total, and mark the total', () => {
+  const trends = buildTrends(
+    [
+      { year: 2024, records: [...THREE_PAID, temp] },
+      { year: 2025, records: [...THREE_PAID, temp] },
+    ],
+    { ...ALL, from: 2024, to: 2025 },
+    new Map([[2025, { jobs: 4, payCents: 800_000, fteHundredths: 20 }]]),
+  )
+  const temps = trends.series.find(
+    ({ key }) => key === 'Classified temporaries',
+  )
+  expect(
+    temps?.points.map(({ spendCents, fteHundredths }) => [
+      spendCents,
+      fteHundredths,
+    ]),
+  ).toEqual([
+    [null, null],
+    [800_000, 20],
+  ])
+  expect(trends.total).toEqual([
+    {
+      year: 2024,
+      jobs: 4,
+      spendCents: 15_000_000,
+      fteHundredths: 300,
+      medianRateCents: 5_000_000,
+    },
+    {
+      year: 2025,
+      jobs: 4,
+      spendCents: 15_800_000,
+      fteHundredths: 320,
+      medianRateCents: 5_000_000,
+      fyTemps: { spendCents: 800_000, fteHundredths: 20, paidJobs: 3 },
+    },
+  ])
+})
+
+test('FY figures give a scope with no temporary on census day a temporaries line, and are left out under three FY jobs or when a filter narrows the jobs', () => {
+  const years = [{ year: 2025, records: THREE_PAID }]
+  const paidOnly = buildTrends(
+    years,
+    ALL,
+    new Map([[2025, { jobs: 3, payCents: 900, fteHundredths: 1 }]]),
+  )
+  expect(paidOnly.series.map(({ key }) => key)).toEqual([
+    'Faculty',
+    'Classified temporaries',
+  ])
+  expect(paidOnly.total[0]?.spendCents).toBe(15_000_900)
+  const twoJobs = buildTrends(
+    years,
+    ALL,
+    new Map([[2025, { jobs: 2, payCents: 900, fteHundredths: 1 }]]),
+  )
+  expect(twoJobs.total[0]).not.toHaveProperty('fyTemps')
+  expect(twoJobs.total[0]?.spendCents).toBe(15_000_000)
+  const unclassified = buildTrends(
+    years,
+    { ...ALL, kind: 'unclassified' },
+    new Map([[2025, { jobs: 3, payCents: 900, fteHundredths: 1 }]]),
+  )
+  expect(unclassified.total[0]?.spendCents).toBe(15_000_000)
+})
+
+test('comparable trends leave temporaries’ FY figures out of every census when some census with jobs has none', () => {
+  const years = [
+    { year: 2024, records: [...THREE_PAID, temp] },
+    { year: 2025, records: [...THREE_PAID, temp] },
+  ]
+  const figures = new Map([
+    [2025, { jobs: 4, payCents: 800_000, fteHundredths: 20 }],
+  ])
+  const mixed = comparableTemps(
+    buildTrends(years, { ...ALL, from: 2024, to: 2025 }, figures),
+  )
+  expect(
+    mixed.total.map(({ spendCents, fteHundredths }) => [
+      spendCents,
+      fteHundredths,
+    ]),
+  ).toEqual([
+    [15_000_000, 300],
+    [15_000_000, 300],
+  ])
+  expect(
+    mixed.series
+      .find(({ key }) => key === 'Classified temporaries')
+      ?.points.map(({ spendCents }) => spendCents),
+  ).toEqual([null, null])
+  const covered = buildTrends(years, { ...ALL, from: 2025, to: 2025 }, figures)
+  expect(comparableTemps(covered)).toEqual(covered)
 })
 
 test('an opened group lines up its published categories; kind and range filter first', () => {

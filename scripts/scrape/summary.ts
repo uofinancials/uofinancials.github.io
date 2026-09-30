@@ -51,7 +51,7 @@ export function deriveSummary(manifest: Manifest): {
     budgetDataPath(fiscalYear),
   )
   const fyPaths = manifest.fy.map(({ fiscalYear }) => fyDataPath(fiscalYear))
-  const inputs: SummaryInputs = {
+  const base = {
     manifest,
     falls: fallPaths.map((file) => foldedFallYearSchema.parse(readJson(file))),
     budgets: budgetPaths.map((file) =>
@@ -62,9 +62,10 @@ export function deriveSummary(manifest: Manifest): {
     raiseTerms: raiseTermsSchema.parse(readJson(RAISES_DATA_PATH)),
   }
   const fyTemps = buildFyTemps({
-    ...inputs,
+    ...base,
     fys: fyPaths.map((file) => fyYearSchema.parse(readJson(file))),
   })
+  const inputs: SummaryInputs = { ...base, fyTemps }
   const files = [
     ...fallPaths,
     ...budgetPaths,

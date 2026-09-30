@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
+import { fyTempsSchema } from '../../src/data/fy-temps.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
 import {
@@ -8,6 +9,7 @@ import {
   foldedFallYearSchema,
 } from '../../src/data/unit-aliases.ts'
 import { isClassifiedTemp, summarize } from '../../src/lib/census/totals.ts'
+import { tempsLookup } from '../../src/lib/departments/fy-temps.ts'
 import {
   departmentYears,
   toDepartmentCensus,
@@ -21,6 +23,7 @@ import {
 import {
   budgetDataPath,
   DATA_DIR,
+  FY_TEMPS_DATA_PATH,
   fallDataPath,
   MANIFEST_PATH,
   readJson,
@@ -29,8 +32,12 @@ import {
 function readFall2025() {
   const { records } = foldedFallYearSchema.parse(readJson(fallDataPath(2025)))
   const budget = foldedBudgetYearSchema.parse(readJson(budgetDataPath(2026)))
-  return { records, budget }
+  const tempsOf = tempsLookup(fyTempsSchema.parse(readJson(FY_TEMPS_DATA_PATH)))
+  return { records, budget, tempsOf }
 }
+
+/** FY2025-26 temporaries' pay, the FY pins' figure. */
+const TEMPS_PAY_2025_CENTS = 566_438_100
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'Fall 2025 totals match an independent computation',
@@ -50,9 +57,10 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'an area matches an independent computation',
   () => {
-    const { records, budget } = readFall2025()
+    const { records, budget, tempsOf } = readFall2025()
     const census = toDepartmentCensus({ year: 2025, records }, budget)
-    const areas = areaFigures(census, budget)
+    const areas = areaFigures(census, budget, tempsOf)
+    const artsTemps = tempsOf({ kind: 'area', code: '222000' }, 2025)
     const artsJobs =
       departmentYears('222000', [census]).years.at(-1)?.records ?? []
     // The 81 units whose parent is 222000, summed in Python from FY26.json.
@@ -61,26 +69,34 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       name: 'Arts & Sciences, College of',
       budgetCents: 20_265_328_613,
       jobs: artsJobs.length,
-      spendCents: summarize(artsJobs.filter((job) => !isClassifiedTemp(job)))
-        .spendCents,
+      spendCents:
+        summarize(artsJobs.filter((job) => !isClassifiedTemp(job))).spendCents +
+        (artsTemps?.payCents ?? 0),
     })
+    expect(artsTemps?.jobs).toBeGreaterThanOrEqual(3)
   },
 )
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'the home headlines, jobs per census, and top-paid jobs match the committed files',
   () => {
-    const { records, budget } = readFall2025()
+    const { records, budget, tempsOf } = readFall2025()
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const [projection] = outlookSchema.parse(
       readJson(path.join(DATA_DIR, 'outlook.json')),
     ).projections
     expect(
-      headlineFigures({ records, budget, projection, censusFiscalYear: 2026 }),
+      headlineFigures({
+        records,
+        budget,
+        projection,
+        censusFiscalYear: 2026,
+        temps: tempsOf({ kind: 'all' }, 2025),
+      }),
     ).toEqual({
       runRate: { fiscalYear: 2027, cents: -2_277_059_300 },
       budgetCents: 176_850_089_471,
-      spendCents: 50_481_206_840,
+      spendCents: 50_481_206_840 + TEMPS_PAY_2025_CENTS,
       people: 6_268,
     })
     expect(

@@ -17,6 +17,7 @@ import {
   buildTrends,
   MIN_JOBS_SHOWN,
   measureJobs,
+  type TempsFigure,
   type TrendPoint,
   type Trends,
 } from '../trends/trends.ts'
@@ -153,16 +154,21 @@ export function departmentYears(
 export function departmentTrends(
   { years, yearsWithJobs }: DepartmentYears,
   kind: StaffKind | 'all',
+  temps: ReadonlyMap<number, TempsFigure>,
 ): Trends {
-  return buildTrends(years, {
-    kind,
-    group: null,
-    dept: null,
-    position: null,
-    jobs: null,
-    from: yearsWithJobs[0] ?? 0,
-    to: yearsWithJobs.at(-1) ?? 0,
-  })
+  return buildTrends(
+    years,
+    {
+      kind,
+      group: null,
+      dept: null,
+      position: null,
+      jobs: null,
+      from: yearsWithJobs[0] ?? 0,
+      to: yearsWithJobs.at(-1) ?? 0,
+    },
+    temps,
+  )
 }
 
 /** A position class or rank row; spend and median as `measureJobs` gives them. */

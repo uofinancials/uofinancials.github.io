@@ -2,8 +2,31 @@ import { existsSync } from 'node:fs'
 import { expect, test } from 'vitest'
 import { fyYearSchema } from '../../src/data/fy.ts'
 import { fyTempsSchema } from '../../src/data/fy-temps.ts'
+import { manifestSchema } from '../../src/data/manifest.ts'
+import { areaTrendsSchema } from '../../src/data/summary.ts'
+import {
+  foldedBudgetYearSchema,
+  foldedFallYearSchema,
+} from '../../src/data/unit-aliases.ts'
 import { isClassifiedTemp } from '../../src/lib/census/totals.ts'
-import { FY_TEMPS_DATA_PATH, fyDataPath, readJson } from '../scrape/cache.ts'
+import { tempsByCensus } from '../../src/lib/departments/fy-temps.ts'
+import {
+  departmentTrends,
+  departmentYears,
+  toDepartmentCensuses,
+} from '../../src/lib/departments/jobs.ts'
+import {
+  areaTrendsPath,
+  budgetDataPath,
+  FY_TEMPS_DATA_PATH,
+  fallDataPath,
+  fyDataPath,
+  MANIFEST_PATH,
+  readJson,
+} from '../scrape/cache.ts'
+
+/** Reading every census and budget takes a few seconds. */
+const ALL_YEARS_TIMEOUT_MS = 20_000
 
 /** Each fiscal year's estimated temporaries' FTE, in hundredths, as `pnpm scrape summary` first derived it. */
 const FTE_PINS = new Map([
@@ -51,4 +74,39 @@ test.skipIf(!existsSync(FY_TEMPS_DATA_PATH))(
       })),
     )
   },
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'a department page’s trends, built in the browser, equal its committed trends file, temporaries’ FY pay included',
+  () => {
+    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+    const censuses = toDepartmentCensuses(
+      manifest,
+      manifest.fall.map(({ year }) =>
+        foldedFallYearSchema.parse(readJson(fallDataPath(year))),
+      ),
+      manifest.budget.map(({ fiscalYear }) =>
+        foldedBudgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+      ),
+    )
+    const fyTemps = fyTempsSchema.parse(readJson(FY_TEMPS_DATA_PATH))
+    const pageTotals = (code: string, isArea: boolean) =>
+      departmentTrends(
+        departmentYears(code, censuses),
+        'all',
+        tempsByCensus(
+          fyTemps,
+          isArea ? { kind: 'area', code } : { kind: 'unit', code },
+        ),
+      ).total
+    const athletics = areaTrendsSchema.parse(readJson(areaTrendsPath('480000')))
+    const emu = areaTrendsSchema.parse(readJson(areaTrendsPath('425000')))
+    const unit = emu.units.find(({ code }) => code === '267100')
+    expect(pageTotals('480000', true)).toEqual(athletics.trends.total)
+    expect(pageTotals('267100', false)).toEqual(unit?.trends.total)
+    expect(athletics.trends.total.at(-1)?.fyTemps?.spendCents).toBeGreaterThan(
+      0,
+    )
+  },
+  ALL_YEARS_TIMEOUT_MS,
 )

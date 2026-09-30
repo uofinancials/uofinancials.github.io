@@ -20,6 +20,7 @@ import {
 import type { RaiseRate } from '../scenario/raises.ts'
 import type { Rule } from '../scenario/scenario.ts'
 import { compareKeys } from '../shared/sort.ts'
+import type { TempsFigure } from '../trends/trends.ts'
 
 /** The projection's run rate in the first projected year after the census. */
 function runRateAfter(projection: Projection, censusFiscalYear: number) {
@@ -40,6 +41,8 @@ export function headlineFigures(options: {
   budget: BudgetYear
   projection: Projection
   censusFiscalYear: number
+  /** Classified temporaries' FY figures for the census, `null` where its fiscal year publishes no pay. */
+  temps: TempsFigure | null
 }): HeadlineFigures {
   const { records, budget } = options
   return {
@@ -48,8 +51,9 @@ export function headlineFigures(options: {
       (sum, row) => sum + row.totalExpenditureBudgetCents,
       0,
     ),
-    spendCents: summarize(records.filter((record) => !isClassifiedTemp(record)))
-      .spendCents,
+    spendCents:
+      summarize(records.filter((record) => !isClassifiedTemp(record)))
+        .spendCents + (options.temps?.payCents ?? 0),
     people: summarize(records).people,
   }
 }

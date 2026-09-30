@@ -1,4 +1,4 @@
-import { useSuspenseQueries } from '@tanstack/react-query'
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import {
   Link,
   useLoaderData,
@@ -14,10 +14,12 @@ import { PageHeader } from '@/components/layout/page-header'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { type BudgetYear, fiscalYearLabel } from '@/data/budget'
-import { fallYearQuery, toData } from '@/data/queries'
+import type { FyTemps } from '@/data/fy-temps'
+import { fallYearQuery, fyTempsQuery, toData } from '@/data/queries'
 import { useDepartmentCensuses } from '@/hooks/use-department-censuses'
 import { departmentBudget } from '@/lib/departments/budget'
 import { type CodeProfile, describeCode } from '@/lib/departments/codes'
+import { tempsByCensus, tempsLookup } from '@/lib/departments/fy-temps'
 import {
   type DepartmentCensus,
   departmentClasses,
@@ -36,10 +38,18 @@ import {
   sortRows,
 } from '@/lib/departments/table'
 import { tabTitleOf } from '@/lib/shared/format'
+import { fyPaySource } from '@/lib/trends/trends'
 import { NotFoundPage } from '@/pages/not-found-page'
 
 const SPONSORED_NOTE =
   'The budget excludes sponsored research funds, so a unit’s budgeted salaries can fall well short of its jobs’ salary spend.'
+
+/** The years a department page reads, and classified temporaries' FY pay by unit. */
+type DepartmentData = {
+  budgets: BudgetYear[]
+  censuses: DepartmentCensus[]
+  fyTemps: FyTemps
+}
 
 function useDepartmentData() {
   const { fiscalYears, fallYears, eliminationFiscalYear } = useLoaderData({
@@ -49,11 +59,12 @@ function useDepartmentData() {
     queries: fallYears.map(fallYearQuery),
     combine: toData,
   })
+  const { data: fyTemps } = useSuspenseQuery(fyTempsQuery)
   const { budgets, censuses } = useDepartmentCensuses(fiscalYears, falls)
   const eliminationOrgs = budgets.find(
     ({ fiscalYear }) => fiscalYear === eliminationFiscalYear,
   )?.orgs
-  return { budgets, censuses, eliminationOrgs }
+  return { budgets, censuses, eliminationOrgs, fyTemps }
 }
 
 function DepartmentLinks({
@@ -94,14 +105,12 @@ function DepartmentLinks({
 
 function AreaUnitsSection({
   code,
-  censuses,
-  budgets,
+  data: { censuses, budgets, fyTemps },
   view,
   onChange,
 }: {
   code: string
-  censuses: DepartmentCensus[]
-  budgets: BudgetYear[]
+  data: DepartmentData
   view: DepartmentView
   onChange: (patch: DepartmentSearch) => void
 }) {
@@ -110,10 +119,11 @@ function AreaUnitsSection({
     return (
       years && {
         ...years,
-        units: departmentRows(years.now, years.before).units,
+        units: departmentRows(years.now, years.before, tempsLookup(fyTemps))
+          .units,
       }
     )
-  }, [censuses, budgets])
+  }, [censuses, budgets, fyTemps])
   const rows = useMemo(
     () => table?.units.filter((row) => row.area?.code === code) ?? [],
     [table, code],
@@ -142,6 +152,11 @@ function AreaUnitsSection({
             from: before.census.year,
             to: now.census.year,
           },
+          ...fyPaySource(
+            [before.census.year, now.census.year].filter((year) =>
+              fyTemps.years.some(({ censusYear }) => censusYear === year),
+            ),
+          ),
         ]}
       />
     </PageSection>
@@ -207,10 +222,7 @@ function DepartmentHeader({
 
 function useDepartmentView(
   code: string,
-  {
-    budgets,
-    censuses,
-  }: Pick<ReturnType<typeof useDepartmentData>, 'budgets' | 'censuses'>,
+  { budgets, censuses, fyTemps }: DepartmentData,
 ) {
   const search = useSearch({ from: '/departments/$code' })
   const profile = useMemo(
@@ -224,7 +236,18 @@ function useDepartmentView(
     [code, budgets, view.budget],
   )
   const { kind, year } = view
-  const trends = useMemo(() => departmentTrends(jobs, kind), [jobs, kind])
+  const trends = useMemo(
+    () =>
+      departmentTrends(
+        jobs,
+        kind,
+        tempsByCensus(
+          fyTemps,
+          jobs.placements ? { kind: 'area', code } : { kind: 'unit', code },
+        ),
+      ),
+    [jobs, kind, fyTemps, code],
+  )
   const classRows = useMemo(
     () => departmentClasses(jobs, { kind, year }),
     [jobs, kind, year],
@@ -272,8 +295,7 @@ export function DepartmentPage() {
       {profile.isArea && (
         <AreaUnitsSection
           code={code}
-          censuses={data.censuses}
-          budgets={data.budgets}
+          data={data}
           view={view}
           onChange={handleChange}
         />

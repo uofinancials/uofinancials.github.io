@@ -27,6 +27,7 @@ import {
   type ReportSearch,
   type YearRange,
 } from '@/lib/trends/search'
+import { fySource } from '@/lib/trends/trends'
 import { type GroupRow, GroupTable } from './group-table'
 
 function compareRow(
@@ -213,6 +214,9 @@ export function CompareSection({
             ...range,
             computed: `${SPEND_METHOD} Each line is its figure in each census over its figure in Fall ${range.from}, times 100; changes are the last census’s figure over the first’s, less one. A unit’s jobs are those paid under its code, so a unit that took over another’s jobs shows it as growth.`,
           },
+          ...fySource(
+            [all, ...lines, ...listed].flatMap(({ points }) => points),
+          ),
           ...scopeSources,
         ]}
       />

@@ -17,7 +17,7 @@ import {
   volumeAndPay,
   volumeAndPayByGroup,
 } from '@/lib/trends/spend'
-import type { Trends } from '@/lib/trends/trends'
+import { fySource, type Trends } from '@/lib/trends/trends'
 import { cn, widthOf } from '@/lib/utils'
 import { GroupTable } from './group-table'
 
@@ -78,7 +78,7 @@ export function SplitSection({
   scopeSources: SectionSource[]
 }) {
   const split = volumeAndPay(trends)
-  const method = `${SPEND_METHOD} FTE leaves out classified temporaries, as salary spend does. The change in FTE at Fall ${range.from} spend per FTE is the change in FTE times Fall ${range.from} spend over Fall ${range.from} FTE; the rest of the change in spend is the change in spend per FTE.`
+  const method = `${SPEND_METHOD} FTE covers the same jobs as salary spend. The change in FTE at Fall ${range.from} spend per FTE is the change in FTE times Fall ${range.from} spend over Fall ${range.from} FTE; the rest of the change in spend is the change in spend per FTE.`
   return (
     <PageSection id="pay-or-people" title="More people, or higher pay?">
       {split ? (
@@ -108,6 +108,7 @@ export function SplitSection({
       <Sources
         sources={[
           { kind: 'fall-range', ...range, computed: method },
+          ...fySource(trends.total),
           ...scopeSources,
         ]}
       />

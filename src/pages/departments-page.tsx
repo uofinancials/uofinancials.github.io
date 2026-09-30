@@ -18,6 +18,7 @@ import {
   filterRows,
   sortRows,
 } from '@/lib/departments/table'
+import { fyPaySource } from '@/lib/trends/trends'
 
 const PLACEMENT_NOTE =
   'Areas and units are the budget’s level-3 and level-5 organisations. Pay departments the budget does not publish are placed in an area by a department-name prefix, or by hand, as on the overview.'
@@ -129,6 +130,11 @@ export function DepartmentsPage() {
             from: before.year,
             to: now.year,
           },
+          ...fyPaySource(
+            [before, now]
+              .filter(({ hasFyPay }) => hasFyPay)
+              .map(({ year }) => year),
+          ),
         ]}
       />
     </div>

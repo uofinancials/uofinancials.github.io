@@ -11,6 +11,8 @@ export type SourceRef =
   | { kind: 'fall-range'; from: number; to: number }
   | { kind: 'budget'; fiscalYear: number }
   | { kind: 'budget-range'; from: number; to: number }
+  /** Fiscal years of the FY total pay reports, by the year each ends in. */
+  | { kind: 'fy-range'; from: number; to: number }
   | { kind: 'rates' }
 
 export type Citation = {
@@ -46,9 +48,16 @@ export function sourceAnchor(source: SourceRef): string {
       return `budget-${fiscalYearLabel(source.fiscalYear).toLowerCase()}`
     case 'budget-range':
       return `budget-${fiscalYearLabel(source.from).toLowerCase()}`
+    case 'fy-range':
+      return `fy-${source.from}`
     case 'rates':
       return 'rates'
   }
+}
+
+/** A fiscal year as the FY total pay reports name it: FY2025-26 for 2026. */
+export function fyLabel(fiscalYear: number): string {
+  return `FY${fiscalYear - 1}-${String(fiscalYear).slice(2)}`
 }
 
 function sharedSourcePage(
@@ -98,6 +107,26 @@ function citeBudgetRange(
   }
 }
 
+function citeFyRange(
+  manifest: Manifest,
+  { from, to }: { from: number; to: number },
+): Citation {
+  const entries = manifest.fy.filter(
+    ({ fiscalYear }) => fiscalYear >= from && fiscalYear <= to,
+  )
+  const range =
+    from === to ? fyLabel(from) : `${fyLabel(from)} to ${fyLabel(to)}`
+  return {
+    dataset: `${range} total pay reports`,
+    publisher: DATA_ENABLEMENT,
+    href: sharedSourcePage(entries, range),
+    retrievedOn: latest(
+      entries.flatMap((entry) => entry.files.map((file) => file.retrievedOn)),
+    ),
+    anchor: sourceAnchor({ kind: 'fy-range', from, to }),
+  }
+}
+
 export function citeSource(manifest: Manifest, source: SourceRef): Citation {
   switch (source.kind) {
     case 'fall': {
@@ -115,6 +144,8 @@ export function citeSource(manifest: Manifest, source: SourceRef): Citation {
       return citeFallRange(manifest, source)
     case 'budget-range':
       return citeBudgetRange(manifest, source)
+    case 'fy-range':
+      return citeFyRange(manifest, source)
     case 'budget': {
       const label = fiscalYearLabel(source.fiscalYear)
       const entry = manifest.budget.find(

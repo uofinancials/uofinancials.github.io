@@ -18,7 +18,7 @@ test('the home page leads with cited headlines and the projected gap', async ({
   ).toContainText('$1,768,500,895')
   await expect(
     main.getByRole('link', { name: /Fall 2025 salary spend/ }),
-  ).toContainText('$504,812,068')
+  ).toContainText('$510,476,449')
   await expect(
     main.getByRole('link', { name: /Fall 2025 people/ }),
   ).toContainText('6,268')

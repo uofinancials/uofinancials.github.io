@@ -39,7 +39,7 @@ test('the change table has each group’s change from the first census to the la
   expect(all?.key).toBe('All jobs')
   expect(all?.jobs).toBeCloseTo(3 / 20)
   expect(all?.spend).toBeCloseTo(1100 / 1500)
-  expect(all?.fte).toBeCloseTo(300 / 1750)
+  expect(all?.fte).toBeCloseTo(300 / 1500)
   expect(all?.median).toBeCloseTo(15 / 95)
 })
 
@@ -110,7 +110,7 @@ test('indexed groups keep every group’s place, hide those without an index, an
     'Category not published',
     'Classified temporaries',
   ])
-  expect(indexedGroups(TRENDS, 'jobs').hidden).toContain(
+  expect(indexedGroups(TRENDS, 'jobs').hidden).not.toContain(
     'Classified temporaries',
   )
 })

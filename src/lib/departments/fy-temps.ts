@@ -5,6 +5,7 @@ import type { FyTemps, FyTempsUnit } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import { unitCodeOf } from '../../data/unit-aliases.ts'
 import { fiscalYearOf, isClassifiedTemp } from '../census/totals.ts'
+import type { TempsFigure } from '../trends/trends.ts'
 import { createFyCodeResolver, type FyDepartmentCode } from './fy-codes.ts'
 import { type DepartmentCensus, toDepartmentCensuses } from './jobs.ts'
 
@@ -110,4 +111,52 @@ function groupRates(
 
 function mean(values: number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length
+}
+
+/** The site-wide total, an area's units (`null` for those placed in no area), or one unit. */
+export type TempsScope =
+  | { kind: 'all' }
+  | { kind: 'area'; code: string | null }
+  | { kind: 'unit'; code: string }
+
+function isInScope(unit: FyTempsUnit, scope: TempsScope): boolean {
+  if (scope.kind === 'all') return true
+  return scope.kind === 'area'
+    ? unit.area === scope.code
+    : unit.code === scope.code
+}
+
+/** A scope's classified temporaries' FY figures in every census whose fiscal year publishes pay, zero where it paid none. */
+export function tempsByCensus(
+  fyTemps: FyTemps,
+  scope: TempsScope,
+): Map<number, TempsFigure> {
+  return new Map(
+    fyTemps.years.map(({ censusYear, units }) => {
+      const inScope = units.filter((unit) => isInScope(unit, scope))
+      const sum = (pick: (unit: FyTempsUnit) => number) =>
+        inScope.reduce((total, unit) => total + pick(unit), 0)
+      return [
+        censusYear,
+        {
+          jobs: sum(({ jobs }) => jobs),
+          payCents: sum(({ payCents }) => payCents),
+          fteHundredths: sum(({ fteHundredths }) => fteHundredths),
+        },
+      ]
+    }),
+  )
+}
+
+/** Looks up any scope's figures in one census from the derived file. */
+export function tempsLookup(
+  fyTemps: FyTemps,
+): (scope: TempsScope, year: number) => TempsFigure | null {
+  const cache = new Map<string, Map<number, TempsFigure>>()
+  return (scope, year) => {
+    const key = JSON.stringify(scope)
+    const byCensus = cache.get(key) ?? tempsByCensus(fyTemps, scope)
+    cache.set(key, byCensus)
+    return byCensus.get(year) ?? null
+  }
 }

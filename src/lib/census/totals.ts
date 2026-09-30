@@ -15,7 +15,7 @@ export type GroupTotals = { key: string; totals: Totals }
 /** A census's spend by EEO category, with classified temporaries apart. */
 export type CategoryTotals = {
   byCategory: GroupTotals[]
-  /** Classified temporaries, kept out of every spend figure above. */
+  /** Classified temporaries, whose spend and FTE a list of jobs cannot give. */
   temps: Totals
   totalSpendCents: number
 }
@@ -38,7 +38,7 @@ export function isClassifiedTemp(record: FallRecord | FyRecord): boolean {
 
 /** How `jobSpendCents` and the spend totals are computed, as stated on the page. */
 export const SPEND_METHOD =
-  'salary spend is the published annual salary rate x FTE, summed over jobs; jobs on unpaid leave count as zero and classified temporaries are left out. It estimates annual pay; it is not payroll.'
+  'salary spend is the published annual salary rate x FTE, summed over jobs; jobs on unpaid leave count as zero. Classified temporaries count instead by their actual pay in the fiscal year, from Fall 2020, and are left out of spend and FTE before then and in any change whose range starts before then. It estimates annual pay; it is not payroll.'
 
 /** Published annual salary rate x FTE, rounded to the cent; zero when unpaid. */
 export function jobSpendCents(record: FallRecord): number {

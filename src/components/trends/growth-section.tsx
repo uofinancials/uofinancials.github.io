@@ -4,6 +4,7 @@ import { SUMMARY_CLASS } from '@/components/layout/disclosure-class'
 import { PageSection } from '@/components/layout/page-section'
 import { Sources } from '@/components/layout/sources'
 import { TrendsTable } from '@/components/trends/table'
+import { TEMPS_GROUP } from '@/lib/census/groups'
 import { SPEND_METHOD } from '@/lib/census/totals'
 import type { SectionSource } from '@/lib/shared/citation'
 import { formatChange, formatOrBlank } from '@/lib/shared/format'
@@ -14,7 +15,6 @@ import {
   RATIO_BASE_GROUP,
   RATIO_GROUPS,
   type RatioRow,
-  UNPAID_GROUP,
 } from '@/lib/trends/report'
 import { growthAnswer, unindexedNote } from '@/lib/trends/report-text'
 import {
@@ -26,14 +26,14 @@ import {
   type ReportSearch,
   type YearRange,
 } from '@/lib/trends/search'
-import { MIN_JOBS_SHOWN, type Trends } from '@/lib/trends/trends'
+import { fySource, MIN_JOBS_SHOWN, type Trends } from '@/lib/trends/trends'
 import { GroupTable } from './group-table'
 import { RatioFigure } from './ratio-figure'
 
 /** The first census after UO restructured its EEO categories. */
 const RESTRUCTURE_YEAR = 2018
 
-const METHOD = `Each line is a group’s figure in each census over its figure in the first census shown, times 100. Change is the last census’s figure over the first’s, less one. ${SPEND_METHOD} FTE is each job’s appointment percent, summed. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is not shown for fewer than ${MIN_JOBS_SHOWN} paid jobs, nor a median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Dollars are as published, not adjusted for inflation.`
+const METHOD = `Each line is a group’s figure in each census over its figure in the first census shown, times 100. Change is the last census’s figure over the first’s, less one. ${SPEND_METHOD} FTE is each job’s appointment percent, summed, and covers the jobs spend covers. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Spend is not shown for fewer than ${MIN_JOBS_SHOWN} paid jobs, nor a median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Dollars are as published, not adjusted for inflation.`
 
 const RATIO_METHOD = `${RATIO_GROUPS.join(' and ')} jobs over ${RATIO_BASE_GROUP} jobs in each census, times 100, counting jobs rather than people or FTE.`
 
@@ -58,11 +58,7 @@ export function GrowthSection({
   const { lines, hidden, unindexed } = indexedGroups(trends, metric)
   const rows = changeTable(trends)
   const charted = rows.filter(({ key }) => !hidden.includes(key))
-  const note = unindexedNote(
-    unindexed.filter((key) => key !== UNPAID_GROUP),
-    metric,
-    from,
-  )
+  const note = unindexedNote(unindexed, metric, from)
   const isRestructureShown = from < RESTRUCTURE_YEAR && to >= RESTRUCTURE_YEAR
   return (
     <PageSection title="Which groups grew?">
@@ -94,10 +90,10 @@ export function GrowthSection({
       <p className="text-sm text-muted-foreground">
         {note}
         {note && ' '}
-        {UNPAID_GROUP}, whose number swings from year to year, are in the table
-        only. UO restructured its EEO categories in 2018, 2019, and 2021, and in
-        2017 published some unclassified jobs with no category; the groups below
-        keep each group the same jobs in every year.
+        {TEMPS_GROUP}’ number swings from year to year. UO restructured its EEO
+        categories in 2018, 2019, and 2021, and in 2017 published some
+        unclassified jobs with no category; the groups below keep each group the
+        same jobs in every year.
       </p>
       <GroupTable
         caption={`Change by group, Fall ${from} to Fall ${to}`}
@@ -124,6 +120,7 @@ export function GrowthSection({
       <Sources
         sources={[
           { kind: 'fall-range', from, to, computed: METHOD },
+          ...fySource(trends.total),
           ...scopeSources,
         ]}
         methods={[RATIO_METHOD]}

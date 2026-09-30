@@ -106,7 +106,7 @@ test('classes of three or more jobs get a row; smaller ones fold into one row pe
       {
         label: 'Other position classes (fewer than 3 jobs each)',
         jobs: 2,
-        fteHundredths: 200,
+        fteHundredths: 100,
         spendCents: null,
         medianRateCents: null,
       },
@@ -114,7 +114,7 @@ test('classes of three or more jobs get a row; smaller ones fold into one row pe
   })
 })
 
-test('a class of temporaries shows FTE but no spend', () => {
+test('a class of temporaries shows neither spend nor FTE, which their FY pay gives by unit', () => {
   const temp = classifiedJob({
     apptPercent: 10,
     positionClass: { code: 'TS401', title: 'Temp' },
@@ -123,7 +123,7 @@ test('a class of temporaries shows FTE but no spend', () => {
     {
       label: 'TS401 Temp',
       jobs: 3,
-      fteHundredths: 30,
+      fteHundredths: null,
       spendCents: null,
       medianRateCents: null,
     },
@@ -134,7 +134,7 @@ test('trend points under three jobs lose spend and median, keeping FTE', () => {
   const jobs = departmentYears('111111', [
     census(2025, [unclassifiedJob(), unclassifiedJob(), classifiedJob()]),
   ])
-  const trends = departmentTrends(jobs, 'all')
+  const trends = departmentTrends(jobs, 'all', new Map())
   expect(trends.series[0]?.points[0]).toMatchObject({
     jobs: 2,
     spendCents: null,
@@ -149,9 +149,9 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
     ...CENSUSES,
     census(2023, [unclassifiedJob({ payDepartment: elsewhere })]),
   ])
-  expect(departmentTrends(jobs, 'all').total.map(({ year }) => year)).toEqual([
-    2024, 2025,
-  ])
+  expect(
+    departmentTrends(jobs, 'all', new Map()).total.map(({ year }) => year),
+  ).toEqual([2024, 2025])
   expect(departmentClasses(jobs, { kind: 'all', year: 2025 })).toMatchObject({
     unclassified: [{ label: 'Other ranks (fewer than 3 jobs each)', jobs: 1 }],
     classified: [],
@@ -160,7 +160,9 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
     departmentClasses(jobs, { kind: 'classified', year: 2025 }).unclassified,
   ).toEqual([])
   expect(
-    departmentTrends(jobs, 'classified').total.map(({ jobs: count }) => count),
+    departmentTrends(jobs, 'classified', new Map()).total.map(
+      ({ jobs: count }) => count,
+    ),
   ).toEqual([0, 0])
 })
 

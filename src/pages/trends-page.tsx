@@ -31,7 +31,7 @@ import {
   type ReportSearch,
   resolveReportView,
 } from '@/lib/trends/search'
-import { sliceTrends } from '@/lib/trends/trends'
+import { comparableTemps, sliceTrends } from '@/lib/trends/trends'
 
 /** The report's view, the scope its filters pick, and that scope's figures over the range. */
 function useReport() {
@@ -58,7 +58,7 @@ function useReport() {
     files.find(({ code }) => code === area?.code) ?? null,
     search.unit ?? null,
   )
-  const trends = sliceTrends(scope.trends, view.from, view.to)
+  const trends = comparableTemps(sliceTrends(scope.trends, view.from, view.to))
   const scopeSources: SectionSource[] = scope.area
     ? [
         {

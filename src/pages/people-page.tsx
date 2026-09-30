@@ -183,7 +183,7 @@ function CategorySpend({
           {
             kind: 'fall',
             year,
-            computed: `over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD}`,
+            computed: `over the matching jobs, each in its published EEO category; a person with jobs in two categories counts in both, so people do not add up to the total; ${SPEND_METHOD} Here classified temporaries’ spend and FTE are blank, since their actual pay is known by unit, not by job; the Trends and department pages show it.`,
           },
         ]}
       />

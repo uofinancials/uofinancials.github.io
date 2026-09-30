@@ -14,7 +14,11 @@ import { fiscalYearLabel } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import { manifestQuery, outlookQuery, raiseTermsQuery } from '@/data/queries'
 import { outlookSources } from '@/lib/budget/outlook'
-import { listCitedDocuments, sourceAnchor } from '@/lib/shared/citation'
+import {
+  fyLabel,
+  listCitedDocuments,
+  sourceAnchor,
+} from '@/lib/shared/citation'
 import { formatCount, formatDollars } from '@/lib/shared/format'
 import { NUMBER_CELL } from '@/lib/utils'
 
@@ -44,11 +48,24 @@ function SourceTable({
   )
 }
 
-function FallSources({ fall }: { fall: Manifest['fall'] }) {
+/** One year's classified and unclassified salary reports, labelled and anchored for its citations. */
+type ReportYear = {
+  label: string
+  anchor: string
+  files: Manifest['fall'][number]['files']
+}
+
+function ReportSources({
+  yearHead,
+  years,
+}: {
+  yearHead: string
+  years: ReportYear[]
+}) {
   return (
     <SourceTable
       head={[
-        'Census',
+        yearHead,
         'Report',
         'File',
         'Pages',
@@ -58,14 +75,11 @@ function FallSources({ fall }: { fall: Manifest['fall'] }) {
         'SHA-256',
       ]}
     >
-      {fall.map((entry) => (
-        <TableBody
-          key={entry.year}
-          id={sourceAnchor({ kind: 'fall', year: entry.year })}
-        >
-          {entry.files.map((file) => (
+      {years.map(({ label, anchor, files }) => (
+        <TableBody key={anchor} id={anchor}>
+          {files.map((file) => (
             <TableRow key={file.sha256}>
-              <TableCell>{entry.censusDate}</TableCell>
+              <TableCell>{label}</TableCell>
               <TableCell>{file.kind}</TableCell>
               <TableCell>{file.fileName}</TableCell>
               <TableCell className={NUMBER_CELL}>
@@ -212,6 +226,7 @@ export function SourcesPage() {
   const { data: manifest } = useSuspenseQuery(manifestQuery)
   const [firstFall] = manifest.fall
   const [firstBudget] = manifest.budget
+  const [firstFy] = manifest.fy
   return (
     <div className="space-y-8">
       <PageHeader title="Sources">
@@ -232,7 +247,38 @@ export function SourcesPage() {
             , one classified and one unclassified report per census.
           </p>
         )}
-        <FallSources fall={manifest.fall} />
+        <ReportSources
+          yearHead="Census"
+          years={manifest.fall.map((entry) => ({
+            label: entry.censusDate,
+            anchor: sourceAnchor({ kind: 'fall', year: entry.year }),
+            files: entry.files,
+          }))}
+        />
+      </PageSection>
+      <PageSection title="Fiscal year total pay reports">
+        {firstFy && (
+          <p>
+            Published by the UO Office of Data Enablement on the same{' '}
+            <a className="link" href={firstFy.sourcePage}>
+              salary reports page
+            </a>
+            , one classified and one unclassified report per fiscal year. The
+            site reads classified temporaries’ actual pay from them.
+          </p>
+        )}
+        <ReportSources
+          yearHead="Fiscal year"
+          years={manifest.fy.map((entry) => ({
+            label: fyLabel(entry.fiscalYear),
+            anchor: sourceAnchor({
+              kind: 'fy-range',
+              from: entry.fiscalYear,
+              to: entry.fiscalYear,
+            }),
+            files: entry.files,
+          }))}
+        />
       </PageSection>
       <PageSection title="Operational expenditure budgets">
         {firstBudget && (

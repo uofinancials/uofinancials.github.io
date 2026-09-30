@@ -4,7 +4,7 @@ export function point(
   year: number,
   jobs: number,
   spendCents: number | null,
-  fteHundredths: number,
+  fteHundredths: number | null,
   medianRateCents: number | null,
 ): TrendPoint {
   return { year, jobs, spendCents, fteHundredths, medianRateCents }
@@ -33,10 +33,10 @@ export const TRENDS: Trends = {
     {
       key: 'Classified temporaries',
       points: [
-        point(2014, 5, null, 250, null),
-        point(2015, 5, null, 250, null),
+        point(2014, 5, null, null, null),
+        point(2015, 5, null, null, null),
       ],
     },
   ],
-  total: [point(2014, 20, 1500, 1750, 95), point(2015, 23, 2600, 2050, 110)],
+  total: [point(2014, 20, 1500, 1500, 95), point(2015, 23, 2600, 1800, 110)],
 }

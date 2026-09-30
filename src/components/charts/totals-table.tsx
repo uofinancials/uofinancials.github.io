@@ -2,23 +2,26 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { TEMPS_GROUP } from '@/lib/census/groups'
 import type { GroupTotals, Totals } from '@/lib/census/totals'
 import {
   formatCount,
   formatDollars,
   formatFte,
   formatShare,
+  NO_VALUE,
 } from '@/lib/shared/format'
 import { shareOfLargest } from '@/lib/shared/series'
 import { NUMBER_CELL } from '@/lib/utils'
 import { BarCell } from './bar-cell'
 
 const NUMBER_HEADS = ['People', 'Jobs', 'FTE', 'Salary spend', 'Share']
+/** Classified temporaries' figures a list of jobs cannot give, since their pay is known by unit. */
+const BLANK_FIGURES = NUMBER_HEADS.slice(2)
 
 function CountCells({ totals }: { totals: Totals }) {
   return (
@@ -34,7 +37,7 @@ function CountCells({ totals }: { totals: Totals }) {
   )
 }
 
-/** Totals per group, with classified temporaries as a separate row outside the spend. */
+/** Totals per group, then classified temporaries' people and jobs, their spend and FTE blank. */
 export function TotalsTable({
   groupLabel,
   groups,
@@ -74,11 +77,9 @@ export function TotalsTable({
             </TableCell>
           </TableRow>
         ))}
-      </TableBody>
-      <TableFooter>
         <TableRow>
           <TableHead scope="row" className="font-normal">
-            Classified temporaries
+            {TEMPS_GROUP}
           </TableHead>
           <TableCell className={NUMBER_CELL}>
             {formatCount(temps.people)}
@@ -86,15 +87,13 @@ export function TotalsTable({
           <TableCell className={NUMBER_CELL}>
             {formatCount(temps.jobs)}
           </TableCell>
-          <TableCell className={NUMBER_CELL}>
-            {formatFte(temps.fteHundredths)}
-          </TableCell>
-          <TableCell colSpan={2} className="whitespace-normal">
-            Not in salary spend: their published rates are annualised hourly
-            rates, which overstate what they are paid.
-          </TableCell>
+          {BLANK_FIGURES.map((figure) => (
+            <TableCell key={figure} className={NUMBER_CELL}>
+              {NO_VALUE}
+            </TableCell>
+          ))}
         </TableRow>
-      </TableFooter>
+      </TableBody>
     </Table>
   )
 }

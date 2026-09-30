@@ -10,9 +10,16 @@ import {
 import { formatDollars } from '../shared/format.ts'
 import { changeOf } from '../shared/series.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
-import { MIN_JOBS_SHOWN, measureJobs } from '../trends/trends.ts'
+import {
+  comparablePoints,
+  MIN_JOBS_SHOWN,
+  measureJobs,
+  type TempsFigure,
+  type TrendPoint,
+} from '../trends/trends.ts'
 import { sumBy, unitsOf } from './budget.ts'
 import { placeDepartments } from './codes.ts'
+import type { TempsScope } from './fy-temps.ts'
 import type { DepartmentCensus } from './jobs.ts'
 
 /** A census joined to the budget year that names its areas. */
@@ -77,19 +84,33 @@ function unitSum(
 type RowInput = Pick<DepartmentRow, 'code' | 'name' | 'area'> & {
   records: FallRecord[]
   earlier: FallRecord[]
+  temps: TempsScope
 }
+
+/** A scope's classified temporaries' FY figures in one census, `null` where its fiscal year publishes no pay. */
+export type TempsOf = (scope: TempsScope, year: number) => TempsFigure | null
 
 function toRow(
   input: RowInput,
-  now: BudgetSums,
-  before: BudgetSums,
+  sums: { now: BudgetSums; before: BudgetSums },
+  years: { now: number; before: number; tempsOf: TempsOf },
 ): DepartmentRow {
   const { code, name, area } = input
-  const figures = measureJobs(input.records)
-  const earlier = measureJobs(input.earlier)
-  const censusChange = (pick: (point: typeof figures) => number | null) =>
-    earlier.jobs >= CHANGE_MIN_JOBS
-      ? changeOf(pick(earlier), pick(figures))
+  const { now, before } = sums
+  const figures = measureJobs(
+    input.records,
+    years.tempsOf(input.temps, years.now),
+  )
+  const [comparedEarlier, compared] = comparablePoints([
+    {
+      year: years.before,
+      ...measureJobs(input.earlier, years.tempsOf(input.temps, years.before)),
+    },
+    { year: years.now, ...figures },
+  ])
+  const censusChange = (pick: (point: TrendPoint) => number | null) =>
+    comparedEarlier && compared && comparedEarlier.jobs >= CHANGE_MIN_JOBS
+      ? changeOf(pick(comparedEarlier), pick(compared))
       : null
   const budgetBefore = unitSum(code, before.orgs, before.beginningCents)
   return {
@@ -141,11 +162,15 @@ export type AreaFigure = Pick<
 export function areaFigures(
   census: DepartmentCensus,
   budget: BudgetYear,
+  tempsOf: TempsOf,
 ): AreaFigure[] {
   const totals = sumBy(budget.rows, (row) => row.org)
   const { areaJobs } = placeDepartments(census)
   return placedAreas(census.orgs, areaJobs).map(({ code, name, records }) => {
-    const { jobs, spendCents } = measureJobs(records)
+    const { jobs, spendCents } = measureJobs(
+      records,
+      tempsOf({ kind: 'area', code }, census.year),
+    )
     return {
       code,
       name,
@@ -160,10 +185,14 @@ export function areaFigures(
 export function departmentRows(
   now: TableYear,
   before: TableYear,
+  tempsOf: TempsOf,
 ): { areas: DepartmentRow[]; units: DepartmentRow[] } {
-  const nowSums = toBudgetSums(now.budget)
-  const beforeSums = toBudgetSums(before.budget)
-  const row = (input: RowInput) => toRow(input, nowSums, beforeSums)
+  const sums = {
+    now: toBudgetSums(now.budget),
+    before: toBudgetSums(before.budget),
+  }
+  const years = { now: now.census.year, before: before.census.year, tempsOf }
+  const row = (input: RowInput) => toRow(input, sums, years)
   const earlierByCode = new Map<string | null, FallRecord[]>()
   const earlierByArea = new Map<string | null, FallRecord[]>()
   const add = (
@@ -187,6 +216,7 @@ export function departmentRows(
         ...area,
         area: null,
         earlier: earlierByArea.get(area.code) ?? [],
+        temps: { kind: 'area', code: area.code },
       }),
     ),
     units: units.map((unit) =>
@@ -194,6 +224,7 @@ export function departmentRows(
         ...unit,
         area: areaOf(unit.area, orgs),
         earlier: earlierByCode.get(unit.code) ?? [],
+        temps: { kind: 'unit', code: unit.code },
       }),
     ),
   }

@@ -23,7 +23,7 @@ test('the report answers each question in its tab, with the exact figures and th
     'page',
   )
   await expect(main).toContainText(
-    'Jobs since Fall 2014: +11.9% for all jobs. Admins and professionals changed most, +27.0%, and Faculty least, +0.4%.',
+    'Jobs since Fall 2014: +11.9% for all jobs. Classified temporaries changed most, +34.6%, and Faculty least, +0.4%.',
   )
   await expect(
     page.getByRole('list', {
@@ -115,7 +115,7 @@ test('a college or VP area and a unit within it scope every tab, and the compari
   await tab(page, 'How does it compare?').click()
   await expect(
     page.getByRole('row', {
-      name: /^Arts & Sciences, College of [\d,]+ -4\.1% \+40\.\d%$/,
+      name: /^Arts & Sciences, College of [\d,]+ -5\.5% \+40\.\d%$/,
     }),
   ).toBeVisible()
   const scopeBox = page.getByRole('combobox', {
@@ -143,7 +143,7 @@ test('a college or VP area and a unit within it scope every tab, and the compari
     }),
   ).toBeVisible()
   await expect(main).toContainText(
-    'CAS English: FTE -28.8% since Fall 2014, against -4.1% for Arts & Sciences, College of and +16.1% for All of UO.',
+    'CAS English: FTE -28.8% since Fall 2014, against -5.5% for Arts & Sciences, College of and +14.8% for All of UO.',
   )
   await expect(
     page.getByRole('row', { name: 'CAS English 72 -28.8% +7.6%' }),
@@ -241,7 +241,7 @@ test('areas and units from anywhere can be added to the comparison by typing, an
   await expect(page).toHaveURL(/with=.*480000.*222100/)
   await page.reload()
   await expect(page.getByRole('main')).toContainText(
-    'Athletics: FTE +42.5% since Fall 2014, against -47.2% for CAS Romance Languages and +16.1% for All of UO.',
+    'Athletics: FTE +28.3% since Fall 2014, against -47.2% for CAS Romance Languages and +14.8% for All of UO.',
   )
   await expect(
     page.getByRole('figure', { name: 'FTE, Fall 2014 = 100' }),
@@ -249,7 +249,7 @@ test('areas and units from anywhere can be added to the comparison by typing, an
   await page.getByRole('button', { name: 'Remove Athletics' }).click()
   await expect(page).not.toHaveURL(/480000/)
   await expect(page.getByRole('main')).toContainText(
-    'CAS Romance Languages: FTE -47.2% since Fall 2014, against +16.1% for All of UO.',
+    'CAS Romance Languages: FTE -47.2% since Fall 2014, against +14.8% for All of UO.',
   )
 })
 
@@ -258,14 +258,14 @@ test('a picked unit is compared with its area by default, and the area can be re
 }) => {
   await page.goto('/trends?tab=compare&area=222000&unit=222050&measure=fte')
   await expect(page.getByRole('main')).toContainText(
-    'CAS English: FTE -28.8% since Fall 2014, against -4.1% for Arts & Sciences, College of and +16.1% for All of UO.',
+    'CAS English: FTE -28.8% since Fall 2014, against -5.5% for Arts & Sciences, College of and +14.8% for All of UO.',
   )
   await page
     .getByRole('button', { name: 'Remove Arts & Sciences, College of' })
     .click()
   await expect(page).toHaveURL(/with=/)
   await expect(page.getByRole('main')).toContainText(
-    'CAS English: FTE -28.8% since Fall 2014, against +16.1% for All of UO.',
+    'CAS English: FTE -28.8% since Fall 2014, against +14.8% for All of UO.',
   )
 })
 
@@ -355,4 +355,22 @@ test('on a phone a wide table keeps its first column in view as it scrolls', asy
   })
   expect(await box.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)
   expect(await leftOf()).toBe(before)
+})
+
+test('from Fall 2020 the report counts classified temporaries by their FY pay, and cites the FY total pay reports', async ({
+  page,
+}) => {
+  await page.goto('/trends?from=2020')
+  const growth = page.locator('section', {
+    has: page.getByRole('heading', { name: 'Which groups grew?' }),
+  })
+  await expect(
+    growth.getByRole('row', {
+      name: /^Classified temporaries [+-][\d.]+% [+-][\d.]+%/,
+    }),
+  ).toBeVisible()
+  await openSources(page)
+  await expect(growth).toContainText(
+    'FY2020-21 to FY2025-26 total pay reports, UO Office of Data Enablement',
+  )
 })
