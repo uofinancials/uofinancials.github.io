@@ -142,15 +142,13 @@ export function placementBases(
   return bases
 }
 
-/** The jobs with the highest published annual salary rates, ties by name; classified temporaries and possible students are left out. */
+/** The jobs with the highest published annual salary rates, ties by name; classified temporaries are left out. */
 export function topPaidJobs(
   census: { year: number; records: FallRecord[] },
   count: number,
 ): FallRecord[] {
   const { year, records } = census
-  const shown = records.filter(
-    (record) => !isClassifiedTemp(record) && !record.possibleStudent,
-  )
+  const shown = records.filter((record) => !isClassifiedTemp(record))
   return sortJobs(shown, { sort: 'rate', dir: 'desc', year }).slice(0, count)
 }
 

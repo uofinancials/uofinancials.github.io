@@ -115,8 +115,6 @@ const nameEntrySchema = z.strictObject({
   runs: z.array(z.array(year).min(1)).min(1),
   /** The other names this person's records were published under, where the site joins more than one. */
   otherNames: z.array(z.string().min(1)).min(1).optional(),
-  /** Whether any of the name's records is flagged as a possible student. */
-  possibleStudent: z.boolean(),
 })
 
 /** Figures derived from the committed data files by `pnpm scrape summary`, for the pages' default views. */

@@ -101,7 +101,7 @@ test('a person built from the censuses an index entry lists is the one the censu
   ]
   const [ann] = indexPeople(years)
   const [entry] = indexNames([
-    { name: 'Doe, Ann', runs: [[2014, 2015], [2017]], possibleStudent: false },
+    { name: 'Doe, Ann', runs: [[2014, 2015], [2017]] },
   ])
   expect(ann && entry && personOf(entry, years)).toEqual(ann)
   expect(
@@ -142,7 +142,6 @@ test('a person built from an index entry with other names holds the records unde
       name: 'Roe, Ann B',
       otherNames: ['Doe, Ann B'],
       runs: [[2020, 2021]],
-      possibleStudent: false,
     },
   ])
   expect(person && entry && personOf(entry, years)).toEqual(person)

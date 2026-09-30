@@ -16,12 +16,18 @@ const sourceFileSchema = z.strictObject({
   extractDate: isoDate,
   retrievedOn: isoDate,
   records: z.number().int().nonnegative(),
-  possibleStudents: z.number().int().nonnegative(),
 })
 
 const fallEntrySchema = z.strictObject({
   year: z.number().int(),
   censusDate: isoDate,
+  sourcePage: z.url(),
+  files: z.array(sourceFileSchema),
+})
+
+const fyEntrySchema = z.strictObject({
+  /** The year the fiscal year ends in. */
+  fiscalYear: z.number().int(),
   sourcePage: z.url(),
   files: z.array(sourceFileSchema),
 })
@@ -59,11 +65,13 @@ const summaryEntrySchema = z.strictObject({
 
 export const manifestSchema = z.strictObject({
   fall: z.array(fallEntrySchema),
+  fy: z.array(fyEntrySchema),
   budget: z.array(budgetEntrySchema),
   rates: ratesEntrySchema.nullable(),
   summary: summaryEntrySchema.nullable(),
 })
 
 export type FallEntry = z.infer<typeof fallEntrySchema>
+export type FyEntry = z.infer<typeof fyEntrySchema>
 export type BudgetEntry = z.infer<typeof budgetEntrySchema>
 export type Manifest = z.infer<typeof manifestSchema>

@@ -127,6 +127,7 @@ test('jobs per census are the summed file records, oldest first', () => {
   })
   const manifest: Manifest = {
     fall: [entry(2025, [10, 5]), entry(2014, [3])],
+    fy: [],
     budget: [],
     rates: null,
     summary: null,
@@ -183,9 +184,9 @@ test('an area sums its units’ budget and its placed jobs, and each job’s pla
   })
 })
 
-test('the top-paid jobs are the highest rates, ties by name, without temporaries or possible students', () => {
-  const rated = (name: string, cents: number, possibleStudent = false) =>
-    unclassifiedJob({ name, annualSalaryRateCents: cents, possibleStudent })
+test('the top-paid jobs are the highest rates, ties by name, without temporaries', () => {
+  const rated = (name: string, cents: number) =>
+    unclassifiedJob({ name, annualSalaryRateCents: cents })
   const top = topPaidJobs(
     {
       year: 2025,
@@ -193,7 +194,6 @@ test('the top-paid jobs are the highest rates, ties by name, without temporaries
         rated('Low, Al', 10_000_000),
         rated('Zed, Zoe', 50_000_000),
         TEMP,
-        rated('Student, Sam', 80_000_000, true),
         rated('Abe, Ada', 50_000_000),
       ],
     },

@@ -26,17 +26,14 @@ const FILES = [
 type Source = (typeof FILES)[number][0]
 const parsed = new Map<Source, FallRecord[]>()
 
-function classified(
-  record: Omit<FallClassified, 'kind' | 'possibleStudent'> &
-    Partial<Pick<FallClassified, 'possibleStudent'>>,
-): FallClassified {
-  return { kind: 'classified', possibleStudent: false, ...record }
+function classified(record: Omit<FallClassified, 'kind'>): FallClassified {
+  return { kind: 'classified', ...record }
 }
 
 function unclassified(
-  record: Omit<FallUnclassified, 'kind' | 'possibleStudent'>,
+  record: Omit<FallUnclassified, 'kind'>,
 ): FallUnclassified {
-  return { kind: 'unclassified', possibleStudent: false, ...record }
+  return { kind: 'unclassified', ...record }
 }
 
 const dept = (code: string | null, name: string) => ({ code, name })
@@ -124,7 +121,6 @@ const HAND_CHECKED: [Source, FallRecord][] = [
       positionClass: null,
       eeoCategory: null,
       sourcePage: 2,
-      possibleStudent: true,
     }),
   ],
   [

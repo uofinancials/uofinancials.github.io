@@ -23,6 +23,7 @@ const MANIFEST: Manifest = {
       files: [fallFile()],
     },
   ],
+  fy: [],
   budget: [],
   rates: null,
   summary: null,

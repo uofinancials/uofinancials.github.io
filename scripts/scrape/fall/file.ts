@@ -1,13 +1,9 @@
 import type { FallRecord, StaffKind } from '../../../src/data/fall.ts'
-import {
-  CENSUS_LINE,
-  FOOTER_LINE,
-  type PageFailure,
-  readFallBlocks,
-  TITLE_LINE,
-} from './blocks.ts'
-import { lineText, type PdfPage, readPdfPages } from './pdf-lines.ts'
-import { isoDate, parseDate, toFallRecord } from './record.ts'
+import { type PageFailure, readBlocks, TITLE_LINE } from '../pdf/blocks.ts'
+import { isoDate, parseDate } from '../pdf/fields.ts'
+import { lineText, type PdfPage, readPdfPages } from '../pdf/pdf-lines.ts'
+import { CENSUS_LINE, FALL_LAYOUT, FOOTER_LINE } from './blocks.ts'
+import { toFallRecord } from './record.ts'
 
 export type FallFile = {
   kind: StaffKind
@@ -36,7 +32,7 @@ const MONTHS = [
 export async function parseFallFile(bytes: Uint8Array): Promise<FallFile> {
   const pages = await readPdfPages(bytes)
   const { kind, censusDate, extractDate } = identifyFallFile(pages)
-  const { blocks, failures } = readFallBlocks(pages)
+  const { blocks, failures } = readBlocks(pages, FALL_LAYOUT)
   const records: FallRecord[] = []
   for (const block of blocks) {
     try {

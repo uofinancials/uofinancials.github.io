@@ -10,6 +10,13 @@ export const FALL_SOURCE_DIR = path.resolve(
 
 export const hasFallSources = existsSync(FALL_SOURCE_DIR)
 
+export const FY_SOURCE_DIR = path.resolve(
+  import.meta.dirname,
+  '../../.cache/sources/fy',
+)
+
+export const hasFySources = existsSync(FY_SOURCE_DIR)
+
 export const BUDGET_SOURCE_DIR = path.resolve(
   import.meta.dirname,
   '../../.cache/sources/budget',
@@ -47,6 +54,10 @@ export function areaTrendsPath(code: string): string {
 
 export function fallDataPath(year: number): string {
   return path.join(DATA_DIR, 'fall', `${year}.json`)
+}
+
+export function fyDataPath(fiscalYear: number): string {
+  return path.join(DATA_DIR, 'fy', `${fiscalYear}.json`)
 }
 
 export function budgetDataPath(fiscalYear: number): string {

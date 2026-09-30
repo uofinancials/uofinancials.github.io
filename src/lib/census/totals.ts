@@ -1,4 +1,5 @@
 import type { FallRecord } from '../../data/fall.ts'
+import type { FyRecord } from '../../data/fy.ts'
 import type { FallEntry, Manifest } from '../../data/manifest.ts'
 
 /** FTE is held as integer hundredths (the sum of appointment percents). */
@@ -27,7 +28,7 @@ const FISCAL_YEAR_START_MONTH = 7
 export const UNASSIGNED_AREA = 'Area not assigned'
 
 /** Fall 2015 publishes no position class for its temporaries, and only for them. */
-export function isClassifiedTemp(record: FallRecord): boolean {
+export function isClassifiedTemp(record: FallRecord | FyRecord): boolean {
   return (
     record.kind === 'classified' &&
     (record.positionClass === null ||

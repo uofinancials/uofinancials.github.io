@@ -1,5 +1,9 @@
-import type { FallClassified, FallUnclassified, FallYear } from '@/data/fall'
-import type { FallEntry } from '@/data/manifest'
+import type {
+  FallClassified,
+  FallUnclassified,
+  FallYear,
+} from '../data/fall.ts'
+import type { FallEntry } from '../data/manifest.ts'
 
 const COMMON = {
   name: 'Doe, Ann',
@@ -13,7 +17,6 @@ const COMMON = {
   apptPercent: 100,
   termOfServiceMonths: 12,
   sourcePage: 1,
-  possibleStudent: false,
 } as const
 
 /** A classified Fall record with plain defaults, for tests. */
@@ -66,7 +69,6 @@ export function fallFile(overrides: Partial<FallFile> = {}): FallFile {
     extractDate: '2025-11-05',
     retrievedOn: '2026-09-24',
     records: 1,
-    possibleStudents: 0,
     ...overrides,
   }
 }

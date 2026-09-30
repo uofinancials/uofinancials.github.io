@@ -17,6 +17,7 @@ const MANIFEST: Manifest = {
       ],
     },
   ],
+  fy: [],
   budget: [
     {
       fiscalYear: 2027,
