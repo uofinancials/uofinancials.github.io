@@ -3,6 +3,7 @@ import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import type { SectionSource } from '../shared/citation.ts'
+import { fyPaySource } from '../trends/trends.ts'
 import {
   type EliminateRule,
   type EliminationResult,
@@ -97,12 +98,10 @@ export const SCENARIO_METHOD =
 const TEMPS_COMPUTED =
   "Classified temporaries' actual pay in the fiscal year, summed by unit; scenarios count it in place of their annualised rates, as the method says."
 
-/** The FY total pay reports a scenario's classified temporaries come from: one per fiscal year given. */
+/** The FY total pay reports a scenario's classified temporaries come from, with how scenarios count them. */
 export function scenarioTempsSources(fiscalYears: number[]): SectionSource[] {
-  return fiscalYears.map((fiscalYear) => ({
-    kind: 'fy-range',
-    from: fiscalYear,
-    to: fiscalYear,
+  return fyPaySource(fiscalYears).map((source) => ({
+    ...source,
     computed: TEMPS_COMPUTED,
   }))
 }

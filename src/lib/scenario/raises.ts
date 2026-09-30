@@ -130,16 +130,15 @@ function firstRaiseOf(
   const rowRates = new Map(
     raiseRates.map((rate) => [rate.row, rate.basisPoints]),
   )
-  return (job) =>
-    (job.kind === 'temps'
-      ? undefined
-      : rowRates.get(
-          raiseRowOf(
-            job.record,
-            census.year,
-            trendGroupOf(job.record, census.year),
-          ),
-        )) ?? PROJECTED_RAISE_BASIS_POINTS
+  return (job) => {
+    if (job.kind === 'temps') return PROJECTED_RAISE_BASIS_POINTS
+    const { record } = job
+    return (
+      rowRates.get(
+        raiseRowOf(record, census.year, trendGroupOf(record, census.year)),
+      ) ?? PROJECTED_RAISE_BASIS_POINTS
+    )
+  }
 }
 
 /** Each projected year's pay over a job's census pay: its first-year raise, then 3% a year, scaled by `BASIS` to the power of the year; it returns the same array for every job with the same first-year raise, which callers group by. */

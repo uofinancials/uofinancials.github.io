@@ -54,14 +54,15 @@ function useHomeData() {
     raiseTerms.terms,
     firstSavingsYear(projection.fiscalYears, fiscalYearOf(home.censusDate)),
   )
+  const fyYears = fyPayYears(manifest, [home.year])
   return {
     ...home,
     projection,
     answers: answersOf(home.answers),
     raiseSources: raiseSources(firstYearRaises),
     jobsByYear: jobsByCensus(manifest),
-    fySources: fyPaySource(fyPayYears(manifest, [home.year])),
-    tempsSources: scenarioTempsSources(fyPayYears(manifest, [home.year])),
+    fySources: fyPaySource(fyYears),
+    tempsSources: scenarioTempsSources(fyYears),
   }
 }
 

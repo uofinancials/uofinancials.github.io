@@ -93,10 +93,8 @@ const FY27_RATES = ratesFor(RATES, 2027)
 
 /** A Fall 2025 job's FY27 raise, read straight from its raise row; temporaries are in none. */
 function firstRaiseOf(job: Job): number {
-  const row =
-    job.kind === 'census'
-      ? raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
-      : null
+  if (job.kind === 'temps') return PROJECTED_RAISE_BASIS_POINTS
+  const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
   return RATE_OF_ROW.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
 }
 
@@ -155,7 +153,8 @@ test('Fall 2025 against the FY26 budget: $504.8M of census pay, $295.3M of it E&
   const egPayCents = jobs.reduce(
     (sum, record) =>
       sum +
-      (jobSpendCents(record) * egShareOf(record, FALL_2025, SHARES_2025)) /
+      (jobSpendCents(record) *
+        egShareOf(FALL_2025.assign(record).area, SHARES_2025)) /
         10_000,
     0,
   )

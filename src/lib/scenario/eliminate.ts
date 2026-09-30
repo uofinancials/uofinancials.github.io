@@ -2,7 +2,6 @@ import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { placeJobs } from '../census/search.ts'
-import { isClassifiedTemp, jobSpendCents } from '../census/totals.ts'
 import {
   type AccountGroup,
   accountGroupOf,
@@ -11,7 +10,7 @@ import { unitsOf } from '../departments/budget.ts'
 import type { IndexArea } from '../departments/codes.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import { EG_FUND_TYPE, SALARY_ACCOUNT_TYPES } from './eg-share.ts'
-import { ANY_SCOPE, type Job, scopeReach } from './jobs.ts'
+import { ANY_SCOPE, type Job, salaryCentsOf, scopeReach } from './jobs.ts'
 
 export type EliminateRule = { kind: 'eliminate'; code: string }
 
@@ -79,31 +78,28 @@ function isPartlyMatched(code: string, budget: BudgetYear, censusPay: number) {
 }
 
 /**
- * Marks the code's census jobs and temporaries' FY pay removed, returning the
- * census jobs it newly takes, its classified temporaries among them, and the
- * pay placed there.
+ * Marks the code's census jobs and temporaries' FY pay removed, returning how
+ * many census records it newly takes, classified temporaries included, and
+ * the pay placed there.
  */
 function excludeJobs(
   code: string,
   census: DepartmentCensus,
   jobs: Job[],
-  countedTemps: Set<FallRecord>,
+  takenRecords: Set<FallRecord>,
 ) {
-  const reaches = scopeReach(census, { ...ANY_SCOPE, dept: code })
   let excluded = 0
+  for (const record of placeJobs(census, code)) {
+    if (takenRecords.has(record)) continue
+    takenRecords.add(record)
+    excluded += 1
+  }
+  const reaches = scopeReach(census, { ...ANY_SCOPE, dept: code })
   let censusPay = 0
   for (const job of jobs) {
     if (!reaches(job)) continue
-    censusPay +=
-      job.kind === 'temps' ? job.unit.payCents : jobSpendCents(job.record)
-    if (job.isRemoved) continue
+    censusPay += salaryCentsOf(job)
     job.isRemoved = true
-    if (job.kind === 'census') excluded += 1
-  }
-  for (const record of placeJobs(census, code).filter(isClassifiedTemp)) {
-    if (countedTemps.has(record)) continue
-    countedTemps.add(record)
-    excluded += 1
   }
   return { excluded, censusPay }
 }
@@ -117,7 +113,7 @@ export function eliminationSavings(options: {
 }): EliminationResult[] {
   const { census, jobs, budget } = options
   const taken = new Set<string>()
-  const countedTemps = new Set<FallRecord>()
+  const takenRecords = new Set<FallRecord>()
   return options.eliminations.map(({ code }) => {
     const covered = [...(unitsOf(code, budget.orgs) ?? [])]
     const units = new Set(covered.filter((unit) => !taken.has(unit)))
@@ -130,7 +126,7 @@ export function eliminationSavings(options: {
       code,
       census,
       jobs,
-      countedTemps,
+      takenRecords,
     )
     const isCovered = covered.length > 0 && units.size === 0
     return {

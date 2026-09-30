@@ -47,7 +47,11 @@ const BUDGET = scenarioBudget([
 const CENSUS = toDepartmentCensus({ year: 2025, records: RECORDS }, BUDGET)
 const SHARES = egShares(CENSUS, BUDGET, LINES)
 
-function run(rules: Rule[], projectedYears = 0) {
+function run(
+  rules: Rule[],
+  projectedYears = 0,
+  overrides: Partial<Parameters<typeof runScenario>[0]> = {},
+) {
   return runScenario({
     census: CENSUS,
     temps: LINES,
@@ -59,6 +63,7 @@ function run(rules: Rule[], projectedYears = 0) {
     projectedYears,
     eliminationBudget: BUDGET,
     raiseRates: [],
+    ...overrides,
   })
 }
 
@@ -175,17 +180,11 @@ test("a hiring freeze holds a scope's temporaries at the rate measured over its 
   const [census] = history.slice(-1)
   if (!census) throw new Error('The test history has no 2025 census')
   const freezeOver = (scope: typeof ANY_SCOPE) =>
-    runScenario({
+    run([{ kind: 'freeze', scope, years: 1, afterFreeze: 'refill' }], 1, {
       census,
-      temps: [tempsUnit({ jobs: 5 })],
-      rules: [{ kind: 'freeze', scope, years: 1, afterFreeze: 'refill' }],
-      rates: RATES,
-      egShares: new Map([[AREA, 10_000]]),
-      opeFiscalYear: 2026,
       history,
-      projectedYears: 1,
-      eliminationBudget: BUDGET,
-      raiseRates: [],
+      temps: [tempsUnit({ jobs: 5 })],
+      egShares: new Map([[AREA, 10_000]]),
     }).rules[0]
   // 60% turnover. Avila: 4,000,000 x 0.9 x 1.9 x 1.03 x 0.6; the temporaries: 1,000,000 x 0.98 x 1.3 x 1.03 x 0.6.
   expect(freezeOver({ ...ANY_SCOPE, kind: 'classified' })).toMatchObject({

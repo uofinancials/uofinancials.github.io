@@ -133,7 +133,7 @@ export type TempsScope =
   | { kind: 'area'; code: string | null }
   | { kind: 'unit'; code: string }
 
-function isInScope(unit: FyTempsUnit, scope: TempsScope): boolean {
+export function isInScope(unit: FyTempsUnit, scope: TempsScope): boolean {
   if (scope.kind === 'all') return true
   return scope.kind === 'area'
     ? unit.area === scope.code

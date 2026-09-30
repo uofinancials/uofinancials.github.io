@@ -1,5 +1,4 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
-import type { FallRecord } from '../../data/fall.ts'
 import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import { publishedArea } from '../census/areas.ts'
 import { isClassifiedTemp, jobSpendCents } from '../census/totals.ts'
@@ -53,12 +52,10 @@ export function egShares(
   )
 }
 
-/** A job's E&G share in basis points; 0 for a job placed in no area. */
+/** An area's E&G share in basis points; 0 for no area. */
 export function egShareOf(
-  record: FallRecord,
-  census: DepartmentCensus,
+  area: string | null,
   shares: Map<string, number>,
 ): number {
-  const { area } = census.assign(record)
   return area ? (shares.get(area) ?? 0) : 0
 }
