@@ -1,6 +1,7 @@
 import type { FallRecord } from '../../data/fall.ts'
 import type { FyRecord } from '../../data/fy.ts'
 import type { FallEntry, Manifest } from '../../data/manifest.ts'
+import { groupBy } from '../shared/group.ts'
 
 /** FTE is held as integer hundredths (the sum of appointment percents). */
 export type Totals = {
@@ -70,14 +71,7 @@ export function groupTotals(
   records: FallRecord[],
   keyOf: (record: FallRecord) => string,
 ): GroupTotals[] {
-  const groups = new Map<string, FallRecord[]>()
-  for (const record of records) {
-    const key = keyOf(record)
-    const members = groups.get(key) ?? []
-    members.push(record)
-    groups.set(key, members)
-  }
-  return [...groups]
+  return [...groupBy(records, keyOf)]
     .map(([key, members]) => ({ key, totals: summarize(members) }))
     .sort(
       (a, b) =>

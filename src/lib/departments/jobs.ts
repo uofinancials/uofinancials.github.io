@@ -14,6 +14,7 @@ import {
   type PayDepartmentOf,
 } from '../census/areas.ts'
 import { fiscalYearForCensus } from '../census/totals.ts'
+import { groupBy } from '../shared/group.ts'
 import {
   buildTrends,
   MIN_JOBS_SHOWN,
@@ -195,14 +196,10 @@ function classRow(label: string, records: FallRecord[]): ClassRow {
 }
 
 function kindRows(kind: StaffKind, records: FallRecord[]): ClassRow[] {
-  const byLabel = new Map<string, FallRecord[]>()
-  for (const record of records) {
-    if (record.kind !== kind) continue
-    const label = classLabelOf(record)
-    const members = byLabel.get(label) ?? []
-    members.push(record)
-    byLabel.set(label, members)
-  }
+  const byLabel = groupBy(
+    records.filter((record) => record.kind === kind),
+    classLabelOf,
+  )
   const shown: ClassRow[] = []
   const folded: FallRecord[] = []
   for (const [label, members] of byLabel) {

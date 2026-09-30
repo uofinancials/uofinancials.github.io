@@ -125,8 +125,9 @@ flowchart LR
   hand-reviewed codes of FY department names no census or budget resolves.
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
-  - `shared` - number formatting, browser tab titles, table sort order, source
-    citations, filter chips, and the rules charts draw series and axes by.
+  - `shared` - number formatting, browser tab titles, table sort order, grouping
+    by key, source citations, filter chips, and the rules charts draw series and
+    axes by.
   - `census` - census totals, area assignment, employee groups, and the salary
     rate distribution.
   - `trends` - trends by group and by area, with classified temporaries measured

@@ -3,6 +3,7 @@ import type { FallRecord } from '../../data/fall.ts'
 import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { UNASSIGNED_AREA } from '../census/totals.ts'
+import { groupBy } from '../shared/group.ts'
 import { type DepartmentCensus, departmentYears, isAreaCode } from './jobs.ts'
 
 /** A unit or pay department, the area it sits in, and the jobs paid under its code. */
@@ -39,12 +40,9 @@ export function placeDepartments({ records, orgs, assign }: DepartmentCensus): {
     if (org.level === ORG_LEVEL_AREA) continue
     units.set(code, { code, name: org.name, area: org.parent, records: [] })
   }
-  const areaJobs = new Map<string | null, FallRecord[]>()
+  const areaJobs = groupBy(records, (record) => assign(record).area)
   for (const record of records) {
     const { area } = assign(record)
-    const placed = areaJobs.get(area) ?? []
-    placed.push(record)
-    areaJobs.set(area, placed)
     const { code, name } = record.payDepartment
     if (code === null || code === area) continue
     const unit = units.get(code) ?? { code, name, area, records: [] }
