@@ -84,11 +84,12 @@ export function exampleAnswers(options: {
   raiseRates: RaiseRate[]
 }): ExampleAnswer[] {
   const { census, budget, projection, censusFiscalYear } = options
-  const shares = egShares(census, budget)
+  const shares = egShares(census, budget, [])
   const runRate = runRateAfter(projection, censusFiscalYear)
   return HOME_EXAMPLES.map(({ question, rules }) => {
     const result = projectScenario({
       census,
+      temps: [],
       censusFiscalYear,
       rules,
       rates: options.rates,

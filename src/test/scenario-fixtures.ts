@@ -1,4 +1,5 @@
 import type { BudgetRow, BudgetYear } from '@/data/budget'
+import type { FyTempsUnit } from '@/data/fy-temps'
 import type { OpeRates } from '@/data/ope'
 import type { Projection } from '@/data/outlook'
 import type { ScenarioResult } from '@/lib/scenario/scenario'
@@ -45,7 +46,19 @@ export function scenarioBudget(rows: BudgetRow[]): BudgetYear {
   }
 }
 
-/** FY26 OPE rates and FY27 leave rates for three groups, for tests. */
+/** One unit's classified temporaries' FY pay, in `UNIT` and `AREA` unless overridden, for tests. */
+export function tempsUnit(overrides: Partial<FyTempsUnit> = {}): FyTempsUnit {
+  return {
+    code: UNIT,
+    area: AREA,
+    jobs: 1,
+    payCents: 1_000_000,
+    fteHundredths: 50,
+    ...overrides,
+  }
+}
+
+/** FY26 OPE rates and FY27 leave rates for four groups, Temps among them, for tests. */
 export const RATES: OpeRates = {
   groups: [],
   opeRates: [
@@ -67,6 +80,7 @@ export const RATES: OpeRates = {
       basisPoints: 5_000,
       source: 'history',
     },
+    { fiscalYear: 2026, group: 'Temps', basisPoints: 3_000, source: 'history' },
   ],
   leaveRates: [
     {
@@ -93,6 +107,7 @@ export const RATES: OpeRates = {
       appliesTo: 'Exec',
       basisPoints: 1_000,
     },
+    { fiscalYear: 2027, group: 'Temps', appliesTo: null, basisPoints: 200 },
   ],
   persRepayment: [],
 }

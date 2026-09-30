@@ -41,7 +41,7 @@ test("an area's share is its E&G salary budget over its census pay, capped at 10
   ]
   const census = toDepartmentCensus({ year: 2025, records }, budget)
   // 6,000,000 / (5,000,000 + 2,000,000) = 85.714%; the temporary is left out.
-  expect(egShares(census, budget)).toEqual(new Map([[AREA, 8_571]]))
+  expect(egShares(census, budget, [])).toEqual(new Map([[AREA, 8_571]]))
 
   const rich = scenarioBudget([
     budgetRow({
@@ -52,6 +52,6 @@ test("an area's share is its E&G salary budget over its census pay, capped at 10
     }),
   ])
   expect(
-    egShares(toDepartmentCensus({ year: 2025, records }, rich), rich),
+    egShares(toDepartmentCensus({ year: 2025, records }, rich), rich, []),
   ).toEqual(new Map([[AREA, 10_000]]))
 })

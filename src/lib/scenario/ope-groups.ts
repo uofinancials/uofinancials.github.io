@@ -20,6 +20,8 @@ const SKILLED: OpeGroupRef = {
   leave: null,
 }
 const TECHNICAL: OpeGroupRef = { group: 'Classified Technical', leave: null }
+/** BRP's Temps group: hourly faculty and staff, and temporary support staff. */
+export const TEMPS_OPE_GROUP: OpeGroupRef = { group: 'Temps', leave: null }
 
 /** Classified EEO categories as published Fall 2019-2025, by OPE group. */
 const CLASSIFIED_CATEGORY_GROUPS: Record<string, OpeGroupRef> = {

@@ -1,5 +1,6 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
+import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import { publishedArea } from '../census/areas.ts'
 import { isClassifiedTemp, jobSpendCents } from '../census/totals.ts'
 import { sumBy } from '../departments/budget.ts'
@@ -30,17 +31,22 @@ function shareOf(egCents: number, payCents: number): number {
   return Math.min(FULL_SHARE, Math.max(0, share))
 }
 
-/** Each area's E&G share of its census pay, in basis points (0 to 10,000), from the budget the census is joined to. */
+/** Each area's E&G share of its census pay, with its classified temporaries at their FY pay (`temps`), in basis points (0 to 10,000), from the budget the census is joined to. */
 export function egShares(
   census: DepartmentCensus,
   budget: BudgetYear,
+  temps: FyTempsUnit[],
 ): Map<string, number> {
   const pay = new Map<string, number>()
-  for (const record of census.records) {
-    if (isClassifiedTemp(record)) continue
-    const { area } = census.assign(record)
-    if (area) pay.set(area, (pay.get(area) ?? 0) + jobSpendCents(record))
+  const add = (area: string | null, cents: number) => {
+    if (area) pay.set(area, (pay.get(area) ?? 0) + cents)
   }
+  for (const record of census.records) {
+    if (!isClassifiedTemp(record)) {
+      add(census.assign(record).area, jobSpendCents(record))
+    }
+  }
+  for (const unit of temps) add(unit.area, unit.payCents)
   const eg = egSalaryBudgets(budget)
   return new Map(
     [...pay].map(([area, cents]) => [area, shareOf(eg.get(area) ?? 0, cents)]),

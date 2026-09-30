@@ -1,5 +1,4 @@
 import { type CitedSource, sourceKey } from '../../data/cited-source.ts'
-import type { FallRecord } from '../../data/fall.ts'
 import type {
   AcrossTheBoardTerm,
   PoolTerm,
@@ -23,11 +22,12 @@ import {
   emptySavings,
   type Job,
   type JobCost,
+  jobCount,
   PROJECTED_RAISE_BASIS_POINTS,
   type Rates,
   type Savings,
   type ScenarioScope,
-  scopeJobs,
+  scopeReach,
 } from './jobs.ts'
 
 export type RaiseFreezeRule = {
@@ -122,18 +122,24 @@ function growth(path: number[]): bigint[] {
   })
 }
 
-/** A job's raise in the first savings year: its raise row's rate, or 3%. */
+/** A job's raise in the first savings year: its raise row's rate, or 3%; classified temporaries are in no row. */
 function firstRaiseOf(
   census: DepartmentCensus,
   raiseRates: RaiseRate[],
-): (record: FallRecord) => number {
+): (job: Job) => number {
   const rowRates = new Map(
     raiseRates.map((rate) => [rate.row, rate.basisPoints]),
   )
-  return (record) =>
-    rowRates.get(
-      raiseRowOf(record, census.year, trendGroupOf(record, census.year)),
-    ) ?? PROJECTED_RAISE_BASIS_POINTS
+  return (job) =>
+    (job.kind === 'temps'
+      ? undefined
+      : rowRates.get(
+          raiseRowOf(
+            job.record,
+            census.year,
+            trendGroupOf(job.record, census.year),
+          ),
+        )) ?? PROJECTED_RAISE_BASIS_POINTS
 }
 
 /** Each projected year's pay over a job's census pay: its first-year raise, then 3% a year, scaled by `BASIS` to the power of the year; it returns the same array for every job with the same first-year raise, which callers group by. */
@@ -141,11 +147,11 @@ export function payGrowthOf(
   census: DepartmentCensus,
   raiseRates: RaiseRate[],
   years: number,
-): (record: FallRecord) => bigint[] {
+): (job: Job) => bigint[] {
   const firstRaise = firstRaiseOf(census, raiseRates)
   const paths = new Map<number, bigint[]>()
-  return (record) => {
-    const first = firstRaise(record)
+  return (job) => {
+    const first = firstRaise(job)
     const path = paths.get(first) ?? growth(schedule(first, years))
     paths.set(first, path)
     return path
@@ -177,7 +183,7 @@ function removedGrowth(
 
 type Tracker = {
   rule: RaiseFreezeRule
-  scope: Set<FallRecord>
+  reaches: (job: Job) => boolean
   byYear: Savings[]
 }
 
@@ -188,12 +194,10 @@ function saveJob(options: {
   covering: Tracker[]
   filled: FilledFreeze[]
   divisors: bigint[]
-  record: FallRecord
+  job: Job
 }): void {
-  const { cost, divisors } = options
-  const holding = options.filled.filter(({ scope }) =>
-    scope.has(options.record),
-  )
+  const { cost, divisors, job } = options
+  const holding = options.filled.filter(({ reaches }) => reaches(job))
   options.covering.forEach(({ byYear }, at) => {
     byYear.forEach((savings, index) => {
       const removed = options.removed[at]?.[index] ?? 0n
@@ -217,7 +221,7 @@ function saveJob(options: {
         },
         1,
       )
-      savings.jobs += 1
+      savings.jobs += jobCount(job)
     })
   })
 }
@@ -236,7 +240,7 @@ export function raiseFreezeSavings(options: {
   if (options.raiseFreezes.length === 0) return []
   const trackers: Tracker[] = options.raiseFreezes.map((rule) => ({
     rule,
-    scope: scopeJobs(census, rule.scope),
+    reaches: scopeReach(census, rule.scope),
     byYear: Array.from({ length: projectedYears }, () => emptySavings(rates)),
   }))
   const divisors = Array.from(
@@ -247,9 +251,9 @@ export function raiseFreezeSavings(options: {
   const removedByKey = new Map<string, bigint[][]>()
   for (const job of options.jobs) {
     if (job.isRemoved) continue
-    const covering = trackers.filter(({ scope }) => scope.has(job.record))
+    const covering = trackers.filter(({ reaches }) => reaches(job))
     if (covering.length === 0) continue
-    const first = firstRaise(job.record)
+    const first = firstRaise(job)
     const key = [
       first,
       ...covering.map((tracker) => trackers.indexOf(tracker)),
@@ -268,7 +272,7 @@ export function raiseFreezeSavings(options: {
       covering,
       filled: options.filled,
       divisors,
-      record: job.record,
+      job,
     })
   }
   return trackers.map(({ byYear }) => ({ kind: 'raises', byYear }))

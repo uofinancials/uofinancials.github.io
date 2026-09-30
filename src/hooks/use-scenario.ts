@@ -47,7 +47,7 @@ function useScenarioData() {
     () => toDepartmentCensus({ year, records: fall.records }, budget),
     [year, fall, budget],
   )
-  const shares = useMemo(() => egShares(census, budget), [census, budget])
+  const shares = useMemo(() => egShares(census, budget, []), [census, budget])
   const historyCensuses = useMemo(
     () => freezeHistoryCensuses(manifest, rates),
     [manifest, rates],
@@ -87,6 +87,7 @@ function useScenarioResult(
     () =>
       projectScenario({
         census,
+        temps: [],
         censusFiscalYear,
         rules,
         rates,

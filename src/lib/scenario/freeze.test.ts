@@ -41,6 +41,7 @@ function run(rules: Rule[]) {
   if (!CENSUS) throw new Error('The test history has no 2025 census')
   return runScenario({
     census: CENSUS,
+    temps: [],
     rules,
     rates: RATES,
     egShares: new Map([[AREA, 10_000]]),

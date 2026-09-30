@@ -42,11 +42,12 @@ const BUDGET = scenarioBudget([
   }),
 ])
 const CENSUS = toDepartmentCensus({ year: 2025, records: RECORDS }, BUDGET)
-const SHARES = egShares(CENSUS, BUDGET)
+const SHARES = egShares(CENSUS, BUDGET, [])
 
 function run(rules: Rule[], opeFiscalYear = 2026) {
   return runScenario({
     census: CENSUS,
+    temps: [],
     rules,
     rates: RATES,
     egShares: SHARES,
@@ -67,7 +68,7 @@ test('the base is every job but temporaries, at salary x (1 - leave) x (1 + OPE)
     fullCostCents: 30_600_000 + 8_550_000 + 14_850_000,
     egCents: 27_000_000,
   })
-  expect(result.temporaries).toBe(1)
+  expect(result.temps).toBeNull()
   expect(result.opeFiscalYear).toBe(2026)
   expect(result.leaveFiscalYear).toBe(2027)
   expect(SHARES.get(AREA)).toBe(5_000)
@@ -179,6 +180,7 @@ test('full cost is exact past 2^53 and rounds half up to the cent', () => {
   }
   const { base } = runScenario({
     census,
+    temps: [],
     rules: [],
     rates,
     egShares: new Map(),
@@ -196,6 +198,7 @@ test('full cost is exact past 2^53 and rounds half up to the cent', () => {
 test("census rules save each job's pay grown by its raise row's first-year rate, then 3% a year", () => {
   const options = {
     census: CENSUS,
+    temps: [],
     rules: [{ kind: 'remove' as const, scope: ANY_SCOPE }],
     rates: RATES,
     egShares: SHARES,

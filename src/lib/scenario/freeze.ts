@@ -1,4 +1,3 @@
-import type { FallRecord } from '../../data/fall.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import {
@@ -16,10 +15,12 @@ import {
   growCents,
   type Job,
   type JobCost,
+  jobCount,
   type Rates,
   type Savings,
   type ScenarioScope,
   scopeJobs,
+  scopeReach,
 } from './jobs.ts'
 
 export type FreezeRule = {
@@ -132,20 +133,24 @@ function subtractCost(cost: JobCost, part: JobCost): JobCost {
 }
 
 /** A hiring freeze's scope and the share of it kept filled each projected year. */
-export type FilledFreeze = { scope: Set<FallRecord>; kept: number[] }
+export type FilledFreeze = { reaches: (job: Job) => boolean; kept: number[] }
 
 /** One freeze's scope and, per projected year, its share and what it has saved so far; `jobs` accumulates fractional positions. */
 type Tracker = {
   rateBasisPoints: number
-  scope: Set<FallRecord>
+  reaches: (job: Job) => boolean
   years: { share: number; savings: Savings }[]
 }
 
-/** Adds one job's savings in each year's pay to each freeze covering it, each freeze on what the earlier ones left. */
-function saveJob(yearCosts: JobCost[], covering: Tracker[]): void {
+/** Adds one job's savings in each year's pay to each freeze covering it, each freeze on what the earlier ones left; `positions` is the jobs it stands for. */
+function saveJob(
+  yearCosts: JobCost[],
+  covering: Tracker[],
+  positions: number,
+): void {
   yearCosts.forEach((yearCost, year) => {
     let left = yearCost
-    let held = 1
+    let held = positions
     for (const tracker of covering) {
       const entry = tracker.years[year]
       if (!entry) continue
@@ -167,14 +172,14 @@ export function freezeSavings(options: {
   rates: Rates
   projectedYears: number
   /** Each projected year's pay over a job's census pay, scaled by `BASIS` to the power of the year. */
-  payGrowthOf: (record: FallRecord) => bigint[]
+  payGrowthOf: (job: Job) => bigint[]
 }): { results: FreezeResult[]; filled: FilledFreeze[] } {
   const { census, history, jobs, rates, projectedYears } = options
   const trackers: Tracker[] = options.freezes.map((freeze) => {
     const rateBasisPoints = departureRate(history, freeze.scope)
     return {
       rateBasisPoints,
-      scope: scopeJobs(census, freeze.scope),
+      reaches: scopeReach(census, freeze.scope),
       years: Array.from({ length: projectedYears }, (_, index) => ({
         share: freezeShare(freeze, rateBasisPoints, index + 1),
         savings: emptySavings(rates),
@@ -183,16 +188,17 @@ export function freezeSavings(options: {
   })
   for (const job of jobs) {
     if (job.isRemoved) continue
-    const covering = trackers.filter(({ scope }) => scope.has(job.record))
+    const covering = trackers.filter(({ reaches }) => reaches(job))
     if (covering.length === 0) continue
     const cost = costOf(job, rates)
     saveJob(
       options
-        .payGrowthOf(job.record)
+        .payGrowthOf(job)
         .map((product, index) =>
           mapCost(cost, (cents) => growCents(cents, product, index + 1)),
         ),
       covering,
+      jobCount(job),
     )
   }
   return {
@@ -204,8 +210,8 @@ export function freezeSavings(options: {
         jobs: Math.round(savings.jobs),
       })),
     })),
-    filled: trackers.map(({ scope, years }) => ({
-      scope,
+    filled: trackers.map(({ reaches, years }) => ({
+      reaches,
       kept: years.map(({ share }) => 1 - share / BASIS),
     })),
   }

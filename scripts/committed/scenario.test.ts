@@ -82,12 +82,15 @@ const FY26 = BUDGETS.find(
   ({ fiscalYear }) => fiscalYear === FALL_2025.fiscalYear,
 )
 if (!FY26) throw new Error('The budget Fall 2025 is joined to is not loaded')
-const SHARES_2025 = egShares(FALL_2025, FY26)
+const SHARES_2025 = egShares(FALL_2025, FY26, [])
 const FY27_RATES = ratesFor(RATES, 2027)
 
-/** A Fall 2025 job's FY27 raise, read straight from its raise row. */
+/** A Fall 2025 job's FY27 raise, read straight from its raise row; temporaries are in none. */
 function firstRaiseOf(job: Job): number {
-  const row = raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
+  const row =
+    job.kind === 'census'
+      ? raiseRowOf(job.record, 2025, trendGroupOf(job.record, 2025))
+      : null
   return RATE_OF_ROW.get(row) ?? PROJECTED_RAISE_BASIS_POINTS
 }
 
@@ -176,6 +179,7 @@ function runFall2025(rules: Rule[], baselineIndex = 0) {
   if (!baseline) throw new Error(`No baseline ${baselineIndex}`)
   const options = {
     census: FALL_2025,
+    temps: [],
     censusFiscalYear: fiscalYearOf(FALL_2025_DATE),
     fiscalYears: PROJECTION.fiscalYears,
   }
@@ -287,8 +291,8 @@ test('question 4: a one-year classified freeze at 10.33% turnover leaves 189 pos
   expect(result.opeFiscalYear).toBe(2027)
   expect(freeze.rateBasisPoints).toBe(1_033)
   // 10.33% of each classified job's E&G cost, in FY27 pay at its raise row's rate.
-  const classified = toJobs(FALL_2025, SHARES_2025).filter(
-    (job) => job.record.kind === 'classified',
+  const classified = toJobs(FALL_2025, SHARES_2025, []).filter(
+    (job) => job.kind === 'census' && job.record.kind === 'classified',
   )
   const directCents = classified.reduce((sum, job) => {
     const { egCents } = costOf(job, FY27_RATES)
@@ -319,7 +323,7 @@ test('questions 15 and 16: a one-year freeze and 5% off pay above $150,000 turn 
   const [freeze] = result.rules
   if (freeze?.kind !== 'freeze') throw new Error('The rule is a freeze')
   // Each job over $150,000 keeps 95% of the part above it; its E&G saving takes the job's FY27 raise.
-  const cut = toJobs(FALL_2025, SHARES_2025).filter(
+  const cut = toJobs(FALL_2025, SHARES_2025, []).filter(
     (job) => job.rateCents > overCents,
   )
   const directCents = cut.reduce((sum, job) => {
@@ -375,7 +379,7 @@ test('question 13: the same stack against state funding $20M below projection le
 })
 
 // Budget figures below match an independent sum of public/data/budget/FY27.json rows.
-test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines and takes its 1,219 census jobs from the other rules', () => {
+test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines and takes its 1,273 census jobs, 54 of them classified temporaries, from the other rules', () => {
   const { result, rows } = runFall2025([
     { kind: 'eliminate', code: '222000' },
     { kind: 'remove', scope: { ...ALL, dept: '222000' } },
@@ -386,7 +390,7 @@ test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines a
       code: '222000',
       name: 'Arts & Sciences, College of',
       isArea: true,
-      jobs: 1_219,
+      jobs: 1_273,
       eg: {
         payCents: 10_721_399_400,
         opeCents: 7_236_959_350,
@@ -459,7 +463,7 @@ test("question 17: a one-year raise freeze saves $18.1M of E&G in FY27, each job
   ])
   const [freeze] = result.rules
   if (freeze?.kind !== 'raises') throw new Error('No raise freeze result')
-  const directCents = toJobs(FALL_2025, SHARES_2025).reduce((sum, job) => {
+  const directCents = toJobs(FALL_2025, SHARES_2025, []).reduce((sum, job) => {
     const { egCents } = costOf(job, FY27_RATES)
     return sum + Math.round((egCents * firstRaiseOf(job)) / 10_000)
   }, 0)

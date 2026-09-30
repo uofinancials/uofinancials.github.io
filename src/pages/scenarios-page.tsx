@@ -119,8 +119,8 @@ function RulesSection({
         Fall {census.year} has {formatCount(result.base.jobs)} jobs a scenario
         can change, costing {formatDollars(result.base.salaryCents)} in salary
         and {formatDollars(result.base.egCents)} in E&G at{' '}
-        {fiscalYearLabel(scenario.firstYear)} rates;{' '}
-        {formatCount(result.temporaries)} classified temporaries are left out.
+        {fiscalYearLabel(scenario.firstYear)} rates; classified temporaries are
+        left out.
       </p>
       <ScenarioSources scenario={scenario} />
     </PageSection>

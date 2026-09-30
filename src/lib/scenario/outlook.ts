@@ -1,4 +1,5 @@
 import { type BudgetYear, fiscalYearLabel } from '../../data/budget.ts'
+import type { FyTempsUnit } from '../../data/fy-temps.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
 import {
@@ -162,6 +163,7 @@ export function outlookRows(options: {
  */
 export function projectScenario(options: {
   census: DepartmentCensus
+  temps: FyTempsUnit[]
   censusFiscalYear: number
   rules: Rule[]
   rates: OpeRates

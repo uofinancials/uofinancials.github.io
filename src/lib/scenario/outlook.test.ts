@@ -32,7 +32,7 @@ const RESULT: ScenarioResult = {
   total: savings(500),
   censusEgByYear: [500, 515],
   eliminated: null,
-  temporaries: 0,
+  temps: null,
   opeFiscalYear: 2027,
   leaveFiscalYear: 2027,
 }
