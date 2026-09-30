@@ -48,12 +48,8 @@ export function unpublishedPayCodes(
 }
 
 function isNeighbour(payCode: string, unit: string): boolean {
-  return (
-    /^\d+$/.test(payCode) &&
-    [-1, 1].some(
-      (step) =>
-        String(Number(payCode) + step).padStart(CODE_WIDTH, '0') === unit,
-    )
+  return [-1, 1].some(
+    (step) => String(Number(payCode) + step).padStart(CODE_WIDTH, '0') === unit,
   )
 }
 

@@ -41,7 +41,8 @@ export const DISTINCT_UNITS: readonly (readonly [string, string])[] = [
   ['632200', '632810'],
 ]
 
-const ALL_ALIASES = [...UNIT_ALIASES, ...PAY_CODE_UNITS]
+/** Every hand-reviewed join: the old codes of a unit, then the pay codes the budget does not publish. */
+export const ALL_ALIASES = [...UNIT_ALIASES, ...PAY_CODE_UNITS]
 
 const SAME_AS = new Map(ALL_ALIASES.map(({ code, sameAs }) => [code, sameAs]))
 
@@ -59,7 +60,8 @@ export function aliasCodesOf(code: string): string[] {
 
 type Department = FallYear['records'][number]['payDepartment']
 
-function foldDepartment(department: Department): Department {
+/** The department with its code replaced by its unit's where a hand review joined them, the published code kept beside it. */
+export function foldDepartment(department: Department): Department {
   const { code } = department
   if (code === null) return department
   const unit = unitCodeOf(code)

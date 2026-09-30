@@ -1,33 +1,22 @@
 import { expect, test } from 'vitest'
 import type { BudgetYear } from '../../src/data/budget.ts'
-import type { FallClassified, FallYear } from '../../src/data/fall.ts'
+import type { FallYear } from '../../src/data/fall.ts'
+import {
+  classifiedJob,
+  census as fallCensus,
+} from '../../src/test/fall-records.ts'
+
 import { findPayCodeCandidates } from './pay-code-candidates.ts'
 
-function job(code: string, departmentName: string): FallClassified {
-  return {
-    kind: 'classified',
-    name: 'Doe, Ann',
-    jobType: 'Primary',
-    jobStatus: 'Active',
-    jobStartDate: '2020-01-01',
-    jobEndDate: null,
-    homeDepartment: { code: null, name: 'Home' },
-    payDepartment: { code, name: departmentName },
-    annualSalaryRateCents: 5_000_000,
-    apptPercent: 100,
-    termOfServiceMonths: 12,
-    eeoCategory: 'Secy/Clerical',
-    sourcePage: 1,
-    jobTitle: 'Office Specialist 2',
-    positionClass: { code: 'E0104', title: 'Office Specialist 2' },
-  }
+const AREA = '222000'
+
+function job(code: string, name: string) {
+  return classifiedJob({ payDepartment: { code, name } })
 }
 
 function census(records: FallYear['records']): FallYear {
-  return { censusDate: '2025-11-01', records }
+  return fallCensus(2025, records)
 }
-
-const AREA = '222000'
 
 function budget(units: Record<string, string>): BudgetYear {
   return {

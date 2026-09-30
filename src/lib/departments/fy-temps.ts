@@ -3,7 +3,7 @@ import type { FallRecord, FallYear } from '../../data/fall.ts'
 import type { FyYear } from '../../data/fy.ts'
 import type { FyTemps, FyTempsUnit } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
-import { unitCodeOf } from '../../data/unit-aliases.ts'
+import { foldDepartment } from '../../data/unit-aliases.ts'
 import { fiscalYearOf, isClassifiedTemp } from '../census/totals.ts'
 import type { TempsFigure } from '../trends/trends.ts'
 import { createFyCodeResolver, type FyDepartmentCode } from './fy-codes.ts'
@@ -61,16 +61,14 @@ function placeTemps(
         `FY department "${record.payDepartment}" beside Fall ${census.year} resolves to no code`,
       )
     }
-    const code = unitCodeOf(resolved.code)
+    const payDepartment = foldDepartment({
+      code: resolved.code,
+      name: record.payDepartment,
+    })
+    const code = payDepartment.code ?? resolved.code
     const unit = units.get(code) ?? {
       code,
-      area: census.assign({
-        payDepartment: {
-          code,
-          name: record.payDepartment,
-          publishedCode: resolved.code,
-        },
-      }).area,
+      area: census.assign({ payDepartment }).area,
       jobs: 0,
       payCents: 0,
     }

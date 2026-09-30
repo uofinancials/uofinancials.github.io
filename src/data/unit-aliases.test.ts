@@ -1,26 +1,24 @@
 import { expect, test } from 'vitest'
 import { census, classifiedJob } from '@/test/fall-records'
 import { AREA, budgetRow, scenarioBudget } from '@/test/scenario-fixtures'
-import { PAY_CODE_UNITS, PAY_CODES_WITHOUT_UNIT } from './pay-code-units'
+import { PAY_CODES_WITHOUT_UNIT } from './pay-code-units'
 import {
+  ALL_ALIASES,
   aliasCodesOf,
   foldBudgetAliases,
   foldUnitAliases,
-  UNIT_ALIASES,
   unitCodeOf,
   unitCodeParam,
 } from './unit-aliases'
 
-const JOINED = [...UNIT_ALIASES, ...PAY_CODE_UNITS].map(({ code }) => code)
+const JOINED = ALL_ALIASES.map(({ code }) => code)
 
 test('joins each code once, never to another alias code, and never lists a joined pay code as having no unit', () => {
   const reviewed = [...JOINED, ...PAY_CODES_WITHOUT_UNIT]
   expect(new Set(reviewed).size).toBe(reviewed.length)
-  expect(
-    [...UNIT_ALIASES, ...PAY_CODE_UNITS].filter(({ sameAs }) =>
-      JOINED.includes(sameAs),
-    ),
-  ).toEqual([])
+  expect(ALL_ALIASES.filter(({ sameAs }) => JOINED.includes(sameAs))).toEqual(
+    [],
+  )
 })
 
 test('counts a joined pay code under its budget unit, in a URL search param too', () => {

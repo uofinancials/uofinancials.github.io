@@ -63,8 +63,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     expect(
       findUnitCandidates(falls, budgets).filter(
         ({ codes: [a, b] }) =>
-          unitCodeOf(a) !== unitCodeOf(b) &&
-          !distinctUnits.has(unitPair(a, b).join('|')),
+          unitCodeOf(a) !== unitCodeOf(b) && !distinctUnits.has(`${a}|${b}`),
       ),
     ).toEqual([])
     expect(
@@ -80,22 +79,22 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'every census pay code no budget publishes is joined to a unit or reviewed as having none, as the site reads it',
   () => {
-    const { falls, budgets } = committedData()
-    const folded = {
-      falls: falls.map(foldUnitAliases),
-      budgets: budgets.map(foldBudgetAliases),
-    }
-    const candidates = findPayCodeCandidates(folded.falls, folded.budgets)
+    const committed = committedData()
+    const falls = committed.falls.map(foldUnitAliases)
+    const budgets = committed.budgets.map(foldBudgetAliases)
     const reviewed = new Set(PAY_CODES_WITHOUT_UNIT)
+    const unreviewed = [...unpublishedPayCodes(falls, budgets).keys()].filter(
+      (code) => !reviewed.has(code),
+    )
+    const candidates =
+      unreviewed.length > 0 ? findPayCodeCandidates(falls, budgets) : []
     expect(
-      [...unpublishedPayCodes(folded.falls, folded.budgets).keys()]
-        .filter((code) => !reviewed.has(code))
-        .map((payCode) => ({
-          payCode,
-          units: candidates
-            .filter((candidate) => candidate.payCode === payCode)
-            .map(({ unit }) => unit),
-        })),
+      unreviewed.map((code) => ({
+        code,
+        candidates: candidates
+          .filter(({ payCode }) => payCode === code)
+          .map(({ unit, reason }) => ({ unit, reason })),
+      })),
     ).toEqual([])
   },
   ALL_YEARS_TIMEOUT_MS,
