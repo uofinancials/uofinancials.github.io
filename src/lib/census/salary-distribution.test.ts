@@ -72,10 +72,7 @@ test('percentiles cover primary jobs, temporaries included, and need three of th
   expect(
     buildDistribution([at(1), overload, secondary, temp], 2025).percentiles,
   ).toBeNull()
-  const hourly = classifiedJob({
-    positionClass: { code: 'TS401', title: null },
-    annualSalaryRateCents: 400,
-  })
+  const hourly = { ...temp, annualSalaryRateCents: 400 }
   expect(
     buildDistribution([at(100), at(200), at(300), overload, hourly], 2025)
       .percentiles,
