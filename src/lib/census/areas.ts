@@ -53,12 +53,15 @@ function learnPrefixAreas(
   )
 }
 
+/** A Fall record, or any other record placed by the pay department it resolves to. */
+export type PayDepartmentOf = Pick<FallRecord, 'payDepartment'>
+
 /** An assigner for one census, using the budget year that contains it. */
 export function createAreaAssigner(
   records: FallRecord[],
   orgs: Orgs,
   censusYear: number,
-): (record: FallRecord) => AreaAssignment {
+): (record: PayDepartmentOf) => AreaAssignment {
   const prefixAreas = learnPrefixAreas(records, orgs)
   const handAreas = new Map(
     handAreasFor(censusYear).map(({ code, area }) => [code, area]),

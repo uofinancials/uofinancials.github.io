@@ -19,9 +19,6 @@ export const RATIO_COLUMNS: readonly TrendGroup[] = [
   RATIO_BASE_GROUP,
 ]
 
-/** Their rates are annualised hourly rates, so they have FTE but no spend, and their number swings from year to year, so the index chart leaves them to the table. */
-export const UNPAID_GROUP: TrendGroup = 'Classified temporaries'
-
 /** The groups with a job in the first or the last census; a group with neither has no change to show. */
 export function atEitherEnd(series: TrendSeries[]): TrendSeries[] {
   return series.filter(
@@ -64,9 +61,8 @@ export type IndexedLine = {
 /**
  * Every group in `TREND_GROUPS` order, indexed to the first census, then all
  * jobs as the baseline; a group keeps its place when it has no index, so its
- * color does not move. `hidden` are the lines not drawn: those with no index,
- * and `UNPAID_GROUP`; `unindexed` are those with no index and a job in the
- * range.
+ * color does not move. `hidden` are the lines not drawn, those with no index;
+ * `unindexed` are those of them with a job in the range.
  */
 export function indexedGroups(
   { series, total }: Trends,
@@ -91,7 +87,7 @@ export function indexedGroups(
         isBaseline: true,
       },
     ],
-    hidden: [...new Set([...withoutIndex.map(({ key }) => key), UNPAID_GROUP])],
+    hidden: withoutIndex.map(({ key }) => key),
     unindexed: withoutIndex
       .filter(({ isPresent }) => isPresent)
       .map(({ key }) => key),

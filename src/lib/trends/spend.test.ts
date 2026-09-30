@@ -66,7 +66,7 @@ test('a group with no job at one end counts as no spend there', () => {
   })
 })
 
-test('the change in spend splits into more FTE at the first census’s spend per FTE and the rest, temporaries left out', () => {
+test('the change in spend splits into more FTE at the first census’s spend per FTE and the rest, over the same jobs', () => {
   const split = volumeAndPay(TRENDS)
   expect(split?.changeCents).toBe(1100)
   expect(split?.volumeCents).toBe(300)

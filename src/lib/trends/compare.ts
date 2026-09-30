@@ -2,19 +2,23 @@ import type { CodeTrend, ScopeTrends, SummaryArea } from '../../data/summary.ts'
 import { formatChange, formatList } from '../shared/format.ts'
 import { changeOver, type IndexedLine, indexValues } from './report.ts'
 import { METRIC_INFO, type ReportMetric, type YearRange } from './search.ts'
+import { comparablePoints } from './trends.ts'
 
 /** A scope's totals in each census, the figures the comparison reads. */
 export function totalsOf({ code, name, trends }: ScopeTrends): CodeTrend {
   return { code, name, points: trends.total }
 }
 
+/** Each code's points in the range, comparable across it as `comparablePoints` makes them. */
 export function inRange(
   codes: CodeTrend[],
   { from, to }: YearRange,
 ): CodeTrend[] {
   return codes.map((code) => ({
     ...code,
-    points: code.points.filter(({ year }) => year >= from && year <= to),
+    points: comparablePoints(
+      code.points.filter(({ year }) => year >= from && year <= to),
+    ),
   }))
 }
 

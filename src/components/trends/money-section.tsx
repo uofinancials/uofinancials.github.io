@@ -18,7 +18,7 @@ import {
   spendContributions,
   spendShares,
 } from '@/lib/trends/spend'
-import type { Trends } from '@/lib/trends/trends'
+import { fySource, type Trends } from '@/lib/trends/trends'
 import { widthOf } from '@/lib/utils'
 import { groupColor } from './group-color'
 import { GroupTable } from './group-table'
@@ -153,6 +153,7 @@ export function MoneySection({
       <Sources
         sources={[
           { kind: 'fall-range', ...range, computed: METHOD },
+          ...fySource(trends.total),
           ...scopeSources,
         ]}
       />

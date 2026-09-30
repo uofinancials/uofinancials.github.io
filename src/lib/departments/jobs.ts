@@ -5,11 +5,13 @@ import {
   type FallYear,
   type StaffKind,
 } from '../../data/fall.ts'
+import type { FyTemps } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import {
   type AreaAssignment,
   createAreaAssigner,
   ORG_LEVEL_AREA,
+  type PayDepartmentOf,
 } from '../census/areas.ts'
 import { fiscalYearForCensus } from '../census/totals.ts'
 import {
@@ -19,6 +21,7 @@ import {
   type TrendPoint,
   type Trends,
 } from '../trends/trends.ts'
+import { type TempsScope, tempsByCensus } from './fy-temps.ts'
 
 export const AREA_PLACEMENT_METHOD =
   'An area’s jobs are those whose pay department the site places in it: by UO’s budget hierarchy for the census’s fiscal year, by a department-name prefix every placed department shares, or by hand.'
@@ -29,7 +32,7 @@ export type DepartmentCensus = {
   records: FallRecord[]
   fiscalYear: number
   orgs: BudgetYear['orgs']
-  assign: (record: FallRecord) => AreaAssignment
+  assign: (record: PayDepartmentOf) => AreaAssignment
 }
 
 const joinedCensuses = new WeakMap<
@@ -90,6 +93,8 @@ export type DepartmentYears = {
   yearsWithJobs: number[]
   /** `null` unless the code is an area. */
   placements: AreaPlacement[] | null
+  /** Where the department's classified temporaries' FY pay is summed: its area, or its unit. */
+  tempsScope: TempsScope
 }
 
 export function isAreaCode(
@@ -145,23 +150,29 @@ export function departmentYears(
     placements: isArea
       ? placed.flatMap(({ placement }) => (placement ? [placement] : []))
       : null,
+    tempsScope: isArea ? { kind: 'area', code } : { kind: 'unit', code },
   }
 }
 
 /** The department's jobs over its censuses with jobs. */
 export function departmentTrends(
-  { years, yearsWithJobs }: DepartmentYears,
+  { years, yearsWithJobs, tempsScope }: DepartmentYears,
   kind: StaffKind | 'all',
+  fyTemps: FyTemps,
 ): Trends {
-  return buildTrends(years, {
-    kind,
-    group: null,
-    dept: null,
-    position: null,
-    jobs: null,
-    from: yearsWithJobs[0] ?? 0,
-    to: yearsWithJobs.at(-1) ?? 0,
-  })
+  return buildTrends(
+    years,
+    {
+      kind,
+      group: null,
+      dept: null,
+      position: null,
+      jobs: null,
+      from: yearsWithJobs[0] ?? 0,
+      to: yearsWithJobs.at(-1) ?? 0,
+    },
+    tempsByCensus(fyTemps, tempsScope),
+  )
 }
 
 /** A position class or rank row; spend and median as `measureJobs` gives them. */

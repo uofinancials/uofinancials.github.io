@@ -14,6 +14,9 @@ export const TREND_GROUPS = [
 
 export type TrendGroup = (typeof TREND_GROUPS)[number]
 
+/** The group `trendGroupOf` places every classified temporary in, before any other. */
+export const TEMPS_GROUP: TrendGroup = 'Classified temporaries'
+
 /** Unclassified EEO categories as published in any census 2014-2025, by the group they belong to. */
 export const UNCLASSIFIED_CATEGORY_GROUPS: Record<string, TrendGroup> = {
   Faculty: 'Faculty',
@@ -42,7 +45,7 @@ export function trendGroupOf(
   record: FallRecord,
   censusYear: number,
 ): TrendGroup {
-  if (isClassifiedTemp(record)) return 'Classified temporaries'
+  if (isClassifiedTemp(record)) return TEMPS_GROUP
   if (record.jobType === 'Overload') return 'Overloads'
   if (record.kind === 'classified') return 'Classified staff'
   if (record.oaSalaryGrade === EXECUTIVE_GRADE) return 'Executives'

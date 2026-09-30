@@ -1,5 +1,6 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
+import type { FyTemps } from '../../data/fy-temps.ts'
 import type { FallEntry, Manifest } from '../../data/manifest.ts'
 import { listAreas } from '../census/areas.ts'
 import {
@@ -10,9 +11,15 @@ import {
 import { formatDollars } from '../shared/format.ts'
 import { changeOf } from '../shared/series.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
-import { MIN_JOBS_SHOWN, measureJobs } from '../trends/trends.ts'
+import {
+  comparablePoints,
+  MIN_JOBS_SHOWN,
+  measureJobs,
+  type TrendPoint,
+} from '../trends/trends.ts'
 import { sumBy, unitsOf } from './budget.ts'
 import { placeDepartments } from './codes.ts'
+import { type TempsScope, tempsByCensus } from './fy-temps.ts'
 import type { DepartmentCensus } from './jobs.ts'
 
 /** A census joined to the budget year that names its areas. */
@@ -77,19 +84,28 @@ function unitSum(
 type RowInput = Pick<DepartmentRow, 'code' | 'name' | 'area'> & {
   records: FallRecord[]
   earlier: FallRecord[]
+  temps: TempsScope
 }
 
 function toRow(
   input: RowInput,
-  now: BudgetSums,
-  before: BudgetSums,
+  sums: { now: BudgetSums; before: BudgetSums },
+  years: { now: number; before: number; fyTemps: FyTemps },
 ): DepartmentRow {
   const { code, name, area } = input
-  const figures = measureJobs(input.records)
-  const earlier = measureJobs(input.earlier)
-  const censusChange = (pick: (point: typeof figures) => number | null) =>
-    earlier.jobs >= CHANGE_MIN_JOBS
-      ? changeOf(pick(earlier), pick(figures))
+  const { now, before } = sums
+  const temps = tempsByCensus(years.fyTemps, input.temps)
+  const figures = measureJobs(input.records, temps.get(years.now) ?? null)
+  const [comparedEarlier, compared] = comparablePoints([
+    {
+      year: years.before,
+      ...measureJobs(input.earlier, temps.get(years.before) ?? null),
+    },
+    { year: years.now, ...figures },
+  ])
+  const censusChange = (pick: (point: TrendPoint) => number | null) =>
+    comparedEarlier && compared && comparedEarlier.jobs >= CHANGE_MIN_JOBS
+      ? changeOf(pick(comparedEarlier), pick(compared))
       : null
   const budgetBefore = unitSum(code, before.orgs, before.beginningCents)
   return {
@@ -141,11 +157,15 @@ export type AreaFigure = Pick<
 export function areaFigures(
   census: DepartmentCensus,
   budget: BudgetYear,
+  fyTemps: FyTemps,
 ): AreaFigure[] {
   const totals = sumBy(budget.rows, (row) => row.org)
   const { areaJobs } = placeDepartments(census)
   return placedAreas(census.orgs, areaJobs).map(({ code, name, records }) => {
-    const { jobs, spendCents } = measureJobs(records)
+    const { jobs, spendCents } = measureJobs(
+      records,
+      tempsByCensus(fyTemps, { kind: 'area', code }).get(census.year) ?? null,
+    )
     return {
       code,
       name,
@@ -160,10 +180,14 @@ export function areaFigures(
 export function departmentRows(
   now: TableYear,
   before: TableYear,
+  fyTemps: FyTemps,
 ): { areas: DepartmentRow[]; units: DepartmentRow[] } {
-  const nowSums = toBudgetSums(now.budget)
-  const beforeSums = toBudgetSums(before.budget)
-  const row = (input: RowInput) => toRow(input, nowSums, beforeSums)
+  const sums = {
+    now: toBudgetSums(now.budget),
+    before: toBudgetSums(before.budget),
+  }
+  const years = { now: now.census.year, before: before.census.year, fyTemps }
+  const row = (input: RowInput) => toRow(input, sums, years)
   const earlierByCode = new Map<string | null, FallRecord[]>()
   const earlierByArea = new Map<string | null, FallRecord[]>()
   const add = (
@@ -187,6 +211,7 @@ export function departmentRows(
         ...area,
         area: null,
         earlier: earlierByArea.get(area.code) ?? [],
+        temps: { kind: 'area', code: area.code },
       }),
     ),
     units: units.map((unit) =>
@@ -194,6 +219,7 @@ export function departmentRows(
         ...unit,
         area: areaOf(unit.area, orgs),
         earlier: earlierByCode.get(unit.code) ?? [],
+        temps: { kind: 'unit', code: unit.code },
       }),
     ),
   }

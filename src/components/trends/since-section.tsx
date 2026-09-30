@@ -15,7 +15,7 @@ import {
 } from '@/lib/shared/format'
 import { changeOf } from '@/lib/shared/series'
 import { ratioChange } from '@/lib/trends/report'
-import type { TrendPoint } from '@/lib/trends/trends'
+import { fySource, type TrendPoint } from '@/lib/trends/trends'
 
 const CHANGE_CLASS = 'block font-medium tabular-nums'
 
@@ -98,6 +98,7 @@ export function SinceSection({
             to: last.year,
             computed: `${SPEND_METHOD} Changes are the Fall ${last.year} figure over the Fall ${first.year} figure, less one; the ratio is as in “Which groups grew?”.`,
           },
+          ...fySource([first, last]),
           ...scopeSources,
         ]}
       />

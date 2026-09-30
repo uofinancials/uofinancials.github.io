@@ -6,7 +6,7 @@ import type { OpeRates } from '../../data/ope.ts'
 import type { Projection } from '../../data/outlook.ts'
 import { runRateFor } from '../budget/outlook.ts'
 import type { AreaAssignment } from '../census/areas.ts'
-import { isClassifiedTemp, summarize } from '../census/totals.ts'
+import { isClassifiedTemp, summarize, sumSpendCents } from '../census/totals.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import type { AreaFigure } from '../departments/table.ts'
 import { sortJobs } from '../people/list.ts'
@@ -40,6 +40,8 @@ export function headlineFigures(options: {
   budget: BudgetYear
   projection: Projection
   censusFiscalYear: number
+  /** Classified temporaries' FY pay for the census, 0 where its fiscal year publishes none. */
+  tempsPayCents: number
 }): HeadlineFigures {
   const { records, budget } = options
   return {
@@ -48,8 +50,9 @@ export function headlineFigures(options: {
       (sum, row) => sum + row.totalExpenditureBudgetCents,
       0,
     ),
-    spendCents: summarize(records.filter((record) => !isClassifiedTemp(record)))
-      .spendCents,
+    spendCents:
+      sumSpendCents(records.filter((record) => !isClassifiedTemp(record))) +
+      options.tempsPayCents,
     people: summarize(records).people,
   }
 }

@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../../src/data/budget.ts'
 import { fallYearSchema } from '../../src/data/fall.ts'
+import { fyTempsSchema } from '../../src/data/fy-temps.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
@@ -18,6 +19,7 @@ import {
 import { buildDistribution } from '../../src/lib/census/salary-distribution.ts'
 import { isClassifiedTemp, summarize } from '../../src/lib/census/totals.ts'
 import { departmentBudget } from '../../src/lib/departments/budget.ts'
+import { tempsByCensus } from '../../src/lib/departments/fy-temps.ts'
 import {
   departmentYears,
   toDepartmentCensuses,
@@ -50,6 +52,7 @@ import {
 } from '../scrape/budget/file.ts'
 import {
   budgetDataPath,
+  FY_TEMPS_DATA_PATH,
   fallDataPath,
   MANIFEST_PATH,
   OPE_DATA_PATH,
@@ -85,6 +88,27 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   ALL_YEARS_TIMEOUT_MS,
 )
 
+function readFyTemps() {
+  return fyTempsSchema.parse(readJson(FY_TEMPS_DATA_PATH))
+}
+
+/** Every census's trends for all of UO, with classified temporaries' FY pay, as the summary builds them. */
+function allOfUo(years: ReturnType<typeof loadFallCensuses>) {
+  return buildTrends(
+    years,
+    {
+      kind: 'all',
+      group: null,
+      dept: null,
+      position: null,
+      jobs: null,
+      from: 2014,
+      to: 2025,
+    },
+    tempsByCensus(readFyTemps(), { kind: 'all' }),
+  )
+}
+
 function loadFallCensuses() {
   const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
   return manifest.fall.map(({ year }) => ({
@@ -103,15 +127,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ),
     )
     expect(yearsWithoutClass.map(({ year }) => year)).toEqual([2015])
-    const { series, total } = buildTrends(years, {
-      kind: 'all',
-      group: null,
-      dept: null,
-      position: null,
-      jobs: null,
-      from: 2014,
-      to: 2025,
-    })
+    const { series, total } = allOfUo(years)
     const figures = (year: number) =>
       Object.fromEntries(
         series.map(({ key, points }) => {
@@ -127,9 +143,9 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Classified staff': [5_792_903_943, 151_351],
       Overloads: [709_844_782, 39_649],
       'Category not published': [null, null],
-      'Classified temporaries': [null, 20_541],
+      'Classified temporaries': [null, null],
     })
-    expect(figures(2015)['Classified temporaries']).toEqual([null, 34_406])
+    expect(figures(2015)['Classified temporaries']).toEqual([null, null])
     expect(
       series
         .find(({ key }) => key === 'Executives')
@@ -142,6 +158,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Unclassified staff': [1_538_953_523, 17_764],
       'Classified staff': [10_912_994_388, 177_208],
       Overloads: [451_592_066, 42_175],
+      'Classified temporaries': [566_438_100, 11_159],
     })
     expect(
       total
@@ -155,15 +172,19 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   'an opened group leaves spend and median blank on a point under three jobs',
   () => {
     const years = loadFallCensuses()
-    const opened = buildTrends(years, {
-      kind: 'all',
-      group: 'Unclassified staff',
-      dept: null,
-      position: null,
-      jobs: null,
-      from: 2014,
-      to: 2025,
-    }).series
+    const opened = buildTrends(
+      years,
+      {
+        kind: 'all',
+        group: 'Unclassified staff',
+        dept: null,
+        position: null,
+        jobs: null,
+        from: 2014,
+        to: 2025,
+      },
+      new Map(),
+    ).series
     const pointOf = (key: string, year: number) =>
       opened
         .find((line) => line.key === key)
@@ -389,6 +410,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     })
     expect(arts.placements?.[0]).toMatchObject({ year: 2014, fiscalYear: 2021 })
   },
+  ALL_YEARS_TIMEOUT_MS,
 )
 
 test.skipIf(!existsSync(MANIFEST_PATH))(

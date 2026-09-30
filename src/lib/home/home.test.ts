@@ -55,6 +55,7 @@ test('the headlines are the run rate after the census, the summed budget, and th
       budget,
       projection: TEST_PROJECTION,
       censusFiscalYear: 2026,
+      tempsPayCents: 0,
     }),
   ).toEqual({
     runRate: { fiscalYear: 2027, cents: -1_000 },
@@ -160,7 +161,7 @@ test('an area sums its units’ budget and its placed jobs, and each job’s pla
   ]
   const census = toDepartmentCensus({ year: 2025, records }, budget)
   // Two jobs are under the three a spend needs.
-  expect(areaFigures(census, budget)).toEqual([
+  expect(areaFigures(census, budget, { years: [] })).toEqual([
     {
       code: AREA,
       name: 'Arts & Sciences',

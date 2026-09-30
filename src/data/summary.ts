@@ -13,6 +13,13 @@ const trendPointSchema = z.strictObject({
   spendCents: cents.nullable(),
   fteHundredths: count.nullable(),
   medianRateCents: cents.nullable(),
+  fyTemps: z
+    .strictObject({
+      fiscalYear: year,
+      otherSpendCents: cents.nullable(),
+      otherFteHundredths: count.nullable(),
+    })
+    .optional(),
 })
 
 const trendsSchema = z.strictObject({

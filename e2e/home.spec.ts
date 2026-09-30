@@ -119,6 +119,11 @@ test('the sources page lists every committed dataset', async ({ page }) => {
   for (let year = 21; year <= 27; year++) {
     await expect(page.locator(`#budget-fy${year}`)).toContainText(`FY${year}`)
   }
+  for (let year = 2021; year <= 2026; year++) {
+    await expect(page.locator(`#fy-${year}`)).toContainText(
+      `FY${year - 1}-${String(year).slice(2)}`,
+    )
+  }
   await expect(page.locator('#rates')).toContainText('Blended-OPE-Rate-History')
   await expect(
     page.getByRole('link', { name: 'United Academics CBA 2025-2027' }),

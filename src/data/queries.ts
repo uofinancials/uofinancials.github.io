@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { fiscalYearLabel } from './budget.ts'
+import { fyTempsSchema } from './fy-temps.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
@@ -41,6 +42,7 @@ export const opeRatesQuery = dataQuery('ope.json', opeRatesSchema)
 export const raiseTermsQuery = dataQuery('raises.json', raiseTermsSchema)
 export const outlookQuery = dataQuery('outlook.json', outlookSchema)
 export const summaryQuery = dataQuery('summary.json', summarySchema)
+export const fyTempsQuery = dataQuery('fy-temps.json', fyTempsSchema)
 
 export function fallYearQuery(year: number) {
   return dataQuery(`fall/${year}.json`, foldedFallYearSchema)

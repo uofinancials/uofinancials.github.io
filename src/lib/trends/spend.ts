@@ -1,5 +1,5 @@
 import { changeOf } from '../shared/series.ts'
-import { ALL_JOBS, atEitherEnd, pointOf, UNPAID_GROUP } from './report.ts'
+import { ALL_JOBS, atEitherEnd } from './report.ts'
 import type { TrendPoint, TrendSeries, Trends } from './trends.ts'
 
 /** A point's spend, 0 when it has no job; `null` when its jobs are too few to show spend. */
@@ -77,19 +77,12 @@ export type VolumeAndPay = {
   changeCents: number
 }
 
-/** All FTE but `UNPAID_GROUP`'s, exactly the paid jobs' because `trendGroupOf` places every classified temporary in that group first. */
-function paidFte({ series, total }: Trends, index: number): number | null {
-  const all = total[index]?.fteHundredths ?? null
-  if (all === null) return null
-  return all - (pointOf(series, UNPAID_GROUP, index)?.fteHundredths ?? 0)
-}
-
-/** The change in all spend from the first census to the last, split into more FTE at the first census's spend per FTE and the rest; FTE leaves out classified temporaries, as spend does. `null` when either census lacks spend or FTE. */
-export function volumeAndPay(trends: Trends): VolumeAndPay | null {
-  const firstCents = trends.total[0]?.spendCents ?? null
-  const lastCents = trends.total.at(-1)?.spendCents ?? null
-  const firstFte = paidFte(trends, 0)
-  const lastFte = paidFte(trends, trends.total.length - 1)
+/** The change in all spend from the first census to the last, split into more FTE at the first census's spend per FTE and the rest; spend and FTE cover the same jobs. `null` when either census lacks spend or FTE. */
+export function volumeAndPay({ total }: Trends): VolumeAndPay | null {
+  const firstCents = total[0]?.spendCents ?? null
+  const lastCents = total.at(-1)?.spendCents ?? null
+  const firstFte = total[0]?.fteHundredths ?? null
+  const lastFte = total.at(-1)?.fteHundredths ?? null
   if (
     firstCents === null ||
     lastCents === null ||

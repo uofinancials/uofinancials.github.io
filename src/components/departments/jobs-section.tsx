@@ -33,8 +33,7 @@ import {
   METRIC_OPTIONS,
   STAFF_KIND_OPTIONS,
 } from '@/lib/trends/search'
-import type { Trends } from '@/lib/trends/trends'
-import { MIN_JOBS_SHOWN } from '@/lib/trends/trends'
+import { fySource, MIN_JOBS_SHOWN, type Trends } from '@/lib/trends/trends'
 import { NUMBER_CELL } from '@/lib/utils'
 
 const STAFF_KINDS = ['unclassified', 'classified'] as const
@@ -42,7 +41,7 @@ const KIND_TITLES = {
   unclassified: 'Unclassified jobs by rank',
   classified: 'Classified jobs by position class',
 } as const
-const COMPUTED = `${SPEND_METHOD} FTE is each job appointment percent, summed, temporaries included. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Groups are those of the Trends page. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Classes with fewer than ${MIN_JOBS_SHOWN} jobs are shown together.`
+const COMPUTED = `${SPEND_METHOD} FTE is each job’s appointment percent, summed, and covers the jobs spend covers. A class or rank row leaves classified temporaries’ spend and FTE blank, since their pay is known by unit, not by job. Median salary rate is the median published annual salary rate of primary jobs, temporaries left out. Groups are those of the Trends page. Spend is left blank for any figure covering fewer than ${MIN_JOBS_SHOWN} paid jobs, and median for fewer than ${MIN_JOBS_SHOWN} primary jobs. Classes with fewer than ${MIN_JOBS_SHOWN} jobs are shown together.`
 const AREA_NOTE = `${AREA_PLACEMENT_METHOD} The table shows how many were placed each way.`
 
 function ClassTable({ kind, rows }: { kind: StaffKind; rows: ClassRow[] }) {
@@ -223,6 +222,7 @@ export function DepartmentJobsSection({
               to: last,
               computed: COMPUTED,
             },
+            ...fySource(trends.total),
           ]}
         />
       )}
