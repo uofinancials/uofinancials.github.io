@@ -1,12 +1,32 @@
 import { expect, test } from 'vitest'
 import { census, classifiedJob } from '@/test/fall-records'
 import { AREA, budgetRow, scenarioBudget } from '@/test/scenario-fixtures'
+import { PAY_CODES_WITHOUT_UNIT } from './pay-code-units'
 import {
+  ALL_ALIASES,
   aliasCodesOf,
   foldBudgetAliases,
   foldUnitAliases,
   unitCodeOf,
+  unitCodeParam,
 } from './unit-aliases'
+
+const JOINED = ALL_ALIASES.map(({ code }) => code)
+
+test('joins each code once, never to another alias code, and never lists a joined pay code as having no unit', () => {
+  const reviewed = [...JOINED, ...PAY_CODES_WITHOUT_UNIT]
+  expect(new Set(reviewed).size).toBe(reviewed.length)
+  expect(ALL_ALIASES.filter(({ sameAs }) => JOINED.includes(sameAs))).toEqual(
+    [],
+  )
+})
+
+test('counts a joined pay code under its budget unit, in a URL search param too', () => {
+  expect(unitCodeOf('223500')).toBe('223501')
+  expect(aliasCodesOf('223501')).toEqual(['223500'])
+  expect(unitCodeParam.parse(223500)).toBe('223501')
+  expect(unitCodeParam.parse('223501')).toBe('223501')
+})
 
 const JSMA_ALIAS = '530000'
 const JSMA = '531111'
@@ -14,7 +34,7 @@ const JSMA = '531111'
 test('unitCodeOf gives an alias code its unit code and leaves any other code alone', () => {
   expect(unitCodeOf(JSMA_ALIAS)).toBe(JSMA)
   expect(unitCodeOf(JSMA)).toBe(JSMA)
-  expect(aliasCodesOf(JSMA)).toEqual([JSMA_ALIAS])
+  expect(aliasCodesOf(JSMA)).toContain(JSMA_ALIAS)
 })
 
 test('folds alias pay and home department codes and keeps the published names', () => {

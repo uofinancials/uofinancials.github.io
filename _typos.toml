@@ -1,2 +1,2 @@
 [files]
-extend-exclude = ["public/data/", "src/data/person-aliases.ts"]
+extend-exclude = ["public/data/", "src/data/person-aliases.ts", "src/data/pay-code-units.ts"]

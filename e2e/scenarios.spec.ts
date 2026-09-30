@@ -138,7 +138,7 @@ test('rules are added, edited, moved, and removed in place, and held in the link
   )
 })
 
-test('an elimination saves a unit’s FY27 E&G lines, notes a partial census match, and is held in the link', async ({
+test('an elimination saves a unit’s FY27 E&G lines, counts the census jobs of the pay code joined to it, and is held in the link', async ({
   page,
 }) => {
   await page.goto('/scenarios')
@@ -151,14 +151,14 @@ test('an elimination saves a unit’s FY27 E&G lines, notes a partial census mat
     .selectOption({ label: 'CAS Mathematics (223501)' })
   const row = page.getByRole('row', { name: /^1\. CAS Mathematics \(223501\)/ })
   await expect(row.getByRole('cell')).toHaveText([
-    '0',
+    '63',
     '$7,054,153',
     '$4,512,969',
     '$139,436',
     '$11,706,558',
     '$11,826,279',
   ])
-  await expect(row).toContainText('under other codes')
+  await expect(row).not.toContainText('under other codes')
   await expect(page.getByRole('main')).toContainText(
     'FY27 budget as of posting period 2',
   )

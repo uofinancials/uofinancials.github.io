@@ -21,7 +21,7 @@ import {
 import { fyPaySource, fyPayYears } from '@/lib/trends/trends'
 
 const PLACEMENT_NOTE =
-  'Areas and units are the budget’s level-3 and level-5 organisations. Pay departments the budget does not publish are placed in an area by a department-name prefix, or by hand, as on the overview.'
+  'Areas and units are the budget’s level-3 and level-5 organisations. A pay department the budget does not publish is counted in the unit this site joins it to by hand; one joined to no unit is listed on its own, placed in an area by a department-name prefix, or by hand, as on the overview.'
 const LEVEL_OPTIONS = [
   ['areas', 'Colleges and VP areas'],
   ['units', 'Units and pay departments'],

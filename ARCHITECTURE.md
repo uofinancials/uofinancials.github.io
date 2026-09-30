@@ -119,8 +119,9 @@ flowchart LR
   page's view, navigation that loads the next view first, and the viewport
   width.
 - `src/data` - the schemas and types of the committed data files, the queries
-  that fetch and parse them, the hand-reviewed unit and person alias tables,
-  with the unit alias fold every Fall and budget year is read through, and the
+  that fetch and parse them, the hand-reviewed unit and person alias tables and
+  the hand-reviewed join of pay codes the budget does not publish to their
+  units, with the fold every Fall and budget year is read through, and the
   hand-reviewed codes of FY department names no census or budget resolves.
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
@@ -166,12 +167,14 @@ flowchart LR
 - `scripts/scrape/budget` - the budget step: the workbook links on the Budget
   Reports page, and each workbook as a typed budget year.
 - `scripts/scrape/rates` - the rates step: the OPE rate pages as typed rates.
-- `scripts/aliases` - the finders of department codes that may name one unit,
-  and of FY department names no census or budget resolves, with their evidence.
+- `scripts/aliases` - the finders of department codes that may name one unit, of
+  the budget units a pay code the budget does not publish may pay for, and of FY
+  department names no census or budget resolves, with their evidence.
 - `scripts/committed` - checks of the committed data files, and of the figures
   derived from them, against their sources, that every unit and name pair the
-  alias finders offer has been reviewed, and that every FY department name
-  resolves to a code.
+  alias finders offer has been reviewed, that every pay code the budget does not
+  publish is joined to a unit or reviewed as having none, and that every FY
+  department name resolves to a code.
 
 ### End-to-end tests (`e2e/`)
 
@@ -230,7 +233,7 @@ flowchart LR
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, for an area its units in the department
   table and how its jobs were placed, the codes joined to it, and links to a
-  scenario eliminating it and to its pay changes, with an alias code leading to
+  scenario eliminating it and to its pay changes, with a joined code leading to
   its unit; driven by `src/lib/departments` over every Fall and budget year and
   temporaries' FY pay by unit, and the outlook file for the scenario's budget
   year.

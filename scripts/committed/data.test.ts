@@ -76,14 +76,14 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       expect(year.records.length).toBe(expected)
       return year
     })
-    expect(findPersonLinks(years)).toHaveLength(53_328)
+    expect(findPersonLinks(years)).toHaveLength(53_509)
     const people = indexPeople(years)
     const runs = people.flatMap((person) => person.runs)
     expect(people).toHaveLength(15_644)
-    expect(runs).toHaveLength(19_144)
+    expect(runs).toHaveLength(18_963)
     const linked = runs.filter(({ isLinked }) => isLinked)
-    expect(linked).toHaveLength(12_992)
-    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(12_992)
+    expect(linked).toHaveLength(12_939)
+    expect(linked.filter((run) => runCards(run).runChange)).toHaveLength(12_939)
   },
   ALL_YEARS_TIMEOUT_MS,
 )
@@ -158,7 +158,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       'Unclassified staff': [1_538_953_523, 17_764],
       'Classified staff': [10_912_994_388, 177_208],
       Overloads: [451_592_066, 42_175],
-      'Classified temporaries': [566_438_100, 11_159],
+      'Classified temporaries': [566_438_100, 11_157],
     })
     expect(
       total
@@ -328,18 +328,18 @@ function readDepartmentCensuses() {
 
 /** Each census's jobs by how they are placed, classified temporaries included. */
 const PLACEMENT_BASES = {
-  2014: { published: 4_589, name: 1_220, hand: 302, unassigned: 0 },
-  2015: { published: 4_927, name: 1_379, hand: 357, unassigned: 0 },
-  2016: { published: 4_812, name: 1_447, hand: 283, unassigned: 0 },
-  2017: { published: 4_905, name: 1_557, hand: 141, unassigned: 0 },
-  2018: { published: 5_143, name: 1_607, hand: 142, unassigned: 0 },
-  2019: { published: 5_123, name: 1_485, hand: 220, unassigned: 10 },
-  2020: { published: 4_949, name: 1_499, hand: 226, unassigned: 7 },
-  2021: { published: 4_465, name: 1_483, hand: 189, unassigned: 8 },
-  2022: { published: 4_659, name: 1_603, hand: 178, unassigned: 10 },
-  2023: { published: 4_889, name: 1_870, hand: 184, unassigned: 0 },
-  2024: { published: 4_896, name: 1_901, hand: 187, unassigned: 0 },
-  2025: { published: 4_896, name: 1_746, hand: 198, unassigned: 0 },
+  2014: { published: 5_747, name: 290, hand: 74, unassigned: 0 },
+  2015: { published: 6_243, name: 350, hand: 70, unassigned: 0 },
+  2016: { published: 6_097, name: 384, hand: 61, unassigned: 0 },
+  2017: { published: 6_238, name: 355, hand: 10, unassigned: 0 },
+  2018: { published: 6_465, name: 389, hand: 38, unassigned: 0 },
+  2019: { published: 6_400, name: 375, hand: 53, unassigned: 10 },
+  2020: { published: 6_200, name: 405, hand: 69, unassigned: 7 },
+  2021: { published: 5_692, name: 384, hand: 61, unassigned: 8 },
+  2022: { published: 5_942, name: 421, hand: 77, unassigned: 10 },
+  2023: { published: 6_260, name: 598, hand: 85, unassigned: 0 },
+  2024: { published: 6_349, name: 524, hand: 111, unassigned: 0 },
+  2025: { published: 6_297, name: 439, hand: 104, unassigned: 0 },
 }
 
 test.skipIf(!existsSync(MANIFEST_PATH))(
@@ -356,7 +356,10 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       const handCodes = new Set(
         census.records
           .filter((record) => census.assign(record).basis === 'hand')
-          .map((record) => record.payDepartment.code),
+          .flatMap(({ payDepartment: { code, publishedCode } }) => [
+            code,
+            publishedCode,
+          ]),
       )
       const rows = handAreasFor(census.year)
       const codes = new Set(rows.map(({ code }) => code))
@@ -543,13 +546,13 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     )
     const pairs = continuingPairs(years)
     const [all] = payChangeTrends(pairs, [2024], null)
-    expect(all?.points[0]?.pairs).toBe(5_197)
+    expect(all?.points[0]?.pairs).toBe(5_203)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)
     expect(changeCounts(pairs, [2024])[0]).toMatchObject({
-      unclassified: 3_355,
-      rankChanged: 170,
+      unclassified: 3_359,
+      rankChanged: 171,
       rankUnpublished: 0,
-      classified: 1_842,
+      classified: 1_844,
       classChanged: 59,
     })
     const raises = raiseTermsSchema.parse(readJson(RAISES_DATA_PATH))
@@ -564,11 +567,11 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ]),
     )
     expect(rowsByLabel).toMatchObject({
-      'SEIU 503': [1_516, '0.1083', 661],
+      'SEIU 503': [1_517, '0.1083', 661],
       'United Academics, tenure-related': [758, '0.0790', 790],
-      'United Academics, pro tem, visiting, and retired': [188, '0.0659', 659],
+      'United Academics, pro tem, visiting, and retired': [191, '0.0659', 659],
       'Officers of Administration': [1_370, '0.0300', 300],
     })
-    expect(comparison.unplaced).toBe(451)
+    expect(comparison.unplaced).toBe(452)
   },
 )

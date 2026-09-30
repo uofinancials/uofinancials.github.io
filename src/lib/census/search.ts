@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import { type BudgetYear, orgCodeParam } from '../../data/budget.ts'
+import type { BudgetYear } from '../../data/budget.ts'
 import { type FallRecord, staffKindSchema } from '../../data/fall.ts'
+import { unitCodeParam } from '../../data/unit-aliases.ts'
 import { describeCode } from '../departments/codes.ts'
 import { type DepartmentCensus, departmentYears } from '../departments/jobs.ts'
 import { TREND_GROUPS } from './groups.ts'
@@ -12,7 +13,7 @@ export const censusSearchSchema = z.object({
   group: z.enum(TREND_GROUPS).optional().catch(undefined),
   kind: staffKindSchema.optional().catch(undefined),
   term: z.literal(TERMS).optional().catch(undefined),
-  dept: orgCodeParam.optional().catch(undefined),
+  dept: unitCodeParam.optional().catch(undefined),
   position: z.string().min(1).optional().catch(undefined),
 })
 

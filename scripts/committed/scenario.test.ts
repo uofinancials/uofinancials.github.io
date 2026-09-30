@@ -405,18 +405,19 @@ test('question 12: eliminating Arts & Sciences saves $184.2M of FY27 E&G lines a
   expect(rows[1]?.savingsCents).toBe(18_421_006_950)
 })
 
-test('a unit the census files under another code is partly matched; one it files under its own is not', () => {
+test('a unit counts the jobs of the pay codes joined to it; one the census still pays under other codes is partly matched', () => {
   const { result } = runFall2025([
     { kind: 'eliminate', code: '223501' },
     { kind: 'eliminate', code: '222050' },
+    { kind: 'eliminate', code: '481100' },
   ])
   expect(result.rules).toMatchObject([
     {
       name: 'CAS Mathematics',
-      jobs: 0,
+      jobs: 63,
       egCents: 1_170_655_800,
       allFundsCents: 1_182_627_900,
-      isPartlyMatched: true,
+      isPartlyMatched: false,
     },
     {
       name: 'CAS English',
@@ -425,6 +426,7 @@ test('a unit the census files under another code is partly matched; one it files
       allFundsCents: 889_222_100,
       isPartlyMatched: false,
     },
+    { name: "Ath Men's Football", jobs: 0, isPartlyMatched: true },
   ])
 })
 

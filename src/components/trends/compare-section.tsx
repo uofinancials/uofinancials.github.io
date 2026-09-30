@@ -212,7 +212,7 @@ export function CompareSection({
           {
             kind: 'fall-range',
             ...range,
-            computed: `${SPEND_METHOD} Each line is its figure in each census over its figure in Fall ${range.from}, times 100; changes are the last census’s figure over the first’s, less one. A unit’s jobs are those paid under its code, so a unit that took over another’s jobs shows it as growth.`,
+            computed: `${SPEND_METHOD} Each line is its figure in each census over its figure in Fall ${range.from}, times 100; changes are the last census’s figure over the first’s, less one. A unit’s jobs are those paid under its code or under a code this site joins to it by hand, so a unit that took over another’s jobs shows it as growth.`,
           },
           ...fySource(
             [all, ...lines, ...listed].flatMap(({ points }) => points),

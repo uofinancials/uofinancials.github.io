@@ -64,8 +64,8 @@ function scopeBuilder(
  * departments as that census's department index lists them: jobs by group in
  * every census, and continuing jobs' median pay change by group for every
  * pair. An area's jobs and pairs are those each census places in it, and a
- * unit's those paid under its code, as their department pages count them; a
- * pair belongs where its earlier job is.
+ * unit's those paid under its code or a code joined to it, as their department
+ * pages count them; a pair belongs where its earlier job is.
  */
 export function areaTrends(
   censuses: DepartmentCensus[],

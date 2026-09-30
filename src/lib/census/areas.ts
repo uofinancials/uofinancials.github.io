@@ -71,10 +71,10 @@ export function createAreaAssigner(
     if (published) return { area: published, basis: 'published' }
     const byName = prefixAreas.get(namePrefix(payDepartment.name))
     if (byName) return { area: byName, basis: 'name' }
+    const { code, publishedCode } = payDepartment
     const byHand =
-      payDepartment.code === null
-        ? undefined
-        : handAreas.get(payDepartment.code)
+      (publishedCode && handAreas.get(publishedCode)) ||
+      (code && handAreas.get(code))
     if (byHand) return { area: byHand, basis: 'hand' }
     return { area: null, basis: 'unassigned' }
   }
