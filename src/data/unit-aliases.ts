@@ -1,14 +1,15 @@
-import { type BudgetYear, budgetYearSchema } from './budget.ts'
+import { type BudgetYear, budgetYearSchema, orgCodeParam } from './budget.ts'
 import { type FallYear, fallYearSchema } from './fall.ts'
+import { PAY_CODE_UNITS } from './pay-code-units.ts'
 
-/** A department code the census published for the unit `sameAs` names, joined by hand review. */
+/** A department code the census published for the unit `sameAs` names, joined by hand review; `sameAs` is never itself an alias code. */
 export type UnitAlias = { code: string; sameAs: string }
 
 export const UNIT_ALIASES: readonly UnitAlias[] = [
   // HR Unclassified Personnel Services, HR Operations from Fall 2015
   { code: '210900', sameAs: '441010' },
   // CAS grant operations, under their own code in Fall 2023 only
-  { code: '223993', sameAs: '223861' },
+  { code: '223993', sameAs: '223915' },
   // Tykeson advising, under Arts and Sciences from Fall 2023
   { code: '267801', sameAs: '223951' },
   // Affirmative Action office, under the President from Fall 2018
@@ -24,7 +25,7 @@ export const UNIT_ALIASES: readonly UnitAlias[] = [
   // CBIRT, under Arts and Sciences from Fall 2019
   { code: '632401', sameAs: '223529' },
   // Graduate Internship Program, under Knight Campus from Fall 2019
-  { code: '641511', sameAs: '110511' },
+  { code: '641511', sameAs: '110510' },
 ]
 
 /** Department code pairs a hand review found to be different units, in code order. */
@@ -40,16 +41,18 @@ export const DISTINCT_UNITS: readonly (readonly [string, string])[] = [
   ['632200', '632810'],
 ]
 
-const SAME_AS = new Map(UNIT_ALIASES.map(({ code, sameAs }) => [code, sameAs]))
+const ALL_ALIASES = [...UNIT_ALIASES, ...PAY_CODE_UNITS]
 
-/** The code a unit is published under now: `code` itself, unless a hand review joined it to another. */
+const SAME_AS = new Map(ALL_ALIASES.map(({ code, sameAs }) => [code, sameAs]))
+
+/** The code the site counts a department under: `code` itself, unless a hand review joined it to a unit, as an old code or as a pay code the budget does not publish. */
 export function unitCodeOf(code: string): string {
   return SAME_AS.get(code) ?? code
 }
 
 /** The other codes a hand review joined to this one. */
 export function aliasCodesOf(code: string): string[] {
-  return UNIT_ALIASES.filter(({ sameAs }) => sameAs === code).map(
+  return ALL_ALIASES.filter(({ sameAs }) => sameAs === code).map(
     (alias) => alias.code,
   )
 }
@@ -103,3 +106,6 @@ export const foldedFallYearSchema = fallYearSchema.transform(foldUnitAliases)
 /** A budget year as the site reads it, with unit aliases folded. */
 export const foldedBudgetYearSchema =
   budgetYearSchema.transform(foldBudgetAliases)
+
+/** A department code in a URL search param, as the site counts it: a code joined to a unit becomes the unit's, so an old or shared link still finds its jobs. */
+export const unitCodeParam = orgCodeParam.transform(unitCodeOf)

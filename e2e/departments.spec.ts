@@ -189,6 +189,6 @@ test('an alias code leads to its unit, which names the code it was also publishe
     page.getByRole('heading', { level: 1, name: /Jordan Schnitzer/ }),
   ).toBeVisible()
   await expect(page.getByRole('main')).toContainText(
-    'Also published under code 530000',
+    'Jobs the census pays under codes 530000, 535000 are counted here',
   )
 })

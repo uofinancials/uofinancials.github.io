@@ -10,8 +10,15 @@ export type NamePair = {
   reason: NamePairReason
 }
 
-function jobKey(record: FallRecord): string | null {
-  const { code } = record.payDepartment
+/** Which pay department code identifies a job: the unit the site counts it under, or the code the census printed. */
+type CodeOf = (department: FallRecord['payDepartment']) => string | null
+
+const UNIT_CODE: CodeOf = ({ code }) => code
+const PUBLISHED_CODE: CodeOf = ({ code, publishedCode }) =>
+  publishedCode ?? code
+
+function jobKey(record: FallRecord, codeOf: CodeOf): string | null {
+  const code = codeOf(record.payDepartment)
   return code === null
     ? null
     : [code, record.jobStartDate, titleOf(record), record.jobType].join('|')
@@ -118,11 +125,12 @@ function sharesOneName(a: string, b: string): boolean {
 function uniqueJobs(
   records: FallRecord[],
   otherNames: Set<string>,
+  codeOf: CodeOf,
 ): Map<string, FallRecord> {
   const counts = new Map<string, number>()
   const jobs = new Map<string, FallRecord>()
   for (const record of records) {
-    const key = jobKey(record)
+    const key = jobKey(record, codeOf)
     if (key === null) continue
     counts.set(key, (counts.get(key) ?? 0) + 1)
     if (!otherNames.has(record.name)) jobs.set(key, record)
@@ -130,13 +138,14 @@ function uniqueJobs(
   return new Map([...jobs].filter(([key]) => counts.get(key) === 1))
 }
 
-function sameJobPairs(ordered: FallYear[]): NamePair[] {
+/** Name pairs on one job held by exactly one record in consecutive censuses, the job identified by `codeOf`'s pay department code. */
+function sameJobPairs(ordered: FallYear[], codeOf: CodeOf): NamePair[] {
   return ordered.slice(1).flatMap((next, i) => {
     const current = ordered[i]?.records ?? []
     const currentNames = new Set(current.map(({ name }) => name))
     const nextNames = new Set(next.records.map(({ name }) => name))
-    const earlier = uniqueJobs(current, nextNames)
-    const later = uniqueJobs(next.records, currentNames)
+    const earlier = uniqueJobs(current, nextNames, codeOf)
+    const later = uniqueJobs(next.records, currentNames, codeOf)
     return [...earlier].flatMap(([key, from]): NamePair[] => {
       const to = later.get(key)
       return to && sharesOneName(from.name, to.name) && from.payDepartment.code
@@ -200,14 +209,15 @@ export function namePairKey([earlier, later]: readonly [
   return `${earlier}|${later}`
 }
 
-/** Every pair of names that an unchanged job or a spelling variant suggests is one person, each pair once, under its unchanged-job reason where it has both. */
+/** Every pair of names that an unchanged job, under its unit's code or its published one, or a spelling variant suggests is one person, each pair once, under its unchanged-job reason where it has both. */
 export function findNamePairs(falls: FallYear[]): NamePair[] {
   const ordered = [...falls].sort((a, b) =>
     a.censusDate.localeCompare(b.censusDate),
   )
   const byPair = new Map<string, NamePair>()
   for (const candidate of [
-    ...sameJobPairs(ordered),
+    ...sameJobPairs(ordered, UNIT_CODE),
+    ...sameJobPairs(ordered, PUBLISHED_CODE),
     ...spellingPairs(ordered),
   ]) {
     const key = namePairKey(candidate.names)

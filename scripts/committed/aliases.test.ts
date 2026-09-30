@@ -1,22 +1,28 @@
 import { existsSync } from 'node:fs'
 import { expect, test } from 'vitest'
-import { budgetYearSchema } from '../../src/data/budget.ts'
-import { fallYearSchema } from '../../src/data/fall.ts'
+import { type BudgetYear, budgetYearSchema } from '../../src/data/budget.ts'
+import { type FallYear, fallYearSchema } from '../../src/data/fall.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
+import { PAY_CODES_WITHOUT_UNIT } from '../../src/data/pay-code-units.ts'
 import {
   DISTINCT_PEOPLE,
   PERSON_ALIASES,
 } from '../../src/data/person-aliases.ts'
 import {
   DISTINCT_UNITS,
+  foldBudgetAliases,
   foldUnitAliases,
-  UNIT_ALIASES,
+  unitCodeOf,
 } from '../../src/data/unit-aliases.ts'
 import {
   findNamePairs,
   isLinkedByRule,
   namePairKey,
 } from '../../src/lib/people/name-pairs.ts'
+import {
+  findPayCodeCandidates,
+  unpublishedPayCodes,
+} from '../aliases/pay-code-candidates.ts'
 import { findUnitCandidates, unitPair } from '../aliases/unit-candidates.ts'
 import {
   budgetDataPath,
@@ -28,28 +34,37 @@ import {
 /** Parsing every census and budget and searching them takes several seconds. */
 const ALL_YEARS_TIMEOUT_MS = 20_000
 
+let committed: { falls: FallYear[]; budgets: BudgetYear[] } | undefined
+
+function committedData() {
+  if (committed) return committed
+  const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
+  committed = {
+    falls: manifest.fall.map(({ year }) =>
+      fallYearSchema.parse(readJson(fallDataPath(year))),
+    ),
+    budgets: manifest.budget.map(({ fiscalYear }) =>
+      budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
+    ),
+  }
+  return committed
+}
+
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'every unit candidate in the committed data, and every name pair no rule links in it as the site reads it, has been reviewed',
   () => {
-    const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
-    const falls = manifest.fall.map(({ year }) =>
-      fallYearSchema.parse(readJson(fallDataPath(year))),
+    const { falls, budgets } = committedData()
+    const distinctUnits = new Set(
+      DISTINCT_UNITS.map(([a, b]) => unitPair(a, b).join('|')),
     )
-    const budgets = manifest.budget.map(({ fiscalYear }) =>
-      budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
-    )
-    const reviewedUnits = new Set([
-      ...UNIT_ALIASES.map(({ code, sameAs }) =>
-        unitPair(code, sameAs).join('|'),
-      ),
-      ...DISTINCT_UNITS.map(([a, b]) => unitPair(a, b).join('|')),
-    ])
     const reviewedPeople = new Set(
       [...PERSON_ALIASES, ...DISTINCT_PEOPLE].map(namePairKey),
     )
     expect(
       findUnitCandidates(falls, budgets).filter(
-        ({ codes }) => !reviewedUnits.has(codes.join('|')),
+        ({ codes: [a, b] }) =>
+          unitCodeOf(a) !== unitCodeOf(b) &&
+          !distinctUnits.has(unitPair(a, b).join('|')),
       ),
     ).toEqual([])
     expect(
@@ -57,6 +72,30 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         (pair) =>
           !isLinkedByRule(pair) && !reviewedPeople.has(namePairKey(pair.names)),
       ),
+    ).toEqual([])
+  },
+  ALL_YEARS_TIMEOUT_MS,
+)
+
+test.skipIf(!existsSync(MANIFEST_PATH))(
+  'every census pay code no budget publishes is joined to a unit or reviewed as having none, as the site reads it',
+  () => {
+    const { falls, budgets } = committedData()
+    const folded = {
+      falls: falls.map(foldUnitAliases),
+      budgets: budgets.map(foldBudgetAliases),
+    }
+    const candidates = findPayCodeCandidates(folded.falls, folded.budgets)
+    const reviewed = new Set(PAY_CODES_WITHOUT_UNIT)
+    expect(
+      [...unpublishedPayCodes(folded.falls, folded.budgets).keys()]
+        .filter((code) => !reviewed.has(code))
+        .map((payCode) => ({
+          payCode,
+          units: candidates
+            .filter((candidate) => candidate.payCode === payCode)
+            .map(({ unit }) => unit),
+        })),
     ).toEqual([])
   },
   ALL_YEARS_TIMEOUT_MS,

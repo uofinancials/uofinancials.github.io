@@ -31,7 +31,7 @@ export type EliminationResult = {
   eg: EliminatedLines
   egCents: number
   allFundsCents: number
-  /** A unit whose census pay under its code is under half its budgeted salaries; never an area, nor a code an earlier elimination covered. */
+  /** A unit whose census pay under its code and the codes joined to it is under half its budgeted salaries; never an area, nor a code an earlier elimination covered. */
   isPartlyMatched: boolean
   /** Every unit the code covers was taken by an earlier elimination. */
   isCovered: boolean
@@ -46,7 +46,7 @@ const LINE_OF_GROUP: Partial<Record<AccountGroup, keyof EliminatedLines>> = {
 const PARTLY_MATCHED_DIVISOR = 2
 
 export const ELIMINATE_METHOD =
-  "An elimination saves a unit's or area's budgeted salaries and pay, OPE and benefits, and services and supplies (account types 61-67, 69, and 71) for the budget year stated, summed as published, so a negative line reduces the savings; student aid, other expenses, transfers, and reserves are not counted. The E&G figure is the budget's fund type 11, the fund the projection covers. An elimination applies before every other rule: its census jobs are left out of them all, and a unit already inside an eliminated area saves nothing more. A unit's census jobs are those whose pay department is the unit's code; the census files many staff under codes the budget does not use, and where a unit's census pay is under half its budgeted salaries, pay rules may also count some of its staff. Savings are gross: the tuition and other revenue a department brings in is not published by department and is not counted."
+  "An elimination saves a unit's or area's budgeted salaries and pay, OPE and benefits, and services and supplies (account types 61-67, 69, and 71) for the budget year stated, summed as published, so a negative line reduces the savings; student aid, other expenses, transfers, and reserves are not counted. The E&G figure is the budget's fund type 11, the fund the projection covers. An elimination applies before every other rule: its census jobs are left out of them all, and a unit already inside an eliminated area saves nothing more. A unit's census jobs are those whose pay department is the unit's code or a code this site joins to it by hand; the census still files some staff under codes the budget does not use and this site joins to no unit, and where a unit's census pay is under half its budgeted salaries, pay rules may also count some of its staff. Savings are gross: the tuition and other revenue a department brings in is not published by department and is not counted."
 
 function sumLines(rows: BudgetRow[], budget: BudgetYear) {
   const eg: EliminatedLines = { payCents: 0, opeCents: 0, servicesCents: 0 }

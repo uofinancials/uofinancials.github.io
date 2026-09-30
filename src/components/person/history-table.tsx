@@ -19,7 +19,8 @@ export function PersonHistoryTable({ person }: { person: Person }) {
       <p className="text-sm text-muted-foreground">
         As published. Censuses marked “linked” are in a run joined on the name,
         or on names this site joins as one person, and the same pay department
-        of a single primary job, computed by this site.
+        of a single primary job, codes this site joins to one unit counting as
+        one, computed by this site.
       </p>
       <Table>
         <caption className="sr-only">{person.name}: job history</caption>

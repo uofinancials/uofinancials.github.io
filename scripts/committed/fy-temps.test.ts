@@ -29,12 +29,12 @@ const ALL_YEARS_TIMEOUT_MS = 20_000
 
 /** Each fiscal year's estimated temporaries' FTE, in hundredths, as `pnpm scrape summary` first derived it. */
 const FTE_PINS = new Map([
-  [2021, 6_665],
-  [2022, 8_453],
-  [2023, 8_795],
-  [2024, 11_849],
-  [2025, 11_882],
-  [2026, 11_159],
+  [2021, 6_662],
+  [2022, 8_452],
+  [2023, 8_791],
+  [2024, 11_869],
+  [2025, 11_887],
+  [2026, 11_157],
 ])
 
 test.skipIf(!existsSync(FY_TEMPS_DATA_PATH))(
@@ -66,7 +66,7 @@ test.skipIf(!existsSync(FY_TEMPS_DATA_PATH))(
         fteHundredths,
         unassigned:
           fiscalYear === 2022 || fiscalYear === 2023
-            ? ['632110']
+            ? ['222660']
             : fiscalYear === 2024
               ? ['410230']
               : [],

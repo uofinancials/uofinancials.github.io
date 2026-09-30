@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { orgCodeParam } from '../../data/budget.ts'
 import { staffKindSchema } from '../../data/fall.ts'
+import { unitCodeParam } from '../../data/unit-aliases.ts'
 import type { TrendGroup } from '../census/groups.ts'
 import { TREND_GROUPS } from '../census/groups.ts'
 import { TERMS } from '../census/salary-distribution.ts'
@@ -139,7 +140,7 @@ export const payChangesSearchSchema = z.object({
   kind: staffKindSchema.optional().catch(undefined),
   from: z.number().int().optional().catch(undefined),
   to: z.number().int().optional().catch(undefined),
-  dept: orgCodeParam.optional().catch(undefined),
+  dept: unitCodeParam.optional().catch(undefined),
   area: orgCodeParam.optional().catch(undefined),
   position: z.string().min(1).optional().catch(undefined),
   pair: z.number().int().optional().catch(undefined),
@@ -157,10 +158,10 @@ export const reportSearchSchema = z.object({
   measure: z.enum(REPORT_METRICS).optional().catch(undefined),
   view: z.enum(GROWTH_VIEWS).optional().catch(undefined),
   area: orgCodeParam.optional().catch(undefined),
-  unit: orgCodeParam.optional().catch(undefined),
+  unit: unitCodeParam.optional().catch(undefined),
   tab: z.enum(REPORT_TABS).optional().catch(undefined),
   /** The areas and units added to the comparison; absent means its default. */
-  with: z.array(orgCodeParam).max(MAX_COMPARED).optional().catch(undefined),
+  with: z.array(unitCodeParam).max(MAX_COMPARED).optional().catch(undefined),
 })
 
 export type ReportSearch = z.infer<typeof reportSearchSchema>

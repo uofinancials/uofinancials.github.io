@@ -10,6 +10,7 @@ const ORGS: BudgetYear['orgs'] = {
   '470000': { name: 'University Housing', level: 3, parent: null },
   '471000': { name: 'University Housing Ops', level: 5, parent: '470000' },
   '490000': { name: 'University Health Services', level: 3, parent: null },
+  '100100': { name: 'President', level: 3, parent: null },
   '491000': { name: 'University Health Clinic', level: 5, parent: '490000' },
 }
 
@@ -57,8 +58,8 @@ test('a prefix seen under two areas is not used', () => {
 
 test('a code in the hand table for its census year is assigned by hand', () => {
   const assign = createAreaAssigner([], ORGS, 2025)
-  expect(assign(job('267500', 'University Counseling Center'))).toEqual({
-    area: '490000',
+  expect(assign(job('106003', 'Government & Community Relations'))).toEqual({
+    area: '100100',
     basis: 'hand',
   })
   expect(assign(job(null, 'Nowhere Ops'))).toEqual({

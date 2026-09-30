@@ -101,6 +101,28 @@ test('does not pair a job held by two records in either census', () => {
   ).toEqual([])
 })
 
+test('pairs an unchanged job by its published code where the fold joins it to a unit with the same job', () => {
+  const department = (publishedCode: string) => ({
+    code: '222222',
+    name: 'Joined',
+    publishedCode,
+  })
+  expect(
+    findNamePairs([
+      census(2020, [
+        job('Doe, Ann B', { payDepartment: department('111111') }),
+        job('Poe, Cy', { payDepartment: department('333333') }),
+      ]),
+      census(2021, [
+        job('Roe, Ann B', { payDepartment: department('111111') }),
+        job('Poe, Cy', { payDepartment: department('333333') }),
+      ]),
+    ]),
+  ).toEqual([
+    { names: ['Doe, Ann B', 'Roe, Ann B'], code: '222222', reason: 'same-job' },
+  ])
+})
+
 test('does not pair a name that still appears in the other census', () => {
   expect(
     unreviewedPairs([

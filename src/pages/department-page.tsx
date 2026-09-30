@@ -207,8 +207,10 @@ function DepartmentHeader({
       )}
       {profile.aliasCodes.length > 0 && (
         <p className="text-sm text-muted-foreground">
-          Also published under code {profile.aliasCodes.join(', ')}; this site
-          joins those jobs to this code by hand.
+          Jobs the census pays under{' '}
+          {profile.aliasCodes.length === 1 ? 'code' : 'codes'}{' '}
+          {profile.aliasCodes.join(', ')} are counted here; this site joins the
+          codes by hand.
         </p>
       )}
       {hasBothSources && (

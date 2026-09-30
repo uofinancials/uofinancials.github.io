@@ -31,7 +31,8 @@ function unitNamesByCode(budgets: BudgetYear[]): Map<string, Set<string>> {
   return names
 }
 
-function unpublishedPayCodes(
+/** Each census pay code no budget publishes, with its normalised names. */
+export function unpublishedPayCodes(
   falls: FallYear[],
   budgets: BudgetYear[],
 ): Map<string, Set<string>> {

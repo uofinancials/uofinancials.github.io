@@ -39,7 +39,7 @@ export function PersonCards({ run }: { run: PersonRun }) {
       <p className="text-sm text-muted-foreground">
         Computed by this site from the records below, not published by UO.
         {run.isLinked
-          ? ` From Fall ${firstYear}-${lastYear}, years linked on the name, or on names this site joins as one person, and the same pay department of a single primary job.`
+          ? ` From Fall ${firstYear}-${lastYear}, years linked on the name, or on names this site joins as one person, and the same pay department of a single primary job, codes this site joins to one unit counting as one.`
           : ` Fall ${firstYear} is not in a linked run, so no change is computed.`}
       </p>
       <div className="grid gap-3 sm:grid-cols-3">

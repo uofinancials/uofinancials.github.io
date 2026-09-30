@@ -18,8 +18,8 @@ test('pay changes show each census pair’s median by group, the change counts, 
   await expect(
     page
       .getByRole('table', { name: /changed class, rank, or title/ })
-      .getByRole('row', { name: /^2024-25 5,197 / }),
-  ).toContainText('170 (')
+      .getByRole('row', { name: /^2024-25 5,203 / }),
+  ).toContainText('171 (')
   await expect(
     page
       .getByRole('figure', { name: /by change in salary rate, Fall 2024-25/ })
@@ -86,7 +86,7 @@ test('pay changes set each raise group’s median beside its cited across-the-bo
   })
   await expect(
     table.getByRole('row', {
-      name: /^SEIU 503 1,516 \+10\.8% \+6\.6% \+4\.2 points/,
+      name: /^SEIU 503 1,517 \+10\.8% \+6\.6% \+4\.2 points/,
     }),
   ).toBeVisible()
   await expect(
@@ -95,7 +95,7 @@ test('pay changes set each raise group’s median beside its cited across-the-bo
     }),
   ).toBeVisible()
   await expect(page.getByRole('main')).toContainText(
-    '451 continuing jobs are in no raise group',
+    '452 continuing jobs are in no raise group',
   )
   await expect(
     page

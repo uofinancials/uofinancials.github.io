@@ -65,7 +65,11 @@ function placeTemps(
     const unit = units.get(code) ?? {
       code,
       area: census.assign({
-        payDepartment: { code, name: record.payDepartment },
+        payDepartment: {
+          code,
+          name: record.payDepartment,
+          publishedCode: resolved.code,
+        },
       }).area,
       jobs: 0,
       payCents: 0,

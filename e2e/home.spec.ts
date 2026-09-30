@@ -257,7 +257,7 @@ test('a person’s computed figures, rate chart, and class median are labelled, 
   await openLinkedPerson(page)
   const main = page.getByRole('main')
   await expect(main).toContainText(
-    'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the name, or on names this site joins as one person, and the same pay department of a single primary job.',
+    'Computed by this site from the records below, not published by UO. From Fall 2021-2023, years linked on the name, or on names this site joins as one person, and the same pay department of a single primary job, codes this site joins to one unit counting as one.',
   )
   await expect(
     page.getByRole('figure', { name: /annual salary rate by job/ }),

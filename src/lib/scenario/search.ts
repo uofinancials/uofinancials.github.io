@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { orgCodeParam } from '../../data/budget.ts'
 import { staffKindSchema } from '../../data/fall.ts'
+import { unitCodeParam } from '../../data/unit-aliases.ts'
 import { TREND_GROUPS } from '../census/groups.ts'
 import { TERMS } from '../census/salary-distribution.ts'
 import { CENTS_PER_DOLLAR } from '../shared/format.ts'
@@ -15,7 +16,7 @@ const scopeEntry = z
     group: z.enum(TREND_GROUPS),
     kind: staffKindSchema,
     term: z.literal(TERMS),
-    dept: orgCodeParam,
+    dept: unitCodeParam,
     position: z.string().min(1),
   })
   .partial()
