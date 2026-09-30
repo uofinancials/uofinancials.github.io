@@ -18,7 +18,7 @@ import {
 /** Parsing every census, budget and FY year takes a second or two. */
 const ALL_YEARS_TIMEOUT_MS = 20_000
 
-// Counted independently from the PDFs' text before the parser was written.
+// From a separate parse of the PDFs' text layer, made before the parser was written.
 const PINS = [
   [2021, 2_076, 6_311, 404, 249_186_800],
   [2022, 2_599, 7_233, 650, 323_964_600],
