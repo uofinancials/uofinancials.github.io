@@ -4,6 +4,7 @@ import {
   type FallYear,
   isPrimaryJob,
 } from '../../data/fall.ts'
+import { groupBy } from '../shared/group.ts'
 import { MIN_JOBS_SHOWN, medianRateCents } from '../trends/trends.ts'
 import { type PeerGroup, peerGroupOf } from './peer-group.ts'
 
@@ -15,20 +16,18 @@ function medianKey(year: number, group: PeerGroup, term: number): string {
 export type PeerMedians = Map<string, { medianCents: number; jobs: number }>
 
 export function peerMedians(years: FallYear[]): PeerMedians {
-  const rates = new Map<string, number[]>()
-  for (const { censusDate, records } of years) {
+  const rates = years.flatMap(({ censusDate, records }) => {
     const year = censusYearOf(censusDate)
-    for (const record of records) {
+    return records.flatMap((record) => {
       const group = peerGroupOf(record)
-      if (!isPrimaryJob(record) || !group) continue
+      if (!isPrimaryJob(record) || !group) return []
       const key = medianKey(year, group, record.termOfServiceMonths)
-      const groupRates = rates.get(key)
-      if (groupRates) groupRates.push(record.annualSalaryRateCents)
-      else rates.set(key, [record.annualSalaryRateCents])
-    }
-  }
+      return [{ key, rateCents: record.annualSalaryRateCents }]
+    })
+  })
   const medians: PeerMedians = new Map()
-  for (const [key, groupRates] of rates) {
+  for (const [key, jobs] of groupBy(rates, (job) => job.key)) {
+    const groupRates = jobs.map(({ rateCents }) => rateCents)
     const medianCents = medianRateCents(groupRates)
     if (groupRates.length >= MIN_JOBS_SHOWN && medianCents !== null) {
       medians.set(key, { medianCents, jobs: groupRates.length })

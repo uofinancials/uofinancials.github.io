@@ -5,6 +5,7 @@ import type { FyTemps, FyTempsUnit } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import { foldDepartment } from '../../data/unit-aliases.ts'
 import { fiscalYearOf, isClassifiedTemp } from '../census/totals.ts'
+import { groupBy } from '../shared/group.ts'
 import type { TempsFigure } from '../trends/trends.ts'
 import { createFyCodeResolver, type FyDepartmentCode } from './fy-codes.ts'
 import { type DepartmentCensus, toDepartmentCensuses } from './jobs.ts'
@@ -101,16 +102,13 @@ function averageRates(
 function groupRates(
   records: FallRecord[],
   keyOf: (record: FallRecord) => string | null,
-): Map<string, number> {
-  const rates = new Map<string, number[]>()
-  for (const record of records) {
-    const key = keyOf(record)
-    if (key === null) continue
-    const values = rates.get(key) ?? []
-    values.push(record.annualSalaryRateCents)
-    rates.set(key, values)
-  }
-  return new Map([...rates].map(([key, values]) => [key, mean(values)]))
+): Map<string | null, number> {
+  return new Map(
+    [...groupBy(records, keyOf)].map(([key, members]) => [
+      key,
+      mean(members.map(({ annualSalaryRateCents }) => annualSalaryRateCents)),
+    ]),
+  )
 }
 
 function mean(values: number[]): number {

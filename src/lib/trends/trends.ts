@@ -20,6 +20,7 @@ import {
 import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
 import { department } from '../people/person-fields.ts'
 import type { SectionSource } from '../shared/citation.ts'
+import { groupBy } from '../shared/group.ts'
 
 /** Classified temporaries' actual FY pay and estimated FTE in one scope and census, how many FY jobs they cover, and the fiscal year the census falls in. */
 export type TempsFigure = {
@@ -216,47 +217,59 @@ function keepsTempsWhole(filter: TrendFilter): boolean {
   )
 }
 
+type KeptJob = { record: FallRecord; line: string }
+
+function keptJobs(
+  { year, records }: { year: number; records: FallRecord[] },
+  filter: TrendFilter,
+): KeptJob[] {
+  return records.flatMap((record) => {
+    const group = trendGroupOf(record, year)
+    return matchesJob(record, group, filter)
+      ? [{ record, line: lineOf(record, group, filter.group) }]
+      : []
+  })
+}
+
+const lineOfJob = ({ line }: KeptJob) => line
+const recordsOf = (jobs: KeptJob[] = []) => jobs.map(({ record }) => record)
+
 /** One series per group (or per published category of an opened group), and their total, per census in range; `temps` are the scope's classified temporaries' FY figures by census year. */
 export function buildTrends(
   years: { year: number; records: FallRecord[] }[],
   filter: TrendFilter,
   temps: ReadonlyMap<number, TempsFigure>,
 ): Trends {
-  const inRange = [...years].sort((a, b) => a.year - b.year)
   const tempsIn = (year: number) =>
     keepsTempsWhole(filter) ? (temps.get(year) ?? null) : null
-  const lines = new Map<string, Map<number, FallRecord[]>>()
-  if (filter.group === null && inRange.some(({ year }) => tempsIn(year))) {
-    lines.set(TEMPS_GROUP, new Map())
-  }
-  const total: TrendPoint[] = []
-  for (const { year, records } of inRange) {
-    const shown: FallRecord[] = []
-    for (const record of records) {
-      const group = trendGroupOf(record, year)
-      if (!matchesJob(record, group, filter)) continue
-      shown.push(record)
-      const key = lineOf(record, group, filter.group)
-      const byYear = lines.get(key) ?? new Map<number, FallRecord[]>()
-      const members = byYear.get(year) ?? []
-      members.push(record)
-      byYear.set(year, members)
-      lines.set(key, byYear)
-    }
-    total.push({ year, ...measureJobs(shown, tempsIn(year)) })
-  }
-  const series = [...lines.keys()]
-    .sort(compareLines(filter.group))
-    .map((key) => ({
-      key,
-      points: inRange.map(({ year }) => ({
-        year,
-        ...measureJobs(
-          lines.get(key)?.get(year) ?? [],
-          key === TEMPS_GROUP ? tempsIn(year) : null,
-        ),
-      })),
-    }))
+  const kept = [...years]
+    .sort((a, b) => a.year - b.year)
+    .map((census) => {
+      const jobs = keptJobs(census, filter)
+      return { year: census.year, jobs, byLine: groupBy(jobs, lineOfJob) }
+    })
+  const seeded =
+    filter.group === null && kept.some(({ year }) => tempsIn(year))
+      ? [TEMPS_GROUP]
+      : []
+  const lines = new Set([
+    ...seeded,
+    ...kept.flatMap(({ byLine }) => [...byLine.keys()]),
+  ])
+  const total = kept.map(({ year, jobs }) => ({
+    year,
+    ...measureJobs(recordsOf(jobs), tempsIn(year)),
+  }))
+  const series = [...lines].sort(compareLines(filter.group)).map((key) => ({
+    key,
+    points: kept.map(({ year, byLine }) => ({
+      year,
+      ...measureJobs(
+        recordsOf(byLine.get(key)),
+        key === TEMPS_GROUP ? tempsIn(year) : null,
+      ),
+    })),
+  }))
   return sliceTrends({ series, total }, filter.from, filter.to)
 }
 

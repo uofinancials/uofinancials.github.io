@@ -10,6 +10,7 @@ import {
 import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
 import { titleOf } from '../people/person-fields.ts'
 import { findPersonLinks, type PersonLink } from '../people/person-links.ts'
+import { groupBy } from '../shared/group.ts'
 import { ALL_PAIRS, isRankRename, normalizeTitle } from './pay-change-labels.ts'
 import { type RaiseRow, raiseRowOf } from './raise-groups.ts'
 import {
@@ -121,26 +122,34 @@ export function payChangeTrends(
   opened: TrendGroup | null,
 ): ChangeSeries[] {
   if (fromYears.length === 0) return []
-  const ratios = new Map<string, number[]>()
-  const add = (key: string, ratio: number) => {
-    const bucket = ratios.get(key)
-    if (bucket) bucket.push(ratio)
-    else ratios.set(key, [ratio])
-  }
-  const keys = new Set<string>()
-  for (const { fromYear, from, group, ratio } of pairs) {
-    const key = lineOf(from, group, opened)
-    keys.add(key)
-    add(`${ALL_PAIRS}|${fromYear}`, ratio)
-    add(`${key}|${fromYear}`, ratio)
-  }
-  const lines = [ALL_PAIRS, ...[...keys].sort(compareLines(opened))]
-  return lines.map((key) => ({
+  const keyed = pairs.map(({ fromYear, from, group, ratio }) => ({
+    fromYear,
+    ratio,
+    line: lineOf(from, group, opened),
+  }))
+  const byYear = groupBy(keyed, ({ fromYear }) => fromYear)
+  const byLine = groupBy(keyed, ({ line, fromYear }) => `${line}|${fromYear}`)
+  const seriesOf = (
+    key: string,
+    bucketOf: (fromYear: number) => { ratio: number }[] | undefined,
+  ): ChangeSeries => ({
     key,
     points: fromYears.map((fromYear) =>
-      measure(fromYear, ratios.get(`${key}|${fromYear}`)),
+      measure(
+        fromYear,
+        bucketOf(fromYear)?.map(({ ratio }) => ratio),
+      ),
     ),
-  }))
+  })
+  const lines = [...new Set(keyed.map(({ line }) => line))].sort(
+    compareLines(opened),
+  )
+  return [
+    seriesOf(ALL_PAIRS, (fromYear) => byYear.get(fromYear)),
+    ...lines.map((line) =>
+      seriesOf(line, (fromYear) => byLine.get(`${line}|${fromYear}`)),
+    ),
+  ]
 }
 
 const BIN_FLOOR_POINTS = -5
