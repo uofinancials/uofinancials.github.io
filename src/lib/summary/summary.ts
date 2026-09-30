@@ -23,7 +23,7 @@ import {
   topPaidJobs,
 } from '../home/home.ts'
 import { peerMedians } from '../people/peer-median.ts'
-import { indexPeople, personYearsOf } from '../people/person-lookup.ts'
+import { indexPeople } from '../people/person-lookup.ts'
 import { firstSavingsYear } from '../scenario/outlook.ts'
 import { raiseRates } from '../scenario/raises.ts'
 import { areaTrends } from '../trends/area-trends.ts'
@@ -160,9 +160,6 @@ function summarizePeople(falls: FallYear[]): Summary['people'] {
       name: person.name,
       ...(person.otherNames.length > 0 && { otherNames: person.otherNames }),
       runs: person.runs.map((run) => run.years.map(({ year }) => year)),
-      possibleStudent: personYearsOf(person).some(({ records }) =>
-        records.some((record) => record.possibleStudent),
-      ),
     })),
     medians: Object.fromEntries(peerMedians(falls)),
   }

@@ -8,14 +8,6 @@ import { type FallFile, parseFallFile } from './file.ts'
 
 const PARSE_ALL_TIMEOUT_MS = 300_000
 const PDFTOTEXT_MAX_BYTES = 64 * 1024 * 1024
-const KNOWN_STUDENT_TITLES = [
-  'UO Student Regular',
-  'Psychology Intern',
-  'Psychology Doctoral Intern',
-  'PreDoc Intern/Vistng Instr',
-  'Football Intern',
-  'Ticket Office Intern',
-]
 
 const run = promisify(execFile)
 
@@ -27,10 +19,6 @@ async function countJobTypeLines(file: string): Promise<number> {
   return (
     stdout.match(/^JOB TYPE\s+(Primary|Secondary|Overload)\b/gm)?.length ?? 0
   )
-}
-
-function titleOf(record: FallFile['records'][number]): string {
-  return record.kind === 'classified' ? record.jobTitle : record.academicTitle
 }
 
 describe.skipIf(!hasFallSources)('every downloaded Fall PDF', () => {
@@ -76,18 +64,6 @@ describe.skipIf(!hasFallSources)('every downloaded Fall PDF', () => {
       expect(fall.records.length, path.basename(file)).toBe(
         independentCounts.get(file),
       )
-    }
-  })
-
-  test('flags every known student title', () => {
-    const records = [...parsed.values()].flatMap((fall) => fall.records)
-    for (const title of KNOWN_STUDENT_TITLES) {
-      const matching = records.filter((record) => titleOf(record) === title)
-      expect(matching.length, title).toBeGreaterThan(0)
-      expect(
-        matching.every((record) => record.possibleStudent),
-        title,
-      ).toBe(true)
     }
   })
 })

@@ -22,7 +22,6 @@ function job(
     termOfServiceMonths: 12,
     eeoCategory: 'Secy/Clerical',
     sourcePage: 1,
-    possibleStudent: false,
     jobTitle: 'Office Specialist 2',
     positionClass: { code: 'E0104', title: 'Office Specialist 2' },
   }

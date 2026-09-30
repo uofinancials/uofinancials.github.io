@@ -6,7 +6,6 @@ import {
 } from '../../../src/data/fall.ts'
 import type { FallLabel, RawBlock } from './blocks.ts'
 import { repairMojibake } from './mojibake.ts'
-import { isPossibleStudent } from './possible-student.ts'
 
 const CENTS_PER_DOLLAR = 100
 
@@ -64,18 +63,13 @@ export function toFallRecord(block: RawBlock, kind: StaffKind): FallRecord {
     eeoCategory: field('EEO CATEGORY'),
     sourcePage: block.page,
   }
-  const positionClass = parsePositionClass(field('POSITION CLASS'))
   const candidate =
     kind === 'classified'
       ? {
           kind,
           ...common,
           jobTitle: field('JOB TITLE'),
-          positionClass,
-          possibleStudent: isPossibleStudent([
-            field('JOB TITLE'),
-            positionClass?.title ?? null,
-          ]),
+          positionClass: parsePositionClass(field('POSITION CLASS')),
         }
       : {
           kind,
@@ -86,7 +80,6 @@ export function toFallRecord(block: RawBlock, kind: StaffKind): FallRecord {
           academicTitle: field('ACADEMIC TITLE'),
           primaryActivity: field('PRIMARY ACTIVITY'),
           oaSalaryGrade: field('OA SALARY GRADE'),
-          possibleStudent: isPossibleStudent([field('ACADEMIC TITLE')]),
         }
   const parsed = fallRecordSchema.safeParse(candidate)
   if (!parsed.success) {

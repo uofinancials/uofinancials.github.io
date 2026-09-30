@@ -143,7 +143,7 @@ flowchart LR
 - `scripts/scrape/net` - network access: robots.txt rules, identification,
   request spacing, and the conditional download cache.
 - `scripts/scrape/fall` - the Fall step: PDF pages as text lines, record blocks,
-  typed records, encoding repair, and the possible student or GE flag.
+  typed records, and encoding repair.
 - `scripts/scrape/budget` - the budget step: the workbook links on the Budget
   Reports page, and each workbook as a typed budget year.
 - `scripts/scrape/rates` - the rates step: the OPE rate pages as typed rates.

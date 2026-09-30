@@ -52,7 +52,6 @@ test('types a classified record', () => {
     termOfServiceMonths: 9,
     eeoCategory: null,
     sourcePage: 7,
-    possibleStudent: false,
     jobTitle: 'Invented Technician',
     positionClass: { code: 'X1234', title: 'Invented Tech 2' },
   })
@@ -84,12 +83,6 @@ test('keeps a position class published without a title', () => {
   expect(toFallRecord(codeOnly, 'classified')).toMatchObject({
     positionClass: { code: 'X1234', title: null },
   })
-})
-
-test('flags a possible student', () => {
-  classified.fields.set('JOB TITLE', 'Invented Office Intern')
-  expect(toFallRecord(classified, 'classified').possibleStudent).toBe(true)
-  classified.fields.set('JOB TITLE', 'Invented Technician')
 })
 
 test.each<[FallLabel, string, RegExp]>([

@@ -27,7 +27,6 @@ const fallCommon = {
   termOfServiceMonths: z.union([z.literal(9), z.literal(12)]),
   eeoCategory: nonBlank.nullable(),
   sourcePage: z.number().int().positive(),
-  possibleStudent: z.boolean(),
 }
 
 const fallClassifiedSchema = z.strictObject({

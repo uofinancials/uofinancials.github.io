@@ -74,9 +74,6 @@ function toManifestEntry(censusDate: string, sources: SourcePdf[]): FallEntry {
         extractDate: source.extractDate,
         retrievedOn: source.retrievedOn,
         records: source.records.length,
-        possibleStudents: source.records.filter(
-          (record) => record.possibleStudent,
-        ).length,
       })),
   }
 }

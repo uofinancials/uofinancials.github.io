@@ -16,7 +16,6 @@ const sourceFileSchema = z.strictObject({
   extractDate: isoDate,
   retrievedOn: isoDate,
   records: z.number().int().nonnegative(),
-  possibleStudents: z.number().int().nonnegative(),
 })
 
 const fallEntrySchema = z.strictObject({
