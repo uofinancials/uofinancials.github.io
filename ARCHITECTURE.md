@@ -42,9 +42,9 @@ entered by hand. The site reads nothing but its bundle and those files.
   citation; edited by hand.
 - `public/data/summary.json` - every job's trends by group, continuing jobs'
   median pay change by group for every census pair, each area's yearly figures,
-  the department table's rows, the home page's figures, and every name's census
-  years with the class and rank medians; derived from the other data files by
-  `scripts/scrape`.
+  the department table's rows, the home page's figures, and every person's
+  census years and other published names with the class and rank medians;
+  derived from the other data files by `scripts/scrape`.
 - `public/data/trends/<area>.json` - one college or VP area's, and each of its
   units' and pay departments', jobs by group in every census and continuing
   jobs' median pay change by group; derived with the summary by
@@ -100,15 +100,16 @@ flowchart LR
     figure and table the department page shares.
   - `departments` - the department table and a department's budget and jobs.
   - `people` - the people list's controls, table, and figures.
-  - `person` - one name's figures, rates, records, and job history.
+  - `person` - one person's figures, rates, records, and job history.
   - `budget` - the budget outlook's lines and cases tables.
   - `scenario` - rule editing and the scenario's results, savings, and outlook.
   - `ui` - shadcn/ui components.
 - `src/hooks` - the hooks and queries that load and join the data files for a
   page's view, navigation that loads the next view first, and the viewport
   width.
-- `src/data` - the schemas and types of the committed data files, and the
-  queries that fetch and parse them.
+- `src/data` - the schemas and types of the committed data files, the queries
+  that fetch and parse them, and the hand-reviewed unit and person alias tables,
+  with the unit alias fold every Fall and budget year is read through.
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
   - `shared` - number formatting, browser tab titles, table sort order, source
@@ -120,7 +121,8 @@ flowchart LR
     their terms.
   - `departments` - a department's budget and jobs, the department index, and
     the department table.
-  - `people` - the people list, person links and lookup, and a person's computed
+  - `people` - the people list, names joined as one person by hand review or by
+    name-matching rules, person links and lookup, and a person's computed
     figures and peer medians.
   - `budget` - the budget outlook's gap, series, and cited sources.
   - `scenario` - scenario rules, their editing and examples, and the savings
@@ -145,20 +147,22 @@ flowchart LR
 - `scripts/scrape/budget` - the budget step: the workbook links on the Budget
   Reports page, and each workbook as a typed budget year.
 - `scripts/scrape/rates` - the rates step: the OPE rate pages as typed rates.
+- `scripts/aliases` - the finder of department codes that may name one unit.
 - `scripts/committed` - checks of the committed data files, and of the figures
-  derived from them, against their sources.
+  derived from them, against their sources, and that every unit and name pair
+  the alias finders offer has been reviewed.
 
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, navigation, skip link,
   and tab titles, a department's jobs link, the people list, its filter chips,
-  and person page, sources page, and `404.html`.
+  and person page, an earlier name's redirect, sources page, and `404.html`.
 - `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
 - `e2e/departments.spec.ts` - the departments table's sorting, levels, and
-  filters, a unit's and an area's pages, the scenario and pay changes links, and
-  narrow layout.
+  filters, a unit's and an area's pages, an alias code's redirect, the scenario
+  and pay changes links, and narrow layout.
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, sources,
   and narrow layout.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
@@ -204,19 +208,22 @@ flowchart LR
 - `/departments/$code` - one code's budget by account group or fund type for
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, for an area its units in the department
-  table and how its jobs were placed, and links to a scenario eliminating it and
-  to its pay changes; driven by `src/lib/departments` over every Fall and budget
-  year, and the outlook file for the scenario's budget year.
+  table and how its jobs were placed, the codes joined to it, and links to a
+  scenario eliminating it and to its pay changes, with an alias code leading to
+  its unit; driven by `src/lib/departments` over every Fall and budget year, and
+  the outlook file for the scenario's budget year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   a chart of the matching jobs by salary rate, with primary-job percentiles, or
   a table of them by group, their salary spend by EEO category, and names from
   other censuses when a name has no job in it; not indexed by search engines;
   driven by the `src/lib/people` list and `src/lib/census` distribution over one
   Fall year and its budget year, and the summary's name index.
-- `/people/$name` - one name's computed figures, its rates by job over time, its
-  records for one census at a time, and its job history, with a back button; not
-  indexed by search engines; driven by `src/lib/people` over the summary's name
-  index and medians and the Fall years the name appears in.
+- `/people/$name` - one person's computed figures, rates by job over time,
+  records for one census at a time, and job history under their latest published
+  name, with the other names their records were published under and a back
+  button, an earlier name leading to it; not indexed by search engines; driven
+  by `src/lib/people` over the summary's name index and medians and the Fall
+  years the name appears in.
 - `/budget` - the E&G fund projection: the gap and fund balance by fiscal year
   as a chart and table, every published line, the alternative cases, the
   reduction estimate, the all-funds budget, the stated assumptions, and the

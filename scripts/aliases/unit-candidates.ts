@@ -135,7 +135,6 @@ function jobsMovedPairs(falls: FallYear[]): CodePair[] {
   })
 }
 
-/** The fiscal years each budget org code is published in. */
 function budgetYearsByCode(budgets: BudgetYear[]): Map<string, Set<number>> {
   const years = new Map<string, Set<number>>()
   for (const { fiscalYear, orgs } of budgets) {
