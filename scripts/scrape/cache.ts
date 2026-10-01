@@ -50,12 +50,18 @@ export const TRENDS_DATA_PATH = path.join(DATA_DIR, 'trends.json')
 export const DEPARTMENTS_DATA_PATH = path.join(DATA_DIR, 'departments.json')
 
 export const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
+export const DEPARTMENTS_DIR = path.join(DATA_DIR, 'departments')
+
+export function departmentPath(code: string): string {
+  return path.join(DEPARTMENTS_DIR, `${code}.json`)
+}
+
 export const PEOPLE_DIR = path.join(DATA_DIR, 'people')
 export const PEOPLE_NAMES_PATH = path.join(PEOPLE_DIR, 'names.json')
 export const PEER_MEDIANS_PATH = path.join(PEOPLE_DIR, 'medians.json')
 
 /** The directories `pnpm scrape summary` owns: it writes every file in them. */
-export const DERIVED_DIRS = [AREA_TRENDS_DIR, PEOPLE_DIR]
+export const DERIVED_DIRS = [AREA_TRENDS_DIR, DEPARTMENTS_DIR, PEOPLE_DIR]
 
 export function areaTrendsPath(code: string): string {
   return path.join(AREA_TRENDS_DIR, `${code}.json`)

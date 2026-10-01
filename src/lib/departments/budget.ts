@@ -1,5 +1,6 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
 import { ORG_LEVEL_AREA } from '../census/areas.ts'
+import { groupBy } from '../shared/group.ts'
 import {
   ACCOUNT_GROUPS,
   type AccountGroup,
@@ -81,12 +82,21 @@ type YearSums = {
   total: number
 }
 
+const rowsByOrg = new WeakMap<BudgetYear, Map<string, BudgetRow[]>>()
+
+/** The units' rows, from the year's rows grouped by org once. */
+function unitRows(budget: BudgetYear, units: Set<string>): BudgetRow[] {
+  const byOrg = rowsByOrg.get(budget) ?? groupBy(budget.rows, (row) => row.org)
+  rowsByOrg.set(budget, byOrg)
+  return [...units].flatMap((unit) => byOrg.get(unit) ?? [])
+}
+
 function sumYear(
   budget: BudgetYear,
   units: Set<string>,
   by: BudgetBreakdown,
 ): YearSums {
-  const rows = budget.rows.filter((row) => units.has(row.org))
+  const rows = unitRows(budget, units)
   return {
     bySeries: sumBy(rows, seriesKeyOf(budget, by)),
     byAccountType: sumBy(rows, (row) => row.accountType),

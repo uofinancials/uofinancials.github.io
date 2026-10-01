@@ -1,6 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { fiscalYearLabel } from './budget.ts'
+import { departmentFileSchema } from './department.ts'
 import { fyTempsSchema } from './fy-temps.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
@@ -68,6 +69,11 @@ export function fallYearQuery(year: number) {
 /** An area's units' and pay departments' yearly figures. */
 export function areaTrendsQuery(area: string) {
   return dataQuery(`trends/${area}.json`, areaTrendsSchema)
+}
+
+/** One code's department page. */
+export function departmentQuery(code: string) {
+  return dataQuery(`departments/${code}.json`, departmentFileSchema)
 }
 
 export function budgetYearQuery(fiscalYear: number) {

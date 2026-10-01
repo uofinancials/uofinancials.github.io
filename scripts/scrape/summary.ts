@@ -2,6 +2,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import type { z } from 'zod'
+import {
+  type DepartmentFile,
+  departmentFileSchema,
+} from '../../src/data/department.ts'
 import { fyYearSchema } from '../../src/data/fy.ts'
 import { type FyTemps, fyTempsSchema } from '../../src/data/fy-temps.ts'
 import type { Manifest } from '../../src/data/manifest.ts'
@@ -22,7 +26,9 @@ import {
   foldedBudgetYearSchema,
   foldedFallYearSchema,
 } from '../../src/data/unit-aliases.ts'
+import { buildDepartmentFiles } from '../../src/lib/departments/department-file.ts'
 import { buildFyTemps } from '../../src/lib/departments/fy-temps.ts'
+import { toDepartmentCensuses } from '../../src/lib/departments/jobs.ts'
 import {
   buildSummary,
   buildTrendScopes,
@@ -34,6 +40,7 @@ import {
   DATA_DIR,
   DEPARTMENTS_DATA_PATH,
   DERIVED_DIRS,
+  departmentPath,
   FY_TEMPS_DATA_PATH,
   fallDataPath,
   fyDataPath,
@@ -48,11 +55,15 @@ import {
 } from './cache.ts'
 import { type StepResult, today } from './manifest-file.ts'
 
-/** The summary, each area's trends and temporaries' FY pay, derived from the committed data files the manifest lists, and those files relative to the data directory. */
-export function deriveSummary(manifest: Manifest): {
+type Derived = {
   summary: Summary
   areas: AreaTrends[]
+  departments: DepartmentFile[]
   fyTemps: FyTemps
+}
+
+/** The summaries, each area's trends, each department page and temporaries' FY pay, derived from the committed data files the manifest lists, and those files relative to the data directory. */
+export function deriveSummary(manifest: Manifest): Derived & {
   files: string[]
 } {
   const fallPaths = manifest.fall.map(({ year }) => fallDataPath(year))
@@ -87,6 +98,11 @@ export function deriveSummary(manifest: Manifest): {
   return {
     summary: buildSummary(inputs, scopes),
     areas: scopes.areas,
+    departments: buildDepartmentFiles({
+      censuses: toDepartmentCensuses(manifest, base.falls, base.budgets),
+      budgets: base.budgets,
+      fyTemps,
+    }),
     fyTemps,
     files,
   }
@@ -96,16 +112,13 @@ function fileText<T>(schema: z.ZodType<T>, value: T): string {
   return `${JSON.stringify(schema.parse(value))}\n`
 }
 
-/** Each derived file's text by its path: the pages' summaries, temporaries' FY pay, then one file per area. */
+/** Each derived file's text by its path: the pages' summaries, temporaries' FY pay, then one file per area and per department page. */
 export function serializeDerived({
   summary,
   areas,
+  departments,
   fyTemps,
-}: {
-  summary: Summary
-  areas: AreaTrends[]
-  fyTemps: FyTemps
-}): Map<string, string> {
+}: Derived): Map<string, string> {
   return new Map([
     [HOME_DATA_PATH, fileText(homeSchema, summary.home)],
     [TRENDS_DATA_PATH, fileText(trendsSummarySchema, summary.trends)],
@@ -116,6 +129,10 @@ export function serializeDerived({
     ...areas.map((area): [string, string] => [
       areaTrendsPath(area.code),
       fileText(areaTrendsSchema, area),
+    ]),
+    ...departments.map((file): [string, string] => [
+      departmentPath(file.profile.code),
+      fileText(departmentFileSchema, file),
     ]),
   ])
 }

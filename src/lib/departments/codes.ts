@@ -4,7 +4,12 @@ import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { UNASSIGNED_AREA } from '../census/totals.ts'
 import { groupBy } from '../shared/group.ts'
-import { type DepartmentCensus, departmentYears, isAreaCode } from './jobs.ts'
+import {
+  type DepartmentCensus,
+  departmentYears,
+  isAreaCode,
+  placementIndexOf,
+} from './jobs.ts'
 
 /** A unit or pay department, the area it sits in, and the jobs paid under its code. */
 export type PlacedUnit = {
@@ -125,9 +130,7 @@ export function describeCode(
   const jobs = [...censuses]
     .sort((a, b) => b.year - a.year)
     .flatMap((census) => {
-      const record = census.records.find(
-        (job) => job.payDepartment.code === code,
-      )
+      const [record] = placementIndexOf(census).byCode.get(code) ?? []
       return record ? [{ census, record }] : []
     })
   const budgetNames = newestBudgets.flatMap(

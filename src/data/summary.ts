@@ -7,7 +7,7 @@ const cents = z.number().int()
 const count = z.number().int().nonnegative()
 const fraction = z.number().nullable()
 
-const trendPointSchema = z.strictObject({
+export const trendPointSchema = z.strictObject({
   year,
   jobs: count,
   spendCents: cents.nullable(),
@@ -22,7 +22,7 @@ const trendPointSchema = z.strictObject({
     .optional(),
 })
 
-const trendsSchema = z.strictObject({
+export const trendsSchema = z.strictObject({
   series: z.array(
     z.strictObject({ key: z.string(), points: z.array(trendPointSchema) }),
   ),
