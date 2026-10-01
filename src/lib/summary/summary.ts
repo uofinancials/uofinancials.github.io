@@ -4,6 +4,7 @@ import type { FyTemps } from '../../data/fy-temps.ts'
 import type { Manifest } from '../../data/manifest.ts'
 import type { OpeRates } from '../../data/ope.ts'
 import type { Outlook } from '../../data/outlook.ts'
+import type { PayChangesFile } from '../../data/pay-changes.ts'
 import type { RaiseTerms } from '../../data/raises.ts'
 import type { AreaTrends, Summary } from '../../data/summary.ts'
 import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
@@ -31,6 +32,7 @@ import { indexPeople } from '../people/person-lookup.ts'
 import { firstSavingsYear } from '../scenario/outlook.ts'
 import { raiseRates } from '../scenario/raises.ts'
 import { areaTrends } from '../trends/area-trends.ts'
+import { encodePairs, pairNames } from '../trends/pair-file.ts'
 import {
   type ChangeSeries,
   continuingPairs,
@@ -58,8 +60,12 @@ function latestYears({ manifest, falls, budgets }: SummaryInputs) {
   return years
 }
 
-/** Continuing jobs' median pay change for all of UO, and each area's and its units' trends and pay changes, placed as the department pages place them. */
-export type TrendScopes = { payChanges: ChangeSeries[]; areas: AreaTrends[] }
+/** Continuing jobs' median pay change for all of UO, each area's and its units' trends and pay changes, placed as the department pages place them, and the pairs themselves as their file holds them. */
+export type TrendScopes = {
+  payChanges: ChangeSeries[]
+  areas: AreaTrends[]
+  pairs: PayChangesFile
+}
 
 export function buildTrendScopes({
   manifest,
@@ -77,6 +83,7 @@ export function buildTrendScopes({
       null,
     ),
     areas: areaTrends(censuses, pairs, fyTemps),
+    pairs: encodePairs(pairs, pairNames(censuses, budgets)),
   }
 }
 
