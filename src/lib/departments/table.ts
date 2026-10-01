@@ -2,14 +2,8 @@ import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
 import type { FallRecord } from '../../data/fall.ts'
 import type { FyTemps } from '../../data/fy-temps.ts'
 import type { FallEntry, Manifest } from '../../data/manifest.ts'
-import { listAreas } from '../census/areas.ts'
-import {
-  fiscalYearForCensus,
-  SPEND_METHOD,
-  UNASSIGNED_AREA,
-} from '../census/totals.ts'
+import { fiscalYearForCensus, SPEND_METHOD } from '../census/totals.ts'
 import { formatDollars } from '../shared/format.ts'
-import { groupBy } from '../shared/group.ts'
 import { changeOf } from '../shared/series.ts'
 import { compareKeys, type SortDirection } from '../shared/sort.ts'
 import {
@@ -19,9 +13,9 @@ import {
   type TrendPoint,
 } from '../trends/trends.ts'
 import { sumBy, unitsOf } from './budget.ts'
-import { placeDepartments } from './codes.ts'
+import { placedAreas, placeUnits } from './codes.ts'
 import { type TempsScope, tempsByCensus } from './fy-temps.ts'
-import type { DepartmentCensus } from './jobs.ts'
+import { type DepartmentCensus, placementIndexOf } from './jobs.ts'
 
 /** A census joined to the budget year that names its areas. */
 type TableYear = { census: DepartmentCensus; budget: BudgetYear }
@@ -133,22 +127,6 @@ function areaOf(code: string | null, orgs: BudgetYear['orgs']): Area | null {
   return code === null ? null : { code, name: orgs[code]?.name ?? code }
 }
 
-/** Each area with the jobs placed in it, then the jobs placed in none, when there are any. */
-function placedAreas(
-  orgs: BudgetYear['orgs'],
-  areaJobs: Map<string | null, FallRecord[]>,
-): { code: string | null; name: string; records: FallRecord[] }[] {
-  const areas = [
-    ...listAreas(orgs),
-    ...(areaJobs.has(null) ? [{ code: null, name: UNASSIGNED_AREA }] : []),
-  ]
-  return areas.map(({ code, name }) => ({
-    code,
-    name,
-    records: areaJobs.get(code) ?? [],
-  }))
-}
-
 export type AreaFigure = Pick<
   DepartmentRow,
   'code' | 'name' | 'budgetCents' | 'jobs' | 'spendCents'
@@ -161,8 +139,7 @@ export function areaFigures(
   fyTemps: FyTemps,
 ): AreaFigure[] {
   const totals = sumBy(budget.rows, (row) => row.org)
-  const { areaJobs } = placeDepartments(census)
-  return placedAreas(census.orgs, areaJobs).map(({ code, name, records }) => {
+  return placedAreas(census).map(({ code, name, records }) => {
     const { jobs, spendCents } = measureJobs(
       records,
       tempsByCensus(fyTemps, { kind: 'area', code }).get(census.year) ?? null,
@@ -189,30 +166,25 @@ export function departmentRows(
   }
   const years = { now: now.census.year, before: before.census.year, fyTemps }
   const row = (input: RowInput) => toRow(input, sums, years)
-  const earlierByCode = groupBy(
-    before.census.records,
-    ({ payDepartment }) => payDepartment.code,
-  )
-  const earlierByArea = groupBy(
-    before.census.records,
-    (record) => before.census.assign(record).area,
-  )
+  const earlier = placementIndexOf(before.census)
   const { orgs } = now.census
-  const { units, areaJobs } = placeDepartments(now.census)
   return {
-    areas: placedAreas(orgs, areaJobs).map((area) =>
+    areas: placedAreas(now.census).map((area) =>
       row({
         ...area,
         area: null,
-        earlier: earlierByArea.get(area.code) ?? [],
+        earlier:
+          area.code === null
+            ? earlier.unassigned
+            : (earlier.byArea.get(area.code)?.records ?? []),
         temps: { kind: 'area', code: area.code },
       }),
     ),
-    units: units.map((unit) =>
+    units: placeUnits(now.census).map((unit) =>
       row({
         ...unit,
         area: areaOf(unit.area, orgs),
-        earlier: earlierByCode.get(unit.code) ?? [],
+        earlier: earlier.byCode.get(unit.code) ?? [],
         temps: { kind: 'unit', code: unit.code },
       }),
     ),

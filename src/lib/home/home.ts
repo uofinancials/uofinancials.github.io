@@ -8,7 +8,7 @@ import type { Projection } from '../../data/outlook.ts'
 import { runRateFor } from '../budget/outlook.ts'
 import type { AreaAssignment } from '../census/areas.ts'
 import { isClassifiedTemp, summarize, sumSpendCents } from '../census/totals.ts'
-import type { DepartmentCensus } from '../departments/jobs.ts'
+import { type DepartmentCensus, placementIndexOf } from '../departments/jobs.ts'
 import type { AreaFigure } from '../departments/table.ts'
 import { sortJobs } from '../people/list.ts'
 import { egShares } from '../scenario/eg-share.ts'
@@ -144,8 +144,18 @@ export function jobsByCensus(
 export function placementBases(
   census: DepartmentCensus,
 ): Record<AreaAssignment['basis'], number> {
-  const bases = { published: 0, name: 0, hand: 0, unassigned: 0 }
-  for (const record of census.records) bases[census.assign(record).basis] += 1
+  const { byArea, unassigned } = placementIndexOf(census)
+  const bases = {
+    published: 0,
+    name: 0,
+    hand: 0,
+    unassigned: unassigned.length,
+  }
+  for (const { bases: placed } of byArea.values()) {
+    bases.published += placed.published
+    bases.name += placed.name
+    bases.hand += placed.hand
+  }
   return bases
 }
 
