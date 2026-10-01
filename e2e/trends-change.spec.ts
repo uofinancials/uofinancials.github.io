@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
-import { openSources } from './sources.ts'
+import { collectDataFiles, openSources } from './sources.ts'
 
 test('pay changes show each census pair’s median by group, the change counts, and one pair’s distribution held in the link', async ({
   page,
@@ -139,11 +139,7 @@ test('the renames and abbreviations close with their source and method', async (
 test('the pay changes page loads the continuing pairs, and no census or budget year, with an area set', async ({
   page,
 }) => {
-  const dataFiles = new Set<string>()
-  page.on('request', (request) => {
-    const [, file] = new URL(request.url()).pathname.split('/data/')
-    if (file) dataFiles.add(file)
-  })
+  const dataFiles = collectDataFiles(page)
   await page.goto('/trends/pay-changes?area=222000')
   const main = page.getByRole('main')
   await expect(main).toContainText(

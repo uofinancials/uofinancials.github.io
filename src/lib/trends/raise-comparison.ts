@@ -6,6 +6,7 @@ import type {
 } from '../../data/raises.ts'
 import {
   type ContinuingPair,
+  changeRatio,
   filterPairs,
   type PairFilter,
 } from './pay-changes.ts'
@@ -101,9 +102,7 @@ function compareRow(
   terms: RaiseTerm[],
   window: CensusWindow,
 ): RaiseComparisonRow {
-  const ratios = pairs
-    .filter(({ raise }) => raise === row)
-    .map(({ ratio }) => ratio)
+  const ratios = pairs.filter(({ raise }) => raise === row).map(changeRatio)
   const median = ratios.length >= MIN_JOBS_SHOWN ? medianOf(ratios) : null
   const increase = acrossTheBoard(terms, row, window)
   return {

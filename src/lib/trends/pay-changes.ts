@@ -1,4 +1,5 @@
 import type { FallRecord, FallYear, StaffKind } from '../../data/fall.ts'
+import type { RankChange } from '../../data/pay-changes.ts'
 import {
   compareLines,
   emptyCounts,
@@ -31,12 +32,10 @@ export type ContinuingPair = {
   raise: RaiseRow | null
   fromCents: number
   toCents: number
-  /** The change in rate as a fraction of the earlier rate. */
-  ratio: number
   /** `null` for a pair of unclassified jobs. */
   isClassChanged: boolean | null
   /** `null` for a pair of classified jobs. */
-  rank: 'same' | 'renamed' | 'changed' | 'unpublished' | null
+  rank: RankChange | null
   /** Compared by `normalizeTitle`; a rank rename's title change is not counted. */
   isTitleChanged: boolean
 }
@@ -52,7 +51,11 @@ function rankChange({
   return isRankRename(from.rank, to.rank, fromYear + 1) ? 'renamed' : 'changed'
 }
 
-export function changeRatio(fromCents: number, toCents: number): number {
+/** A pair's change in rate as a fraction of the earlier rate. */
+export function changeRatio({
+  fromCents,
+  toCents,
+}: Pick<ContinuingPair, 'fromCents' | 'toCents'>): number {
   return (toCents - fromCents) / fromCents
 }
 
@@ -72,7 +75,6 @@ function toPair(link: PersonLink, area: string | null): ContinuingPair {
     raise: raiseRowOf(from, fromYear, group),
     fromCents: from.annualSalaryRateCents,
     toCents: to.annualSalaryRateCents,
-    ratio: changeRatio(from.annualSalaryRateCents, to.annualSalaryRateCents),
     isClassChanged:
       from.kind === 'classified'
         ? peer !== (peerGroupOf(to)?.key ?? null)
@@ -84,15 +86,10 @@ function toPair(link: PersonLink, area: string | null): ContinuingPair {
   }
 }
 
-/** The area a census places a job in, by the job and its census year. */
-export type AreaOf = (record: FallRecord, censusYear: number) => string | null
-
-const noArea: AreaOf = () => null
-
-/** `areaOf` places each pair's earlier job; without it no pair has an area. */
+/** `areaOf` gives the area a census places a job in, by the job and its census year. */
 export function continuingPairs(
   years: FallYear[],
-  areaOf: AreaOf = noArea,
+  areaOf: (record: FallRecord, censusYear: number) => string | null,
 ): ContinuingPair[] {
   return findPersonLinks(years).flatMap((link) => {
     const { fromYear, from, to } = link
@@ -103,7 +100,7 @@ export function continuingPairs(
   })
 }
 
-/** What narrows the pairs: the jobs filter, and a college or VP area code. */
+/** What narrows the pairs: the jobs filter, and a college or VP area code, whose pairs are those each census places in it. */
 export type PairFilter = TrendFilter & { area: string | null }
 
 /** The pairs in the filter's range whose earlier job passes it. */
@@ -149,7 +146,7 @@ export function payChangeTrends(
   if (fromYears.length === 0) return []
   const keyed = pairs.map((pair) => ({
     fromYear: pair.fromYear,
-    ratio: pair.ratio,
+    ratio: changeRatio(pair),
     line: lineOf(pair, pair.group, opened),
   }))
   const ratios = new Map([

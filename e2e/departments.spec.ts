@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { expect, type Page, test } from '@playwright/test'
-import { openSources } from './sources.ts'
+import { collectDataFiles, openSources } from './sources.ts'
 
 const pageWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth)
@@ -172,11 +172,7 @@ test('a unit in the scenario budget opens a scenario that eliminates it', async 
 test('a department page loads its own figures, and no census or budget year', async ({
   page,
 }) => {
-  const dataFiles = new Set<string>()
-  page.on('request', (request) => {
-    const [, file] = new URL(request.url()).pathname.split('/data/')
-    if (file) dataFiles.add(file)
-  })
+  const dataFiles = collectDataFiles(page)
   await page.goto('/departments/222000')
   await expect(
     page.getByRole('heading', { level: 2, name: 'Units in this area' }),

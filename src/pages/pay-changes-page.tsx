@@ -3,10 +3,9 @@ import { Link, useLoaderData, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/components/layout/page-header'
 import { TrendsControls } from '@/components/trends/controls'
 import { PayChangesSection } from '@/components/trends/pay-changes-section'
-import { manifestQuery, payChangesQuery } from '@/data/queries'
+import { payChangesQuery } from '@/data/queries'
 import { usePayChanges } from '@/hooks/use-pay-changes'
 import { usePreloadedNavigate } from '@/hooks/use-preloaded-navigate'
-import { censusFiscalYears } from '@/lib/census/totals'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import type { SectionSource } from '@/lib/shared/citation'
 import { pairFilterNames } from '@/lib/trends/pair-file'
@@ -15,12 +14,11 @@ import { type PayChangesSearch, resolveTrendView } from '@/lib/trends/search'
 /** Continuing jobs' changes in salary rate between census pairs, for a group, staff kind, department, area, or class or rank. */
 export function PayChangesPage() {
   const navigate = usePreloadedNavigate()
-  const { years } = useLoaderData({ from: '/trends/pay-changes' })
+  const { years, fiscalYears } = useLoaderData({ from: '/trends/pay-changes' })
   const view = resolveTrendView(
     useSearch({ from: '/trends/pay-changes' }),
     years,
   )
-  const { data: manifest } = useSuspenseQuery(manifestQuery)
   const { data: file } = useSuspenseQuery(payChangesQuery)
   const changes = usePayChanges(view)
   const filterSources: SectionSource[] =
@@ -29,7 +27,7 @@ export function PayChangesPage() {
       : [
           {
             kind: 'budget-range',
-            ...censusFiscalYears(manifest),
+            ...fiscalYears,
             computed: AREA_PLACEMENT_METHOD,
           },
         ]

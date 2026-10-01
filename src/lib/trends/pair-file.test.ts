@@ -1,23 +1,12 @@
 import { expect, test } from 'vitest'
-import type { BudgetYear } from '@/data/budget'
 import { payChangesFileSchema } from '@/data/pay-changes'
 import { areaPlacer, toDepartmentCensus } from '@/lib/departments/jobs'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { scenarioBudget } from '@/test/scenario-fixtures'
 import { decodePairs, encodePairs, pairNames } from './pair-file'
 import { type ContinuingPair, continuingPairs } from './pay-changes'
 
-const BUDGET: BudgetYear = {
-  fiscalYear: 2026,
-  period: '12',
-  orgs: {
-    '222000': { name: 'Arts & Sciences, College of', level: 3, parent: null },
-    '223100': { name: 'CAS Biology', level: 5, parent: '222000' },
-  },
-  funds: {},
-  fundTypes: {},
-  accountTypes: {},
-  rows: [],
-}
+const BUDGET = scenarioBudget([])
 
 const BIOLOGY = { code: '223100', name: 'CAS Biology' }
 const JOINED = { code: '226535', name: 'Old Name', publishedCode: '226530' }
@@ -63,7 +52,7 @@ test('names read as the earliest census has them: a department by a record under
       { code: '223100', name: 'CAS Biology (223100)' },
       { code: '226535', name: '226535' },
     ],
-    areas: [{ code: '222000', name: 'Arts & Sciences, College of' }],
+    areas: [{ code: '222000', name: 'Arts & Sciences' }],
     peers: [
       { key: 'class 0104', label: 'Office Specialist 2 (class 0104)' },
       { key: 'rank Instructor', label: 'Instructor' },

@@ -47,18 +47,15 @@ export function usePayChanges(view: TrendView) {
     [pairs, manifest, raiseTerms, filter, pair],
   )
   const shown = useMemo(() => filterPairs(pairs, filter), [pairs, filter])
-  return useMemo(
-    () => ({
-      fromYears,
-      series: payChangeTrends(shown, fromYears, group),
-      counts: changeCounts(shown, fromYears),
-      distribution: payChangeDistribution(
-        shown.filter(({ fromYear }) => fromYear === pair),
-      ),
-      raises,
-    }),
-    [shown, fromYears, group, pair, raises],
-  )
+  return {
+    fromYears,
+    series: payChangeTrends(shown, fromYears, group),
+    counts: changeCounts(shown, fromYears),
+    distribution: payChangeDistribution(
+      shown.filter(({ fromYear }) => fromYear === pair),
+    ),
+    raises,
+  }
 }
 
 export type PayChanges = ReturnType<typeof usePayChanges>

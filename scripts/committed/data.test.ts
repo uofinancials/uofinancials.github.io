@@ -379,7 +379,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const years = [2024, 2025].map((year) =>
       foldedFallYearSchema.parse(readJson(fallDataPath(year))),
     )
-    const pairs = continuingPairs(years)
+    const pairs = continuingPairs(years, () => null)
     const [all] = payChangeTrends(pairs, [2024], null)
     expect(all?.points[0]?.pairs).toBe(5_203)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)

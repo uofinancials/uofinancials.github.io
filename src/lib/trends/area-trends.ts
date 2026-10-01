@@ -1,4 +1,3 @@
-import type { FallRecord } from '../../data/fall.ts'
 import type { FyTemps } from '../../data/fy-temps.ts'
 import type { AreaTrends, ScopeTrends } from '../../data/summary.ts'
 import { departmentIndex } from '../departments/codes.ts'
@@ -17,15 +16,17 @@ type Frame = {
   fyTemps: FyTemps
 }
 
-/** Builds a scope's trends and pay changes from the jobs whose key, by `recordKey`, is its code, and the pairs whose area or pay department is. */
+/** Builds a scope's trends and pay changes from the jobs and pairs whose placed area, or whose pay department, is its code. */
 function scopeBuilder(
   { censuses, pairs, filter, fromYears, fyTemps }: Frame,
-  recordKey: (record: FallRecord, year: number) => string | null,
   kind: 'area' | 'unit',
 ) {
+  const areaOf = areaPlacer(censuses)
   const placed = censuses.map(({ year, records }) => ({
     year,
-    records: groupBy(records, (record) => recordKey(record, year)),
+    records: groupBy(records, (record) =>
+      kind === 'area' ? areaOf(record, year) : record.payDepartment.code,
+    ),
   }))
   const pairsOf = groupBy(pairs, (pair) =>
     kind === 'area' ? pair.area : pair.dept,
@@ -80,12 +81,8 @@ export function areaTrends(
     ),
     fyTemps,
   }
-  const areaScope = scopeBuilder(frame, areaPlacer(sorted), 'area')
-  const unitScope = scopeBuilder(
-    frame,
-    (record) => record.payDepartment.code,
-    'unit',
-  )
+  const areaScope = scopeBuilder(frame, 'area')
+  const unitScope = scopeBuilder(frame, 'unit')
   return departmentIndex(latest).flatMap(({ code, name, entries }) =>
     code === null
       ? []

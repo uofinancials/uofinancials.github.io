@@ -1,22 +1,22 @@
 import type { BudgetYear } from '../../data/budget.ts'
 import { type FallRecord, staffKindSchema } from '../../data/fall.ts'
-import type { PayChangesFile } from '../../data/pay-changes.ts'
+import {
+  columnsSchema,
+  type PayChangesFile,
+  rankChangeSchema,
+} from '../../data/pay-changes.ts'
 import { listAreas } from '../census/areas.ts'
 import { TREND_GROUPS, type TrendGroup } from '../census/groups.ts'
 import { describeCode } from '../departments/codes.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import { peerGroupOf } from '../people/peer-group.ts'
 import { department } from '../people/person-fields.ts'
-import {
-  type ContinuingPair,
-  changeRatio,
-  type PairFilter,
-} from './pay-changes.ts'
+import type { ContinuingPair, PairFilter } from './pay-changes.ts'
 import { RAISE_ROWS, type RaiseRow } from './raise-groups.ts'
 import type { PayChangeNames } from './search.ts'
 
 /** How each pay department, college or VP area, and class or rank reads. */
-export type PairNames = Pick<PayChangesFile, 'depts' | 'areas' | 'peers'>
+type PairNames = Pick<PayChangesFile, 'depts' | 'areas' | 'peers'>
 
 /** Every pay department and class or rank a census publishes and every area of a census's budget year, sorted: a department named by its earliest record published under its own code, or by its code when it has none; a class or rank by its earliest job. */
 export function pairNames(
@@ -54,12 +54,7 @@ export function pairNames(
 }
 
 const KINDS = staffKindSchema.options
-const RANKS: PayChangesFile['ranks'] = [
-  'same',
-  'renamed',
-  'changed',
-  'unpublished',
-]
+const RANKS = rankChangeSchema.options
 
 /** Each value's place in a list; throws for a value the list lacks, which would otherwise be written as no value. */
 function placeIn<Value>(list: readonly Value[], what: string) {
@@ -80,22 +75,8 @@ function orNull<Value>(place: (value: Value) => number) {
 type Columns = PayChangesFile['pairs']
 type Row = { [Column in keyof Columns]: Columns[Column][number] }
 
-/** The order rows are sorted by, so the file's text does not follow the order of names in a census. */
-const SORT_ORDER: (keyof Row)[] = [
-  'fromYear',
-  'kind',
-  'dept',
-  'area',
-  'group',
-  'category',
-  'peer',
-  'raise',
-  'fromCents',
-  'toCents',
-  'isClassChanged',
-  'rank',
-  'isTitleChanged',
-]
+/** Rows are sorted by every column, in the file's column order, so its text does not follow the order of names in a census. */
+const SORT_ORDER = columnsSchema.keyof().options
 
 const NO_VALUE = -1
 
@@ -170,7 +151,7 @@ export function encodePairs(
     groups: [...TREND_GROUPS],
     categories,
     raises: RAISE_ROWS.map(({ label }) => label),
-    ranks: RANKS,
+    ranks: [...RANKS],
     pairs: {
       fromYear: column('fromYear'),
       kind: column('kind'),
@@ -222,26 +203,21 @@ export function decodePairs(file: PayChangesFile): ContinuingPair[] {
   const groups = file.groups.map(groupNamed)
   const raises = file.raises.map(raiseRowLabelled)
   const { pairs } = file
-  return pairs.fromYear.map((fromYear, row) => {
-    const fromCents = cell(pairs.fromCents, row)
-    const toCents = cell(pairs.toCents, row)
-    return {
-      fromYear,
-      kind: cell(file.kinds, cell(pairs.kind, row)),
-      dept: listed(file.depts, cell(pairs.dept, row))?.code ?? null,
-      area: listed(file.areas, cell(pairs.area, row))?.code ?? null,
-      group: cell(groups, cell(pairs.group, row)),
-      eeoCategory: listed(file.categories, cell(pairs.category, row)),
-      peer: listed(file.peers, cell(pairs.peer, row))?.key ?? null,
-      raise: listed(raises, cell(pairs.raise, row)),
-      fromCents,
-      toCents,
-      ratio: changeRatio(fromCents, toCents),
-      isClassChanged: cell(pairs.isClassChanged, row),
-      rank: listed(file.ranks, cell(pairs.rank, row)),
-      isTitleChanged: cell(pairs.isTitleChanged, row),
-    }
-  })
+  return pairs.fromYear.map((fromYear, row) => ({
+    fromYear,
+    kind: cell(file.kinds, cell(pairs.kind, row)),
+    dept: listed(file.depts, cell(pairs.dept, row))?.code ?? null,
+    area: listed(file.areas, cell(pairs.area, row))?.code ?? null,
+    group: cell(groups, cell(pairs.group, row)),
+    eeoCategory: listed(file.categories, cell(pairs.category, row)),
+    peer: listed(file.peers, cell(pairs.peer, row))?.key ?? null,
+    raise: listed(raises, cell(pairs.raise, row)),
+    fromCents: cell(pairs.fromCents, row),
+    toCents: cell(pairs.toCents, row),
+    isClassChanged: cell(pairs.isClassChanged, row),
+    rank: listed(file.ranks, cell(pairs.rank, row)),
+    isTitleChanged: cell(pairs.isTitleChanged, row),
+  }))
 }
 
 /** How a filter's pay department, area, and class or rank read: as the file lists each, or as given when it lists none; `null` for one not set. */
@@ -249,16 +225,11 @@ export function pairFilterNames(
   { depts, areas, peers }: PairNames,
   { dept, area, position }: Pick<PairFilter, 'dept' | 'area' | 'position'>,
 ): PayChangeNames {
-  const read = (
-    asked: string | null,
-    name: (asked: string) => string | undefined,
-  ) => (asked === null ? null : (name(asked) ?? asked))
+  const read = (asked: string | null, name: string | undefined) =>
+    asked === null ? null : (name ?? asked)
   return {
-    dept: read(dept, (asked) => depts.find(({ code }) => code === asked)?.name),
-    area: read(area, (asked) => areas.find(({ code }) => code === asked)?.name),
-    position: read(
-      position,
-      (asked) => peers.find(({ key }) => key === asked)?.label,
-    ),
+    dept: read(dept, depts.find(({ code }) => code === dept)?.name),
+    area: read(area, areas.find(({ code }) => code === area)?.name),
+    position: read(position, peers.find(({ key }) => key === position)?.label),
   }
 }

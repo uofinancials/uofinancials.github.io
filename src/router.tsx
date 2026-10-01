@@ -32,6 +32,8 @@ import {
 import { unitCodeOf } from '@/data/unit-aliases'
 import { resolveCensusYear } from '@/lib/census/search'
 import {
+  censusFiscalYears,
+  censusYears,
   fiscalYearForCensus,
   fiscalYearOf,
   selectOverviewSources,
@@ -110,7 +112,7 @@ const trendsRoute = createRoute({
     )
     const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     return {
-      years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
+      years: censusYears(manifest),
       fiscalYears: {
         from: Math.min(...fiscalYears),
         to: Math.max(...fiscalYears),
@@ -134,7 +136,8 @@ const payChangesRoute = createRoute({
       queryClient.ensureQueryData(raiseTermsQuery),
     ])
     return {
-      years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
+      years: censusYears(manifest),
+      fiscalYears: censusFiscalYears(manifest),
     }
   },
   component: lazyRouteComponent(
@@ -199,7 +202,7 @@ async function loadCensus({
   deps: { year: number | undefined }
 }) {
   const manifest = await queryClient.ensureQueryData(manifestQuery)
-  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+  const years = censusYears(manifest)
   const year = resolveCensusYear(deps.year, years)
   const census = manifest.fall.find((entry) => entry.year === year)
   if (!census) throw notFound()

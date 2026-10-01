@@ -3,9 +3,21 @@ import { staffKindSchema } from './fall.ts'
 
 const index = z.number().int().nonnegative()
 const cents = z.number().int().positive()
+const nonBlank = z.string().min(1)
+const named = z.strictObject({ code: nonBlank, name: nonBlank })
+
+/** How the ranks of a pair of unclassified jobs compare; a rank UO renamed has not changed. */
+export const rankChangeSchema = z.enum([
+  'same',
+  'renamed',
+  'changed',
+  'unpublished',
+])
+
+export type RankChange = z.infer<typeof rankChangeSchema>
 
 /** One array per field, a pair per position; an index column points into the file's list for it. */
-const columnsSchema = z.strictObject({
+export const columnsSchema = z.strictObject({
   /** The earlier census of the pair. */
   fromYear: z.array(z.number().int()),
   kind: z.array(index),
@@ -24,8 +36,6 @@ const columnsSchema = z.strictObject({
   isTitleChanged: z.array(z.boolean()),
 })
 
-const code = z.string().min(1)
-
 /**
  * Every continuing job's pair of consecutive censuses, without a name: what
  * its earlier job is grouped by, its two published annual salary rates, and
@@ -35,17 +45,17 @@ const code = z.string().min(1)
  */
 export const payChangesFileSchema = z
   .strictObject({
-    depts: z.array(z.strictObject({ code, name: z.string().min(1) })),
-    areas: z.array(z.strictObject({ code, name: z.string().min(1) })),
+    depts: z.array(named),
+    areas: z.array(named),
     /** `peerGroupOf` keys and labels. */
-    peers: z.array(z.strictObject({ key: code, label: z.string().min(1) })),
+    peers: z.array(z.strictObject({ key: nonBlank, label: nonBlank })),
     kinds: z.array(staffKindSchema),
-    groups: z.array(z.string().min(1)),
+    groups: z.array(nonBlank),
     /** EEO categories as published. */
-    categories: z.array(z.string().min(1)),
+    categories: z.array(nonBlank),
     /** Raise row labels. */
-    raises: z.array(z.string().min(1)),
-    ranks: z.array(z.enum(['same', 'renamed', 'changed', 'unpublished'])),
+    raises: z.array(nonBlank),
+    ranks: z.array(rankChangeSchema),
     pairs: columnsSchema,
   })
   .superRefine((file, context) => {

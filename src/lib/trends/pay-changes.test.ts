@@ -1,10 +1,11 @@
 import { expect, test } from 'vitest'
-import type { FallRecord } from '@/data/fall'
+import type { FallRecord, FallYear } from '@/data/fall'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { ALL_PAIRS } from './pay-change-labels'
 import {
   changeBinLabel,
   changeCounts,
+  changeRatio,
   continuingPairs,
   filterPairs,
   type PairFilter,
@@ -21,6 +22,8 @@ const ALL_JOBS: PairFilter = {
   from: 2014,
   to: 2025,
 }
+
+const unplacedPairs = (years: FallYear[]) => continuingPairs(years, () => null)
 
 /** Two censuses in which each name's primary job moves from its first record to its second. */
 function linkedYears(fromYear: number, jobs: [FallRecord, FallRecord][]) {
@@ -51,7 +54,7 @@ function classifiedPair(fromCents: number, toCents: number) {
 }
 
 test('pairs leave out staff kind moves and term changes, keep temporaries, and group by the earlier job', () => {
-  const pairs = continuingPairs(
+  const pairs = unplacedPairs(
     linkedYears(2020, [
       classifiedPair(5_000_000, 5_350_000),
       [
@@ -74,11 +77,11 @@ test('pairs leave out staff kind moves and term changes, keep temporaries, and g
     ]),
   )
   expect(
-    pairs.map(({ group, peer, ratio, isClassChanged }) => [
-      group,
-      peer,
-      ratio,
-      isClassChanged,
+    pairs.map((pair) => [
+      pair.group,
+      pair.peer,
+      changeRatio(pair),
+      pair.isClassChanged,
     ]),
   ).toEqual([
     ['Classified staff', 'class 0104', 0.07, false],
@@ -89,7 +92,7 @@ test('pairs leave out staff kind moves and term changes, keep temporaries, and g
 })
 
 test('each line is the median of its pairs, blank below three', () => {
-  const pairs = continuingPairs([
+  const pairs = unplacedPairs([
     ...linkedYears(2020, [
       classifiedPair(100_000, 100_000),
       classifiedPair(100_000, 102_000),
@@ -119,7 +122,7 @@ test('a range without a pair year has no lines', () => {
 })
 
 test('changes fall in whole-point bins from -5% to 20%, with open bins either side', () => {
-  const pairs = continuingPairs(
+  const pairs = unplacedPairs(
     linkedYears(2024, [
       classifiedPair(100, 90),
       classifiedPair(100, 95),
@@ -151,7 +154,7 @@ test('changes fall in whole-point bins from -5% to 20%, with open bins either si
 test('class changes ignore the prefix, and rank and title changes leave out renames and unpublished ranks', () => {
   const office = (code: string, jobTitle: string) =>
     classifiedJob({ positionClass: { code, title: null }, jobTitle })
-  const pairs = continuingPairs(
+  const pairs = unplacedPairs(
     linkedYears(2024, [
       [
         unclassifiedJob({ rank: 'Instructor', academicTitle: 'Instructor' }),
@@ -237,7 +240,7 @@ test('filters narrow by the earlier job’s kind, pay department, area, and clas
 })
 
 test('an opened group’s lines are its earlier jobs’ published categories', () => {
-  const pairs = continuingPairs(
+  const pairs = unplacedPairs(
     linkedYears(2020, [
       ...[100_000, 102_000, 104_000].map(
         (toCents): [FallRecord, FallRecord] => [
