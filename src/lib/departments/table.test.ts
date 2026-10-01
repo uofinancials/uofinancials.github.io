@@ -221,3 +221,27 @@ test('the filter keeps rows in the area whose name or code contains the text', (
   ])
   expect(filterRows(units, { q: 'biology', area: '480000' })).toEqual([])
 })
+
+test('a pay department published under two names in two areas is one unit, under its first record’s name and area', () => {
+  const advising = (name: string) =>
+    unclassifiedJob({ payDepartment: { code: '555555', name } })
+  const census = toDepartmentCensus(
+    {
+      year: 2025,
+      records: [
+        advising('CAS Advising'),
+        advising('Athletics Advising'),
+        advising('Athletics Advising'),
+      ],
+    },
+    FY26,
+  )
+  const rows = departmentRows({ census, budget: FY26 }, BEFORE, { years: [] })
+  expect(rows.units.filter(({ code }) => code === '555555')).toMatchObject([
+    { name: 'CAS Advising', area: { code: '222000' }, jobs: 3 },
+  ])
+  expect(rows.areas.map(({ code, jobs }) => [code, jobs])).toEqual([
+    ['222000', 1],
+    ['480000', 2],
+  ])
+})
