@@ -5,15 +5,32 @@ import type * as React from 'react'
 const KEY_COLUMN =
   'key-cell:sticky key-cell:left-0 key-cell:z-[1] key-cell:bg-background key-cell:bg-[linear-gradient(var(--row-tint),var(--row-tint))] max-md:key-cell:min-w-28 max-md:key-cell:whitespace-normal max-md:key-cell:shadow-[inset_-1px_0_var(--border)]'
 
-function Table({ className, ...props }: React.ComponentProps<'table'>) {
+/** Column headers stay at the top of a table whose container is capped in height, on the same paper fill; their hairline is drawn on the cells, since the row's own border would stay behind, and the corner stays above both sticky sets. */
+const STICKY_HEADER =
+  'head-cell:sticky head-cell:top-0 head-cell:z-[1] head-cell:bg-background head-cell:bg-[linear-gradient(var(--row-tint),var(--row-tint))] head-cell:after:absolute head-cell:after:inset-x-0 head-cell:after:top-full head-cell:after:h-px head-cell:after:bg-border [&_thead_tr]:border-transparent corner-cell:z-[2]'
+
+function Table({
+  className,
+  containerClassName,
+  ...props
+}: React.ComponentProps<'table'> & {
+  /** Classes for the scrolling container, such as a height cap. */
+  containerClassName?: string
+}) {
   return (
     <div
       data-slot="table-container"
-      className="scroll-edge relative w-full overflow-x-auto"
+      className={cn(
+        'scroll-edge relative w-full overflow-x-auto',
+        containerClassName,
+      )}
     >
       <table
         data-slot="table"
-        className={cn(`w-full caption-bottom text-sm ${KEY_COLUMN}`, className)}
+        className={cn(
+          `w-full caption-bottom text-sm ${KEY_COLUMN} ${STICKY_HEADER}`,
+          className,
+        )}
         {...props}
       />
     </div>

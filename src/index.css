@@ -5,6 +5,10 @@
 @custom-variant dark (@media (prefers-color-scheme: dark));
 /* The first cell of each row, in a table whose rows have headers. */
 @custom-variant key-cell (&:has(th[scope="row"]) tr > :first-child);
+/* Each cell of a table's header rows. */
+@custom-variant head-cell (& thead th);
+/* The header's first cell, in a table whose rows have headers. */
+@custom-variant corner-cell (&:has(th[scope="row"]) thead tr > :first-child);
 
 @theme inline {
   --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
