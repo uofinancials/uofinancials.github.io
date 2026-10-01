@@ -89,7 +89,7 @@ flowchart LR
   and router, and mounts the app.
 - `src/index.css` - the theme: color tokens for light and dark schemes, native
   control colors, the type scale, radius, the prose measure, and the focus,
-  link, table scroll edge, and table key column styles.
+  link, table scroll edge, table key column, and table header styles.
 - `src/app.tsx` - the query and router providers.
 - `src/router.tsx` - the route tree, each route's data loading, each page's code
   loaded on demand, and the default loading, error, and not-found pages.
@@ -98,7 +98,8 @@ flowchart LR
   - `layout` - the shared layout with the skip link, independence notice, and
     error report link, page headers and their browser tab titles, sections, stat
     cards, the sources disclosure and inline source citations, the navigation,
-    tab, and disclosure summary styles, and loading and error states.
+    tab, and disclosure summary styles, the scroll of a row to its current item,
+    and loading and error states.
   - `fields` - form fields, the segmented view switch, the department or area
     picker, a type-to-search picker, the folding filter panel and its removable
     chips, the sortable column header, and the button styles.
@@ -180,8 +181,9 @@ flowchart LR
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, navigation, skip link,
-  and tab titles, a department's jobs link, the people list, its filter chips,
-  and person page, an earlier name's redirect, sources page, and `404.html`.
+  and tab titles, the chart marker's label on a phone, a department's jobs link,
+  the people list, its filter chips, and person page, an earlier name's
+  redirect, sources page, and `404.html`.
 - `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
