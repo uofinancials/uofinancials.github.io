@@ -7,10 +7,10 @@ Pages serves it from the `uofinancials.github.io` repository. An import script
 turns the University of Oregon's Fall Census and fiscal year total pay salary
 report PDFs, its operational expenditure budget workbooks, and its blended OPE
 rate pages into JSON files committed under `public/data/`, then derives from
-those files a summary of the figures the pages show by default. Raise terms from
-collective bargaining agreements and the E&G fund projection from Board of
-Trustees materials are entered by hand. The site reads nothing but its bundle
-and those files.
+those files the figures each page shows, one small file per page view. Raise
+terms from collective bargaining agreements and the E&G fund projection from
+Board of Trustees materials are entered by hand. The site reads nothing but its
+bundle and those files.
 
 ## Data
 
@@ -47,20 +47,30 @@ and those files.
   published line, its alternative cases and assumptions, run rates reported
   since, the all-funds budget, and announced budget actions, each with its
   citation; edited by hand.
-- `public/data/summary.json` - every job's trends by group, continuing jobs'
-  median pay change by group for every census pair, each area's yearly figures,
-  the department table's rows, the home page's figures, and every person's
-  census years and other published names with the class and rank medians;
-  derived from the other data files by `scripts/scrape`.
+- `public/data/home.json` - the home page's headline figures, scenario answers,
+  area figures, placement counts, and highest salary rates; derived from the
+  other data files by `scripts/scrape`, as is every file below but the manifest.
+- `public/data/trends.json` - every job's trends by group, continuing jobs'
+  median pay change by group for every census pair, and each area's yearly
+  figures.
+- `public/data/departments.json` - the department table's rows, and every code
+  with a department page.
+- `public/data/departments/<code>.json` - one code's names, budget by account
+  group and fund type, jobs by group and staff kind, classes per census, and an
+  area's job placements. It holds no job record.
+- `public/data/people/names.json` - every person's census years and other
+  published names.
+- `public/data/people/medians.json` - the class and rank medians.
+- `public/data/people/buckets/<id>.json` - the people whose name hashes to the
+  bucket, each with their Fall records as published, and the other names filed
+  there with the name each leads to.
 - `public/data/fy-temps.json` - classified temporaries' actual pay, jobs, and
-  estimated FTE by fiscal year and unit, with each unit's area; derived with the
-  summary by `scripts/scrape`.
+  estimated FTE by fiscal year and unit, with each unit's area.
 - `public/data/trends/<area>.json` - one college or VP area's, and each of its
   units' and pay departments', jobs by group in every census and continuing
-  jobs' median pay change by group; derived with the summary by
-  `scripts/scrape`.
+  jobs' median pay change by group.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
-  dates, and counts, and the files and date the summary was derived from;
+  dates, and counts, and the files and date the derived files were derived from;
   written by `scripts/scrape`.
 
 ## Flow
@@ -122,8 +132,9 @@ flowchart LR
 - `src/data` - the schemas and types of the committed data files, the queries
   that fetch and parse them, the hand-reviewed unit and person alias tables and
   the hand-reviewed join of pay codes the budget does not publish to their
-  units, with the fold every Fall and budget year is read through, and the
-  hand-reviewed codes of FY department names no census or budget resolves.
+  units, with the fold every Fall year, budget year, and name bucket is read
+  through, and the hand-reviewed codes of FY department names no census or
+  budget resolves.
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
   - `shared` - number formatting, browser tab titles, table sort order, grouping
@@ -134,25 +145,26 @@ flowchart LR
   - `trends` - trends by group and by area, with classified temporaries measured
     by their FY pay, the report's indexes, changes, spend shares, and answers,
     continuing jobs' pay changes, and raise groups beside their terms.
-  - `departments` - a department's budget and jobs, the department index, the
-    department table, FY department names resolved to codes, and classified
-    temporaries' FY pay by unit.
+  - `departments` - a department's budget and jobs and the file its page reads,
+    the department index, the department table, FY department names resolved to
+    codes, and classified temporaries' FY pay by unit.
   - `people` - the people list, names joined as one person by hand review or by
-    name-matching rules, person links and lookup, and a person's computed
-    figures and peer medians.
+    name-matching rules, person links and lookup, the name buckets, and a
+    person's computed figures and peer medians.
   - `budget` - the budget outlook's gap, series, and cited sources.
   - `scenario` - scenario rules, their editing and examples, and the savings
     they produce against the projection.
   - `home` - the home page's figures.
-  - `summary` - the summary of the pages' default figures.
+  - `summary` - the pages' default figures.
 - `src/test` - shared test fixtures.
 
 ### Import (`scripts/`)
 
 - `scripts/scrape/main.ts` - the `pnpm scrape [dataset]` command: runs the
   dataset steps and writes the manifest.
-- `scripts/scrape/summary.ts` - the summary step: derives the summary file and
-  the area trends files from the committed data files.
+- `scripts/scrape/summary.ts` - the summary step: derives the pages' files, the
+  area trends files, the department files, and the name buckets from the
+  committed data files.
 - `scripts/scrape/cache.ts` - the source and data locations, and the committed
   JSON reader.
 - `scripts/scrape/manifest-file.ts` - reading and writing the manifest.
@@ -173,23 +185,25 @@ flowchart LR
   the budget units a pay code the budget does not publish may pay for, and of FY
   department names no census or budget resolves, with their evidence.
 - `scripts/committed` - checks of the committed data files, and of the figures
-  derived from them, against their sources, that every unit and name pair the
-  alias finders offer has been reviewed, that every pay code the budget does not
-  publish is joined to a unit or reviewed as having none, and that every FY
-  department name resolves to a code.
+  derived from them, against their sources, that the name buckets hold every
+  Fall record once as published, that every unit and name pair the alias finders
+  offer has been reviewed, that every pay code the budget does not publish is
+  joined to a unit or reviewed as having none, and that every FY department name
+  resolves to a code.
 
 ### End-to-end tests (`e2e/`)
 
 - `e2e/home.spec.ts` - the built site's routes, notice, navigation, skip link,
   and tab titles, the chart marker's label on a phone, a department's jobs link,
-  the people list, its filter chips, and person page, an earlier name's
-  redirect, sources page, and `404.html`.
+  the people list, its filter chips, and person page, the files a person page
+  loads, an earlier name's redirect, sources page, and `404.html`.
 - `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
 - `e2e/departments.spec.ts` - the departments table's sorting, levels, and
-  filters, a unit's and an area's pages, an alias code's redirect, the scenario
-  and pay changes links, and narrow layout.
+  filters, a unit's and an area's pages, the files a department page loads, an
+  older pay code's page, an alias code's redirect, the scenario and pay changes
+  links, and narrow layout.
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, sources,
   and narrow layout.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
@@ -209,7 +223,7 @@ flowchart LR
   savings against the gap, job records per census, the largest colleges and VP
   areas by a measure held in the URL, the highest published salary rates, and
   the data's dates, each linking to its page; driven by `src/lib/home` over the
-  summary, the outlook, the raise terms, and the manifest.
+  home file, the outlook, the raise terms, and the manifest.
 - `/trends` - a report of the Fall censuses for all of UO, a college or VP area,
   or a unit, over a year range, with the filters and tab held in the URL: spend,
   jobs, median rate, and admins and executives per 100 faculty since the first
@@ -218,8 +232,8 @@ flowchart LR
   in spend split into FTE and pay per FTE; continuing jobs' median raises by
   group and census pair; the pick against up to three areas or units from
   anywhere and the university; and how groups are defined; driven by
-  `src/lib/trends` over the summary and, for a picked area or unit, that area's
-  trends file.
+  `src/lib/trends` over the trends file and, for a picked area or unit, that
+  area's trends file.
 - `/trends/pay-changes` - for continuing jobs in each pair of consecutive
   censuses, the median change in salary rate by group, the counts of changed
   class, rank, and title, and one pair's distribution of changes and median
@@ -231,27 +245,25 @@ flowchart LR
 - `/departments` - a sortable table of the colleges and VP areas in the latest
   census's budget year, or of their units and pay departments, with budget,
   jobs, spend, and median and each one's change from the year before, filtered
-  by area and by name or code; driven by the summary's department table rows.
+  by area and by name or code; driven by the departments file's rows.
 - `/departments/$code` - one code's budget by account group or fund type for
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, for an area its units in the department
   table and how its jobs were placed, the codes joined to it, and links to a
   scenario eliminating it and to its pay changes, with a joined code leading to
-  its unit; driven by `src/lib/departments` over every Fall and budget year and
-  temporaries' FY pay by unit, and the outlook file for the scenario's budget
-  year.
+  its unit; driven by the code's department file, the departments file, and the
+  outlook file for the scenario's budget year.
 - `/people` - one Fall census's jobs by name, filtered, sorted, and paged, with
   a chart of the matching jobs by salary rate, with primary-job percentiles, or
   a table of them by group, their salary spend by EEO category, and names from
   other censuses when a name has no job in it; not indexed by search engines;
   driven by the `src/lib/people` list and `src/lib/census` distribution over one
-  Fall year and its budget year, and the summary's name index.
+  Fall year and its budget year, and the name index.
 - `/people/$name` - one person's computed figures, rates by job over time,
   records for one census at a time, and job history under their latest published
   name, with the other names their records were published under and a back
   button, an earlier name leading to it; not indexed by search engines; driven
-  by `src/lib/people` over the summary's name index and medians and the Fall
-  years the name appears in.
+  by `src/lib/people` over the bucket the name is filed in and the medians.
 - `/budget` - the E&G fund projection: the gap and fund balance by fiscal year
   as a chart and table, every published line, the alternative cases, the
   reduction estimate, the all-funds budget, the stated assumptions, and the

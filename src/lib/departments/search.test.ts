@@ -6,6 +6,7 @@ import {
   departmentsSearchSchema,
   resolveDepartmentsView,
   resolveDepartmentView,
+  shownClasses,
 } from './search'
 
 test('a malformed search falls back to the defaults', () => {
@@ -68,4 +69,33 @@ test('a budget year before year-end names its posting period', () => {
 test('a chart tick shortens a budget year before year-end to its period', () => {
   expect(budgetYearTick({ fiscalYear: 2025, period: '14' })).toBe('FY25')
   expect(budgetYearTick({ fiscalYear: 2027, period: '02' })).toBe('FY27 P2')
+})
+
+test('the class tables are the chosen census’s, for the chosen staff kind or both', () => {
+  const row = {
+    label: 'Professor',
+    jobs: 3,
+    spendCents: 1,
+    fteHundredths: 300,
+    medianRateCents: 1,
+  }
+  const classes = [
+    { year: 2024, unclassified: [], classified: [row] },
+    { year: 2025, unclassified: [row], classified: [row] },
+  ]
+  expect(shownClasses(classes, { kind: 'all', year: 2025 })).toEqual({
+    unclassified: [row],
+    classified: [row],
+  })
+  expect(shownClasses(classes, { kind: 'classified', year: 2025 })).toEqual({
+    unclassified: [],
+    classified: [row],
+  })
+  expect(
+    shownClasses(classes, { kind: 'all', year: 2024 }).unclassified,
+  ).toEqual([])
+  expect(shownClasses(classes, { kind: 'all', year: null })).toEqual({
+    unclassified: [],
+    classified: [],
+  })
 })

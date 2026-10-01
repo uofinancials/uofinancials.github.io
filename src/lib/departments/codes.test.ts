@@ -96,19 +96,14 @@ test('a code is described by what each source publishes under it', () => {
     otherNames: ['Biology'],
     aliasCodes: ['223131'],
     isArea: false,
-    hasBudget: true,
-    hasJobs: true,
     area: { code: '222000', name: 'Arts & Sciences, College of' },
   })
   expect(describeCode('223500', [CENSUS], [BUDGET])).toMatchObject({
-    hasBudget: false,
-    hasJobs: true,
+    name: 'CAS Mathematics Operations',
     area: { code: '222000' },
   })
   expect(describeCode('480000', [CENSUS], [BUDGET])).toMatchObject({
     isArea: true,
-    hasBudget: true,
-    hasJobs: true,
     area: null,
   })
   expect(describeCode('000000', [CENSUS], [BUDGET])).toBeNull()

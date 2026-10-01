@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { fiscalYearLabel, orgCodeParam } from '../../data/budget.ts'
+import type { DepartmentFile } from '../../data/department.ts'
 import { type StaffKind, staffKindSchema } from '../../data/fall.ts'
 import { SORT_DIRECTIONS, type SortDirection } from '../shared/sort.ts'
 import { CENSUS_METRICS, type CensusMetric } from '../trends/search.ts'
@@ -90,6 +91,20 @@ export function resolveDepartmentView(
     kind: search.kind ?? 'all',
     year,
     ...resolveSort(search),
+  }
+}
+
+/** The class tables a view shows: the chosen census's, for the chosen staff kind or for both. */
+export function shownClasses(
+  classes: DepartmentFile['classes'],
+  { kind, year }: Pick<DepartmentView, 'kind' | 'year'>,
+): Omit<DepartmentFile['classes'][number], 'year'> {
+  const census = classes.find((listed) => listed.year === year)
+  const rowsOf = (of: StaffKind) =>
+    kind === 'all' || kind === of ? (census?.[of] ?? []) : []
+  return {
+    unclassified: rowsOf('unclassified'),
+    classified: rowsOf('classified'),
   }
 }
 

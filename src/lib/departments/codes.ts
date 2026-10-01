@@ -1,10 +1,16 @@
 import type { BudgetYear } from '../../data/budget.ts'
+import type { DepartmentFile } from '../../data/department.ts'
 import type { FallRecord } from '../../data/fall.ts'
 import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { UNASSIGNED_AREA } from '../census/totals.ts'
 import { groupBy } from '../shared/group.ts'
-import { type DepartmentCensus, departmentYears, isAreaCode } from './jobs.ts'
+import {
+  type DepartmentCensus,
+  departmentYears,
+  isAreaCode,
+  placementIndexOf,
+} from './jobs.ts'
 
 /** A unit or pay department, the area it sits in, and the jobs paid under its code. */
 export type PlacedUnit = {
@@ -69,19 +75,7 @@ export function departmentIndex(census: DepartmentCensus): IndexArea[] {
   }))
 }
 
-export type CodeProfile = {
-  code: string
-  /** The latest published name: the budget's where it has one, else the census's. */
-  name: string
-  otherNames: string[]
-  /** Codes the census also published this unit's jobs under, joined by hand review. */
-  aliasCodes: string[]
-  isArea: boolean
-  hasBudget: boolean
-  hasJobs: boolean
-  /** The area a unit or pay department sits in, as of the latest year that places it. */
-  area: { code: string; name: string } | null
-}
+export type CodeProfile = DepartmentFile['profile']
 
 function containingArea(
   code: string,
@@ -101,6 +95,20 @@ function containingArea(
   return null
 }
 
+/** Every code with a department page: each budget's units and areas, and each census's pay codes, sorted. */
+export function departmentCodes(
+  censuses: { records: FallRecord[] }[],
+  budgets: { orgs: BudgetYear['orgs'] }[],
+): string[] {
+  const codes = new Set(budgets.flatMap(({ orgs }) => Object.keys(orgs)))
+  for (const { records } of censuses) {
+    for (const { payDepartment } of records) {
+      if (payDepartment.code !== null) codes.add(payDepartment.code)
+    }
+  }
+  return [...codes].sort()
+}
+
 /** What the sources publish under a code; `null` when neither publishes it. */
 export function describeCode(
   code: string,
@@ -111,9 +119,7 @@ export function describeCode(
   const jobs = [...censuses]
     .sort((a, b) => b.year - a.year)
     .flatMap((census) => {
-      const record = census.records.find(
-        (job) => job.payDepartment.code === code,
-      )
+      const [record] = placementIndexOf(census).byCode.get(code) ?? []
       return record ? [{ census, record }] : []
     })
   const budgetNames = newestBudgets.flatMap(
@@ -129,8 +135,6 @@ export function describeCode(
     otherNames: rest,
     aliasCodes: aliasCodesOf(code),
     isArea,
-    hasBudget: budgetNames.length > 0,
-    hasJobs: isArea || jobs.length > 0,
     area: isArea ? null : containingArea(code, jobs, newestBudgets),
   }
 }

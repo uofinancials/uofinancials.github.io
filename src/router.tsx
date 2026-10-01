@@ -11,21 +11,24 @@ import {
 import { PageError } from '@/components/layout/page-error'
 import { PageLoading } from '@/components/layout/page-loading'
 import { SiteLayout } from '@/components/layout/site-layout'
-import { orgCode } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import {
   areaTrendsQuery,
   budgetYearQuery,
+  departmentQuery,
+  departmentsQuery,
   fallYearQuery,
   fyTempsQuery,
+  homeQuery,
   manifestQuery,
   opeRatesQuery,
   outlookQuery,
+  peerMediansQuery,
+  personBucketQuery,
   raiseTermsQuery,
-  summaryQuery,
+  trendsSummaryQuery,
 } from '@/data/queries'
 import { unitCodeOf } from '@/data/unit-aliases'
-import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { resolveCensusYear } from '@/lib/census/search'
 import {
   fiscalYearForCensus,
@@ -37,6 +40,7 @@ import {
   departmentsSearchSchema,
 } from '@/lib/departments/search'
 import { homeSearchSchema } from '@/lib/home/home'
+import { nameBucketOf, shownNameIn } from '@/lib/people/name-bucket'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people/search'
 import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
@@ -62,7 +66,7 @@ const homeRoute = createRoute({
   loader: ({ context: { queryClient } }) =>
     Promise.all([
       queryClient.ensureQueryData(manifestQuery),
-      queryClient.ensureQueryData(summaryQuery),
+      queryClient.ensureQueryData(homeQuery),
       queryClient.ensureQueryData(outlookQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
     ]),
@@ -103,14 +107,14 @@ const trendsRoute = createRoute({
   },
   loaderDeps: ({ search }) => ({ area: search.area, with: search.with }),
   loader: async ({ context: { queryClient }, deps }) => {
-    const [manifest, summary] = await Promise.all([
+    const [manifest, { areas }] = await Promise.all([
       queryClient.ensureQueryData(manifestQuery),
-      queryClient.ensureQueryData(summaryQuery),
+      queryClient.ensureQueryData(trendsSummaryQuery),
       deps.area && queryClient.prefetchQuery(areaTrendsQuery(deps.area)),
     ])
     await Promise.all(
       (deps.with ?? []).flatMap((code) => {
-        const area = areaOfCode(summary.trends.areas, code)
+        const area = areaOfCode(areas, code)
         return area ? [queryClient.prefetchQuery(areaTrendsQuery(area))] : []
       }),
     )
@@ -161,7 +165,7 @@ const departmentsRoute = createRoute({
   path: '/departments',
   validateSearch: departmentsSearchSchema,
   loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(summaryQuery),
+    queryClient.ensureQueryData(departmentsQuery),
   component: lazyRouteComponent(
     () => import('@/pages/departments-page'),
     'DepartmentsPage',
@@ -184,18 +188,18 @@ const departmentRoute = createRoute({
     }
   },
   loader: async ({ context: { queryClient }, params: { code } }) => {
-    if (!orgCode.safeParse(code).success) throw notFound()
-    const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const fallYears = manifest.fall.map(({ year }) => year)
-    const [eliminationFiscalYear, fiscalYears] = await Promise.all([
-      loadEliminationYear(queryClient, manifest),
-      loadBudgetYears(queryClient),
-      queryClient.ensureQueryData(fyTempsQuery),
-      ...fallYears.map((year) =>
-        queryClient.ensureQueryData(fallYearQuery(year)),
-      ),
+    const [{ codes }, manifest] = await Promise.all([
+      queryClient.ensureQueryData(departmentsQuery),
+      queryClient.ensureQueryData(manifestQuery),
+      queryClient.prefetchQuery(departmentQuery(code)),
+      queryClient.prefetchQuery(outlookQuery),
     ])
-    return { fiscalYears, fallYears, eliminationFiscalYear }
+    if (!codes.includes(code)) throw notFound()
+    const [eliminationFiscalYear] = await Promise.all([
+      loadEliminationYear(queryClient, manifest),
+      queryClient.ensureQueryData(departmentQuery(code)),
+    ])
+    return { eliminationFiscalYear }
   },
   component: lazyRouteComponent(
     () => import('@/pages/department-page'),
@@ -251,25 +255,19 @@ const personRoute = createRoute({
   path: '/people/$name',
   validateSearch: personSearchSchema,
   loader: async ({ context: { queryClient }, params: { name } }) => {
-    const { people } = await queryClient.ensureQueryData(peopleIndexQuery)
-    const entry = people.find((person) => person.name === name) ?? null
-    if (!entry) {
-      const joined = people.find((person) => person.otherNames?.includes(name))
-      if (joined) {
-        throw redirect({
-          to: '/people/$name',
-          params: { name: joined.name },
-          search: true,
-          replace: true,
-        })
-      }
+    const [bucket] = await Promise.all([
+      queryClient.ensureQueryData(personBucketQuery(nameBucketOf(name))),
+      queryClient.ensureQueryData(peerMediansQuery),
+    ])
+    const shownName = shownNameIn(bucket, name)
+    if (shownName !== null) {
+      throw redirect({
+        to: '/people/$name',
+        params: { name: shownName },
+        search: true,
+        replace: true,
+      })
     }
-    await Promise.all(
-      (entry?.runs.flat() ?? []).map((year) =>
-        queryClient.ensureQueryData(fallYearQuery(year)),
-      ),
-    )
-    return { entry }
   },
   component: lazyRouteComponent(
     () => import('@/pages/person-page'),

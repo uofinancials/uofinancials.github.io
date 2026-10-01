@@ -1,12 +1,21 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { fiscalYearLabel } from './budget.ts'
+import { departmentFileSchema } from './department.ts'
 import { fyTempsSchema } from './fy-temps.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
+import { foldedPersonBucketSchema } from './person-bucket.ts'
 import { raiseTermsSchema } from './raises.ts'
-import { areaTrendsSchema, summarySchema } from './summary.ts'
+import {
+  areaTrendsSchema,
+  departmentsSchema,
+  homeSchema,
+  peerMediansSchema,
+  peopleNamesSchema,
+  trendsSummarySchema,
+} from './summary.ts'
 import { foldedBudgetYearSchema, foldedFallYearSchema } from './unit-aliases.ts'
 
 const NETWORK_RETRIES = 2
@@ -41,7 +50,17 @@ export const manifestQuery = dataQuery('manifest.json', manifestSchema)
 export const opeRatesQuery = dataQuery('ope.json', opeRatesSchema)
 export const raiseTermsQuery = dataQuery('raises.json', raiseTermsSchema)
 export const outlookQuery = dataQuery('outlook.json', outlookSchema)
-export const summaryQuery = dataQuery('summary.json', summarySchema)
+export const homeQuery = dataQuery('home.json', homeSchema)
+export const trendsSummaryQuery = dataQuery('trends.json', trendsSummarySchema)
+export const departmentsQuery = dataQuery('departments.json', departmentsSchema)
+export const peopleNamesQuery = dataQuery(
+  'people/names.json',
+  peopleNamesSchema,
+)
+export const peerMediansQuery = dataQuery(
+  'people/medians.json',
+  peerMediansSchema,
+)
 export const fyTempsQuery = dataQuery('fy-temps.json', fyTempsSchema)
 
 export function fallYearQuery(year: number) {
@@ -51,6 +70,14 @@ export function fallYearQuery(year: number) {
 /** An area's units' and pay departments' yearly figures. */
 export function areaTrendsQuery(area: string) {
   return dataQuery(`trends/${area}.json`, areaTrendsSchema)
+}
+
+export function personBucketQuery(bucket: string) {
+  return dataQuery(`people/buckets/${bucket}.json`, foldedPersonBucketSchema)
+}
+
+export function departmentQuery(code: string) {
+  return dataQuery(`departments/${code}.json`, departmentFileSchema)
 }
 
 export function budgetYearQuery(fiscalYear: number) {

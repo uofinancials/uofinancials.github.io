@@ -16,10 +16,10 @@ import { StatCard } from '@/components/layout/stat-card'
 import { fiscalYearLabel } from '@/data/budget'
 import type { Projection } from '@/data/outlook'
 import {
+  homeQuery,
   manifestQuery,
   outlookQuery,
   raiseTermsQuery,
-  summaryQuery,
 } from '@/data/queries'
 import { fundBalanceMarker, outlookSeries } from '@/lib/budget/outlook'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/census/totals'
@@ -45,10 +45,9 @@ const COMPACT_CHART = 'h-64'
 
 function useHomeData() {
   const { data: manifest } = useSuspenseQuery(manifestQuery)
-  const { data: summary } = useSuspenseQuery(summaryQuery)
+  const { data: home } = useSuspenseQuery(homeQuery)
   const { data: outlook } = useSuspenseQuery(outlookQuery)
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
-  const { home } = summary
   const [projection] = outlook.projections
   const firstYearRaises = raiseRates(
     raiseTerms.terms,

@@ -7,7 +7,7 @@ import { SelectField } from '@/components/fields/select-field'
 import { PageHeader } from '@/components/layout/page-header'
 import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
-import { manifestQuery, summaryQuery } from '@/data/queries'
+import { departmentsQuery, manifestQuery } from '@/data/queries'
 import {
   type DepartmentsSearch,
   type DepartmentsView,
@@ -69,9 +69,9 @@ function TableControls({
 }
 
 export function DepartmentsPage() {
-  const { data } = useSuspenseQuery(summaryQuery)
+  const { data } = useSuspenseQuery(departmentsQuery)
   const { data: manifest } = useSuspenseQuery(manifestQuery)
-  const { now, before, rows } = data.departments
+  const { now, before, rows } = data
   const areas = rows.areas.flatMap(({ code, name }) =>
     code === null ? [] : [{ code, name }],
   )

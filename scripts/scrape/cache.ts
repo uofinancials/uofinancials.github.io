@@ -44,10 +44,29 @@ export const MANIFEST_PATH = path.join(DATA_DIR, 'manifest.json')
 export const OPE_DATA_PATH = path.join(DATA_DIR, 'ope.json')
 export const RAISES_DATA_PATH = path.join(DATA_DIR, 'raises.json')
 export const OUTLOOK_DATA_PATH = path.join(DATA_DIR, 'outlook.json')
-export const SUMMARY_DATA_PATH = path.join(DATA_DIR, 'summary.json')
 export const FY_TEMPS_DATA_PATH = path.join(DATA_DIR, 'fy-temps.json')
+export const HOME_DATA_PATH = path.join(DATA_DIR, 'home.json')
+export const TRENDS_DATA_PATH = path.join(DATA_DIR, 'trends.json')
+export const DEPARTMENTS_DATA_PATH = path.join(DATA_DIR, 'departments.json')
 
-export const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
+const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
+export const DEPARTMENTS_DIR = path.join(DATA_DIR, 'departments')
+
+export function departmentPath(code: string): string {
+  return path.join(DEPARTMENTS_DIR, `${code}.json`)
+}
+
+const PEOPLE_DIR = path.join(DATA_DIR, 'people')
+export const PEOPLE_NAMES_PATH = path.join(PEOPLE_DIR, 'names.json')
+export const PEER_MEDIANS_PATH = path.join(PEOPLE_DIR, 'medians.json')
+export const PERSON_BUCKETS_DIR = path.join(PEOPLE_DIR, 'buckets')
+
+export function personBucketPath(bucket: string): string {
+  return path.join(PERSON_BUCKETS_DIR, `${bucket}.json`)
+}
+
+/** The directories `pnpm scrape summary` owns: it writes every file in them. */
+export const DERIVED_DIRS = [AREA_TRENDS_DIR, DEPARTMENTS_DIR, PEOPLE_DIR]
 
 export function areaTrendsPath(code: string): string {
   return path.join(AREA_TRENDS_DIR, `${code}.json`)

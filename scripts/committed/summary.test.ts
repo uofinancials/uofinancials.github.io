@@ -1,25 +1,39 @@
 import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { expect, test } from 'vitest'
 import { manifestSchema } from '../../src/data/manifest.ts'
-import { MANIFEST_PATH, readJson } from '../scrape/cache.ts'
+import { DATA_DIR, MANIFEST_PATH, readJson } from '../scrape/cache.ts'
 import {
   deriveSummary,
-  listAreaTrendsFiles,
+  listDataFiles,
   serializeDerived,
 } from '../scrape/summary.ts'
 
+/** The files in the data directory that are neither a source's data nor derived from it. */
+const OTHER_FILES = ['LICENSE', 'manifest.json']
+
 test.skipIf(!existsSync(MANIFEST_PATH))(
-  'the committed summary, area trends and temporaries’ FY pay are what the committed data files derive; run `pnpm scrape summary` if not',
+  'the committed derived files are what the committed data files derive, and the data directory holds no other file; run `pnpm scrape summary` if not',
   () => {
     const manifest = manifestSchema.parse(readJson(MANIFEST_PATH))
     const derived = deriveSummary(manifest)
     const texts = serializeDerived(derived)
     for (const [file, text] of texts) {
-      expect(JSON.parse(readFileSync(file, 'utf8')), file).toEqual(
-        JSON.parse(text),
-      )
+      const committed = readFileSync(file, 'utf8')
+      if (committed === text) continue
+      expect(JSON.parse(committed), file).toEqual(JSON.parse(text))
+      expect.fail(`${file} holds the derived figures in another form`)
     }
-    expect(listAreaTrendsFiles().filter((file) => !texts.has(file))).toEqual([])
+    const known = new Set([
+      ...OTHER_FILES,
+      ...derived.files,
+      ...[...texts.keys()].map((file) => path.relative(DATA_DIR, file)),
+    ])
+    expect(
+      listDataFiles()
+        .map((file) => path.relative(DATA_DIR, file))
+        .filter((file) => !known.has(file)),
+    ).toEqual([])
     expect(manifest.summary?.files).toEqual(derived.files)
   },
   30_000,

@@ -1,5 +1,7 @@
 import type { BudgetRow, BudgetYear } from '../../data/budget.ts'
+import type { DepartmentFileBudget } from '../../data/department.ts'
 import { ORG_LEVEL_AREA } from '../census/areas.ts'
+import { groupBy } from '../shared/group.ts'
 import {
   ACCOUNT_GROUPS,
   type AccountGroup,
@@ -9,20 +11,14 @@ import {
 export const BUDGET_BREAKDOWNS = ['account', 'fund'] as const
 export type BudgetBreakdown = (typeof BUDGET_BREAKDOWNS)[number]
 
-/** Cents per fiscal year, aligned with `DepartmentBudget.years`; `null` where the code is not in that year's hierarchy. */
-export type YearValues = (number | null)[]
-
-export type DepartmentBudget = {
-  years: { fiscalYear: number; period: string }[]
-  /** One per account group, or per fund type, that has a row. */
-  series: { key: string; values: YearValues }[]
-  accountTypes: {
-    accountType: string
-    name: string
-    group: AccountGroup
-    values: YearValues
-  }[]
-  total: YearValues
+/** Whether the budget of the given fiscal year publishes the code, going by its total there. */
+export function isBudgetedIn(
+  budget: Pick<DepartmentFileBudget, 'years' | 'total'> | null,
+  fiscalYear: number,
+): boolean {
+  if (!budget) return false
+  const at = budget.years.findIndex((year) => year.fiscalYear === fiscalYear)
+  return typeof budget.total[at] === 'number'
 }
 
 /** The level-5 units a code covers in one year: itself, or an area's units. */
@@ -55,13 +51,7 @@ export function sumBy(
   return sums
 }
 
-function seriesKeyOf(
-  budget: BudgetYear,
-  by: BudgetBreakdown,
-): (row: BudgetRow) => string {
-  if (by === 'account') {
-    return (row) => accountGroupOf(row.accountType, budget.fiscalYear)
-  }
+function fundTypeOf(budget: BudgetYear): (row: BudgetRow) => string {
   return (row) => {
     const fundType = budget.funds[row.fund]?.fundType ?? ''
     return budget.fundTypes[fundType] ?? fundType
@@ -76,36 +66,45 @@ function orderKeys(keys: Iterable<string>, by: BudgetBreakdown): string[] {
 }
 
 type YearSums = {
-  bySeries: Map<string, number>
+  series: Record<BudgetBreakdown, Map<string, number>>
   byAccountType: Map<string, number>
   total: number
 }
 
-function sumYear(
-  budget: BudgetYear,
-  units: Set<string>,
-  by: BudgetBreakdown,
-): YearSums {
-  const rows = budget.rows.filter((row) => units.has(row.org))
+const rowsByOrg = new WeakMap<BudgetYear, Map<string, BudgetRow[]>>()
+
+/** The units' rows, from the year's rows grouped by org once. */
+function unitRows(budget: BudgetYear, units: Set<string>): BudgetRow[] {
+  const byOrg = rowsByOrg.get(budget) ?? groupBy(budget.rows, (row) => row.org)
+  rowsByOrg.set(budget, byOrg)
+  return [...units].flatMap((unit) => byOrg.get(unit) ?? [])
+}
+
+function sumYear(budget: BudgetYear, units: Set<string>): YearSums {
+  const rows = unitRows(budget, units)
   return {
-    bySeries: sumBy(rows, seriesKeyOf(budget, by)),
+    series: {
+      account: sumBy(rows, (row) =>
+        accountGroupOf(row.accountType, budget.fiscalYear),
+      ),
+      fund: sumBy(rows, fundTypeOf(budget)),
+    },
     byAccountType: sumBy(rows, (row) => row.accountType),
     total: rows.reduce((sum, row) => sum + row.totalExpenditureBudgetCents, 0),
   }
 }
 
-/** A code's Total Expenditure Budget per fiscal year, as published, broken down by account group or fund type. */
+/** A code's Total Expenditure Budget per fiscal year, as published, broken down by account group and by fund type; a year's values are `null` where the code is not in its hierarchy. */
 export function departmentBudget(
   code: string,
   budgets: BudgetYear[],
-  by: BudgetBreakdown,
-): DepartmentBudget {
+): DepartmentFileBudget {
   const sorted = [...budgets].sort((a, b) => a.fiscalYear - b.fiscalYear)
   const accountNames = new Map<string, { name: string; group: AccountGroup }>()
   const perYear = sorted.map((budget) => {
     const units = unitsOf(code, budget.orgs)
     if (!units) return null
-    const sums = sumYear(budget, units, by)
+    const sums = sumYear(budget, units)
     for (const accountType of sums.byAccountType.keys()) {
       accountNames.set(accountType, {
         name: budget.accountTypes[accountType] ?? accountType,
@@ -114,17 +113,19 @@ export function departmentBudget(
     }
     return sums
   })
-  const valuesOf = (pick: (sums: YearSums) => number): YearValues =>
+  const valuesOf = (pick: (sums: YearSums) => number) =>
     perYear.map((sums) => (sums ? pick(sums) : null))
-  return {
-    years: sorted.map(({ fiscalYear, period }) => ({ fiscalYear, period })),
-    series: orderKeys(
-      perYear.flatMap((sums) => [...(sums?.bySeries.keys() ?? [])]),
+  const seriesOf = (by: BudgetBreakdown) =>
+    orderKeys(
+      perYear.flatMap((sums) => [...(sums?.series[by].keys() ?? [])]),
       by,
     ).map((key) => ({
       key,
-      values: valuesOf((sums) => sums.bySeries.get(key) ?? 0),
-    })),
+      values: valuesOf((sums) => sums.series[by].get(key) ?? 0),
+    }))
+  return {
+    years: sorted.map(({ fiscalYear, period }) => ({ fiscalYear, period })),
+    total: valuesOf((sums) => sums.total),
     accountTypes: [...accountNames]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([accountType, { name, group }]) => ({
@@ -133,6 +134,6 @@ export function departmentBudget(
         group,
         values: valuesOf((sums) => sums.byAccountType.get(accountType) ?? 0),
       })),
-    total: valuesOf((sums) => sums.total),
+    series: { account: seriesOf('account'), fund: seriesOf('fund') },
   }
 }

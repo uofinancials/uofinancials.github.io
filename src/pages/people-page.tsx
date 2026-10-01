@@ -135,7 +135,7 @@ function Pager({ page, pageCount }: { page: number; pageCount: number }) {
 function OtherCensusNames({ q, year }: { q: string; year: number }) {
   const { data } = useQuery(peopleIndexQuery)
   if (!data) return <p>Looking for “{q}” in the other Fall censuses…</p>
-  const found = matchPeople(data.people, q)
+  const found = matchPeople(data, q)
   if (!found || found.total === 0) return <p>No name matches “{q}”.</p>
   return (
     <PageSection title={`Names matching “${q}” in any Fall census`}>

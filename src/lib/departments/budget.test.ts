@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { BudgetRow, BudgetYear } from '@/data/budget'
-import { departmentBudget } from './budget'
+import { departmentBudget, isBudgetedIn } from './budget'
 
 const AREA = '222000'
 const UNIT = '223100'
@@ -71,12 +71,12 @@ const BUDGETS = [
 ]
 
 test('a unit sums its own rows per account group and year', () => {
-  const unit = departmentBudget(UNIT, BUDGETS, 'account')
+  const unit = departmentBudget(UNIT, BUDGETS)
   expect(unit.years).toEqual([
     { fiscalYear: 2026, period: '14' },
     { fiscalYear: 2027, period: '02' },
   ])
-  expect(unit.series).toEqual([
+  expect(unit.series.account).toEqual([
     { key: 'Salaries and pay', values: [1_000, 500] },
     { key: 'OPE and benefits', values: [300, 0] },
     { key: 'Reimbursements, transfers, and reserves', values: [250, 0] },
@@ -92,14 +92,12 @@ test('a unit sums its own rows per account group and year', () => {
 })
 
 test('an area sums the units under it in each year, following moves', () => {
-  expect(departmentBudget(AREA, BUDGETS, 'account').total).toEqual([1_580, 500])
-  expect(departmentBudget(OTHER_AREA, BUDGETS, 'account').total).toEqual([
-    0, 70,
-  ])
+  expect(departmentBudget(AREA, BUDGETS).total).toEqual([1_580, 500])
+  expect(departmentBudget(OTHER_AREA, BUDGETS).total).toEqual([0, 70])
 })
 
 test('the budget breaks down by fund type', () => {
-  expect(departmentBudget(UNIT, BUDGETS, 'fund').series).toEqual([
+  expect(departmentBudget(UNIT, BUDGETS).series.fund).toEqual([
     { key: 'Budgeted Operations', values: [1_300, 500] },
     { key: 'Gift Funds - Restricted', values: [250, 0] },
   ])
@@ -109,7 +107,24 @@ test('a code outside a year’s hierarchy has no figure for it', () => {
   const [latest, earlier] = BUDGETS
   if (!latest || !earlier) throw new Error('fixture')
   const { [UNIT]: _dropped, ...orgs } = latest.orgs
-  const gone = departmentBudget(UNIT, [earlier, { ...latest, orgs }], 'account')
+  const gone = departmentBudget(UNIT, [earlier, { ...latest, orgs }])
   expect(gone.total).toEqual([1_550, null])
-  expect(departmentBudget('999999', BUDGETS, 'account').series).toEqual([])
+  expect(departmentBudget('999999', BUDGETS)).toMatchObject({
+    total: [null, null],
+    series: { account: [], fund: [] },
+  })
+})
+
+test('a code is budgeted in a year whose total is published, and in none without a budget', () => {
+  const published = {
+    years: [
+      { fiscalYear: 2026, period: '14' },
+      { fiscalYear: 2027, period: '02' },
+    ],
+    total: [0, null],
+  }
+  expect(isBudgetedIn(published, 2026)).toBe(true)
+  expect(isBudgetedIn(published, 2027)).toBe(false)
+  expect(isBudgetedIn(published, 2028)).toBe(false)
+  expect(isBudgetedIn(null, 2026)).toBe(false)
 })

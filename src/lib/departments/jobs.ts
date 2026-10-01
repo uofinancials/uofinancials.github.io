@@ -1,4 +1,5 @@
 import type { BudgetYear } from '../../data/budget.ts'
+import type { DepartmentFile } from '../../data/department.ts'
 import {
   censusYearOf,
   type FallRecord,
@@ -19,7 +20,6 @@ import {
   buildTrends,
   MIN_JOBS_SHOWN,
   measureJobs,
-  type TrendPoint,
   type Trends,
 } from '../trends/trends.ts'
 import { type TempsScope, tempsByCensus } from './fy-temps.ts'
@@ -80,13 +80,48 @@ export function toDepartmentCensuses(
   })
 }
 
-/** For an area: how its jobs were placed in one census, and the jobs left unplaced site-wide. */
-export type AreaPlacement = {
-  year: number
-  fiscalYear: number
-  bases: Record<Exclude<AreaAssignment['basis'], 'unassigned'>, number>
-  unassignedSiteWide: number
+type AreaJobs = { records: FallRecord[]; bases: AreaPlacement['bases'] }
+
+/** One census's jobs by pay code and by the area they are placed in, and how many are placed in none. */
+type PlacementIndex = {
+  byCode: Map<string | null, FallRecord[]>
+  byArea: Map<string, AreaJobs>
+  unassigned: number
 }
+
+const placementIndexes = new WeakMap<DepartmentCensus, PlacementIndex>()
+
+/** The census's jobs placed once, on first use, so a page for one code never runs the assigner over the census again. */
+export function placementIndexOf(census: DepartmentCensus): PlacementIndex {
+  const cached = placementIndexes.get(census)
+  if (cached) return cached
+  const byArea = new Map<string, AreaJobs>()
+  let unassigned = 0
+  for (const record of census.records) {
+    const assignment = census.assign(record)
+    if (assignment.basis === 'unassigned') {
+      unassigned += 1
+      continue
+    }
+    const placed = byArea.get(assignment.area) ?? {
+      records: [],
+      bases: { published: 0, name: 0, hand: 0 },
+    }
+    byArea.set(assignment.area, placed)
+    placed.records.push(record)
+    placed.bases[assignment.basis] += 1
+  }
+  const index = {
+    byCode: groupBy(census.records, (record) => record.payDepartment.code),
+    byArea,
+    unassigned,
+  }
+  placementIndexes.set(census, index)
+  return index
+}
+
+/** For an area: how its jobs were placed in one census, and the jobs left unplaced site-wide. */
+export type AreaPlacement = NonNullable<DepartmentFile['placements']>[number]
 
 export type DepartmentYears = {
   years: { year: number; records: FallRecord[] }[]
@@ -106,23 +141,15 @@ export function isAreaCode(
 }
 
 function placeInArea(code: string, census: DepartmentCensus) {
+  const { byArea, unassigned } = placementIndexOf(census)
+  const placed = byArea.get(code)
   const placement: AreaPlacement = {
     year: census.year,
     fiscalYear: census.fiscalYear,
-    bases: { published: 0, name: 0, hand: 0 },
-    unassignedSiteWide: 0,
+    bases: { published: 0, name: 0, hand: 0, ...placed?.bases },
+    unassignedSiteWide: unassigned,
   }
-  const records = census.records.filter((record) => {
-    const assignment = census.assign(record)
-    if (assignment.basis === 'unassigned') {
-      placement.unassignedSiteWide += 1
-      return false
-    }
-    if (assignment.area !== code) return false
-    placement.bases[assignment.basis] += 1
-    return true
-  })
-  return { year: census.year, records, placement }
+  return { year: census.year, records: placed?.records ?? [], placement }
 }
 
 /** Each census's jobs for a code: the area's placed jobs, or those whose pay department is the code. */
@@ -137,9 +164,7 @@ export function departmentYears(
       ? placeInArea(code, census)
       : {
           year: census.year,
-          records: census.records.filter(
-            (record) => record.payDepartment.code === code,
-          ),
+          records: placementIndexOf(census).byCode.get(code) ?? [],
           placement: null,
         },
   )
@@ -177,7 +202,7 @@ export function departmentTrends(
 }
 
 /** A position class or rank row; spend and median as `measureJobs` gives them. */
-export type ClassRow = { label: string } & Omit<TrendPoint, 'year'>
+export type ClassRow = DepartmentFile['classes'][number][StaffKind][number]
 
 const OTHER_LABEL: Record<StaffKind, string> = {
   classified: `Other position classes (fewer than ${MIN_JOBS_SHOWN} jobs each)`,
@@ -218,13 +243,11 @@ function kindRows(kind: StaffKind, records: FallRecord[]): ClassRow[] {
  */
 export function departmentClasses(
   { years }: DepartmentYears,
-  { kind, year }: { kind: StaffKind | 'all'; year: number | null },
+  year: number,
 ): Record<StaffKind, ClassRow[]> {
   const records = years.find((census) => census.year === year)?.records ?? []
-  const rowsOf = (of: StaffKind) =>
-    kind === 'all' || kind === of ? kindRows(of, records) : []
   return {
-    unclassified: rowsOf('unclassified'),
-    classified: rowsOf('classified'),
+    unclassified: kindRows('unclassified', records),
+    classified: kindRows('classified', records),
   }
 }
