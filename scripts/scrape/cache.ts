@@ -59,6 +59,11 @@ export function departmentPath(code: string): string {
 export const PEOPLE_DIR = path.join(DATA_DIR, 'people')
 export const PEOPLE_NAMES_PATH = path.join(PEOPLE_DIR, 'names.json')
 export const PEER_MEDIANS_PATH = path.join(PEOPLE_DIR, 'medians.json')
+export const PERSON_BUCKETS_DIR = path.join(PEOPLE_DIR, 'buckets')
+
+export function personBucketPath(bucket: string): string {
+  return path.join(PERSON_BUCKETS_DIR, `${bucket}.json`)
+}
 
 /** The directories `pnpm scrape summary` owns: it writes every file in them. */
 export const DERIVED_DIRS = [AREA_TRENDS_DIR, DEPARTMENTS_DIR, PEOPLE_DIR]

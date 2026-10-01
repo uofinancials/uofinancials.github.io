@@ -6,11 +6,16 @@ import {
   type DepartmentFile,
   departmentFileSchema,
 } from '../../src/data/department.ts'
+import { fallYearSchema } from '../../src/data/fall.ts'
 import { fyYearSchema } from '../../src/data/fy.ts'
 import { type FyTemps, fyTempsSchema } from '../../src/data/fy-temps.ts'
 import type { Manifest } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
+import {
+  type PersonBucket,
+  personBucketSchema,
+} from '../../src/data/person-bucket.ts'
 import { raiseTermsSchema } from '../../src/data/raises.ts'
 import type { AreaTrends } from '../../src/data/summary.ts'
 import {
@@ -24,11 +29,12 @@ import {
 } from '../../src/data/summary.ts'
 import {
   foldedBudgetYearSchema,
-  foldedFallYearSchema,
+  foldUnitAliases,
 } from '../../src/data/unit-aliases.ts'
 import { buildDepartmentFiles } from '../../src/lib/departments/department-file.ts'
 import { buildFyTemps } from '../../src/lib/departments/fy-temps.ts'
 import { toDepartmentCensuses } from '../../src/lib/departments/jobs.ts'
+import { buildPersonBuckets } from '../../src/lib/people/person-buckets.ts'
 import {
   buildSummary,
   buildTrendScopes,
@@ -49,6 +55,7 @@ import {
   OUTLOOK_DATA_PATH,
   PEER_MEDIANS_PATH,
   PEOPLE_NAMES_PATH,
+  personBucketPath,
   RAISES_DATA_PATH,
   readJson,
   TRENDS_DATA_PATH,
@@ -59,10 +66,11 @@ type Derived = {
   summary: Summary
   areas: AreaTrends[]
   departments: DepartmentFile[]
+  buckets: Map<string, PersonBucket>
   fyTemps: FyTemps
 }
 
-/** The summaries, each area's trends, each department page and temporaries' FY pay, derived from the committed data files the manifest lists, and those files relative to the data directory. */
+/** The summaries, each area's trends, each department page, the people in each name bucket and temporaries' FY pay, derived from the committed data files the manifest lists, and those files relative to the data directory. */
 export function deriveSummary(manifest: Manifest): Derived & {
   files: string[]
 } {
@@ -71,9 +79,12 @@ export function deriveSummary(manifest: Manifest): Derived & {
     budgetDataPath(fiscalYear),
   )
   const fyPaths = manifest.fy.map(({ fiscalYear }) => fyDataPath(fiscalYear))
+  const published = fallPaths.map((file) =>
+    fallYearSchema.parse(readJson(file)),
+  )
   const base = {
     manifest,
-    falls: fallPaths.map((file) => foldedFallYearSchema.parse(readJson(file))),
+    falls: published.map(foldUnitAliases),
     budgets: budgetPaths.map((file) =>
       foldedBudgetYearSchema.parse(readJson(file)),
     ),
@@ -103,6 +114,7 @@ export function deriveSummary(manifest: Manifest): Derived & {
       budgets: base.budgets,
       fyTemps,
     }),
+    buckets: buildPersonBuckets(base.falls, published),
     fyTemps,
     files,
   }
@@ -112,11 +124,12 @@ function fileText<T>(schema: z.ZodType<T>, value: T): string {
   return `${JSON.stringify(schema.parse(value))}\n`
 }
 
-/** Each derived file's text by its path: the pages' summaries, temporaries' FY pay, then one file per area and per department page. */
+/** Each derived file's text by its path: the pages' summaries, temporaries' FY pay, then one file per area, per department page and per name bucket. */
 export function serializeDerived({
   summary,
   areas,
   departments,
+  buckets,
   fyTemps,
 }: Derived): Map<string, string> {
   return new Map([
@@ -133,6 +146,10 @@ export function serializeDerived({
     ...departments.map((file): [string, string] => [
       departmentPath(file.profile.code),
       fileText(departmentFileSchema, file),
+    ]),
+    ...[...buckets].map(([id, bucket]): [string, string] => [
+      personBucketPath(id),
+      fileText(personBucketSchema, bucket),
     ]),
   ])
 }

@@ -6,6 +6,7 @@ import { fyTempsSchema } from './fy-temps.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
+import { foldedPersonBucketSchema } from './person-bucket.ts'
 import { raiseTermsSchema } from './raises.ts'
 import {
   areaTrendsSchema,
@@ -69,6 +70,11 @@ export function fallYearQuery(year: number) {
 /** An area's units' and pay departments' yearly figures. */
 export function areaTrendsQuery(area: string) {
   return dataQuery(`trends/${area}.json`, areaTrendsSchema)
+}
+
+/** The people filed in one name bucket. */
+export function personBucketQuery(bucket: string) {
+  return dataQuery(`people/buckets/${bucket}.json`, foldedPersonBucketSchema)
 }
 
 /** One code's department page. */

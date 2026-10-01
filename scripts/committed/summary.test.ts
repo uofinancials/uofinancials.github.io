@@ -2,7 +2,12 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
 import { manifestSchema } from '../../src/data/manifest.ts'
-import { DATA_DIR, MANIFEST_PATH, readJson } from '../scrape/cache.ts'
+import {
+  DATA_DIR,
+  MANIFEST_PATH,
+  PERSON_BUCKETS_DIR,
+  readJson,
+} from '../scrape/cache.ts'
 import {
   deriveSummary,
   listDataFiles,
@@ -19,9 +24,13 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const derived = deriveSummary(manifest)
     const texts = serializeDerived(derived)
     for (const [file, text] of texts) {
-      expect(JSON.parse(readFileSync(file, 'utf8')), file).toEqual(
-        JSON.parse(text),
-      )
+      const committed = readFileSync(file, 'utf8')
+      // The buckets hold every Fall record; deep equality over them would not fit the time limit.
+      if (file.startsWith(PERSON_BUCKETS_DIR)) {
+        expect(committed === text, file).toBe(true)
+      } else {
+        expect(JSON.parse(committed), file).toEqual(JSON.parse(text))
+      }
     }
     const known = new Set([
       ...OTHER_FILES,
