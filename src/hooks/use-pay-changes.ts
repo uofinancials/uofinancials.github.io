@@ -2,35 +2,32 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { FallYear } from '@/data/fall'
 import { raiseTermsQuery } from '@/data/queries'
+import { areaPlacer, type DepartmentCensus } from '@/lib/departments/jobs'
 import {
-  type ContinuingPair,
   changeCounts,
   continuingPairs,
   filterPairs,
+  type PairFilter,
   payChangeDistribution,
   payChangeTrends,
 } from '@/lib/trends/pay-changes'
 import { viewRaiseComparison } from '@/lib/trends/raise-comparison'
 import type { TrendView } from '@/lib/trends/search'
-import type { TrendFilter } from '@/lib/trends/trends'
 
-const pairsByYears = new WeakMap<FallYear[], ContinuingPair[]>()
-
-function pairsOf(fallYears: FallYear[]): ContinuingPair[] {
-  const cached = pairsByYears.get(fallYears)
-  if (cached) return cached
-  const pairs = continuingPairs(fallYears)
-  pairsByYears.set(fallYears, pairs)
-  return pairs
-}
-
-/** The pay changes of the continuing jobs the view and its filter select. */
+/** The pay changes of the continuing jobs the view and its filter select; `placed` are the censuses that place a job in its area, none when no area is asked for. */
 export function usePayChanges(
-  fallYears: FallYear[],
+  { fallYears, placed }: { fallYears: FallYear[]; placed: DepartmentCensus[] },
   view: TrendView,
-  filter: TrendFilter,
+  filter: PairFilter,
 ) {
-  const pairs = pairsOf(fallYears)
+  const pairs = useMemo(
+    () =>
+      continuingPairs(
+        fallYears,
+        placed.length > 0 ? areaPlacer(placed) : undefined,
+      ),
+    [fallYears, placed],
+  )
   const { group, fromYears, pair } = view
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
   const raises = useMemo(

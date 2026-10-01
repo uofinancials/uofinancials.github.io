@@ -4,9 +4,13 @@ import type {
   RaiseTerm,
   RaiseTerms,
 } from '../../data/raises.ts'
-import { type ContinuingPair, filterPairs } from './pay-changes.ts'
+import {
+  type ContinuingPair,
+  filterPairs,
+  type PairFilter,
+} from './pay-changes.ts'
 import { RAISE_ROWS, type RaiseRow, termCovers } from './raise-groups.ts'
-import { MIN_JOBS_SHOWN, medianOf, type TrendFilter } from './trends.ts'
+import { MIN_JOBS_SHOWN, medianOf } from './trends.ts'
 
 const BASIS_POINTS_PER_UNIT = 10_000
 
@@ -143,7 +147,7 @@ export function viewRaiseComparison({
   raises,
 }: {
   pairs: ContinuingPair[]
-  filter: TrendFilter
+  filter: PairFilter
   fromYear: number
   years: FallYear[]
   raises: RaiseTerms

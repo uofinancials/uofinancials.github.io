@@ -7,17 +7,17 @@ import {
   changeCounts,
   continuingPairs,
   filterPairs,
+  type PairFilter,
   payChangeDistribution,
   payChangeTrends,
 } from './pay-changes'
-import type { TrendFilter } from './trends'
 
-const ALL_JOBS: TrendFilter = {
+const ALL_JOBS: PairFilter = {
   kind: 'all',
   group: null,
   dept: null,
+  area: null,
   position: null,
-  jobs: null,
   from: 2014,
   to: 2025,
 }
@@ -74,17 +74,17 @@ test('pairs leave out staff kind moves and term changes, keep temporaries, and g
     ]),
   )
   expect(
-    pairs.map(({ from, group, ratio, isClassChanged }) => [
-      from.name,
+    pairs.map(({ group, peer, ratio, isClassChanged }) => [
       group,
+      peer,
       ratio,
       isClassChanged,
     ]),
   ).toEqual([
-    ['Person 0', 'Classified staff', 0.07, false],
-    ['Person 1', 'Classified temporaries', 0, false],
-    ['Person 4', 'Faculty', -0.05, null],
-    ['Person 5', 'Classified temporaries', 0, true],
+    ['Classified staff', 'class 0104', 0.07, false],
+    ['Classified temporaries', 'class TS901', 0, false],
+    ['Faculty', 'rank Instructor', -0.05, null],
+    ['Classified temporaries', 'class TS901', 0, true],
   ])
 })
 
@@ -196,7 +196,7 @@ test('class changes ignore the prefix, and rank and title changes leave out rena
   ])
 })
 
-test('filters narrow by the earlier job’s kind, pay department, and class or rank', () => {
+test('filters narrow by the earlier job’s kind, pay department, area, and class or rank', () => {
   const pairs = continuingPairs(
     linkedYears(2024, [
       classifiedPair(100, 101),
@@ -218,18 +218,22 @@ test('filters narrow by the earlier job’s kind, pay department, and class or r
         }),
       ],
     ]),
+    ({ payDepartment }, year) =>
+      payDepartment.code === '222222' && year === 2024 ? '220000' : null,
   )
-  const names = (filter: Partial<TrendFilter>) =>
-    filterPairs(pairs, { ...ALL_JOBS, ...filter }).map(({ from }) => from.name)
-  expect(names({})).toEqual(['Person 0', 'Person 2'])
-  expect(names({ kind: 'classified' })).toEqual(['Person 0'])
-  expect(names({ dept: '222222', position: 'rank Professor' })).toEqual([
-    'Person 2',
+  const depts = (filter: Partial<PairFilter>) =>
+    filterPairs(pairs, { ...ALL_JOBS, ...filter }).map(({ dept }) => dept)
+  expect(depts({})).toEqual(['111111', '222222'])
+  expect(depts({ kind: 'classified' })).toEqual(['111111'])
+  expect(depts({ dept: '222222', position: 'rank Professor' })).toEqual([
+    '222222',
   ])
-  expect(names({ position: 'class 0104' })).toEqual(['Person 0'])
-  expect(names({ group: 'Classified staff' })).toEqual(['Person 0'])
-  expect(names({ from: 2025 })).toEqual([])
-  expect(names({ to: 2024 })).toEqual([])
+  expect(depts({ position: 'class 0104' })).toEqual(['111111'])
+  expect(depts({ group: 'Classified staff' })).toEqual(['111111'])
+  expect(depts({ area: '220000' })).toEqual(['222222'])
+  expect(depts({ area: '222222' })).toEqual([])
+  expect(depts({ from: 2025 })).toEqual([])
+  expect(depts({ to: 2024 })).toEqual([])
 })
 
 test('an opened group’s lines are its earlier jobs’ published categories', () => {

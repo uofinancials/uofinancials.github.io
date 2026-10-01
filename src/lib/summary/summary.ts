@@ -10,6 +10,7 @@ import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
 import { departmentCodes } from '../departments/codes.ts'
 import { censusTemps, tempsByCensus } from '../departments/fy-temps.ts'
 import {
+  areaPlacer,
   type DepartmentCensus,
   toDepartmentCensuses,
 } from '../departments/jobs.ts'
@@ -66,7 +67,8 @@ export function buildTrendScopes({
   budgets,
   fyTemps,
 }: SummaryInputs): TrendScopes {
-  const pairs = continuingPairs(falls)
+  const censuses = toDepartmentCensuses(manifest, falls, budgets)
+  const pairs = continuingPairs(falls, areaPlacer(censuses))
   const years = falls.map(({ censusDate }) => censusYearOf(censusDate))
   return {
     payChanges: payChangeTrends(
@@ -74,11 +76,7 @@ export function buildTrendScopes({
       pairYears(years, Math.min(...years), Math.max(...years)),
       null,
     ),
-    areas: areaTrends(
-      toDepartmentCensuses(manifest, falls, budgets),
-      pairs,
-      fyTemps,
-    ),
+    areas: areaTrends(censuses, pairs, fyTemps),
   }
 }
 
@@ -99,7 +97,6 @@ function summarizeTrends(
         group: null,
         dept: null,
         position: null,
-        jobs: null,
         from: Math.min(...years),
         to: Math.max(...years),
       },

@@ -1,4 +1,4 @@
-import type { FallRecord, FallYear } from '../../data/fall.ts'
+import type { FallRecord, FallYear, StaffKind } from '../../data/fall.ts'
 import {
   compareLines,
   emptyCounts,
@@ -7,30 +7,31 @@ import {
   type TrendGroup,
   trendGroupOf,
 } from '../census/groups.ts'
-import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
+import { peerGroupOf } from '../people/peer-group.ts'
 import { titleOf } from '../people/person-fields.ts'
 import { findPersonLinks, type PersonLink } from '../people/person-links.ts'
 import { groupBy } from '../shared/group.ts'
 import { ALL_PAIRS, isRankRename, normalizeTitle } from './pay-change-labels.ts'
 import { type RaiseRow, raiseRowOf } from './raise-groups.ts'
-import {
-  MIN_JOBS_SHOWN,
-  matchesJob,
-  medianOf,
-  type TrendFilter,
-} from './trends.ts'
+import { MIN_JOBS_SHOWN, medianOf, type TrendFilter } from './trends.ts'
 
-/** A person link whose two primary jobs are the same staff kind and term; grouped by the earlier job. */
+/** A person link whose two primary jobs are the same staff kind and term, as what its earlier job is grouped by and the two published annual salary rates. It holds no name. */
 export type ContinuingPair = {
   fromYear: number
-  from: FallRecord
-  to: FallRecord
+  kind: StaffKind
+  /** The earlier job's pay department code. */
+  dept: string | null
+  /** The area the earlier job's census places it in. */
+  area: string | null
   group: TrendGroup
-  /** The earlier job's class number, rank, or OA grade. */
-  peer: PeerGroup | null
+  eeoCategory: string | null
+  /** The earlier job's `peerGroupOf` key: its class number, rank, or OA grade. */
+  peer: string | null
   /** The earlier job's estimated raise row. */
   raise: RaiseRow | null
-  /** The change in published annual salary rate as a fraction of the earlier rate. */
+  fromCents: number
+  toCents: number
+  /** The change in rate as a fraction of the earlier rate. */
   ratio: number
   /** `null` for a pair of unclassified jobs. */
   isClassChanged: boolean | null
@@ -51,23 +52,31 @@ function rankChange({
   return isRankRename(from.rank, to.rank, fromYear + 1) ? 'renamed' : 'changed'
 }
 
-function toPair(link: PersonLink): ContinuingPair {
+export function changeRatio(fromCents: number, toCents: number): number {
+  return (toCents - fromCents) / fromCents
+}
+
+function toPair(link: PersonLink, area: string | null): ContinuingPair {
   const { fromYear, from, to } = link
   const rank = rankChange(link)
-  const peer = peerGroupOf(from)
+  const peer = peerGroupOf(from)?.key ?? null
   const group = trendGroupOf(from, fromYear)
   return {
     fromYear,
-    from,
-    to,
+    kind: from.kind,
+    dept: from.payDepartment.code,
+    area,
     group,
+    eeoCategory: from.eeoCategory,
     peer,
     raise: raiseRowOf(from, fromYear, group),
-    ratio:
-      (to.annualSalaryRateCents - from.annualSalaryRateCents) /
-      from.annualSalaryRateCents,
+    fromCents: from.annualSalaryRateCents,
+    toCents: to.annualSalaryRateCents,
+    ratio: changeRatio(from.annualSalaryRateCents, to.annualSalaryRateCents),
     isClassChanged:
-      from.kind === 'classified' ? peer?.key !== peerGroupOf(to)?.key : null,
+      from.kind === 'classified'
+        ? peer !== (peerGroupOf(to)?.key ?? null)
+        : null,
     rank,
     isTitleChanged:
       rank !== 'renamed' &&
@@ -75,26 +84,42 @@ function toPair(link: PersonLink): ContinuingPair {
   }
 }
 
-export function continuingPairs(years: FallYear[]): ContinuingPair[] {
+/** The area a census places a job in, by the job and its census year. */
+export type AreaOf = (record: FallRecord, censusYear: number) => string | null
+
+const noArea: AreaOf = () => null
+
+/** `areaOf` places each pair's earlier job; without it no pair has an area. */
+export function continuingPairs(
+  years: FallYear[],
+  areaOf: AreaOf = noArea,
+): ContinuingPair[] {
   return findPersonLinks(years).flatMap((link) => {
-    const { from, to } = link
+    const { fromYear, from, to } = link
     return from.kind !== to.kind ||
       from.termOfServiceMonths !== to.termOfServiceMonths
       ? []
-      : [toPair(link)]
+      : [toPair(link, areaOf(from, fromYear))]
   })
 }
+
+/** What narrows the pairs: the jobs filter, and a college or VP area code. */
+export type PairFilter = TrendFilter & { area: string | null }
 
 /** The pairs in the filter's range whose earlier job passes it. */
 export function filterPairs(
   pairs: ContinuingPair[],
-  filter: TrendFilter,
+  filter: PairFilter,
 ): ContinuingPair[] {
   return pairs.filter(
-    ({ fromYear, from, group, peer }) =>
-      fromYear >= filter.from &&
-      fromYear + 1 <= filter.to &&
-      matchesJob(from, group, filter, peer),
+    (pair) =>
+      pair.fromYear >= filter.from &&
+      pair.fromYear + 1 <= filter.to &&
+      (filter.kind === 'all' || pair.kind === filter.kind) &&
+      (filter.group === null || pair.group === filter.group) &&
+      (filter.dept === null || pair.dept === filter.dept) &&
+      (filter.area === null || pair.area === filter.area) &&
+      (filter.position === null || pair.peer === filter.position),
   )
 }
 
@@ -122,10 +147,10 @@ export function payChangeTrends(
   opened: TrendGroup | null,
 ): ChangeSeries[] {
   if (fromYears.length === 0) return []
-  const keyed = pairs.map(({ fromYear, from, group, ratio }) => ({
-    fromYear,
-    ratio,
-    line: lineOf(from, group, opened),
+  const keyed = pairs.map((pair) => ({
+    fromYear: pair.fromYear,
+    ratio: pair.ratio,
+    line: lineOf(pair, pair.group, opened),
   }))
   const ratios = new Map([
     ...groupBy(keyed, ({ fromYear }) => `${ALL_PAIRS}|${fromYear}`),
@@ -178,11 +203,8 @@ function emptyBins(): ChangeBin[] {
 }
 
 /** The whole percentage points of a pair's change, rounded down, from integer cents so no float error moves a pair across a bin edge. */
-function changePoints({ from, to }: ContinuingPair): number {
-  return Math.floor(
-    ((to.annualSalaryRateCents - from.annualSalaryRateCents) * PERCENT) /
-      from.annualSalaryRateCents,
-  )
+function changePoints({ fromCents, toCents }: ContinuingPair): number {
+  return Math.floor(((toCents - fromCents) * PERCENT) / fromCents)
 }
 
 /** One pair year's changes in 1-point bins from -5% to 20%, with open bins either side, stacked by group. */

@@ -17,7 +17,7 @@ import {
   sumFteHundredths,
   sumSpendCents,
 } from '../census/totals.ts'
-import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
+import { peerGroupOf } from '../people/peer-group.ts'
 import { department } from '../people/person-fields.ts'
 import type { SectionSource } from '../shared/citation.ts'
 import { groupBy } from '../shared/group.ts'
@@ -58,27 +58,21 @@ export type TrendFilter = {
   dept: string | null
   /** A `peerGroupOf` key. */
   position: string | null
-  /** When set, only these jobs pass. */
-  jobs: ReadonlySet<FallRecord> | null
   from: number
   to: number
 }
 
-/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, class or rank, and jobs; the years are not checked. `peer` is the job's `peerGroupOf`, found here when not given. */
-export function matchesJob(
+/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, and class or rank; the years are not checked. */
+function matchesJob(
   record: FallRecord,
   group: TrendGroup,
   filter: TrendFilter,
-  peer?: PeerGroup | null,
 ): boolean {
   return (
     (filter.kind === 'all' || record.kind === filter.kind) &&
     (filter.group === null || group === filter.group) &&
     (filter.dept === null || record.payDepartment.code === filter.dept) &&
-    (filter.jobs === null || filter.jobs.has(record)) &&
-    (filter.position === null ||
-      (peer === undefined ? peerGroupOf(record) : peer)?.key ===
-        filter.position)
+    (filter.position === null || peerGroupOf(record)?.key === filter.position)
   )
 }
 
@@ -206,13 +200,12 @@ export function measureJobs(
   }
 }
 
-/** Whether a filter keeps classified temporaries whole, so their FY figures for the scope apply: not narrowed to unclassified jobs, a pay department, a class or rank, listed jobs, or another group. */
+/** Whether a filter keeps classified temporaries whole, so their FY figures for the scope apply: not narrowed to unclassified jobs, a pay department, a class or rank, or another group. */
 function keepsTempsWhole(filter: TrendFilter): boolean {
   return (
     filter.kind !== 'unclassified' &&
     filter.dept === null &&
     filter.position === null &&
-    filter.jobs === null &&
     (filter.group === null || filter.group === TEMPS_GROUP)
   )
 }

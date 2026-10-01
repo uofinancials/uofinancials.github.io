@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { BudgetYear } from '@/data/budget'
-import { toDepartmentCensus } from '@/lib/departments/jobs'
+import { areaPlacer, toDepartmentCensus } from '@/lib/departments/jobs'
 import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import { areaTrends } from './area-trends'
 import { continuingPairs } from './pay-changes'
@@ -47,12 +47,17 @@ const FALL_2025 = [
   ...jobs(['E1', 'E2', 'E3'], { payDepartment: ENGLISH }),
 ]
 
+const CENSUSES = [
+  toDepartmentCensus({ year: 2024, records: FALL_2024 }, BUDGET),
+  toDepartmentCensus({ year: 2025, records: FALL_2025 }, BUDGET),
+]
+
 const AREAS = areaTrends(
-  [
-    toDepartmentCensus({ year: 2024, records: FALL_2024 }, BUDGET),
-    toDepartmentCensus({ year: 2025, records: FALL_2025 }, BUDGET),
-  ],
-  continuingPairs([census(2024, FALL_2024), census(2025, FALL_2025)]),
+  CENSUSES,
+  continuingPairs(
+    [census(2024, FALL_2024), census(2025, FALL_2025)],
+    areaPlacer(CENSUSES),
+  ),
   { years: [] },
 )
 

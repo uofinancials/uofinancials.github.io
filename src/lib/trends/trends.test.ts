@@ -17,7 +17,6 @@ const ALL: TrendFilter = {
   group: null,
   dept: null,
   position: null,
-  jobs: null,
   from: 2014,
   to: 2025,
 }
@@ -283,7 +282,7 @@ test('opened Executives puts jobs there by the EXEC grade alone on one line', ()
   ])
 })
 
-test('the pay department, class or rank, and jobs filters keep only matching jobs, in every measure', () => {
+test('the pay department and class or rank filters keep only matching jobs, in every measure', () => {
   const physics = { code: '222222', name: 'Physics' }
   const years = [
     {
@@ -306,7 +305,6 @@ test('the pay department, class or rank, and jobs filters keep only matching job
   expect(jobs({ dept: '222222' })).toBe(4)
   expect(jobs({ position: 'rank Professor' })).toBe(3)
   expect(jobs({ position: 'class 0104' })).toBe(1)
-  expect(jobs({ jobs: new Set(years[0]?.records.slice(0, 2)) })).toBe(2)
   const both = buildTrends(
     years,
     {

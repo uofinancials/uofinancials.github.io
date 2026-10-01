@@ -13,8 +13,9 @@ import { areaTrendFilter } from '@/lib/departments/codes'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
 import { peerKeyFor } from '@/lib/people/peer-group'
 import type { SectionSource } from '@/lib/shared/citation'
+import type { PairFilter } from '@/lib/trends/pay-changes'
 import { type PayChangesSearch, resolveTrendView } from '@/lib/trends/search'
-import { filterNames, type TrendFilter } from '@/lib/trends/trends'
+import { filterNames } from '@/lib/trends/trends'
 
 function usePayChangesView() {
   const { years, fiscalYears } = useLoaderData({ from: '/trends/pay-changes' })
@@ -51,16 +52,16 @@ function usePayChangesView() {
   )
   const { kind, group, dept, from, to } = view
   const filter = useMemo(
-    (): TrendFilter => ({
+    (): PairFilter => ({
       kind,
       group,
       dept,
       position,
-      jobs: area?.jobs ?? null,
+      area: view.area,
       from,
       to,
     }),
-    [kind, group, dept, position, area, from, to],
+    [kind, group, dept, position, view.area, from, to],
   )
   const names = useMemo(
     () => ({
@@ -69,7 +70,7 @@ function usePayChangesView() {
     }),
     [censuses, dept, position, area],
   )
-  const changes = usePayChanges(fallYears, view, filter)
+  const changes = usePayChanges({ fallYears, placed }, view, filter)
   return { years, view, names, changes, area }
 }
 
