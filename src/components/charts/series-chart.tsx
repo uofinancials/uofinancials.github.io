@@ -18,7 +18,7 @@ import {
   BelowZeroBand,
   chartRows,
   legendText,
-  markerLine,
+  MarkerLine,
   seriesKey,
 } from './chart-parts'
 import { lineColor } from './line-color'
@@ -113,7 +113,7 @@ export function SeriesChart({
           {isBelowZero && (
             <ReferenceLine y={0} stroke="var(--foreground)" strokeWidth={1.5} />
           )}
-          {marker && markerLine(marker)}
+          {marker && <MarkerLine marker={marker} />}
           <ChartTooltip
             content={
               <ChartTooltipContent

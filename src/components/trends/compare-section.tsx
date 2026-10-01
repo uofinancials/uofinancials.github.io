@@ -65,21 +65,20 @@ function CompareTable({
   selected?: string | null
 }) {
   return (
-    <div className="max-h-[32rem] overflow-y-auto">
-      <GroupTable
-        caption={caption}
-        heading="Name"
-        columns={['Jobs, last census', 'FTE change', 'Salary spend change']}
-        rows={[
-          ...compareRows(totals).map((row) =>
-            compareRow(row, { isTotal: true, selected }),
-          ),
-          ...compareRows(codes)
-            .filter(({ code }) => !totals.some((total) => total.code === code))
-            .map((row) => compareRow(row, { isTotal: false, selected })),
-        ]}
-      />
-    </div>
+    <GroupTable
+      caption={caption}
+      heading="Name"
+      columns={['Jobs, last census', 'FTE change', 'Salary spend change']}
+      rows={[
+        ...compareRows(totals).map((row) =>
+          compareRow(row, { isTotal: true, selected }),
+        ),
+        ...compareRows(codes)
+          .filter(({ code }) => !totals.some((total) => total.code === code))
+          .map((row) => compareRow(row, { isTotal: false, selected })),
+      ]}
+      containerClassName="max-h-[32rem]"
+    />
   )
 }
 

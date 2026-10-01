@@ -294,6 +294,26 @@ test('the heading and browser tab name the scope, and a phone opened on a tab fo
   ).toBeVisible()
 })
 
+test('on a phone the tab row opens with the current tab in view, and follows it', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/trends?tab=groups')
+  await expect(tab(page, 'How are groups defined?')).toBeInViewport({
+    ratio: 1,
+  })
+  await expect(tab(page, 'Which groups grew?')).not.toBeInViewport()
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'Trends' })
+    .click()
+  await expect(page).not.toHaveURL(/tab=/)
+  await page
+    .getByRole('navigation', { name: 'Questions' })
+    .scrollIntoViewIfNeeded()
+  await expect(tab(page, 'Which groups grew?')).toBeInViewport({ ratio: 1 })
+})
+
 test('on a phone a link to the chart over time shows the bars and says why', async ({
   page,
 }) => {
@@ -356,6 +376,42 @@ test('on a phone a wide table keeps its first column in view as it scrolls', asy
   expect(await box.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0)
   expect(await leftOf()).toBe(before)
 })
+
+for (const [screen, width, height] of [
+  ['a phone', 360, 800],
+  ['a wide screen', 1440, 900],
+] as const) {
+  test(`on ${screen} the comparison table keeps its column headers in view as its rows scroll`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height })
+    await page.goto('/trends?tab=compare')
+    const table = page.getByRole('table', { name: /colleges and VP areas/ })
+    const corner = table.getByRole('columnheader', { name: 'Name' })
+    const box = page
+      .locator('[data-slot=table-container]', { has: table })
+      .first()
+    await box.scrollIntoViewIfNeeded()
+    await box.evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+      element.scrollLeft = element.scrollWidth
+    })
+    expect(await box.evaluate((element) => element.scrollTop)).toBeGreaterThan(
+      0,
+    )
+    await expect(corner).toBeInViewport({ ratio: 1 })
+    await expect(
+      table.getByRole('columnheader', { name: 'Salary spend change' }),
+    ).toBeInViewport({ ratio: 1 })
+    const isOnTop = await corner.evaluate((element) => {
+      const { left, top, width, height } = element.getBoundingClientRect()
+      return element.contains(
+        document.elementFromPoint(left + width / 2, top + height / 2),
+      )
+    })
+    expect(isOnTop).toBe(true)
+  })
+}
 
 test('from Fall 2020 the report counts classified temporaries by their FY pay, and cites the FY total pay reports', async ({
   page,

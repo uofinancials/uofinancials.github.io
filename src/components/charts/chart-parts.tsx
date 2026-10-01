@@ -1,7 +1,19 @@
-import { ReferenceLine, usePlotArea, useYAxisScale } from 'recharts'
-import type { ChartMarker } from '@/lib/shared/series'
+import {
+  ReferenceLine,
+  usePlotArea,
+  useXAxisScale,
+  useYAxisScale,
+} from 'recharts'
+import { type ChartMarker, markerLabelPlacement } from '@/lib/shared/series'
 
 const MARKER_DASH = '4 4'
+// Recharts measures the words to wrap with this style, which needs the unit, not with the `fontSize` attribute.
+const MARKER_LABEL_STYLE = { fontSize: '12px' }
+const MARKER_OFFSET_PX = 5
+// ponytail: a fixed minimum stands in for measuring the label; measure it if a marker's words outgrow this.
+const MARKER_MIN_ROOM_PX = 96
+// The words can be measured before the web font loads; this covers a fallback font up to 15% narrower.
+const MARKER_WRAP_SLACK = 0.85
 
 /** Recharts resolves a string data key as a path, and series keys are data, so each series gets a positional field. */
 export function seriesKey(index: number) {
@@ -24,8 +36,17 @@ export function chartRows(
   }))
 }
 
-/** A dashed vertical line at one x label, with its text. */
-export function markerLine(marker: ChartMarker) {
+/** A dashed vertical line at one x label; its text runs left from the line's top, or right where the left is too narrow, and wraps to stay inside the plot. */
+export function MarkerLine({ marker }: { marker: ChartMarker }) {
+  const plot = usePlotArea()
+  const lineX = useXAxisScale()?.(marker.x)
+  if (!plot || lineX === undefined) return null
+  const { side, room } = markerLabelPlacement({
+    lineX,
+    plotLeft: plot.x,
+    plotRight: plot.x + plot.width,
+    minRoom: MARKER_MIN_ROOM_PX,
+  })
   return (
     <ReferenceLine
       x={marker.x}
@@ -33,9 +54,11 @@ export function markerLine(marker: ChartMarker) {
       strokeDasharray={MARKER_DASH}
       label={{
         value: marker.label,
-        position: 'insideTopRight',
+        position: side === 'left' ? 'insideTopRight' : 'insideTopLeft',
+        offset: MARKER_OFFSET_PX,
+        width: (room - MARKER_OFFSET_PX) * MARKER_WRAP_SLACK,
         fill: 'var(--foreground)',
-        fontSize: 12,
+        style: MARKER_LABEL_STYLE,
       }}
     />
   )

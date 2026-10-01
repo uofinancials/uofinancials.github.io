@@ -62,7 +62,7 @@ test('the nav lists the sections in order and marks the current one apart from t
   )
 })
 
-test('on a phone the nav links sit on one row under the site name', async ({
+test('on a phone the nav links sit on one row under the site name, with the current page’s link in view', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
@@ -76,7 +76,36 @@ test('on a phone the nav links sit on one row under the site name', async ({
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(360)
+  const sources = links.filter({ hasText: 'Sources' })
+  await expect(sources).toBeInViewport({ ratio: 1 })
+  await page.goto('/')
+  await expect(sources).not.toBeInViewport()
+  await page
+    .getByRole('link', { name: 'Every source and when it was retrieved' })
+    .click()
+  await expect(page).toHaveURL(/\/sources$/)
+  await expect(sources).toBeInViewport({ ratio: 1 })
 })
+
+for (const path of ['/', '/budget', '/scenarios']) {
+  test(`on a phone the chart marker’s label on ${path} stays inside the plot`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 800 })
+    await page.goto(path)
+    const label = page.locator('.recharts-label', { hasText: 'below zero' })
+    await expect(label).toBeVisible()
+    await page.evaluate(() => document.fonts.ready)
+    const plot = await page
+      .locator('figure', { has: label })
+      .locator('.recharts-cartesian-grid')
+      .boundingBox()
+    const text = await label.boundingBox()
+    if (!plot || !text) throw new Error('the chart has no plot or no label')
+    expect(text.x).toBeGreaterThanOrEqual(plot.x)
+    expect(text.x + text.width).toBeLessThanOrEqual(plot.x + plot.width)
+  })
+}
 
 test('the first tab stop skips to the page content', async ({ page }) => {
   await page.goto('/sources')

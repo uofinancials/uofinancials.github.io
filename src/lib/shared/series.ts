@@ -27,6 +27,25 @@ export function belowZeroMarker(
     : { x, label: `${subject} below zero from ${x}` }
 }
 
+/** Where a vertical marker's label runs from its line, and the room there: left while that side has `minRoom` or is the wider one, otherwise right. */
+export function markerLabelPlacement({
+  lineX,
+  plotLeft,
+  plotRight,
+  minRoom,
+}: {
+  lineX: number
+  plotLeft: number
+  plotRight: number
+  minRoom: number
+}): { side: 'left' | 'right'; room: number } {
+  const left = lineX - plotLeft
+  const right = plotRight - lineX
+  return left >= minRoom || left >= right
+    ? { side: 'left', room: left }
+    : { side: 'right', room: right }
+}
+
 /** Each value as a fraction of the largest, from 0 to 1; a null, zero, or negative value is 0. */
 export function shareOfLargest(values: (number | null)[]): number[] {
   const largest = Math.max(0, ...values.map((value) => value ?? 0))

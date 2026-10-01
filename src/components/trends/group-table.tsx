@@ -32,14 +32,16 @@ export function GroupTable({
   heading = 'Group',
   columns,
   rows,
+  containerClassName,
 }: {
   caption: string
   heading?: string
   columns: string[]
   rows: GroupRow[]
+  containerClassName?: string
 }) {
   return (
-    <Table>
+    <Table containerClassName={containerClassName}>
       <caption className="sr-only">{caption}</caption>
       <TableHeader>
         <TableRow>
