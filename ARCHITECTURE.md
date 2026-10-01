@@ -203,7 +203,7 @@ flowchart LR
 - `e2e/home.spec.ts` - the built site's routes, notice, navigation, skip link,
   and tab titles, the chart marker's label on a phone, a department's jobs link,
   the people list, its filter chips, and person page, the files a person page
-  loads, an earlier name's redirect, sources page, and `404.html`.
+  loads, an earlier name's redirect, and sources page.
 - `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
@@ -222,6 +222,8 @@ flowchart LR
 - `e2e/trends-change.spec.ts` - the pay changes page, its filters, its raise
   comparison, its sources, the files it loads, older links to it, and its link
   from the person page.
+- `e2e/build.spec.ts` - the files in `dist/`: `404.html`, and no fiscal year's
+  job file.
 - `e2e/sources.ts` - opening a page's sources disclosures, and collecting the
   data files a page requests.
 
@@ -298,4 +300,4 @@ flowchart LR
 - `.github/workflows/ci.yml` - on every push and pull request, runs the checks,
   unit tests, and end-to-end tests; on `main`, publishes `dist/` to Pages.
 - `pnpm build` writes `dist/404.html` as a copy of `index.html`, so Pages serves
-  the app for every path.
+  the app for every path, and removes `dist/data/fy/`.
