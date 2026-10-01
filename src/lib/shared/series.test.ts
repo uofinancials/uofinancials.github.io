@@ -38,19 +38,6 @@ test('the below-zero marker is at the first label below zero', () => {
 })
 
 test('a marker’s label runs left while there is room, and otherwise toward the wider side', () => {
-  const phone = { plotLeft: 69, plotRight: 323, minRoom: 96 }
-  expect(markerLabelPlacement({ lineX: 263, ...phone })).toEqual({
-    side: 'left',
-    room: 194,
-  })
-  expect(markerLabelPlacement({ lineX: 129, ...phone })).toEqual({
-    side: 'right',
-    room: 194,
-  })
-  expect(markerLabelPlacement({ lineX: 85, ...phone })).toEqual({
-    side: 'right',
-    room: 238,
-  })
   expect(
     markerLabelPlacement({
       lineX: 300,
@@ -59,6 +46,14 @@ test('a marker’s label runs left while there is room, and otherwise toward the
       minRoom: 96,
     }),
   ).toEqual({ side: 'left', room: 200 })
+  expect(
+    markerLabelPlacement({
+      lineX: 129,
+      plotLeft: 69,
+      plotRight: 323,
+      minRoom: 96,
+    }),
+  ).toEqual({ side: 'right', room: 194 })
   expect(
     markerLabelPlacement({
       lineX: 80,

@@ -38,7 +38,6 @@ export function GroupTable({
   heading?: string
   columns: string[]
   rows: GroupRow[]
-  /** Classes for the scrolling container, such as a height cap. */
   containerClassName?: string
 }) {
   return (

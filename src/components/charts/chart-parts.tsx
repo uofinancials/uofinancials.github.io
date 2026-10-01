@@ -7,7 +7,8 @@ import {
 import { type ChartMarker, markerLabelPlacement } from '@/lib/shared/series'
 
 const MARKER_DASH = '4 4'
-const MARKER_FONT_SIZE = '12px'
+// Recharts measures the words to wrap with this style, which needs the unit, not with the `fontSize` attribute.
+const MARKER_LABEL_STYLE = { fontSize: '12px' }
 const MARKER_OFFSET_PX = 5
 // ponytail: a fixed minimum stands in for measuring the label; measure it if a marker's words outgrow this.
 const MARKER_MIN_ROOM_PX = 96
@@ -57,8 +58,7 @@ export function MarkerLine({ marker }: { marker: ChartMarker }) {
         offset: MARKER_OFFSET_PX,
         width: (room - MARKER_OFFSET_PX) * MARKER_WRAP_SLACK,
         fill: 'var(--foreground)',
-        // Recharts measures the words to wrap with `style`, which needs the unit, not with the `fontSize` attribute.
-        style: { fontSize: MARKER_FONT_SIZE },
+        style: MARKER_LABEL_STYLE,
       }}
     />
   )
