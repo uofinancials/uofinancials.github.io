@@ -16,7 +16,7 @@ import { formatIndex } from '@/lib/shared/format'
 import { type ChartMarker, sparseNote } from '@/lib/shared/series'
 import { INDEX_BASE, type IndexedLine } from '@/lib/trends/report'
 import { cn } from '@/lib/utils'
-import { chartRows, markerLine, seriesKey } from './chart-parts'
+import { chartRows, MarkerLine, seriesKey } from './chart-parts'
 import { EndLabels } from './end-labels'
 import { lineColor } from './line-color'
 
@@ -130,7 +130,7 @@ export function IndexChart({
             tickFormatter={(value) => formatIndex(Number(value))}
           />
           <ReferenceLine y={INDEX_BASE} stroke="var(--foreground)" />
-          {marker && markerLine(marker)}
+          {marker && <MarkerLine marker={marker} />}
           <ChartTooltip
             itemSorter={(item) => -Number(item.value)}
             content={

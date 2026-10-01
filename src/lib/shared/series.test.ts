@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import {
   belowZeroMarker,
   changeOf,
+  markerLabelPlacement,
   rankByChange,
   shareOfLargest,
   sparseNote,
@@ -34,6 +35,38 @@ test('the below-zero marker is at the first label below zero', () => {
     x: 'FY27',
     label: 'Balance below zero from FY27',
   })
+})
+
+test('a marker’s label runs left while there is room, and otherwise toward the wider side', () => {
+  const phone = { plotLeft: 69, plotRight: 323, minRoom: 96 }
+  expect(markerLabelPlacement({ lineX: 263, ...phone })).toEqual({
+    side: 'left',
+    room: 194,
+  })
+  expect(markerLabelPlacement({ lineX: 129, ...phone })).toEqual({
+    side: 'right',
+    room: 194,
+  })
+  expect(markerLabelPlacement({ lineX: 85, ...phone })).toEqual({
+    side: 'right',
+    room: 238,
+  })
+  expect(
+    markerLabelPlacement({
+      lineX: 300,
+      plotLeft: 100,
+      plotRight: 1000,
+      minRoom: 96,
+    }),
+  ).toEqual({ side: 'left', room: 200 })
+  expect(
+    markerLabelPlacement({
+      lineX: 80,
+      plotLeft: 0,
+      plotRight: 150,
+      minRoom: 96,
+    }),
+  ).toEqual({ side: 'left', room: 80 })
 })
 
 test('each value is its share of the largest, and nothing below zero draws', () => {

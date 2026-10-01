@@ -87,6 +87,26 @@ test('on a phone the nav links sit on one row under the site name, with the curr
   await expect(sources).toBeInViewport({ ratio: 1 })
 })
 
+for (const path of ['/', '/budget', '/scenarios']) {
+  test(`on a phone the chart marker’s label on ${path} stays inside the plot`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 800 })
+    await page.goto(path)
+    const label = page.locator('.recharts-label', { hasText: 'below zero' })
+    await expect(label).toBeVisible()
+    await page.evaluate(() => document.fonts.ready)
+    const plot = await page
+      .locator('figure', { has: label })
+      .locator('.recharts-cartesian-grid')
+      .boundingBox()
+    const text = await label.boundingBox()
+    if (!plot || !text) throw new Error('the chart has no plot or no label')
+    expect(text.x).toBeGreaterThanOrEqual(plot.x)
+    expect(text.x + text.width).toBeLessThanOrEqual(plot.x + plot.width)
+  })
+}
+
 test('the first tab stop skips to the page content', async ({ page }) => {
   await page.goto('/sources')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
