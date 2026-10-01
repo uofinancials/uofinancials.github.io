@@ -36,7 +36,6 @@ import {
 /** Parsing every census takes a few seconds alone, more beside other test files. */
 const ALL_YEARS_TIMEOUT_MS = 20_000
 
-/** A committed department page, as the site reads it. */
 function readPage(code: string) {
   return departmentFileSchema.parse(readJson(departmentPath(code)))
 }

@@ -79,7 +79,6 @@ const departmentRowSchema = z.strictObject({
   }),
 })
 
-/** The home page's figures. */
 export const homeSchema = z.strictObject({
   year,
   censusDate: z.iso.date(),

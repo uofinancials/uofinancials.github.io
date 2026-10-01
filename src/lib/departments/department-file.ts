@@ -43,7 +43,6 @@ function buildDepartmentFile(
   }
 }
 
-/** Each listed code's department page: its names, budget, jobs, and classes. */
 export function buildDepartmentFiles(
   codes: string[],
   inputs: DepartmentInputs,

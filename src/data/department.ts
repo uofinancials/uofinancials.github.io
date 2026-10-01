@@ -41,7 +41,6 @@ export const departmentFileSchema = z.strictObject({
           values: yearValues,
         }),
       ),
-      /** The total by account group, and by fund type. */
       series: z.strictObject({ account: series, fund: series }),
     })
     .nullable(),

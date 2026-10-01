@@ -72,12 +72,10 @@ export function areaTrendsQuery(area: string) {
   return dataQuery(`trends/${area}.json`, areaTrendsSchema)
 }
 
-/** The people filed in one name bucket. */
 export function personBucketQuery(bucket: string) {
   return dataQuery(`people/buckets/${bucket}.json`, foldedPersonBucketSchema)
 }
 
-/** One code's department page. */
 export function departmentQuery(code: string) {
   return dataQuery(`departments/${code}.json`, departmentFileSchema)
 }
