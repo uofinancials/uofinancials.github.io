@@ -20,12 +20,12 @@ import {
 /** Parsing every census and every bucket takes a few seconds alone, more beside other test files. */
 const ALL_RECORDS_TIMEOUT_MS = 30_000
 
-function readBuckets() {
-  return NAME_BUCKETS.map((id) => ({
-    id,
-    ...personBucketSchema.parse(readJson(personBucketPath(id))),
-  }))
-}
+const buckets = existsSync(MANIFEST_PATH)
+  ? NAME_BUCKETS.map((id) => ({
+      id,
+      ...personBucketSchema.parse(readJson(personBucketPath(id))),
+    }))
+  : []
 
 /** How many times each record's text occurs; two identical rows in one census count twice. */
 function countRecords(records: FallRecord[]): Map<string, number> {
@@ -46,7 +46,6 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       ...fallYearSchema.parse(readJson(fallDataPath(year))),
     }))
     const names = personNamesOf(falls.map(foldUnitAliases))
-    const buckets = readBuckets()
     expect(readdirSync(PERSON_BUCKETS_DIR).sort()).toEqual(
       NAME_BUCKETS.map((id) => `${id}.json`),
     )
@@ -65,10 +64,9 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
             ),
             `${person.name} in Fall ${year}`,
           ).toBe(true)
-          bucketRecords.set(year, [
-            ...(bucketRecords.get(year) ?? []),
-            ...records,
-          ])
+          const ofYear = bucketRecords.get(year) ?? []
+          bucketRecords.set(year, ofYear)
+          ofYear.push(...records)
         }
       }
     }
@@ -85,7 +83,6 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 test.skipIf(!existsSync(MANIFEST_PATH))(
   'every other name is filed in its own bucket and points at the person who lists it, and none is missing',
   () => {
-    const buckets = readBuckets()
     const people = new Map(
       buckets.flatMap((bucket) =>
         bucket.people.map((person) => [person.name, person]),

@@ -2,7 +2,7 @@ import type { BudgetYear } from '../../data/budget.ts'
 import type { DepartmentFile } from '../../data/department.ts'
 import type { FyTemps } from '../../data/fy-temps.ts'
 import { departmentBudget } from './budget.ts'
-import { departmentCodes, describeCode } from './codes.ts'
+import { describeCode } from './codes.ts'
 import {
   type DepartmentCensus,
   departmentClasses,
@@ -25,20 +25,10 @@ function buildDepartmentFile(
     throw new Error(`No budget or census publishes department code ${code}`)
   }
   const jobs = departmentYears(code, censuses)
-  const byAccount = departmentBudget(code, budgets, 'account')
+  const budget = departmentBudget(code, budgets)
   return {
     profile,
-    budget: profile.hasBudget
-      ? {
-          years: byAccount.years,
-          total: byAccount.total,
-          accountTypes: byAccount.accountTypes,
-          series: {
-            account: byAccount.series,
-            fund: departmentBudget(code, budgets, 'fund').series,
-          },
-        }
-      : null,
+    budget: budget.total.every((cents) => cents === null) ? null : budget,
     yearsWithJobs: jobs.yearsWithJobs,
     placements: jobs.placements,
     trends: {
@@ -53,11 +43,10 @@ function buildDepartmentFile(
   }
 }
 
-/** Every department page's figures, one file per code a budget or a census publishes. */
+/** Each listed code's department page: its names, budget, jobs, and classes. */
 export function buildDepartmentFiles(
+  codes: string[],
   inputs: DepartmentInputs,
 ): DepartmentFile[] {
-  return departmentCodes(inputs.censuses, inputs.budgets).map((code) =>
-    buildDepartmentFile(code, inputs),
-  )
+  return codes.map((code) => buildDepartmentFile(code, inputs))
 }

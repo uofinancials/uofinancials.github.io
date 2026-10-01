@@ -4,6 +4,7 @@ import {
   type FallYear,
   isPrimaryJob,
 } from '../../data/fall.ts'
+import type { PersonYear } from '../../data/person-bucket.ts'
 import type { NameEntry } from '../../data/summary.ts'
 import { findPersonLinks } from './person-links.ts'
 import {
@@ -15,11 +16,7 @@ import {
 export const MIN_QUERY_CHARS = 2
 export const MAX_MATCHES = 50
 
-export type PersonYear = {
-  year: number
-  censusDate: string
-  records: FallRecord[]
-}
+export type { PersonYear }
 
 /** Consecutive census years of one name; `isLinked` when a computed person link joins each pair. */
 export type PersonRun = { years: PersonYear[]; isLinked: boolean }

@@ -26,6 +26,7 @@ export const personBucketSchema = z.strictObject({
 })
 
 export type PersonBucket = z.infer<typeof personBucketSchema>
+export type PersonYear = z.infer<typeof personYearSchema>
 
 /** A bucket as the site reads it, with unit aliases folded. */
 export const foldedPersonBucketSchema = personBucketSchema.transform(

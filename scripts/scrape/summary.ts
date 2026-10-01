@@ -106,10 +106,11 @@ export function deriveSummary(manifest: Manifest): Derived & {
     RAISES_DATA_PATH,
   ].map((file) => path.relative(DATA_DIR, file))
   const scopes = buildTrendScopes(inputs)
+  const summary = buildSummary(inputs, scopes)
   return {
-    summary: buildSummary(inputs, scopes),
+    summary,
     areas: scopes.areas,
-    departments: buildDepartmentFiles({
+    departments: buildDepartmentFiles(summary.departments.codes, {
       censuses: toDepartmentCensuses(manifest, base.falls, base.budgets),
       budgets: base.budgets,
       fyTemps,
@@ -185,9 +186,11 @@ export async function runSummary(manifest: Manifest): Promise<StepResult> {
   await Promise.all(
     DERIVED_DIRS.map((dir) => rm(dir, { recursive: true, force: true })),
   )
-  for (const dir of new Set([...texts.keys()].map(path.dirname))) {
-    await mkdir(dir, { recursive: true })
-  }
+  await Promise.all(
+    [...new Set([...texts.keys()].map(path.dirname))].map((dir) =>
+      mkdir(dir, { recursive: true }),
+    ),
+  )
   await Promise.all([...texts].map(([file, text]) => writeFile(file, text)))
   return {
     manifest: {

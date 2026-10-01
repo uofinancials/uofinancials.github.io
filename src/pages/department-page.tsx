@@ -188,7 +188,7 @@ export function DepartmentPage() {
     <div className="space-y-8">
       <DepartmentHeader
         profile={profile}
-        hasBothSources={profile.hasBudget && hasJobs}
+        hasBothSources={budget !== null && hasJobs}
         links={{
           canEliminate: isBudgetedIn(budget, eliminationFiscalYear),
           hasPayChanges: hasJobs,

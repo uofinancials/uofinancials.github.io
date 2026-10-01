@@ -1,4 +1,5 @@
 import type { BudgetYear } from '../../data/budget.ts'
+import type { DepartmentFile } from '../../data/department.ts'
 import {
   censusYearOf,
   type FallRecord,
@@ -19,7 +20,6 @@ import {
   buildTrends,
   MIN_JOBS_SHOWN,
   measureJobs,
-  type TrendPoint,
   type Trends,
 } from '../trends/trends.ts'
 import { type TempsScope, tempsByCensus } from './fy-temps.ts'
@@ -83,7 +83,7 @@ export function toDepartmentCensuses(
 type AreaJobs = { records: FallRecord[]; bases: AreaPlacement['bases'] }
 
 /** One census's jobs by pay code and by the area they are placed in, and how many are placed in none. */
-export type PlacementIndex = {
+type PlacementIndex = {
   byCode: Map<string | null, FallRecord[]>
   byArea: Map<string, AreaJobs>
   unassigned: number
@@ -121,12 +121,7 @@ export function placementIndexOf(census: DepartmentCensus): PlacementIndex {
 }
 
 /** For an area: how its jobs were placed in one census, and the jobs left unplaced site-wide. */
-export type AreaPlacement = {
-  year: number
-  fiscalYear: number
-  bases: Record<Exclude<AreaAssignment['basis'], 'unassigned'>, number>
-  unassignedSiteWide: number
-}
+export type AreaPlacement = NonNullable<DepartmentFile['placements']>[number]
 
 export type DepartmentYears = {
   years: { year: number; records: FallRecord[] }[]
@@ -207,7 +202,7 @@ export function departmentTrends(
 }
 
 /** A position class or rank row; spend and median as `measureJobs` gives them. */
-export type ClassRow = { label: string } & Omit<TrendPoint, 'year'>
+export type ClassRow = DepartmentFile['classes'][number][StaffKind][number]
 
 const OTHER_LABEL: Record<StaffKind, string> = {
   classified: `Other position classes (fewer than ${MIN_JOBS_SHOWN} jobs each)`,

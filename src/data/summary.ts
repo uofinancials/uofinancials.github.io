@@ -59,7 +59,7 @@ export const areaTrendsSchema = scopeTrendsSchema.extend({
   units: z.array(scopeTrendsSchema),
 })
 
-const areaSchema = z.strictObject({ code: z.string(), name: z.string() })
+export const areaSchema = z.strictObject({ code: z.string(), name: z.string() })
 
 const tableYearSchema = z.strictObject({ year, fiscalYear: year })
 
@@ -170,6 +170,7 @@ export type Summary = {
     medians: z.infer<typeof peerMediansSchema>
   }
 }
+export type PeerMedians = z.infer<typeof peerMediansSchema>
 export type CodeTrend = z.infer<typeof codeTrendSchema>
 export type SummaryArea = Summary['trends']['areas'][number]
 export type ScopeTrends = z.infer<typeof scopeTrendsSchema>

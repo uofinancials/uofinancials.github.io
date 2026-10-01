@@ -1,4 +1,5 @@
 import type { BudgetYear } from '../../data/budget.ts'
+import type { DepartmentFile } from '../../data/department.ts'
 import type { FallRecord } from '../../data/fall.ts'
 import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
@@ -74,19 +75,7 @@ export function departmentIndex(census: DepartmentCensus): IndexArea[] {
   }))
 }
 
-export type CodeProfile = {
-  code: string
-  /** The latest published name: the budget's where it has one, else the census's. */
-  name: string
-  otherNames: string[]
-  /** Codes the census also published this unit's jobs under, joined by hand review. */
-  aliasCodes: string[]
-  isArea: boolean
-  hasBudget: boolean
-  hasJobs: boolean
-  /** The area a unit or pay department sits in, as of the latest year that places it. */
-  area: { code: string; name: string } | null
-}
+export type CodeProfile = DepartmentFile['profile']
 
 function containingArea(
   code: string,
@@ -146,8 +135,6 @@ export function describeCode(
     otherNames: rest,
     aliasCodes: aliasCodesOf(code),
     isArea,
-    hasBudget: budgetNames.length > 0,
-    hasJobs: isArea || jobs.length > 0,
     area: isArea ? null : containingArea(code, jobs, newestBudgets),
   }
 }

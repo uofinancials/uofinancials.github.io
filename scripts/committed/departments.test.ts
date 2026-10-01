@@ -1,14 +1,16 @@
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { expect, test } from 'vitest'
 import { budgetYearSchema } from '../../src/data/budget.ts'
-import { departmentFileSchema } from '../../src/data/department.ts'
+import {
+  type DepartmentFileBudget,
+  departmentFileSchema,
+} from '../../src/data/department.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
-import { departmentsSchema } from '../../src/data/summary.ts'
 import {
   foldedBudgetYearSchema,
   foldedFallYearSchema,
 } from '../../src/data/unit-aliases.ts'
-import { ORG_LEVEL_AREA } from '../../src/lib/census/areas.ts'
+import { listAreas, ORG_LEVEL_AREA } from '../../src/lib/census/areas.ts'
 import {
   HAND_AREAS,
   type HandArea,
@@ -25,8 +27,6 @@ import { placementBases } from '../../src/lib/home/home.ts'
 import { totalExpenditureCents } from '../scrape/budget/file.ts'
 import {
   budgetDataPath,
-  DEPARTMENTS_DATA_PATH,
-  DEPARTMENTS_DIR,
   departmentPath,
   fallDataPath,
   MANIFEST_PATH,
@@ -53,19 +53,11 @@ const BUDGET_FIGURES = {
   ],
 }
 
-function budgetFigures({
-  years,
-  total,
-  series,
-}: {
-  years: { fiscalYear: number }[]
-  total: (number | null)[]
-  series: { key: string; values: (number | null)[] }[]
-}) {
+function budgetFigures({ years, total, series }: DepartmentFileBudget) {
   const at = (fiscalYear: number) =>
     years.findIndex((year) => year.fiscalYear === fiscalYear)
   const pick = (key: string, fiscalYear: number) =>
-    series.find((line) => line.key === key)?.values[at(fiscalYear)]
+    series.account.find((line) => line.key === key)?.values[at(fiscalYear)]
   return [2021, 2026].map((fiscalYear) => [
     total[at(fiscalYear)],
     pick('Salaries and pay', fiscalYear),
@@ -81,25 +73,18 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
       budgetYearSchema.parse(readJson(budgetDataPath(fiscalYear))),
     )
     for (const [code, pinned] of Object.entries(BUDGET_FIGURES)) {
-      const { years, series, total } = departmentBudget(
-        code,
-        budgets,
-        'account',
+      expect(budgetFigures(departmentBudget(code, budgets)), code).toEqual(
+        pinned,
       )
-      expect(budgetFigures({ years, total, series }), code).toEqual(pinned)
       const page = readPage(code).budget
-      expect(
-        page && budgetFigures({ ...page, series: page.series.account }),
-        `${code} page`,
-      ).toEqual(pinned)
+      expect(page && budgetFigures(page), `${code} page`).toEqual(pinned)
     }
     for (const budget of budgets) {
       const areas = Object.entries(budget.orgs).filter(
         ([, org]) => org.level === 3,
       )
       const areaSum = areas.reduce(
-        (sum, [code]) =>
-          sum + (departmentBudget(code, [budget], 'account').total[0] ?? 0),
+        (sum, [code]) => sum + (departmentBudget(code, [budget]).total[0] ?? 0),
         0,
       )
       expect(areaSum).toBe(totalExpenditureCents(budget.rows))
@@ -216,11 +201,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
 /** Each census's jobs by basis, summed over the committed area pages, with the unassigned count each of them repeats. */
 function pagePlacementBases(censuses: DepartmentCensus[]) {
   const areaCodes = new Set(
-    censuses.flatMap(({ orgs }) =>
-      Object.entries(orgs)
-        .filter(([, org]) => org.level === ORG_LEVEL_AREA)
-        .map(([code]) => code),
-    ),
+    censuses.flatMap(({ orgs }) => listAreas(orgs).map(({ code }) => code)),
   )
   const placements = [...areaCodes].flatMap(
     (code) => readPage(code).placements ?? [],
@@ -252,13 +233,3 @@ function pageLatest(code: string) {
   const point = readPage(code).trends.all.total.at(-1)
   return [point?.jobs, point?.fyTemps?.otherSpendCents ?? point?.spendCents]
 }
-
-test.skipIf(!existsSync(MANIFEST_PATH))(
-  'the departments file lists exactly the codes that have a committed page',
-  () => {
-    const { codes } = departmentsSchema.parse(readJson(DEPARTMENTS_DATA_PATH))
-    expect(readdirSync(DEPARTMENTS_DIR).sort()).toEqual(
-      codes.map((code) => `${code}.json`),
-    )
-  },
-)

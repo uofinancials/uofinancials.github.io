@@ -1,27 +1,30 @@
 import { z } from 'zod'
 import { budgetPeriodSchema, twoDigitCode } from './budget.ts'
-import { trendPointSchema, trendsSchema } from './summary.ts'
+import { areaSchema, trendPointSchema, trendsSchema } from './summary.ts'
 
 const year = z.number().int()
 const count = z.number().int().nonnegative()
 /** Cents per fiscal year; `null` where the code is not in that year's budget. */
 const yearValues = z.array(z.number().int().nullable())
 const series = z.array(z.strictObject({ key: z.string(), values: yearValues }))
+/** A position class or rank row; spend and median as a trend point has them. */
 const classRows = z.array(
   trendPointSchema.omit({ year: true }).extend({ label: z.string() }),
 )
 
 /** One code's department page, written by `pnpm scrape summary`; it holds figures for the code, never a job record. */
 export const departmentFileSchema = z.strictObject({
+  /** What the sources publish under the code. */
   profile: z.strictObject({
     code: z.string(),
+    /** The latest published name: the budget's where it has one, else the census's. */
     name: z.string(),
     otherNames: z.array(z.string()),
+    /** Codes the census also published this unit's jobs under, joined by hand review. */
     aliasCodes: z.array(z.string()),
     isArea: z.boolean(),
-    hasBudget: z.boolean(),
-    hasJobs: z.boolean(),
-    area: z.strictObject({ code: z.string(), name: z.string() }).nullable(),
+    /** The area a unit or pay department sits in, as of the latest year that places it. */
+    area: areaSchema.nullable(),
   }),
   /** `null` when no budget publishes the code. */
   budget: z
@@ -44,7 +47,7 @@ export const departmentFileSchema = z.strictObject({
     .nullable(),
   /** The censuses with at least one job, oldest first. */
   yearsWithJobs: z.array(year),
-  /** `null` unless the code is an area. */
+  /** For an area, how its jobs were placed in each census, and the jobs left unplaced site-wide; `null` for any other code. */
   placements: z
     .array(
       z.strictObject({

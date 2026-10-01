@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const orgCode = z.string().regex(/^[0-9A-Z]{6}$/)
+const orgCode = z.string().regex(/^[0-9A-Z]{6}$/)
 
 /** An org code in a URL search param, where the router has already read an all-digit code as a number. */
 export const orgCodeParam = z.preprocess(

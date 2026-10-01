@@ -191,6 +191,8 @@ const departmentRoute = createRoute({
     const [{ codes }, manifest] = await Promise.all([
       queryClient.ensureQueryData(departmentsQuery),
       queryClient.ensureQueryData(manifestQuery),
+      queryClient.prefetchQuery(departmentQuery(code)),
+      queryClient.prefetchQuery(outlookQuery),
     ])
     if (!codes.includes(code)) throw notFound()
     const [eliminationFiscalYear] = await Promise.all([

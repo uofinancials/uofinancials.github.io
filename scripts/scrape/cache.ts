@@ -49,14 +49,14 @@ export const HOME_DATA_PATH = path.join(DATA_DIR, 'home.json')
 export const TRENDS_DATA_PATH = path.join(DATA_DIR, 'trends.json')
 export const DEPARTMENTS_DATA_PATH = path.join(DATA_DIR, 'departments.json')
 
-export const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
+const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
 export const DEPARTMENTS_DIR = path.join(DATA_DIR, 'departments')
 
 export function departmentPath(code: string): string {
   return path.join(DEPARTMENTS_DIR, `${code}.json`)
 }
 
-export const PEOPLE_DIR = path.join(DATA_DIR, 'people')
+const PEOPLE_DIR = path.join(DATA_DIR, 'people')
 export const PEOPLE_NAMES_PATH = path.join(PEOPLE_DIR, 'names.json')
 export const PEER_MEDIANS_PATH = path.join(PEOPLE_DIR, 'medians.json')
 export const PERSON_BUCKETS_DIR = path.join(PEOPLE_DIR, 'buckets')

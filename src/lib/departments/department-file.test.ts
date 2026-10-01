@@ -23,7 +23,7 @@ const BUDGET = scenarioBudget([
   }),
 ])
 
-const FILES = buildDepartmentFiles({
+const FILES = buildDepartmentFiles([AREA, UNIT, PAY_ONLY], {
   censuses: [
     toDepartmentCensus(
       {
@@ -46,7 +46,7 @@ const FILES = buildDepartmentFiles({
 const fileOf = (code: string) =>
   FILES.find(({ profile }) => profile.code === code)
 
-test('every code a budget or a census publishes gets a file that matches the schema', () => {
+test('every listed code gets a file that matches the schema', () => {
   expect(FILES.map(({ profile }) => profile.code)).toEqual([
     AREA,
     UNIT,
@@ -98,7 +98,7 @@ test('an area’s file holds how its jobs were placed, and a pay code no budget 
   ])
   expect(fileOf(AREA)?.trends.all.total[0]?.jobs).toBe(2)
   expect(fileOf(PAY_ONLY)).toMatchObject({
-    profile: { hasBudget: false, hasJobs: true, area: null },
+    profile: { name: 'Zz Nowhere', area: null },
     budget: null,
     yearsWithJobs: [2025],
   })
