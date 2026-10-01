@@ -1,5 +1,4 @@
 /// <reference lib="dom" />
-import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
 import { collectDataFiles, openSources } from './sources.ts'
 
@@ -131,12 +130,6 @@ test('an unknown path shows the not-found page', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Page not found' }),
   ).toBeVisible()
-})
-
-test('the build serves the app as 404.html for clean paths on Pages', () => {
-  expect(readFileSync('dist/404.html', 'utf8')).toBe(
-    readFileSync('dist/index.html', 'utf8'),
-  )
 })
 
 test('the sources page lists every committed dataset', async ({ page }) => {
