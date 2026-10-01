@@ -36,13 +36,7 @@ export const columnsSchema = z.strictObject({
   isTitleChanged: z.array(z.boolean()),
 })
 
-/**
- * Every continuing job's pair of consecutive censuses, without a name: what
- * its earlier job is grouped by, its two published annual salary rates, and
- * what changed. The department, area, and class or rank lists also hold the
- * name each reads by, for every one a census or budget publishes. Written by
- * `pnpm scrape summary`.
- */
+/** Every continuing job's pair of consecutive censuses, without a name; the department, area, and class or rank lists also name every one a census or budget publishes. Written by `pnpm scrape summary`. */
 export const payChangesFileSchema = z
   .strictObject({
     depts: z.array(named),

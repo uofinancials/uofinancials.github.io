@@ -83,7 +83,6 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
   },
 )
 
-/** Every string the file holds, at any depth. */
 function stringsIn(value: unknown): string[] {
   if (typeof value === 'string') return [value]
   if (typeof value !== 'object' || value === null) return []
