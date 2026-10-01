@@ -24,11 +24,11 @@ import {
   opeRatesQuery,
   outlookQuery,
   peerMediansQuery,
+  personBucketQuery,
   raiseTermsQuery,
   trendsSummaryQuery,
 } from '@/data/queries'
 import { unitCodeOf } from '@/data/unit-aliases'
-import { peopleIndexQuery } from '@/hooks/people-index-query'
 import { resolveCensusYear } from '@/lib/census/search'
 import {
   fiscalYearForCensus,
@@ -40,6 +40,7 @@ import {
   departmentsSearchSchema,
 } from '@/lib/departments/search'
 import { homeSearchSchema } from '@/lib/home/home'
+import { nameBucketOf, shownNameIn } from '@/lib/people/name-bucket'
 import { peopleSearchSchema, personSearchSchema } from '@/lib/people/search'
 import { eliminationFiscalYear } from '@/lib/scenario/eliminate'
 import { firstSavingsYear } from '@/lib/scenario/outlook'
@@ -252,26 +253,19 @@ const personRoute = createRoute({
   path: '/people/$name',
   validateSearch: personSearchSchema,
   loader: async ({ context: { queryClient }, params: { name } }) => {
-    const people = await queryClient.ensureQueryData(peopleIndexQuery)
-    const entry = people.find((person) => person.name === name) ?? null
-    if (!entry) {
-      const joined = people.find((person) => person.otherNames?.includes(name))
-      if (joined) {
-        throw redirect({
-          to: '/people/$name',
-          params: { name: joined.name },
-          search: true,
-          replace: true,
-        })
-      }
-    }
-    await Promise.all([
+    const [bucket] = await Promise.all([
+      queryClient.ensureQueryData(personBucketQuery(nameBucketOf(name))),
       queryClient.ensureQueryData(peerMediansQuery),
-      ...(entry?.runs.flat() ?? []).map((year) =>
-        queryClient.ensureQueryData(fallYearQuery(year)),
-      ),
     ])
-    return { entry }
+    const shownName = shownNameIn(bucket, name)
+    if (shownName !== null) {
+      throw redirect({
+        to: '/people/$name',
+        params: { name: shownName },
+        search: true,
+        replace: true,
+      })
+    }
   },
   component: lazyRouteComponent(
     () => import('@/pages/person-page'),

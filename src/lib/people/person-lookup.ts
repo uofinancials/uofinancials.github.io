@@ -28,7 +28,6 @@ export type PersonRun = { years: PersonYear[]; isLinked: boolean }
 export type Person = {
   name: string
   otherNames: string[]
-  searchKey: string
   runs: PersonRun[]
 }
 
@@ -104,11 +103,9 @@ export function indexPeople(years: FallYear[]): Person[] {
   return [...recordsByNameAndYear(years, personNamesOf(years))]
     .map(([name, personYears]) => {
       const linkedFrom = linked.get(name) ?? new Set()
-      const otherNames = otherNamesOf(name, personYears)
       return {
         name,
-        otherNames,
-        searchKey: searchKeyOf(name, otherNames),
+        otherNames: otherNamesOf(name, personYears),
         runs: chain(personYears, ({ year }) => linkedFrom.has(year - 1)).map(
           (run) => ({ years: run, isLinked: run.length > 1 }),
         ),
@@ -125,30 +122,6 @@ export function indexNames(names: NameEntry[]): IndexedName[] {
     ...entry,
     searchKey: searchKeyOf(entry.name, entry.otherNames ?? []),
   }))
-}
-
-/** The person an index entry names, with their records from the censuses it lists; a census not given is left out. */
-export function personOf(entry: IndexedName, years: FallYear[]): Person {
-  const byYear = new Map(
-    years.map((fall) => [censusYearOf(fall.censusDate), fall]),
-  )
-  const otherNames = entry.otherNames ?? []
-  const names = new Set([entry.name, ...otherNames])
-  const personYear = (year: number): PersonYear[] => {
-    const fall = byYear.get(year)
-    if (!fall) return []
-    const records = fall.records.filter(({ name }) => names.has(name))
-    return [{ year, censusDate: fall.censusDate, records }]
-  }
-  return {
-    name: entry.name,
-    otherNames,
-    searchKey: entry.searchKey,
-    runs: entry.runs.map((run) => ({
-      years: run.flatMap(personYear),
-      isLinked: run.length > 1,
-    })),
-  }
 }
 
 /** The name's census years in order, each with its records. */

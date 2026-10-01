@@ -486,6 +486,27 @@ test('the people list cites its census before the EEO section begins', async ({
   await expect(eeo.locator('xpath=following-sibling::details')).toHaveCount(0)
 })
 
+test('a person page loads the bucket its name is filed in and the medians, and no census', async ({
+  page,
+}) => {
+  const dataFiles = new Set<string>()
+  page.on('request', (request) => {
+    const [, file] = new URL(request.url()).pathname.split('/data/')
+    if (file) dataFiles.add(file)
+  })
+  await page.goto(`/people/${encodeURIComponent('Turner, Matthew W')}`)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Turner, Matthew W' }),
+  ).toBeVisible()
+  await openSources(page)
+  await page.waitForLoadState('networkidle')
+  expect([...dataFiles].sort()).toEqual([
+    'manifest.json',
+    expect.stringMatching(/^people\/buckets\/[0-9a-f]{2}\.json$/),
+    'people/medians.json',
+  ])
+})
+
 test('an earlier name leads to the person under their latest name, whose history shows each name as published', async ({
   page,
 }) => {
