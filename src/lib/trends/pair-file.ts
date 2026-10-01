@@ -7,8 +7,13 @@ import { describeCode } from '../departments/codes.ts'
 import type { DepartmentCensus } from '../departments/jobs.ts'
 import { peerGroupOf } from '../people/peer-group.ts'
 import { department } from '../people/person-fields.ts'
-import { type ContinuingPair, changeRatio } from './pay-changes.ts'
+import {
+  type ContinuingPair,
+  changeRatio,
+  type PairFilter,
+} from './pay-changes.ts'
 import { RAISE_ROWS, type RaiseRow } from './raise-groups.ts'
+import type { PayChangeNames } from './search.ts'
 
 /** How each pay department, college or VP area, and class or rank reads. */
 export type PairNames = Pick<PayChangesFile, 'depts' | 'areas' | 'peers'>
@@ -237,4 +242,23 @@ export function decodePairs(file: PayChangesFile): ContinuingPair[] {
       isTitleChanged: cell(pairs.isTitleChanged, row),
     }
   })
+}
+
+/** How a filter's pay department, area, and class or rank read: as the file lists each, or as given when it lists none; `null` for one not set. */
+export function pairFilterNames(
+  { depts, areas, peers }: PairNames,
+  { dept, area, position }: Pick<PairFilter, 'dept' | 'area' | 'position'>,
+): PayChangeNames {
+  const read = (
+    asked: string | null,
+    name: (asked: string) => string | undefined,
+  ) => (asked === null ? null : (name(asked) ?? asked))
+  return {
+    dept: read(dept, (asked) => depts.find(({ code }) => code === asked)?.name),
+    area: read(area, (asked) => areas.find(({ code }) => code === asked)?.name),
+    position: read(
+      position,
+      (asked) => peers.find(({ key }) => key === asked)?.label,
+    ),
+  }
 }

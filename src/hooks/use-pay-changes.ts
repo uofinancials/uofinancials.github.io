@@ -1,11 +1,11 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import type { FallYear } from '@/data/fall'
-import { raiseTermsQuery } from '@/data/queries'
-import { areaPlacer, type DepartmentCensus } from '@/lib/departments/jobs'
+import type { PayChangesFile } from '@/data/pay-changes'
+import { manifestQuery, payChangesQuery, raiseTermsQuery } from '@/data/queries'
+import { decodePairs } from '@/lib/trends/pair-file'
 import {
+  type ContinuingPair,
   changeCounts,
-  continuingPairs,
   filterPairs,
   type PairFilter,
   payChangeDistribution,
@@ -14,32 +14,37 @@ import {
 import { viewRaiseComparison } from '@/lib/trends/raise-comparison'
 import type { TrendView } from '@/lib/trends/search'
 
-/** The pay changes of the continuing jobs the view and its filter select; `placed` are the censuses that place a job in its area, none when no area is asked for. */
-export function usePayChanges(
-  { fallYears, placed }: { fallYears: FallYear[]; placed: DepartmentCensus[] },
-  view: TrendView,
-  filter: PairFilter,
-) {
-  const pairs = useMemo(
-    () =>
-      continuingPairs(
-        fallYears,
-        placed.length > 0 ? areaPlacer(placed) : undefined,
-      ),
-    [fallYears, placed],
-  )
-  const { group, fromYears, pair } = view
+const pairsByFile = new WeakMap<PayChangesFile, ContinuingPair[]>()
+
+function pairsOf(file: PayChangesFile): ContinuingPair[] {
+  const cached = pairsByFile.get(file)
+  if (cached) return cached
+  const pairs = decodePairs(file)
+  pairsByFile.set(file, pairs)
+  return pairs
+}
+
+/** The pay changes of the continuing jobs the view selects, from the pay changes file. */
+export function usePayChanges(view: TrendView) {
+  const { data: file } = useSuspenseQuery(payChangesQuery)
+  const { data: manifest } = useSuspenseQuery(manifestQuery)
   const { data: raiseTerms } = useSuspenseQuery(raiseTermsQuery)
+  const pairs = pairsOf(file)
+  const { kind, group, dept, area, position, from, to, fromYears, pair } = view
+  const filter = useMemo(
+    (): PairFilter => ({ kind, group, dept, area, position, from, to }),
+    [kind, group, dept, area, position, from, to],
+  )
   const raises = useMemo(
     () =>
       viewRaiseComparison({
         pairs,
         filter,
         fromYear: pair,
-        years: fallYears,
+        years: manifest.fall,
         raises: raiseTerms,
       }),
-    [pairs, fallYears, raiseTerms, filter, pair],
+    [pairs, manifest, raiseTerms, filter, pair],
   )
   const shown = useMemo(() => filterPairs(pairs, filter), [pairs, filter])
   return useMemo(

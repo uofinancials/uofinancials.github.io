@@ -1,10 +1,9 @@
 import { expect, test } from 'vitest'
 import { EXEC_OTHER_CATEGORY } from '@/lib/census/groups'
-import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
   buildTrends,
   comparableTemps,
-  filterNames,
   medianRateCents,
   type TempsFigure,
   type TrendFilter,
@@ -320,24 +319,6 @@ test('the pay department and class or rank filters keep only matching jobs, in e
     fteHundredths: 200,
   })
   expect(both.series.map(({ key }) => key)).toEqual(['Faculty'])
-})
-
-test('a filter names its department and class or rank from the first job with them, or keeps the code', () => {
-  const years = [
-    census(2025, [
-      unclassifiedJob({
-        rank: 'Professor',
-        payDepartment: { code: '222222', name: 'Physics' },
-      }),
-    ]),
-  ]
-  expect(
-    filterNames(years, { dept: '222222', position: 'rank Professor' }),
-  ).toEqual({ dept: 'Physics (222222)', position: 'Professor' })
-  expect(filterNames(years, { dept: '000000', position: null })).toEqual({
-    dept: '000000',
-    position: null,
-  })
 })
 
 test('a range drops the lines with no job in it and keeps the others in order', () => {

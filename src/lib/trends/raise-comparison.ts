@@ -1,4 +1,4 @@
-import { censusYearOf, type FallYear } from '../../data/fall.ts'
+import { censusYearOf } from '../../data/fall.ts'
 import type {
   AcrossTheBoardTerm,
   RaiseTerm,
@@ -18,7 +18,7 @@ const BASIS_POINTS_PER_UNIT = 10_000
 export type CensusWindow = { after: string; through: string }
 
 export function censusWindow(
-  years: FallYear[],
+  years: { censusDate: string }[],
   fromYear: number,
 ): CensusWindow | null {
   const dateOf = (year: number) =>
@@ -149,7 +149,7 @@ export function viewRaiseComparison({
   pairs: ContinuingPair[]
   filter: PairFilter
   fromYear: number
-  years: FallYear[]
+  years: { censusDate: string }[]
   raises: RaiseTerms
 }): RaiseComparison | null {
   const window = censusWindow(years, fromYear)

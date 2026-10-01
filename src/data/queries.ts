@@ -6,6 +6,7 @@ import { fyTempsSchema } from './fy-temps.ts'
 import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
+import { payChangesFileSchema } from './pay-changes.ts'
 import { foldedPersonBucketSchema } from './person-bucket.ts'
 import { raiseTermsSchema } from './raises.ts'
 import {
@@ -62,6 +63,10 @@ export const peerMediansQuery = dataQuery(
   peerMediansSchema,
 )
 export const fyTempsQuery = dataQuery('fy-temps.json', fyTempsSchema)
+export const payChangesQuery = dataQuery(
+  'pay-changes.json',
+  payChangesFileSchema,
+)
 
 export function fallYearQuery(year: number) {
   return dataQuery(`fall/${year}.json`, foldedFallYearSchema)

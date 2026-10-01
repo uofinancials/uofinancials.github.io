@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import type { BudgetRow, BudgetYear } from '@/data/budget'
 import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
-import { areaTrendFilter, departmentIndex, describeCode } from './codes'
+import { departmentIndex, describeCode } from './codes'
 import { toDepartmentCensus } from './jobs'
 
 function row(org: string, cents: number): BudgetRow {
@@ -107,12 +107,4 @@ test('a code is described by what each source publishes under it', () => {
     area: null,
   })
   expect(describeCode('000000', [CENSUS], [BUDGET])).toBeNull()
-})
-
-test('an area’s trend filter holds its placed jobs, named as its page names it', () => {
-  const filter = areaTrendFilter('222000', [CENSUS], [BUDGET])
-  expect(filter.jobs.size).toBe(2)
-  expect(filter.name).toBe('Arts & Sciences, College of')
-  expect(filter.fiscalYears).toEqual({ from: 2026, to: 2026 })
-  expect(areaTrendFilter('000000', [CENSUS], [BUDGET]).name).toBe('000000')
 })

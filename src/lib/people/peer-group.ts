@@ -34,20 +34,3 @@ export function peerGroupOf(record: FallRecord): PeerGroup | null {
     ? { key: `grade ${grade}`, label: `OA salary grade ${grade}` }
     : null
 }
-
-/** A Trends class or rank as a `peerGroupOf` key: kept when it is some job's key, else the one group of the jobs whose `positionOf` it is, else as given. */
-export function peerKeyFor(
-  years: { records: FallRecord[] }[],
-  position: string,
-): string {
-  const keys = new Set<string | undefined>()
-  for (const { records } of years) {
-    for (const record of records) {
-      const key = peerGroupOf(record)?.key
-      if (key === position) return position
-      if (positionOf(record) === position) keys.add(key)
-    }
-  }
-  const [only, ...others] = keys
-  return only !== undefined && others.length === 0 ? only : position
-}

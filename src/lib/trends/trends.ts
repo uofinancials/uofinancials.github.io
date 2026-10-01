@@ -18,7 +18,6 @@ import {
   sumSpendCents,
 } from '../census/totals.ts'
 import { peerGroupOf } from '../people/peer-group.ts'
-import { department } from '../people/person-fields.ts'
 import type { SectionSource } from '../shared/citation.ts'
 import { groupBy } from '../shared/group.ts'
 
@@ -81,35 +80,6 @@ export function pairYears(years: number[], from: number, to: number): number[] {
   return years.filter(
     (year) => year >= from && year + 1 <= to && years.includes(year + 1),
   )
-}
-
-/** How the filter's department and class or rank read, from the first job published with them; the code or key itself when no job has it, `null` for one not set. */
-export function filterNames(
-  years: { records: FallRecord[] }[],
-  { dept, position }: Pick<TrendFilter, 'dept' | 'position'>,
-): { dept: string | null; position: string | null } {
-  let deptName: string | undefined
-  let positionName: string | undefined
-  for (const { records } of years) {
-    for (const record of records) {
-      if (
-        dept !== null &&
-        deptName === undefined &&
-        record.payDepartment.code === dept &&
-        !record.payDepartment.publishedCode
-      ) {
-        deptName = department(record.payDepartment)
-      }
-      if (position !== null && positionName === undefined) {
-        const peer = peerGroupOf(record)
-        if (peer?.key === position) positionName = peer.label
-      }
-    }
-  }
-  return {
-    dept: dept === null ? null : (deptName ?? dept),
-    position: position === null ? null : (positionName ?? position),
-  }
 }
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
