@@ -89,25 +89,25 @@ export function areaPlacer(censuses: DepartmentCensus[]) {
 
 type AreaJobs = { records: FallRecord[]; bases: AreaPlacement['bases'] }
 
-/** One census's jobs by pay code and by the area they are placed in, and how many are placed in none. */
+/** One census's jobs by pay code and by the area they are placed in, and those placed in none. */
 type PlacementIndex = {
   byCode: Map<string | null, FallRecord[]>
   byArea: Map<string, AreaJobs>
-  unassigned: number
+  unassigned: FallRecord[]
 }
 
 const placementIndexes = new WeakMap<DepartmentCensus, PlacementIndex>()
 
-/** The census's jobs placed once, on first use, so a page for one code never runs the assigner over the census again. */
+/** The census's jobs placed once, on first use; every later reader gets the same index. */
 export function placementIndexOf(census: DepartmentCensus): PlacementIndex {
   const cached = placementIndexes.get(census)
   if (cached) return cached
   const byArea = new Map<string, AreaJobs>()
-  let unassigned = 0
+  const unassigned: FallRecord[] = []
   for (const record of census.records) {
     const assignment = census.assign(record)
     if (assignment.basis === 'unassigned') {
-      unassigned += 1
+      unassigned.push(record)
       continue
     }
     const placed = byArea.get(assignment.area) ?? {
@@ -154,7 +154,7 @@ function placeInArea(code: string, census: DepartmentCensus) {
     year: census.year,
     fiscalYear: census.fiscalYear,
     bases: { published: 0, name: 0, hand: 0, ...placed?.bases },
-    unassignedSiteWide: unassigned,
+    unassignedSiteWide: unassigned.length,
   }
   return { year: census.year, records: placed?.records ?? [], placement }
 }

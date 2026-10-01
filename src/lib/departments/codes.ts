@@ -4,7 +4,6 @@ import type { FallRecord } from '../../data/fall.ts'
 import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { UNASSIGNED_AREA } from '../census/totals.ts'
-import { groupBy } from '../shared/group.ts'
 import { type DepartmentCensus, isAreaCode, placementIndexOf } from './jobs.ts'
 
 /** A unit or pay department, the area it sits in, and the jobs paid under its code. */
@@ -27,42 +26,52 @@ function byName(a: { name: string }, b: { name: string }) {
 }
 
 /**
- * One census placed in its areas: every unit the budget publishes, then each
- * pay department it does not, with their jobs, and each area's jobs, those
- * placed in none under `null`. A pay department with an area's code is that
- * area's.
+ * Every unit the census's budget publishes, then each pay department it does
+ * not, each with the jobs paid under its code. A pay department with an area's
+ * code is that area's; one published under several names, or placed in several
+ * areas, keeps its first record's.
  */
-export function placeDepartments({ records, orgs, assign }: DepartmentCensus): {
-  units: PlacedUnit[]
-  areaJobs: Map<string | null, FallRecord[]>
-} {
-  const units = new Map<string, PlacedUnit>()
+export function placeUnits(census: DepartmentCensus): PlacedUnit[] {
+  const { orgs, assign } = census
+  const { byCode } = placementIndexOf(census)
+  const units: PlacedUnit[] = []
   for (const [code, org] of Object.entries(orgs)) {
     if (org.level === ORG_LEVEL_AREA) continue
-    units.set(code, { code, name: org.name, area: org.parent, records: [] })
+    const records = byCode.get(code) ?? []
+    units.push({ code, name: org.name, area: org.parent, records })
   }
-  const areaJobs = groupBy(records, (record) => assign(record).area)
-  for (const record of records) {
-    const { area } = assign(record)
-    const { code, name } = record.payDepartment
-    if (code === null || code === area) continue
-    const unit = units.get(code) ?? { code, name, area, records: [] }
-    unit.records.push(record)
-    units.set(code, unit)
+  for (const [code, records] of byCode) {
+    const [first] = records
+    if (code === null || !first || orgs[code]) continue
+    const { name } = first.payDepartment
+    units.push({ code, name, area: assign(first).area, records })
   }
-  return { units: [...units.values()], areaJobs }
+  return units
+}
+
+/** Each area with the jobs placed in it, then the jobs placed in none, when there are any. */
+export function placedAreas(
+  census: DepartmentCensus,
+): { code: string | null; name: string; records: FallRecord[] }[] {
+  const { byArea, unassigned } = placementIndexOf(census)
+  return [
+    ...listAreas(census.orgs).map(({ code, name }) => ({
+      code,
+      name,
+      records: byArea.get(code)?.records ?? [],
+    })),
+    ...(unassigned.length > 0
+      ? [{ code: null, name: UNASSIGNED_AREA, records: unassigned }]
+      : []),
+  ]
 }
 
 /** The areas of a census's budget year, each with its units and the pay departments placed in it. */
 export function departmentIndex(census: DepartmentCensus): IndexArea[] {
-  const { units, areaJobs } = placeDepartments(census)
-  const areaCodes = [
-    ...listAreas(census.orgs).map(({ code }) => code),
-    ...(areaJobs.has(null) ? [null] : []),
-  ]
-  return areaCodes.map((code) => ({
+  const units = placeUnits(census)
+  return placedAreas(census).map(({ code, name }) => ({
     code,
-    name: code === null ? UNASSIGNED_AREA : (census.orgs[code]?.name ?? code),
+    name,
     entries: units
       .filter((unit) => unit.area === code)
       .map(({ code: unitCode, name }) => ({ code: unitCode, name }))
