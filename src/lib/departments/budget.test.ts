@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { BudgetRow, BudgetYear } from '@/data/budget'
-import { departmentBudget } from './budget'
+import { departmentBudget, isBudgetedIn } from './budget'
 
 const AREA = '222000'
 const UNIT = '223100'
@@ -112,4 +112,18 @@ test('a code outside a year’s hierarchy has no figure for it', () => {
   const gone = departmentBudget(UNIT, [earlier, { ...latest, orgs }], 'account')
   expect(gone.total).toEqual([1_550, null])
   expect(departmentBudget('999999', BUDGETS, 'account').series).toEqual([])
+})
+
+test('a code is budgeted in a year whose total is published, and in none without a budget', () => {
+  const published = {
+    years: [
+      { fiscalYear: 2026, period: '14' },
+      { fiscalYear: 2027, period: '02' },
+    ],
+    total: [0, null],
+  }
+  expect(isBudgetedIn(published, 2026)).toBe(true)
+  expect(isBudgetedIn(published, 2027)).toBe(false)
+  expect(isBudgetedIn(published, 2028)).toBe(false)
+  expect(isBudgetedIn(null, 2026)).toBe(false)
 })

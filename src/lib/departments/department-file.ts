@@ -48,7 +48,7 @@ function buildDepartmentFile(
     },
     classes: jobs.yearsWithJobs.map((year) => ({
       year,
-      ...departmentClasses(jobs, { kind: 'all', year }),
+      ...departmentClasses(jobs, year),
     })),
   }
 }

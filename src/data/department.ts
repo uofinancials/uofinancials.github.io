@@ -68,3 +68,4 @@ export const departmentFileSchema = z.strictObject({
 })
 
 export type DepartmentFile = z.infer<typeof departmentFileSchema>
+export type DepartmentFileBudget = NonNullable<DepartmentFile['budget']>

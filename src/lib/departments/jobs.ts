@@ -248,13 +248,11 @@ function kindRows(kind: StaffKind, records: FallRecord[]): ClassRow[] {
  */
 export function departmentClasses(
   { years }: DepartmentYears,
-  { kind, year }: { kind: StaffKind | 'all'; year: number | null },
+  year: number,
 ): Record<StaffKind, ClassRow[]> {
   const records = years.find((census) => census.year === year)?.records ?? []
-  const rowsOf = (of: StaffKind) =>
-    kind === 'all' || kind === of ? kindRows(of, records) : []
   return {
-    unclassified: rowsOf('unclassified'),
-    classified: rowsOf('classified'),
+    unclassified: kindRows('unclassified', records),
+    classified: kindRows('classified', records),
   }
 }

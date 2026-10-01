@@ -26,6 +26,16 @@ export type DepartmentBudget = {
   total: YearValues
 }
 
+/** Whether the budget of the given fiscal year publishes the code, going by its total there. */
+export function isBudgetedIn(
+  budget: Pick<DepartmentBudget, 'years' | 'total'> | null,
+  fiscalYear: number,
+): boolean {
+  if (!budget) return false
+  const at = budget.years.findIndex((year) => year.fiscalYear === fiscalYear)
+  return typeof budget.total[at] === 'number'
+}
+
 /** The level-5 units a code covers in one year: itself, or an area's units. */
 export function unitsOf(
   code: string,

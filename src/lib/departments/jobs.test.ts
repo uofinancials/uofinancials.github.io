@@ -32,7 +32,7 @@ function census(
 
 function classRows(records: DepartmentCensus['records']) {
   const jobs = departmentYears('111111', [census(2025, records)])
-  return departmentClasses(jobs, { kind: 'all', year: 2025 })
+  return departmentClasses(jobs, 2025)
 }
 
 const CENSUSES = [
@@ -154,13 +154,10 @@ test('job figures span the censuses with jobs, and the kind filter applies to bo
   expect(
     departmentTrends(jobs, 'all', NO_FY_PAY).total.map(({ year }) => year),
   ).toEqual([2024, 2025])
-  expect(departmentClasses(jobs, { kind: 'all', year: 2025 })).toMatchObject({
+  expect(departmentClasses(jobs, 2025)).toMatchObject({
     unclassified: [{ label: 'Other ranks (fewer than 3 jobs each)', jobs: 1 }],
     classified: [],
   })
-  expect(
-    departmentClasses(jobs, { kind: 'classified', year: 2025 }).unclassified,
-  ).toEqual([])
   expect(
     departmentTrends(jobs, 'classified', NO_FY_PAY).total.map(
       ({ jobs: count }) => count,

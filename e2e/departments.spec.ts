@@ -169,6 +169,45 @@ test('a unit in the scenario budget opens a scenario that eliminates it', async 
   ).toBeVisible()
 })
 
+test('a department page loads its own figures, and no census or budget year', async ({
+  page,
+}) => {
+  const dataFiles = new Set<string>()
+  page.on('request', (request) => {
+    const [, file] = new URL(request.url()).pathname.split('/data/')
+    if (file) dataFiles.add(file)
+  })
+  await page.goto('/departments/222000')
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Units in this area' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: 'How the area’s jobs were placed' }),
+  ).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  expect([...dataFiles].sort()).toEqual([
+    'departments.json',
+    'departments/222000.json',
+    'manifest.json',
+    'outlook.json',
+  ])
+})
+
+test('a pay code that only an older census publishes has a page', async ({
+  page,
+}) => {
+  await page.goto('/departments/110502')
+  await expect(
+    page.getByRole('heading', { level: 1, name: /^KCIP BGMP Old/ }),
+  ).toBeVisible()
+  await expect(page.getByRole('main')).toContainText(
+    'UO’s budget publishes no unit or area with code 110502',
+  )
+  await expect(
+    page.getByRole('combobox', { name: 'Classes in Fall' }),
+  ).toHaveValue('2023')
+})
+
 test('a code no source publishes is not found', async ({ page }) => {
   await page.goto('/departments/000000')
   await expect(

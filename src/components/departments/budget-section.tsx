@@ -11,10 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type {
-  BudgetBreakdown,
-  DepartmentBudget,
-} from '@/lib/departments/budget'
+import type { DepartmentFileBudget } from '@/data/department'
+import type { BudgetBreakdown } from '@/lib/departments/budget'
 import { budgetYearLabel, budgetYearTick } from '@/lib/departments/search'
 import {
   formatCompactDollars,
@@ -37,18 +35,20 @@ const PANELS_NOTE =
 
 /** One small chart per budget line, each on its own scale, so a small line is not flattened by a large one. */
 const BudgetPanels = memo(function BudgetPanels({
-  budget,
+  years,
+  series,
   title,
 }: {
-  budget: DepartmentBudget
+  years: DepartmentFileBudget['years']
+  series: DepartmentFileBudget['series'][BudgetBreakdown]
   title: string
 }) {
-  const labels = budget.years.map(budgetYearTick)
+  const labels = years.map(budgetYearTick)
   return (
     <>
       <p className="text-sm text-muted-foreground">{PANELS_NOTE}</p>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {budget.series.map((line) => (
+        {series.map((line) => (
           <div key={line.key} className="space-y-1">
             <h3 className="text-sm font-medium">{line.key}</h3>
             <SeriesChart
@@ -75,18 +75,18 @@ type BudgetTableRow = {
 
 /** Account view: each group's row, then its account types; fund view: each fund type. */
 function tableRows(
-  budget: DepartmentBudget,
+  budget: DepartmentFileBudget,
   breakdown: BudgetBreakdown,
 ): BudgetTableRow[] {
   if (breakdown === 'fund') {
-    return budget.series.map(({ key, values }) => ({
+    return budget.series.fund.map(({ key, values }) => ({
       key,
       label: key,
       values,
       isGroup: false,
     }))
   }
-  return budget.series.flatMap(({ key, values }) => [
+  return budget.series.account.flatMap(({ key, values }) => [
     { key, label: key, values, isGroup: true },
     ...budget.accountTypes
       .filter(({ group }) => group === key)
@@ -103,7 +103,7 @@ function BudgetTable({
   budget,
   breakdown,
 }: {
-  budget: DepartmentBudget
+  budget: DepartmentFileBudget
   breakdown: BudgetBreakdown
 }) {
   const labels = budget.years.map(budgetYearLabel)
@@ -155,7 +155,7 @@ export function DepartmentBudgetSection({
   breakdown,
   onBreakdown,
 }: {
-  budget: DepartmentBudget
+  budget: DepartmentFileBudget
   breakdown: BudgetBreakdown
   onBreakdown: (breakdown: BudgetBreakdown) => void
 }) {
@@ -172,7 +172,11 @@ export function DepartmentBudgetSection({
         options={BREAKDOWN_OPTIONS}
         onSelect={onBreakdown}
       />
-      <BudgetPanels budget={budget} title={title} />
+      <BudgetPanels
+        years={budget.years}
+        series={budget.series[breakdown]}
+        title={title}
+      />
       <BudgetTable budget={budget} breakdown={breakdown} />
       {first && last && (
         <Sources

@@ -11,11 +11,11 @@ import {
 import { PageError } from '@/components/layout/page-error'
 import { PageLoading } from '@/components/layout/page-loading'
 import { SiteLayout } from '@/components/layout/site-layout'
-import { orgCode } from '@/data/budget'
 import type { Manifest } from '@/data/manifest'
 import {
   areaTrendsQuery,
   budgetYearQuery,
+  departmentQuery,
   departmentsQuery,
   fallYearQuery,
   fyTempsQuery,
@@ -187,18 +187,16 @@ const departmentRoute = createRoute({
     }
   },
   loader: async ({ context: { queryClient }, params: { code } }) => {
-    if (!orgCode.safeParse(code).success) throw notFound()
-    const manifest = await queryClient.ensureQueryData(manifestQuery)
-    const fallYears = manifest.fall.map(({ year }) => year)
-    const [eliminationFiscalYear, fiscalYears] = await Promise.all([
-      loadEliminationYear(queryClient, manifest),
-      loadBudgetYears(queryClient),
-      queryClient.ensureQueryData(fyTempsQuery),
-      ...fallYears.map((year) =>
-        queryClient.ensureQueryData(fallYearQuery(year)),
-      ),
+    const [{ codes }, manifest] = await Promise.all([
+      queryClient.ensureQueryData(departmentsQuery),
+      queryClient.ensureQueryData(manifestQuery),
     ])
-    return { fiscalYears, fallYears, eliminationFiscalYear }
+    if (!codes.includes(code)) throw notFound()
+    const [eliminationFiscalYear] = await Promise.all([
+      loadEliminationYear(queryClient, manifest),
+      queryClient.ensureQueryData(departmentQuery(code)),
+    ])
+    return { eliminationFiscalYear }
   },
   component: lazyRouteComponent(
     () => import('@/pages/department-page'),
