@@ -101,6 +101,20 @@ function containingArea(
   return null
 }
 
+/** Every code with a department page: each budget's units and areas, and each census's pay codes, sorted. */
+export function departmentCodes(
+  censuses: { records: FallRecord[] }[],
+  budgets: { orgs: BudgetYear['orgs'] }[],
+): string[] {
+  const codes = new Set(budgets.flatMap(({ orgs }) => Object.keys(orgs)))
+  for (const { records } of censuses) {
+    for (const { payDepartment } of records) {
+      if (payDepartment.code !== null) codes.add(payDepartment.code)
+    }
+  }
+  return [...codes].sort()
+}
+
 /** What the sources publish under a code; `null` when neither publishes it. */
 export function describeCode(
   code: string,

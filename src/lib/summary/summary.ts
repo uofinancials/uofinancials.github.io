@@ -7,6 +7,7 @@ import type { Outlook } from '../../data/outlook.ts'
 import type { RaiseTerms } from '../../data/raises.ts'
 import type { AreaTrends, Summary } from '../../data/summary.ts'
 import { fiscalYearOf, selectOverviewSources } from '../census/totals.ts'
+import { departmentCodes } from '../departments/codes.ts'
 import { censusTemps, tempsByCensus } from '../departments/fy-temps.ts'
 import {
   type DepartmentCensus,
@@ -116,7 +117,7 @@ function summarizeTrends(
 
 function summarizeDepartments(
   years: { now: TableYear; before: TableYear },
-  fyTemps: FyTemps,
+  { falls, budgets, fyTemps }: SummaryInputs,
 ): Summary['departments'] {
   const tableYear = ({ census }: TableYear) => ({
     year: census.year,
@@ -126,6 +127,7 @@ function summarizeDepartments(
     now: tableYear(years.now),
     before: tableYear(years.before),
     rows: departmentRows(years.now, years.before, fyTemps),
+    codes: departmentCodes(falls, budgets),
   }
 }
 
@@ -176,7 +178,7 @@ function summarizePeople(falls: FallYear[]): Summary['people'] {
       ...(person.otherNames.length > 0 && { otherNames: person.otherNames }),
       runs: person.runs.map((run) => run.years.map(({ year }) => year)),
     })),
-    medians: Object.fromEntries(peerMedians(falls)),
+    medians: peerMedians(falls),
   }
 }
 
@@ -188,7 +190,7 @@ export function buildSummary(
   const years = latestYears(inputs)
   return {
     trends: summarizeTrends(inputs, scopes),
-    departments: summarizeDepartments(years, inputs.fyTemps),
+    departments: summarizeDepartments(years, inputs),
     home: summarizeHome(inputs, years.now),
     people: summarizePeople(inputs.falls),
   }

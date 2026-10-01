@@ -79,7 +79,8 @@ const departmentRowSchema = z.strictObject({
   }),
 })
 
-const homeSchema = z.strictObject({
+/** The home page's figures. */
+export const homeSchema = z.strictObject({
   year,
   censusDate: z.iso.date(),
   fiscalYear: year,
@@ -124,39 +125,51 @@ const nameEntrySchema = z.strictObject({
   otherNames: z.array(z.string().min(1)).min(1).optional(),
 })
 
-/** Figures derived from the committed data files by `pnpm scrape summary`, for the pages' default views. */
-export const summarySchema = z.strictObject({
-  trends: z.strictObject({
-    /** Every census's jobs by group. */
-    all: trendsSchema,
-    /** Continuing jobs' median change in salary rate for every census pair, all of them then by group. */
-    payChanges: z.array(changeSeriesSchema),
-    /** Each area's jobs in every census, and the units and pay departments its trends file holds. */
-    areas: z.array(
-      codeTrendSchema.extend({
-        units: z.array(z.strictObject({ code: z.string(), name: z.string() })),
-      }),
-    ),
-  }),
-  departments: z.strictObject({
-    now: tableYearSchema,
-    before: tableYearSchema,
-    rows: z.strictObject({
-      areas: z.array(departmentRowSchema),
-      units: z.array(departmentRowSchema),
+/** The Trends report's figures for all of UO, and each area's totals. */
+export const trendsSummarySchema = z.strictObject({
+  /** Every census's jobs by group. */
+  all: trendsSchema,
+  /** Continuing jobs' median change in salary rate for every census pair, all of them then by group. */
+  payChanges: z.array(changeSeriesSchema),
+  /** Each area's jobs in every census, and the units and pay departments its trends file holds. */
+  areas: z.array(
+    codeTrendSchema.extend({
+      units: z.array(z.strictObject({ code: z.string(), name: z.string() })),
     }),
-  }),
-  home: homeSchema,
-  people: z.strictObject({
-    names: z.array(nameEntrySchema),
-    medians: z.record(
-      z.string(),
-      z.strictObject({ medianCents: cents, jobs: count }),
-    ),
-  }),
+  ),
 })
 
-export type Summary = z.infer<typeof summarySchema>
+/** The departments table's rows, and every code with a department page. */
+export const departmentsSchema = z.strictObject({
+  now: tableYearSchema,
+  before: tableYearSchema,
+  rows: z.strictObject({
+    areas: z.array(departmentRowSchema),
+    units: z.array(departmentRowSchema),
+  }),
+  /** Every code a budget or a census publishes, as the site counts it. */
+  codes: z.array(z.string()),
+})
+
+/** Every person's census years, under the name they are shown by. */
+export const peopleNamesSchema = z.array(nameEntrySchema)
+
+/** Median published rate of primary jobs, keyed by census, peer group, and term. */
+export const peerMediansSchema = z.record(
+  z.string(),
+  z.strictObject({ medianCents: cents, jobs: count }),
+)
+
+/** The figures `pnpm scrape summary` derives from the committed data files for the pages' default views, one file each. */
+export type Summary = {
+  home: z.infer<typeof homeSchema>
+  trends: z.infer<typeof trendsSummarySchema>
+  departments: z.infer<typeof departmentsSchema>
+  people: {
+    names: z.infer<typeof peopleNamesSchema>
+    medians: z.infer<typeof peerMediansSchema>
+  }
+}
 export type CodeTrend = z.infer<typeof codeTrendSchema>
 export type SummaryArea = Summary['trends']['areas'][number]
 export type ScopeTrends = z.infer<typeof scopeTrendsSchema>

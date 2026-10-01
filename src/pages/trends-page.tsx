@@ -11,7 +11,7 @@ import { ReportFilters } from '@/components/trends/report-filters'
 import { ReportTabs } from '@/components/trends/report-tabs'
 import { SinceSection } from '@/components/trends/since-section'
 import { SplitSection } from '@/components/trends/split-section'
-import { areaTrendsQuery, summaryQuery, toData } from '@/data/queries'
+import { areaTrendsQuery, toData, trendsSummaryQuery } from '@/data/queries'
 import { useIsWide } from '@/hooks/use-is-wide'
 import { usePreloadedNavigate } from '@/hooks/use-preloaded-navigate'
 import { AREA_PLACEMENT_METHOD } from '@/lib/departments/jobs'
@@ -37,9 +37,9 @@ import { comparableTemps, sliceTrends } from '@/lib/trends/trends'
 function useReport() {
   const { years, fiscalYears } = useLoaderData({ from: '/trends' })
   const search = useSearch({ from: '/trends' })
-  const { data: summary } = useSuspenseQuery(summaryQuery)
+  const { data: summary } = useSuspenseQuery(trendsSummaryQuery)
   const view = resolveReportView(search, years)
-  const { areas } = summary.trends
+  const { areas } = summary
   const area = areas.find(({ code }) => code === search.area)
   const fileCodes = [
     ...new Set(
@@ -54,7 +54,7 @@ function useReport() {
     combine: toData,
   })
   const scope = reportScope(
-    { trends: summary.trends.all, payChanges: summary.trends.payChanges },
+    { trends: summary.all, payChanges: summary.payChanges },
     files.find(({ code }) => code === area?.code) ?? null,
     search.unit ?? null,
   )
@@ -70,7 +70,7 @@ function useReport() {
     : []
   return {
     years,
-    summary,
+    areas,
     view,
     scope,
     trends,
@@ -139,7 +139,7 @@ function TabPanel({
     case 'compare':
       return (
         <CompareSection
-          areas={report.summary.trends.areas}
+          areas={report.areas}
           scope={report.scope}
           compared={report.compared}
           options={report.options}
@@ -159,7 +159,7 @@ export function TrendsPage() {
   const navigate = usePreloadedNavigate()
   const report = useReport()
   const isWide = useIsWide()
-  const { years, summary, view, scope, trends, ratios } = report
+  const { years, areas, view, scope, trends, ratios } = report
   const first = trends.total[0]
   const last = trends.total.at(-1)
   const handleChange = (patch: ReportSearch) =>
@@ -183,7 +183,7 @@ export function TrendsPage() {
       <ReportFilters
         years={years}
         range={{ from: view.from, to: view.to }}
-        areas={summary.trends.areas}
+        areas={areas}
         options={report.options}
         scope={scope}
         measure={MEASURED_TABS.includes(view.tab) ? view.measure : null}

@@ -16,13 +16,16 @@ import type { Manifest } from '@/data/manifest'
 import {
   areaTrendsQuery,
   budgetYearQuery,
+  departmentsQuery,
   fallYearQuery,
   fyTempsQuery,
+  homeQuery,
   manifestQuery,
   opeRatesQuery,
   outlookQuery,
+  peerMediansQuery,
   raiseTermsQuery,
-  summaryQuery,
+  trendsSummaryQuery,
 } from '@/data/queries'
 import { unitCodeOf } from '@/data/unit-aliases'
 import { peopleIndexQuery } from '@/hooks/people-index-query'
@@ -62,7 +65,7 @@ const homeRoute = createRoute({
   loader: ({ context: { queryClient } }) =>
     Promise.all([
       queryClient.ensureQueryData(manifestQuery),
-      queryClient.ensureQueryData(summaryQuery),
+      queryClient.ensureQueryData(homeQuery),
       queryClient.ensureQueryData(outlookQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
     ]),
@@ -103,14 +106,14 @@ const trendsRoute = createRoute({
   },
   loaderDeps: ({ search }) => ({ area: search.area, with: search.with }),
   loader: async ({ context: { queryClient }, deps }) => {
-    const [manifest, summary] = await Promise.all([
+    const [manifest, { areas }] = await Promise.all([
       queryClient.ensureQueryData(manifestQuery),
-      queryClient.ensureQueryData(summaryQuery),
+      queryClient.ensureQueryData(trendsSummaryQuery),
       deps.area && queryClient.prefetchQuery(areaTrendsQuery(deps.area)),
     ])
     await Promise.all(
       (deps.with ?? []).flatMap((code) => {
-        const area = areaOfCode(summary.trends.areas, code)
+        const area = areaOfCode(areas, code)
         return area ? [queryClient.prefetchQuery(areaTrendsQuery(area))] : []
       }),
     )
@@ -161,7 +164,7 @@ const departmentsRoute = createRoute({
   path: '/departments',
   validateSearch: departmentsSearchSchema,
   loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(summaryQuery),
+    queryClient.ensureQueryData(departmentsQuery),
   component: lazyRouteComponent(
     () => import('@/pages/departments-page'),
     'DepartmentsPage',
@@ -251,7 +254,7 @@ const personRoute = createRoute({
   path: '/people/$name',
   validateSearch: personSearchSchema,
   loader: async ({ context: { queryClient }, params: { name } }) => {
-    const { people } = await queryClient.ensureQueryData(peopleIndexQuery)
+    const people = await queryClient.ensureQueryData(peopleIndexQuery)
     const entry = people.find((person) => person.name === name) ?? null
     if (!entry) {
       const joined = people.find((person) => person.otherNames?.includes(name))
@@ -264,11 +267,12 @@ const personRoute = createRoute({
         })
       }
     }
-    await Promise.all(
-      (entry?.runs.flat() ?? []).map((year) =>
+    await Promise.all([
+      queryClient.ensureQueryData(peerMediansQuery),
+      ...(entry?.runs.flat() ?? []).map((year) =>
         queryClient.ensureQueryData(fallYearQuery(year)),
       ),
-    )
+    ])
     return { entry }
   },
   component: lazyRouteComponent(

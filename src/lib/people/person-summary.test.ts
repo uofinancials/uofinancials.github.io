@@ -68,7 +68,7 @@ test('an unlinked year has only the start-date card', () => {
 })
 
 test('each job type and pay department is a line of published rates, gapped where absent', () => {
-  const { years, series } = personRates(ann(), new Map())
+  const { years, series } = personRates(ann(), {})
   expect(years).toEqual([2020, 2021, 2022, 2023, 2025])
   expect(series).toEqual([
     {
@@ -90,7 +90,7 @@ test('two jobs of one type in one department and year stay separate lines', () =
     ]),
   ])
   expect(
-    person && personRates(person, new Map()).series.map(({ key }) => key),
+    person && personRates(person, {}).series.map(({ key }) => key),
   ).toEqual(['Secondary · Dept', 'Secondary · Dept (2)'])
 })
 

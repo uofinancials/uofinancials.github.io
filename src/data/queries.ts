@@ -6,7 +6,14 @@ import { manifestSchema } from './manifest.ts'
 import { opeRatesSchema } from './ope.ts'
 import { outlookSchema } from './outlook.ts'
 import { raiseTermsSchema } from './raises.ts'
-import { areaTrendsSchema, summarySchema } from './summary.ts'
+import {
+  areaTrendsSchema,
+  departmentsSchema,
+  homeSchema,
+  peerMediansSchema,
+  peopleNamesSchema,
+  trendsSummarySchema,
+} from './summary.ts'
 import { foldedBudgetYearSchema, foldedFallYearSchema } from './unit-aliases.ts'
 
 const NETWORK_RETRIES = 2
@@ -41,7 +48,17 @@ export const manifestQuery = dataQuery('manifest.json', manifestSchema)
 export const opeRatesQuery = dataQuery('ope.json', opeRatesSchema)
 export const raiseTermsQuery = dataQuery('raises.json', raiseTermsSchema)
 export const outlookQuery = dataQuery('outlook.json', outlookSchema)
-export const summaryQuery = dataQuery('summary.json', summarySchema)
+export const homeQuery = dataQuery('home.json', homeSchema)
+export const trendsSummaryQuery = dataQuery('trends.json', trendsSummarySchema)
+export const departmentsQuery = dataQuery('departments.json', departmentsSchema)
+export const peopleNamesQuery = dataQuery(
+  'people/names.json',
+  peopleNamesSchema,
+)
+export const peerMediansQuery = dataQuery(
+  'people/medians.json',
+  peerMediansSchema,
+)
 export const fyTempsQuery = dataQuery('fy-temps.json', fyTempsSchema)
 
 export function fallYearQuery(year: number) {
