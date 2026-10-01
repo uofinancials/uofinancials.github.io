@@ -7,10 +7,11 @@ Pages serves it from the `uofinancials.github.io` repository. An import script
 turns the University of Oregon's Fall Census and fiscal year total pay salary
 report PDFs, its operational expenditure budget workbooks, and its blended OPE
 rate pages into JSON files committed under `public/data/`, then derives from
-those files the figures each page shows, one small file per page view. Raise
-terms from collective bargaining agreements and the E&G fund projection from
-Board of Trustees materials are entered by hand. The site reads nothing but its
-bundle and those files.
+those files the figures each page shows, one small file per page view, and every
+continuing job's pair of censuses without a name. Raise terms from collective
+bargaining agreements and the E&G fund projection from Board of Trustees
+materials are entered by hand. The site reads nothing but its bundle and those
+files.
 
 ## Data
 
@@ -69,6 +70,10 @@ bundle and those files.
 - `public/data/trends/<area>.json` - one college or VP area's, and each of its
   units' and pay departments', jobs by group in every census and continuing
   jobs' median pay change by group.
+- `public/data/pay-changes.json` - every continuing job's pair of consecutive
+  censuses, in columns and without a name: what its earlier job is grouped by,
+  its two published salary rates, and what changed, with the name of every pay
+  department, area, and class or rank.
 - `public/data/manifest.json` - each dataset's source files and their hashes,
   dates, and counts, and the files and date the derived files were derived from;
   written by `scripts/scrape`.
@@ -144,7 +149,8 @@ flowchart LR
     rate distribution.
   - `trends` - trends by group and by area, with classified temporaries measured
     by their FY pay, the report's indexes, changes, spend shares, and answers,
-    continuing jobs' pay changes, and raise groups beside their terms.
+    continuing jobs' pairs, the file that holds them, and their pay changes, and
+    raise groups beside their terms.
   - `departments` - a department's budget and jobs and the file its page reads,
     the department index, the department table, FY department names resolved to
     codes, and classified temporaries' FY pay by unit.
@@ -163,8 +169,8 @@ flowchart LR
 - `scripts/scrape/main.ts` - the `pnpm scrape [dataset]` command: runs the
   dataset steps and writes the manifest.
 - `scripts/scrape/summary.ts` - the summary step: derives the pages' files, the
-  area trends files, the department files, and the name buckets from the
-  committed data files.
+  area trends files, the pay changes file, the department files, and the name
+  buckets from the committed data files.
 - `scripts/scrape/cache.ts` - the source and data locations, and the committed
   JSON reader.
 - `scripts/scrape/manifest-file.ts` - reading and writing the manifest.
@@ -186,10 +192,11 @@ flowchart LR
   department names no census or budget resolves, with their evidence.
 - `scripts/committed` - checks of the committed data files, and of the figures
   derived from them, against their sources, that the name buckets hold every
-  Fall record once as published, that every unit and name pair the alias finders
-  offer has been reviewed, that every pay code the budget does not publish is
-  joined to a unit or reviewed as having none, and that every FY department name
-  resolves to a code.
+  Fall record once as published, that the pay changes file gives the trends
+  files' pay changes and holds no published name, that every unit and name pair
+  the alias finders offer has been reviewed, that every pay code the budget does
+  not publish is joined to a unit or reviewed as having none, and that every FY
+  department name resolves to a code.
 
 ### End-to-end tests (`e2e/`)
 
@@ -213,8 +220,10 @@ flowchart LR
   filters, scope search, and area or unit scope, older links, scroll position,
   and narrow layout.
 - `e2e/trends-change.spec.ts` - the pay changes page, its filters, its raise
-  comparison, its sources, older links to it, and its link from the person page.
-- `e2e/sources.ts` - opening a page's sources disclosures.
+  comparison, its sources, the files it loads, older links to it, and its link
+  from the person page.
+- `e2e/sources.ts` - opening a page's sources disclosures, and collecting the
+  data files a page requests.
 
 ## Pages
 
@@ -239,9 +248,8 @@ flowchart LR
   class, rank, and title, and one pair's distribution of changes and median
   change by raise group beside its across-the-board terms; filtered by group,
   staff kind, pay department, college or VP area, or class or rank, with the
-  view held in the URL; driven by `src/lib/census`, `src/lib/trends`, and the
-  `src/lib/people` person links over every Fall year and the raise terms, and
-  `src/lib/departments` over every budget year when filtered by area.
+  view held in the URL; driven by `src/lib/trends` over the pay changes file,
+  the raise terms, and the manifest.
 - `/departments` - a sortable table of the colleges and VP areas in the latest
   census's budget year, or of their units and pay departments, with budget,
   jobs, spend, and median and each one's change from the year before, filtered
