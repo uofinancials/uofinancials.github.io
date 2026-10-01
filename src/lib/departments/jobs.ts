@@ -98,7 +98,7 @@ type PlacementIndex = {
 
 const placementIndexes = new WeakMap<DepartmentCensus, PlacementIndex>()
 
-/** The census's jobs placed once, on first use, so a page for one code never runs the assigner over the census again. */
+/** The census's jobs placed once, on first use; every later reader gets the same index. */
 export function placementIndexOf(census: DepartmentCensus): PlacementIndex {
   const cached = placementIndexes.get(census)
   if (cached) return cached

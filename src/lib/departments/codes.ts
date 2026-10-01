@@ -28,27 +28,25 @@ function byName(a: { name: string }, b: { name: string }) {
 /**
  * Every unit the census's budget publishes, then each pay department it does
  * not, each with the jobs paid under its code. A pay department with an area's
- * code is that area's; one published under several names keeps its first.
+ * code is that area's; one published under several names, or placed in several
+ * areas, keeps its first record's.
  */
 export function placeUnits(census: DepartmentCensus): PlacedUnit[] {
   const { orgs, assign } = census
-  const units = new Map<string, PlacedUnit>()
+  const { byCode } = placementIndexOf(census)
+  const units: PlacedUnit[] = []
   for (const [code, org] of Object.entries(orgs)) {
     if (org.level === ORG_LEVEL_AREA) continue
-    units.set(code, { code, name: org.name, area: org.parent, records: [] })
+    const records = byCode.get(code) ?? []
+    units.push({ code, name: org.name, area: org.parent, records })
   }
-  for (const [code, records] of placementIndexOf(census).byCode) {
+  for (const [code, records] of byCode) {
     const [first] = records
-    if (code === null || !first) continue
-    if (orgs[code]?.level === ORG_LEVEL_AREA) continue
-    const unit = units.get(code) ?? {
-      code,
-      name: first.payDepartment.name,
-      area: assign(first).area,
-    }
-    units.set(code, { ...unit, records })
+    if (code === null || !first || orgs[code]) continue
+    const { name } = first.payDepartment
+    units.push({ code, name, area: assign(first).area, records })
   }
-  return [...units.values()]
+  return units
 }
 
 /** Each area with the jobs placed in it, then the jobs placed in none, when there are any. */
