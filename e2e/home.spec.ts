@@ -62,7 +62,7 @@ test('the nav lists the sections in order and marks the current one apart from t
   )
 })
 
-test('on a phone the nav links sit on one row under the site name', async ({
+test('on a phone the nav links sit on one row under the site name, with the current page’s link in view', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
@@ -76,6 +76,15 @@ test('on a phone the nav links sit on one row under the site name', async ({
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(360)
+  const sources = links.filter({ hasText: 'Sources' })
+  await expect(sources).toBeInViewport({ ratio: 1 })
+  await page.goto('/')
+  await expect(sources).not.toBeInViewport()
+  await page
+    .getByRole('link', { name: 'Every source and when it was retrieved' })
+    .click()
+  await expect(page).toHaveURL(/\/sources$/)
+  await expect(sources).toBeInViewport({ ratio: 1 })
 })
 
 test('the first tab stop skips to the page content', async ({ page }) => {

@@ -3,6 +3,7 @@ import {
   NAV_LINK_CLASS,
   SCROLL_ROW_CLASS,
 } from '@/components/layout/nav-link-class'
+import { revealInRow } from '@/components/layout/reveal-in-row'
 import { cn } from '@/lib/utils'
 
 const REPO_URL = 'https://github.com/uofinancials/uofinancials.github.io'
@@ -55,7 +56,11 @@ export function SiteLayout() {
                       'inline-block py-1 whitespace-nowrap',
                     )}
                   >
-                    {label}
+                    {({ isActive }) => (
+                      <span ref={isActive ? revealInRow : undefined}>
+                        {label}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}

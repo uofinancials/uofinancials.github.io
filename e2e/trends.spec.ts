@@ -294,6 +294,26 @@ test('the heading and browser tab name the scope, and a phone opened on a tab fo
   ).toBeVisible()
 })
 
+test('on a phone the tab row opens with the current tab in view, and follows it', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/trends?tab=groups')
+  await expect(tab(page, 'How are groups defined?')).toBeInViewport({
+    ratio: 1,
+  })
+  await expect(tab(page, 'Which groups grew?')).not.toBeInViewport()
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'Trends' })
+    .click()
+  await expect(page).not.toHaveURL(/tab=/)
+  await page
+    .getByRole('navigation', { name: 'Questions' })
+    .scrollIntoViewIfNeeded()
+  await expect(tab(page, 'Which groups grew?')).toBeInViewport({ ratio: 1 })
+})
+
 test('on a phone a link to the chart over time shows the bars and says why', async ({
   page,
 }) => {
