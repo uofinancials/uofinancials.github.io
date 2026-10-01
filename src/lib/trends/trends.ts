@@ -17,8 +17,7 @@ import {
   sumFteHundredths,
   sumSpendCents,
 } from '../census/totals.ts'
-import { type PeerGroup, peerGroupOf } from '../people/peer-group.ts'
-import { department } from '../people/person-fields.ts'
+import { peerGroupOf } from '../people/peer-group.ts'
 import type { SectionSource } from '../shared/citation.ts'
 import { groupBy } from '../shared/group.ts'
 
@@ -58,27 +57,21 @@ export type TrendFilter = {
   dept: string | null
   /** A `peerGroupOf` key. */
   position: string | null
-  /** When set, only these jobs pass. */
-  jobs: ReadonlySet<FallRecord> | null
   from: number
   to: number
 }
 
-/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, class or rank, and jobs; the years are not checked. `peer` is the job's `peerGroupOf`, found here when not given. */
-export function matchesJob(
+/** Whether a job in the given trend group passes the filter's staff kind, group, pay department, and class or rank; the years are not checked. */
+function matchesJob(
   record: FallRecord,
   group: TrendGroup,
   filter: TrendFilter,
-  peer?: PeerGroup | null,
 ): boolean {
   return (
     (filter.kind === 'all' || record.kind === filter.kind) &&
     (filter.group === null || group === filter.group) &&
     (filter.dept === null || record.payDepartment.code === filter.dept) &&
-    (filter.jobs === null || filter.jobs.has(record)) &&
-    (filter.position === null ||
-      (peer === undefined ? peerGroupOf(record) : peer)?.key ===
-        filter.position)
+    (filter.position === null || peerGroupOf(record)?.key === filter.position)
   )
 }
 
@@ -87,35 +80,6 @@ export function pairYears(years: number[], from: number, to: number): number[] {
   return years.filter(
     (year) => year >= from && year + 1 <= to && years.includes(year + 1),
   )
-}
-
-/** How the filter's department and class or rank read, from the first job published with them; the code or key itself when no job has it, `null` for one not set. */
-export function filterNames(
-  years: { records: FallRecord[] }[],
-  { dept, position }: Pick<TrendFilter, 'dept' | 'position'>,
-): { dept: string | null; position: string | null } {
-  let deptName: string | undefined
-  let positionName: string | undefined
-  for (const { records } of years) {
-    for (const record of records) {
-      if (
-        dept !== null &&
-        deptName === undefined &&
-        record.payDepartment.code === dept &&
-        !record.payDepartment.publishedCode
-      ) {
-        deptName = department(record.payDepartment)
-      }
-      if (position !== null && positionName === undefined) {
-        const peer = peerGroupOf(record)
-        if (peer?.key === position) positionName = peer.label
-      }
-    }
-  }
-  return {
-    dept: dept === null ? null : (deptName ?? dept),
-    position: position === null ? null : (positionName ?? position),
-  }
 }
 
 export type Trends = { series: TrendSeries[]; total: TrendPoint[] }
@@ -206,13 +170,12 @@ export function measureJobs(
   }
 }
 
-/** Whether a filter keeps classified temporaries whole, so their FY figures for the scope apply: not narrowed to unclassified jobs, a pay department, a class or rank, listed jobs, or another group. */
+/** Whether a filter keeps classified temporaries whole, so their FY figures for the scope apply: not narrowed to unclassified jobs, a pay department, a class or rank, or another group. */
 function keepsTempsWhole(filter: TrendFilter): boolean {
   return (
     filter.kind !== 'unclassified' &&
     filter.dept === null &&
     filter.position === null &&
-    filter.jobs === null &&
     (filter.group === null || filter.group === TEMPS_GROUP)
   )
 }

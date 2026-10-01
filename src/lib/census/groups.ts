@@ -62,8 +62,11 @@ export function trendGroupOf(
 export const EXEC_OTHER_CATEGORY = 'EXEC grade, other category'
 
 /** A job's line when its group is opened: its published category, or `EXEC_OTHER_CATEGORY` for a job in Executives by the grade alone. */
-export function openedLineOf(record: FallRecord, group: TrendGroup): string {
-  const category = record.eeoCategory ?? NO_CATEGORY
+export function openedLineOf(
+  { eeoCategory }: Pick<FallRecord, 'eeoCategory'>,
+  group: TrendGroup,
+): string {
+  const category = eeoCategory ?? NO_CATEGORY
   const isByGradeOnly =
     group === 'Executives' &&
     UNCLASSIFIED_CATEGORY_GROUPS[category] !== 'Executives'
@@ -72,7 +75,7 @@ export function openedLineOf(record: FallRecord, group: TrendGroup): string {
 
 /** A job's line: its group, or its `openedLineOf` line when a group is opened. */
 export function lineOf(
-  record: FallRecord,
+  record: Pick<FallRecord, 'eeoCategory'>,
   group: TrendGroup,
   opened: TrendGroup | null,
 ): string {

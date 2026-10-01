@@ -23,6 +23,7 @@ import {
   manifestQuery,
   opeRatesQuery,
   outlookQuery,
+  payChangesQuery,
   peerMediansQuery,
   personBucketQuery,
   raiseTermsQuery,
@@ -31,6 +32,8 @@ import {
 import { unitCodeOf } from '@/data/unit-aliases'
 import { resolveCensusYear } from '@/lib/census/search'
 import {
+  censusFiscalYears,
+  censusYears,
   fiscalYearForCensus,
   fiscalYearOf,
   selectOverviewSources,
@@ -76,17 +79,6 @@ const homeRoute = createRoute({
   ),
 })
 
-async function loadBudgetYears(queryClient: QueryClient) {
-  const manifest = await queryClient.ensureQueryData(manifestQuery)
-  const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
-  await Promise.all(
-    fiscalYears.map((year) =>
-      queryClient.ensureQueryData(budgetYearQuery(year)),
-    ),
-  )
-  return fiscalYears
-}
-
 const trendsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends',
@@ -120,7 +112,7 @@ const trendsRoute = createRoute({
     )
     const fiscalYears = manifest.budget.map(({ fiscalYear }) => fiscalYear)
     return {
-      years: manifest.fall.map(({ year }) => year).sort((a, b) => a - b),
+      years: censusYears(manifest),
       fiscalYears: {
         from: Math.min(...fiscalYears),
         to: Math.max(...fiscalYears),
@@ -137,22 +129,16 @@ const payChangesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trends/pay-changes',
   validateSearch: payChangesSearchSchema,
-  loaderDeps: ({ search }) => ({ area: search.area }),
-  loader: async ({ context: { queryClient }, deps }) => {
-    const loadYears = async () => {
-      const manifest = await queryClient.ensureQueryData(manifestQuery)
-      const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
-      await Promise.all(
-        years.map((year) => queryClient.ensureQueryData(fallYearQuery(year))),
-      )
-      return years
-    }
-    const [years, fiscalYears] = await Promise.all([
-      loadYears(),
-      deps.area === undefined ? [] : loadBudgetYears(queryClient),
+  loader: async ({ context: { queryClient } }) => {
+    const [manifest] = await Promise.all([
+      queryClient.ensureQueryData(manifestQuery),
+      queryClient.ensureQueryData(payChangesQuery),
       queryClient.ensureQueryData(raiseTermsQuery),
     ])
-    return { years, fiscalYears }
+    return {
+      years: censusYears(manifest),
+      fiscalYears: censusFiscalYears(manifest),
+    }
   },
   component: lazyRouteComponent(
     () => import('@/pages/pay-changes-page'),
@@ -216,7 +202,7 @@ async function loadCensus({
   deps: { year: number | undefined }
 }) {
   const manifest = await queryClient.ensureQueryData(manifestQuery)
-  const years = manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+  const years = censusYears(manifest)
   const year = resolveCensusYear(deps.year, years)
   const census = manifest.fall.find((entry) => entry.year === year)
   if (!census) throw notFound()

@@ -80,6 +80,13 @@ export function toDepartmentCensuses(
   })
 }
 
+/** The area each census places a job in, by the job and its census year; `null` for a job placed in none and for a year not listed. */
+export function areaPlacer(censuses: DepartmentCensus[]) {
+  const byYear = new Map(censuses.map((census) => [census.year, census]))
+  return (record: PayDepartmentOf, year: number): string | null =>
+    byYear.get(year)?.assign(record).area ?? null
+}
+
 type AreaJobs = { records: FallRecord[]; bases: AreaPlacement['bases'] }
 
 /** One census's jobs by pay code and by the area they are placed in, and how many are placed in none. */
@@ -193,7 +200,6 @@ export function departmentTrends(
       group: null,
       dept: null,
       position: null,
-      jobs: null,
       from: yearsWithJobs[0] ?? 0,
       to: yearsWithJobs.at(-1) ?? 0,
     },

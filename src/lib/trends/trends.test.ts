@@ -1,10 +1,9 @@
 import { expect, test } from 'vitest'
 import { EXEC_OTHER_CATEGORY } from '@/lib/census/groups'
-import { census, classifiedJob, unclassifiedJob } from '@/test/fall-records'
+import { classifiedJob, unclassifiedJob } from '@/test/fall-records'
 import {
   buildTrends,
   comparableTemps,
-  filterNames,
   medianRateCents,
   type TempsFigure,
   type TrendFilter,
@@ -17,7 +16,6 @@ const ALL: TrendFilter = {
   group: null,
   dept: null,
   position: null,
-  jobs: null,
   from: 2014,
   to: 2025,
 }
@@ -283,7 +281,7 @@ test('opened Executives puts jobs there by the EXEC grade alone on one line', ()
   ])
 })
 
-test('the pay department, class or rank, and jobs filters keep only matching jobs, in every measure', () => {
+test('the pay department and class or rank filters keep only matching jobs, in every measure', () => {
   const physics = { code: '222222', name: 'Physics' }
   const years = [
     {
@@ -306,7 +304,6 @@ test('the pay department, class or rank, and jobs filters keep only matching job
   expect(jobs({ dept: '222222' })).toBe(4)
   expect(jobs({ position: 'rank Professor' })).toBe(3)
   expect(jobs({ position: 'class 0104' })).toBe(1)
-  expect(jobs({ jobs: new Set(years[0]?.records.slice(0, 2)) })).toBe(2)
   const both = buildTrends(
     years,
     {
@@ -322,24 +319,6 @@ test('the pay department, class or rank, and jobs filters keep only matching job
     fteHundredths: 200,
   })
   expect(both.series.map(({ key }) => key)).toEqual(['Faculty'])
-})
-
-test('a filter names its department and class or rank from the first job with them, or keeps the code', () => {
-  const years = [
-    census(2025, [
-      unclassifiedJob({
-        rank: 'Professor',
-        payDepartment: { code: '222222', name: 'Physics' },
-      }),
-    ]),
-  ]
-  expect(
-    filterNames(years, { dept: '222222', position: 'rank Professor' }),
-  ).toEqual({ dept: 'Physics (222222)', position: 'Professor' })
-  expect(filterNames(years, { dept: '000000', position: null })).toEqual({
-    dept: '000000',
-    position: null,
-  })
 })
 
 test('a range drops the lines with no job in it and keeps the others in order', () => {

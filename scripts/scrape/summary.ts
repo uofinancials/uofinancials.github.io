@@ -13,6 +13,10 @@ import type { Manifest } from '../../src/data/manifest.ts'
 import { opeRatesSchema } from '../../src/data/ope.ts'
 import { outlookSchema } from '../../src/data/outlook.ts'
 import {
+  type PayChangesFile,
+  payChangesFileSchema,
+} from '../../src/data/pay-changes.ts'
+import {
   type PersonBucket,
   personBucketSchema,
 } from '../../src/data/person-bucket.ts'
@@ -53,6 +57,7 @@ import {
   HOME_DATA_PATH,
   OPE_DATA_PATH,
   OUTLOOK_DATA_PATH,
+  PAY_CHANGES_DATA_PATH,
   PEER_MEDIANS_PATH,
   PEOPLE_NAMES_PATH,
   personBucketPath,
@@ -65,12 +70,13 @@ import { type StepResult, today } from './manifest-file.ts'
 type Derived = {
   summary: Summary
   areas: AreaTrends[]
+  pairs: PayChangesFile
   departments: DepartmentFile[]
   buckets: Map<string, PersonBucket>
   fyTemps: FyTemps
 }
 
-/** The summaries, each area's trends, each department page, the people in each name bucket and temporaries' FY pay, derived from the committed data files the manifest lists, and those files relative to the data directory. */
+/** The summaries, each area's trends, the continuing pairs, each department page, the people in each name bucket and temporaries' FY pay, derived from the committed data files the manifest lists, and those files relative to the data directory. */
 export function deriveSummary(manifest: Manifest): Derived & {
   files: string[]
 } {
@@ -110,6 +116,7 @@ export function deriveSummary(manifest: Manifest): Derived & {
   return {
     summary,
     areas: scopes.areas,
+    pairs: scopes.pairs,
     departments: buildDepartmentFiles(summary.departments.codes, {
       censuses: toDepartmentCensuses(manifest, base.falls, base.budgets),
       budgets: base.budgets,
@@ -125,10 +132,11 @@ function fileText<T>(schema: z.ZodType<T>, value: T): string {
   return `${JSON.stringify(schema.parse(value))}\n`
 }
 
-/** Each derived file's text by its path: the pages' summaries, temporaries' FY pay, then one file per area, per department page and per name bucket. */
+/** Each derived file's text by its path: the pages' summaries, temporaries' FY pay, the continuing pairs, then one file per area, per department page and per name bucket. */
 export function serializeDerived({
   summary,
   areas,
+  pairs,
   departments,
   buckets,
   fyTemps,
@@ -140,6 +148,7 @@ export function serializeDerived({
     [PEOPLE_NAMES_PATH, fileText(peopleNamesSchema, summary.people.names)],
     [PEER_MEDIANS_PATH, fileText(peerMediansSchema, summary.people.medians)],
     [FY_TEMPS_DATA_PATH, fileText(fyTempsSchema, fyTemps)],
+    [PAY_CHANGES_DATA_PATH, fileText(payChangesFileSchema, pairs)],
     ...areas.map((area): [string, string] => [
       areaTrendsPath(area.code),
       fileText(areaTrendsSchema, area),

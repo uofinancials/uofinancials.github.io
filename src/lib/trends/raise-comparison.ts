@@ -1,12 +1,17 @@
-import { censusYearOf, type FallYear } from '../../data/fall.ts'
+import { censusYearOf } from '../../data/fall.ts'
 import type {
   AcrossTheBoardTerm,
   RaiseTerm,
   RaiseTerms,
 } from '../../data/raises.ts'
-import { type ContinuingPair, filterPairs } from './pay-changes.ts'
+import {
+  type ContinuingPair,
+  changeRatio,
+  filterPairs,
+  type PairFilter,
+} from './pay-changes.ts'
 import { RAISE_ROWS, type RaiseRow, termCovers } from './raise-groups.ts'
-import { MIN_JOBS_SHOWN, medianOf, type TrendFilter } from './trends.ts'
+import { MIN_JOBS_SHOWN, medianOf } from './trends.ts'
 
 const BASIS_POINTS_PER_UNIT = 10_000
 
@@ -14,7 +19,7 @@ const BASIS_POINTS_PER_UNIT = 10_000
 export type CensusWindow = { after: string; through: string }
 
 export function censusWindow(
-  years: FallYear[],
+  years: { censusDate: string }[],
   fromYear: number,
 ): CensusWindow | null {
   const dateOf = (year: number) =>
@@ -97,9 +102,7 @@ function compareRow(
   terms: RaiseTerm[],
   window: CensusWindow,
 ): RaiseComparisonRow {
-  const ratios = pairs
-    .filter(({ raise }) => raise === row)
-    .map(({ ratio }) => ratio)
+  const ratios = pairs.filter(({ raise }) => raise === row).map(changeRatio)
   const median = ratios.length >= MIN_JOBS_SHOWN ? medianOf(ratios) : null
   const increase = acrossTheBoard(terms, row, window)
   return {
@@ -143,9 +146,9 @@ export function viewRaiseComparison({
   raises,
 }: {
   pairs: ContinuingPair[]
-  filter: TrendFilter
+  filter: PairFilter
   fromYear: number
-  years: FallYear[]
+  years: { censusDate: string }[]
   raises: RaiseTerms
 }): RaiseComparison | null {
   const window = censusWindow(years, fromYear)

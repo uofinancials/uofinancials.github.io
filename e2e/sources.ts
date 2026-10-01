@@ -10,3 +10,13 @@ export async function openSources(page: Page) {
     await closed.first().click()
   }
 }
+
+/** The data files the page requests from here on, by their path under the data directory. */
+export function collectDataFiles(page: Page): Set<string> {
+  const dataFiles = new Set<string>()
+  page.on('request', (request) => {
+    const [, file] = new URL(request.url()).pathname.split('/data/')
+    if (file) dataFiles.add(file)
+  })
+  return dataFiles
+}

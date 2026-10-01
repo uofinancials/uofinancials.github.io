@@ -48,6 +48,7 @@ export const FY_TEMPS_DATA_PATH = path.join(DATA_DIR, 'fy-temps.json')
 export const HOME_DATA_PATH = path.join(DATA_DIR, 'home.json')
 export const TRENDS_DATA_PATH = path.join(DATA_DIR, 'trends.json')
 export const DEPARTMENTS_DATA_PATH = path.join(DATA_DIR, 'departments.json')
+export const PAY_CHANGES_DATA_PATH = path.join(DATA_DIR, 'pay-changes.json')
 
 const AREA_TRENDS_DIR = path.join(DATA_DIR, 'trends')
 export const DEPARTMENTS_DIR = path.join(DATA_DIR, 'departments')

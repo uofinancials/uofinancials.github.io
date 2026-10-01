@@ -120,6 +120,22 @@ export function fiscalYearForCensus(
   return fiscalYear
 }
 
+/** The listed census years, oldest first. */
+export function censusYears(manifest: Manifest): number[] {
+  return manifest.fall.map(({ year }) => year).sort((a, b) => a - b)
+}
+
+/** The first and last budget years that name a listed census's areas. */
+export function censusFiscalYears(manifest: Manifest): {
+  from: number
+  to: number
+} {
+  const fiscalYears = manifest.fall.map(({ censusDate }) =>
+    fiscalYearForCensus(manifest, censusDate),
+  )
+  return { from: Math.min(...fiscalYears), to: Math.max(...fiscalYears) }
+}
+
 /** The latest census and the budget year to name its areas with. */
 export function selectOverviewSources(manifest: Manifest): {
   census: FallEntry

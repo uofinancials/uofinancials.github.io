@@ -1,9 +1,8 @@
-import type { FallRecord } from '../../data/fall.ts'
 import type { FyTemps } from '../../data/fy-temps.ts'
 import type { AreaTrends, ScopeTrends } from '../../data/summary.ts'
 import { departmentIndex } from '../departments/codes.ts'
 import { tempsByCensus } from '../departments/fy-temps.ts'
-import type { DepartmentCensus } from '../departments/jobs.ts'
+import { areaPlacer, type DepartmentCensus } from '../departments/jobs.ts'
 import { groupBy } from '../shared/group.ts'
 import { type ContinuingPair, payChangeTrends } from './pay-changes.ts'
 import { buildTrends, pairYears, type TrendFilter } from './trends.ts'
@@ -17,18 +16,20 @@ type Frame = {
   fyTemps: FyTemps
 }
 
-/** Builds a scope's trends and pay changes from the jobs and pairs whose key, by `recordKey`, is its code. */
+/** Builds a scope's trends and pay changes from the jobs and pairs whose placed area, or whose pay department, is its code. */
 function scopeBuilder(
   { censuses, pairs, filter, fromYears, fyTemps }: Frame,
-  recordKey: (record: FallRecord, year: number) => string | null,
   kind: 'area' | 'unit',
 ) {
+  const areaOf = areaPlacer(censuses)
   const placed = censuses.map(({ year, records }) => ({
     year,
-    records: groupBy(records, (record) => recordKey(record, year)),
+    records: groupBy(records, (record) =>
+      kind === 'area' ? areaOf(record, year) : record.payDepartment.code,
+    ),
   }))
-  const pairsOf = groupBy(pairs, ({ from, fromYear }) =>
-    recordKey(from, fromYear),
+  const pairsOf = groupBy(pairs, (pair) =>
+    kind === 'area' ? pair.area : pair.dept,
   )
   return (code: string, name: string): ScopeTrends => ({
     code,
@@ -70,7 +71,6 @@ export function areaTrends(
       group: null,
       dept: null,
       position: null,
-      jobs: null,
       from: first.year,
       to: latest.year,
     },
@@ -81,17 +81,8 @@ export function areaTrends(
     ),
     fyTemps,
   }
-  const byYear = new Map(sorted.map((census) => [census.year, census]))
-  const areaScope = scopeBuilder(
-    frame,
-    (record, year) => byYear.get(year)?.assign(record).area ?? null,
-    'area',
-  )
-  const unitScope = scopeBuilder(
-    frame,
-    (record) => record.payDepartment.code,
-    'unit',
-  )
+  const areaScope = scopeBuilder(frame, 'area')
+  const unitScope = scopeBuilder(frame, 'unit')
   return departmentIndex(latest).flatMap(({ code, name, entries }) =>
     code === null
       ? []

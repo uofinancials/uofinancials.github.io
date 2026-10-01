@@ -85,7 +85,7 @@ test('each row has its median beside the increase and the difference; rows with 
     ),
   )
   const comparison = raiseComparison(
-    continuingPairs(years),
+    continuingPairs(years, () => null),
     {
       terms: SEIU_TERMS,
       gaps: [
@@ -122,13 +122,13 @@ test('the view comparison keeps one pair year and leaves out the opened group, b
     filter: Partial<Parameters<typeof viewRaiseComparison>[0]['filter']>,
   ) =>
     viewRaiseComparison({
-      pairs: continuingPairs(years),
+      pairs: continuingPairs(years, () => null),
       filter: {
         kind: 'all',
         group: 'Faculty',
         dept: null,
+        area: null,
         position: null,
-        jobs: null,
         from: 2014,
         to: 2025,
         ...filter,

@@ -5,12 +5,7 @@ import { aliasCodesOf } from '../../data/unit-aliases.ts'
 import { listAreas, ORG_LEVEL_AREA } from '../census/areas.ts'
 import { UNASSIGNED_AREA } from '../census/totals.ts'
 import { groupBy } from '../shared/group.ts'
-import {
-  type DepartmentCensus,
-  departmentYears,
-  isAreaCode,
-  placementIndexOf,
-} from './jobs.ts'
+import { type DepartmentCensus, isAreaCode, placementIndexOf } from './jobs.ts'
 
 /** A unit or pay department, the area it sits in, and the jobs paid under its code. */
 export type PlacedUnit = {
@@ -136,24 +131,5 @@ export function describeCode(
     aliasCodes: aliasCodesOf(code),
     isArea,
     area: isArea ? null : containingArea(code, jobs, newestBudgets),
-  }
-}
-
-/** An area's jobs in every census, placed as its page places them; its name as `describeCode` gives it, or the code; and the budget years that placed them. */
-export function areaTrendFilter(
-  area: string,
-  censuses: DepartmentCensus[],
-  budgets: BudgetYear[],
-) {
-  const fiscalYears = censuses.map(({ fiscalYear }) => fiscalYear)
-  return {
-    jobs: new Set(
-      departmentYears(area, censuses).years.flatMap(({ records }) => records),
-    ),
-    name: describeCode(area, censuses, budgets)?.name ?? area,
-    fiscalYears: {
-      from: Math.min(...fiscalYears),
-      to: Math.max(...fiscalYears),
-    },
   }
 }

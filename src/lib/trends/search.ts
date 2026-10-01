@@ -13,12 +13,8 @@ import {
   formatDollars,
   formatFte,
 } from '../shared/format.ts'
-import {
-  pairYears,
-  type TrendFilter,
-  type TrendPoint,
-  type TrendSeries,
-} from './trends.ts'
+import type { PairFilter } from './pay-changes.ts'
+import { pairYears, type TrendPoint, type TrendSeries } from './trends.ts'
 
 export const ALL_GROUPS = 'all'
 
@@ -188,10 +184,8 @@ export function pickReportParams(search: TrendsSearch): ReportSearch {
 
 export type YearRange = { from: number; to: number }
 
-export type TrendView = Omit<TrendFilter, 'jobs'> & {
+export type TrendView = PairFilter & {
   hide: string[]
-  /** A college or VP area code; its jobs are placed as its department page places them. */
-  area: string | null
   /** The earlier census of each pair in the range. */
   fromYears: number[]
   pair: number

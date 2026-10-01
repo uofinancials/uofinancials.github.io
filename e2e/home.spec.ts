@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { readFileSync } from 'node:fs'
 import { expect, type Page, test } from '@playwright/test'
-import { openSources } from './sources.ts'
+import { collectDataFiles, openSources } from './sources.ts'
 
 test('home page loads', async ({ page }) => {
   await page.goto('/')
@@ -489,11 +489,7 @@ test('the people list cites its census before the EEO section begins', async ({
 test('a person page loads the bucket its name is filed in and the medians, and no census', async ({
   page,
 }) => {
-  const dataFiles = new Set<string>()
-  page.on('request', (request) => {
-    const [, file] = new URL(request.url()).pathname.split('/data/')
-    if (file) dataFiles.add(file)
-  })
+  const dataFiles = collectDataFiles(page)
   await page.goto(`/people/${encodeURIComponent('Turner, Matthew W')}`)
   await expect(
     page.getByRole('heading', { level: 1, name: 'Turner, Matthew W' }),

@@ -85,7 +85,6 @@ function allOfUo(years: ReturnType<typeof loadFallCensuses>) {
       group: null,
       dept: null,
       position: null,
-      jobs: null,
       from: 2014,
       to: 2025,
     },
@@ -163,7 +162,6 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
         group: 'Unclassified staff',
         dept: null,
         position: null,
-        jobs: null,
         from: 2014,
         to: 2025,
       },
@@ -381,7 +379,7 @@ test.skipIf(!existsSync(MANIFEST_PATH))(
     const years = [2024, 2025].map((year) =>
       foldedFallYearSchema.parse(readJson(fallDataPath(year))),
     )
-    const pairs = continuingPairs(years)
+    const pairs = continuingPairs(years, () => null)
     const [all] = payChangeTrends(pairs, [2024], null)
     expect(all?.points[0]?.pairs).toBe(5_203)
     expect(all?.points[0]?.median).toBeCloseTo(0.079, 3)

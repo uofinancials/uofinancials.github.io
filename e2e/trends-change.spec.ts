@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
-import { openSources } from './sources.ts'
+import { collectDataFiles, openSources } from './sources.ts'
 
 test('pay changes show each census pair’s median by group, the change counts, and one pair’s distribution held in the link', async ({
   page,
@@ -134,4 +134,37 @@ test('the renames and abbreviations close with their source and method', async (
   await expect(section.locator('details > summary')).toHaveText(
     /^Sources? and method/,
   )
+})
+
+test('the pay changes page loads the continuing pairs, and no census or budget year, with an area set', async ({
+  page,
+}) => {
+  const dataFiles = collectDataFiles(page)
+  await page.goto('/trends/pay-changes?area=222000')
+  const main = page.getByRole('main')
+  await expect(main).toContainText(
+    'College or VP area: Arts & Sciences, College of',
+  )
+  await expect(page.getByRole('row', { name: /^2024-25 972 / })).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  expect([...dataFiles].sort()).toEqual([
+    'manifest.json',
+    'pay-changes.json',
+    'raises.json',
+  ])
+})
+
+test('a class named by its published code, and an area that is a unit’s code, match no continuing job', async ({
+  page,
+}) => {
+  const main = page.getByRole('main')
+  await page.goto('/trends/pay-changes?position=class+0104')
+  await expect(main).toContainText('Class or rank: Office Specialist 2')
+  await expect(main).not.toContainText('0 continuing jobs match')
+  await page.goto('/trends/pay-changes?position=C0104')
+  await expect(main).toContainText('Class or rank: C0104')
+  await expect(main).toContainText('0 continuing jobs match')
+  await page.goto('/trends/pay-changes?area=223100')
+  await expect(main).toContainText('College or VP area: 223100')
+  await expect(main).toContainText('0 continuing jobs match')
 })
