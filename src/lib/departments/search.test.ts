@@ -33,6 +33,7 @@ test('the index opens on areas by budget, largest first, and keeps what the link
     q: '',
     level: 'areas',
     area: null,
+    measure: 'budget',
     sort: 'budget',
     dir: 'desc',
   })
@@ -41,6 +42,7 @@ test('the index opens on areas by budget, largest first, and keeps what the link
       departmentsSearchSchema.parse({
         level: 'units',
         area: 222000,
+        measure: 'jobs',
         sort: 'jobsChange',
         dir: 'up',
       }),
@@ -48,9 +50,14 @@ test('the index opens on areas by budget, largest first, and keeps what the link
   ).toMatchObject({
     level: 'units',
     area: '222000',
+    measure: 'jobs',
     sort: 'jobsChange',
     dir: 'desc',
   })
+  expect(
+    resolveDepartmentsView(departmentsSearchSchema.parse({ measure: 'median' }))
+      .measure,
+  ).toBe('budget')
 })
 
 test('the class table census must be one with jobs', () => {

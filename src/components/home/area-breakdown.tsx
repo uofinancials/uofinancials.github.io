@@ -9,7 +9,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { AreaFigure } from '@/lib/departments/table'
-import { areaBars, HOME_MEASURES, type HomeMeasure } from '@/lib/home/home'
+import { SIZE_MEASURES, type SizeMeasure } from '@/lib/departments/tiles'
+import { areaBars } from '@/lib/home/home'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
 import { shareOfLargest } from '@/lib/shared/series'
 import { cn, WRAP_CELL } from '@/lib/utils'
@@ -24,14 +25,14 @@ export function AreaBreakdown({
   onMeasure,
 }: {
   areas: AreaFigure[]
-  measure: HomeMeasure
+  measure: SizeMeasure
   /** Each measure's label, naming its year. */
-  labels: Record<HomeMeasure, string>
-  onMeasure: (measure: HomeMeasure) => void
+  labels: Record<SizeMeasure, string>
+  onMeasure: (measure: SizeMeasure) => void
 }) {
   const bars = areaBars(areas, measure, SHOWN_AREAS)
   const shares = shareOfLargest(bars.map(({ value }) => value))
-  const shareIn = (column: HomeMeasure, index: number) =>
+  const shareIn = (column: SizeMeasure, index: number) =>
     column === measure ? shares[index] : undefined
   const title = `The ${SHOWN_AREAS} largest colleges and VP areas by ${labels[measure]}`
   return (
@@ -40,7 +41,7 @@ export function AreaBreakdown({
         legend="Show"
         name="measure"
         value={measure}
-        options={HOME_MEASURES.map((option) => [option, labels[option]])}
+        options={SIZE_MEASURES.map((option) => [option, labels[option]])}
         onSelect={onMeasure}
       />
       <Table>
@@ -48,7 +49,7 @@ export function AreaBreakdown({
         <TableHeader>
           <TableRow>
             <TableHead scope="col">Area</TableHead>
-            {HOME_MEASURES.map((option) => (
+            {SIZE_MEASURES.map((option) => (
               <TableHead key={option} scope="col" className="text-right">
                 {labels[option]}
               </TableHead>
