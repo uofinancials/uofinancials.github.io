@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { DepartmentRow } from './table'
-import { departmentTiles, tileSummary, tileText } from './tiles'
+import { departmentTiles, notDrawnNote, tileText } from './tiles'
 
 const NO_CHANGES = { budget: null, jobs: null, spend: null, median: null }
 
@@ -71,7 +71,7 @@ test('a tile’s direction is its own measure’s change, flat for none and for 
   ])
 })
 
-test('a tile prints money to three digits with the exact dollars beside it, and a count as it is', () => {
+test('a tile prints money to three digits, and lists its exact figure, share, and change in full', () => {
   const tile = {
     code: '222000',
     name: 'Arts & Sciences, College of',
@@ -80,22 +80,32 @@ test('a tile prints money to three digits with the exact dollars beside it, and 
     change: 0.0321,
     direction: 'rose' as const,
   }
-  expect(tileText(tile, 'budget')).toEqual({
+  expect(tileText(tile, 'budget', 'FY25')).toEqual({
     short: '$203M',
-    exact: '$202,653,286',
-    share: '11.5%',
     change: '+3.2%',
+    figure: '$202,653,286',
+    share: '11.5% of the budget drawn',
+    changed: '+3.2% from FY25',
+    summary:
+      'Arts & Sciences, College of: $202,653,286, 11.5% of the budget drawn, +3.2% from FY25',
   })
-  expect(tileText({ ...tile, value: 1_273, change: null }, 'jobs')).toEqual({
-    short: '1,273',
-    exact: '1,273',
-    share: '11.5%',
-    change: null,
-  })
-  expect(tileSummary(tile, 'budget', 'FY25')).toBe(
-    'Arts & Sciences, College of: $202,653,286, 11.5% of the budget drawn, +3.2% from FY25',
-  )
   expect(
-    tileSummary({ ...tile, value: 1_273, change: null }, 'jobs', 'Fall 2024'),
-  ).toBe('Arts & Sciences, College of: 1,273 jobs, 11.5% of the jobs drawn')
+    tileText({ ...tile, value: 1_273, change: null }, 'jobs', 'Fall 2024'),
+  ).toEqual({
+    short: '1,273',
+    change: null,
+    figure: '1,273 jobs',
+    share: '11.5% of the jobs drawn',
+    changed: null,
+    summary: 'Arts & Sciences, College of: 1,273 jobs, 11.5% of the jobs drawn',
+  })
+})
+
+test('the note counts the rows left out, in the singular for one', () => {
+  expect(notDrawnNote(2, 'area', 'budget')).toBe(
+    '2 areas with no budget above zero are not drawn; the table lists them.',
+  )
+  expect(notDrawnNote(1, 'unit', 'spend')).toBe(
+    '1 unit with no salary spend above zero is not drawn; the table lists it.',
+  )
 })

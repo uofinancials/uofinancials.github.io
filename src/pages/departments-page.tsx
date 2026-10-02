@@ -9,7 +9,9 @@ import { PageHeader } from '@/components/layout/page-header'
 import { SkipLink } from '@/components/layout/skip-link'
 import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
+import type { Manifest } from '@/data/manifest'
 import { departmentsQuery, manifestQuery } from '@/data/queries'
+import type { TableYear } from '@/data/summary'
 import {
   type DepartmentsSearch,
   type DepartmentsView,
@@ -42,7 +44,11 @@ function TableControls({
   onChange: (patch: DepartmentsSearch) => void
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-4">
+    <div
+      id={TABLE_ID}
+      tabIndex={-1}
+      className="flex flex-wrap items-end gap-4 outline-none"
+    >
       <RadioField
         legend="Show"
         name="level"
@@ -72,10 +78,15 @@ function TableControls({
   )
 }
 
-type TableYear = { year: number; fiscalYear: number }
-
-function PageSources({ now, before }: { now: TableYear; before: TableYear }) {
-  const { data: manifest } = useSuspenseQuery(manifestQuery)
+function PageSources({
+  now,
+  before,
+  manifest,
+}: {
+  now: TableYear
+  before: TableYear
+  manifest: Manifest
+}) {
   return (
     <Sources
       sources={[
@@ -83,7 +94,7 @@ function PageSources({ now, before }: { now: TableYear; before: TableYear }) {
           kind: 'budget-range',
           from: before.fiscalYear,
           to: now.fiscalYear,
-          computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE} ${TREEMAP_METHOD}`,
+          computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`,
         },
         {
           kind: 'fall-range',
@@ -92,12 +103,14 @@ function PageSources({ now, before }: { now: TableYear; before: TableYear }) {
         },
         ...fyPaySource(fyPayYears(manifest, [before.year, now.year])),
       ]}
+      methods={[TREEMAP_METHOD]}
     />
   )
 }
 
 export function DepartmentsPage() {
   const { data } = useSuspenseQuery(departmentsQuery)
+  const { data: manifest } = useSuspenseQuery(manifestQuery)
   const { now, before, rows } = data
   const areas = rows.areas.flatMap(({ code, name }) =>
     code === null ? [] : [{ code, name }],
@@ -105,14 +118,9 @@ export function DepartmentsPage() {
   const view = resolveDepartmentsView(useSearch({ from: '/departments' }))
   const navigate = useNavigate({ from: '/departments' })
   const isUnits = view.level === 'units'
-  const chartArea = isUnits
-    ? (areas.find(({ code }) => code === view.area) ?? null)
-    : null
+  const chartArea = areas.find(({ code }) => code === view.area) ?? null
   const shown = sortRows(
-    filterRows(isUnits ? rows.units : rows.areas, {
-      q: view.q,
-      area: isUnits ? view.area : null,
-    }),
+    filterRows(isUnits ? rows.units : rows.areas, view),
     view.sort,
     view.dir,
   )
@@ -151,21 +159,19 @@ export function DepartmentsPage() {
         before={before}
         onMeasure={(measure) => handleChange({ measure })}
       />
-      <div id={TABLE_ID} tabIndex={-1} className="space-y-6 outline-none">
-        <TableControls view={view} areas={areas} onChange={handleChange} />
-        {shown.length === 0 ? (
-          <p>No area, unit, or department matches.</p>
-        ) : (
-          <DepartmentTable
-            caption={`${isUnits ? 'Units and pay departments' : 'Colleges and VP areas'}: ${fiscal} budget and Fall ${now.year} jobs`}
-            rows={shown}
-            showArea={isUnits}
-            view={view}
-            onSort={(sort, dir) => handleChange({ sort, dir })}
-          />
-        )}
-      </div>
-      <PageSources now={now} before={before} />
+      <TableControls view={view} areas={areas} onChange={handleChange} />
+      {shown.length === 0 ? (
+        <p>No area, unit, or department matches.</p>
+      ) : (
+        <DepartmentTable
+          caption={`${isUnits ? 'Units and pay departments' : 'Colleges and VP areas'}: ${fiscal} budget and Fall ${now.year} jobs`}
+          rows={shown}
+          showArea={isUnits}
+          view={view}
+          onSort={(sort, dir) => handleChange({ sort, dir })}
+        />
+      )}
+      <PageSources now={now} before={before} manifest={manifest} />
     </div>
   )
 }

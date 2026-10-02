@@ -1,4 +1,6 @@
 export type Rect = { x: number; y: number; width: number; height: number }
+/** A box's proportions; only the ratio of its sides shapes a layout. */
+export type Box = Pick<Rect, 'width' | 'height'>
 
 const sumOf = (values: number[]) =>
   values.reduce((sum, value) => sum + value, 0)
@@ -36,10 +38,7 @@ function placeRow(areas: number[], free: Rect, placed: Rect[]): Rect {
 }
 
 /** `treemapLayout` with each rectangle's sides as fractions of the box's, from 0 to 1, so the rectangles keep their shape in a box of the same proportions at any size. */
-export function treemapFractions(
-  values: number[],
-  box: { width: number; height: number },
-): Rect[] {
+export function treemapFractions(values: number[], box: Box): Rect[] {
   return treemapLayout(values, box).map((rect) => ({
     x: rect.x / box.width,
     y: rect.y / box.height,
@@ -49,10 +48,7 @@ export function treemapFractions(
 }
 
 /** Squarified rectangles for the values, in order, filling the box; each one's area is its value's share of the total. Values must be above zero and sorted largest first. */
-export function treemapLayout(
-  values: number[],
-  box: { width: number; height: number },
-): Rect[] {
+export function treemapLayout(values: number[], box: Box): Rect[] {
   const scale = (box.width * box.height) / sumOf(values)
   const placed: Rect[] = []
   let free: Rect = { x: 0, y: 0, ...box }

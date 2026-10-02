@@ -8,8 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { SIZE_MEASURES, type SizeMeasure } from '@/lib/departments/measures'
 import type { AreaFigure } from '@/lib/departments/table'
-import { SIZE_MEASURES, type SizeMeasure } from '@/lib/departments/tiles'
 import { areaBars } from '@/lib/home/home'
 import { formatCount, formatDollars, formatOrBlank } from '@/lib/shared/format'
 import { shareOfLargest } from '@/lib/shared/series'

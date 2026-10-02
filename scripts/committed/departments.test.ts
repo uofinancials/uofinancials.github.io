@@ -24,10 +24,8 @@ import {
   departmentYears,
   toDepartmentCensuses,
 } from '../../src/lib/departments/jobs.ts'
-import {
-  departmentTiles,
-  SIZE_MEASURES,
-} from '../../src/lib/departments/tiles.ts'
+import { SIZE_MEASURES } from '../../src/lib/departments/measures.ts'
+import { departmentTiles } from '../../src/lib/departments/tiles.ts'
 import { placementBases } from '../../src/lib/home/home.ts'
 import { totalExpenditureCents } from '../scrape/budget/file.ts'
 import {

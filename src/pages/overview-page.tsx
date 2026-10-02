@@ -23,6 +23,7 @@ import {
 } from '@/data/queries'
 import { fundBalanceMarker, outlookSeries } from '@/lib/budget/outlook'
 import { fiscalYearOf, SPEND_METHOD } from '@/lib/census/totals'
+import { sizeLabels } from '@/lib/departments/measures'
 import {
   answersOf,
   type HeadlineFigures,
@@ -219,17 +220,12 @@ function DepartmentsPreview({
   const { measure = 'budget' } = useSearch({ from: '/' })
   const navigate = useNavigate({ from: '/' })
   const { year, fiscalYear } = data
-  const fiscal = fiscalYearLabel(fiscalYear)
   return (
     <PageSection title="Largest colleges and VP areas">
       <AreaBreakdown
         areas={data.areas}
         measure={measure}
-        labels={{
-          budget: `${fiscal} budget`,
-          spend: `Fall ${year} salary spend`,
-          jobs: `Fall ${year} jobs`,
-        }}
+        labels={sizeLabels(data)}
         onMeasure={(chosen) =>
           navigate({
             search: { measure: chosen },

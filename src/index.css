@@ -9,19 +9,20 @@
 @custom-variant head-cell (& thead th);
 /* The header's first cell, in a table whose rows have headers. */
 @custom-variant corner-cell (&:has(th[scope="row"]) thead tr > :first-child);
-/* A treemap tile with room for its name; for its figure under it; and for its change under that. */
+/* A treemap tile with room for one, two, or four lines of its label: the heights are those lines
+   at the tile's text size and padding, so they change with the tile's classes. */
 @custom-variant tile-name {
   @container (min-width: 4.5rem) and (min-height: 1.75rem) {
     @slot;
   }
 }
 @custom-variant tile-figure {
-  @container (min-width: 4.5rem) and (min-height: 3.25rem) {
+  @container (min-height: 3.25rem) {
     @slot;
   }
 }
 @custom-variant tile-change {
-  @container (min-width: 4.5rem) and (min-height: 4.75rem) {
+  @container (min-height: 4.75rem) {
     @slot;
   }
 }

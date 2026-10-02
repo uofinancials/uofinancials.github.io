@@ -7,27 +7,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { fiscalYearLabel } from '@/data/budget'
-import type { DepartmentRow } from '@/lib/departments/table'
+import type { TableYear } from '@/data/summary'
+import { useIsWide } from '@/hooks/use-is-wide'
 import {
-  departmentTiles,
   SIZE_MEASURES,
   SIZE_NOUNS,
   type SizeMeasure,
+  sizeLabels,
+  sizeYears,
+} from '@/lib/departments/measures'
+import type { DepartmentRow } from '@/lib/departments/table'
+import {
+  departmentTiles,
+  notDrawnNote,
   type Tile,
   type TileDirection,
-  tileSummary,
   tileText,
 } from '@/lib/departments/tiles'
-import { formatCount } from '@/lib/shared/format'
-import { treemapFractions } from '@/lib/shared/treemap'
+import { type Box, treemapFractions } from '@/lib/shared/treemap'
 import { cn, widthOf } from '@/lib/utils'
 
-/** The proportions the tiles are laid out in, and the classes that give a box those proportions: wide from the `md` breakpoint, tall below it. */
-const BOXES = [
-  { width: 12, height: 5, className: 'hidden aspect-[12/5] md:block' },
-  { width: 3, height: 4, className: 'aspect-[3/4] md:hidden' },
-]
+/** The proportions the tiles are laid out in, with the class that gives the box them: wide from the `md` breakpoint, tall below it. */
+const WIDE = { width: 12, height: 5, className: 'aspect-[12/5]' }
+const TALL = { width: 3, height: 4, className: 'aspect-[3/4]' }
 
 const FILLS: Record<TileDirection, string> = {
   rose: 'bg-tile-rose',
@@ -35,19 +37,9 @@ const FILLS: Record<TileDirection, string> = {
   flat: 'bg-tile-flat',
 }
 
-type TableYear = { year: number; fiscalYear: number }
-type Area = { code: string; name: string }
+type Area = NonNullable<DepartmentRow['area']>
 
-/** Each measure's year, as the table's columns have it: the budget's fiscal year, or the census. */
-function yearsOf({ year, fiscalYear }: TableYear): Record<SizeMeasure, string> {
-  const census = `Fall ${year}`
-  return { budget: fiscalYearLabel(fiscalYear), spend: census, jobs: census }
-}
-
-const TILE_CLASS =
-  'block size-full rounded-sm text-xs leading-tight text-foreground no-underline hover:outline-2 hover:-outline-offset-2 hover:outline-foreground/50 focus-visible:relative focus-visible:z-10'
-
-/** A tile's face: an area's leads to its units, a unit's to its page, and one with no code leads nowhere. */
+/** A tile's face: an area's leads to its units, a unit's to its page, and one with no code leads nowhere. Whatever else it is given, the tooltip trigger's handlers, goes on its element. */
 function TileFace({
   tile,
   area,
@@ -61,7 +53,10 @@ function TileFace({
   children: ReactNode
 }) {
   const face = { 'aria-label': label, ...trigger }
-  const className = cn(TILE_CLASS, FILLS[tile.direction])
+  const className = cn(
+    'block size-full rounded-sm text-xs leading-tight text-foreground no-underline hover:outline-2 hover:-outline-offset-2 hover:outline-foreground/50 focus-visible:relative focus-visible:z-10',
+    FILLS[tile.direction],
+  )
   const { code } = tile
   if (code === null) {
     return (
@@ -96,36 +91,6 @@ function TileFace({
   )
 }
 
-/** A tile's figures in full, the exact figure first. */
-function TileDetail({
-  tile,
-  measure,
-  since,
-}: {
-  tile: Tile
-  measure: SizeMeasure
-  since: string
-}) {
-  const { exact, share, change } = tileText(tile, measure)
-  const noun = SIZE_NOUNS[measure]
-  return (
-    <>
-      <span className="block text-sm font-semibold">
-        {measure === 'jobs' ? `${exact} jobs` : exact}
-      </span>
-      <span className="block">{tile.name}</span>
-      <span className="block">
-        {share} of the {noun} drawn
-      </span>
-      {change && (
-        <span className="block">
-          {change} from {since}
-        </span>
-      )}
-    </>
-  )
-}
-
 function Legend({ since }: { since: string }) {
   const entries: [TileDirection, string][] = [
     ['rose', `Rose from ${since}`],
@@ -147,7 +112,7 @@ function Legend({ since }: { since: string }) {
   )
 }
 
-/** One box of tiles, each placed and sized as a share of the box; a tile shows as much of its name, figure, and change as it has room for. */
+/** The tiles in one box, each placed and sized as a share of it; a tile shows as much of its name, figure, and change as it has room for, and all of them in its tooltip. */
 function TileList({
   tiles,
   box,
@@ -158,7 +123,7 @@ function TileList({
   since,
 }: {
   tiles: Tile[]
-  box: { width: number; height: number }
+  box: Box
   className: string
   title: string
   area: Area | null
@@ -174,7 +139,7 @@ function TileList({
       {tiles.map((tile, index) => {
         const rect = rects[index]
         if (!rect) return null
-        const { short, change } = tileText(tile, measure)
+        const text = tileText(tile, measure, since)
         return (
           <li
             key={tile.code ?? 'unassigned'}
@@ -188,48 +153,35 @@ function TileList({
           >
             <Tooltip>
               <TooltipTrigger asChild>
-                <TileFace
-                  tile={tile}
-                  area={area}
-                  label={tileSummary(tile, measure, since)}
-                >
+                <TileFace tile={tile} area={area} label={text.summary}>
                   <span className="hidden flex-col p-1.5 tile-name:flex">
                     <span className="truncate font-medium tile-change:line-clamp-2 tile-change:whitespace-normal">
                       {tile.name}
                     </span>
-                    <span className="hidden tile-figure:block">{short}</span>
-                    {change && (
-                      <span className="hidden tile-change:block">{change}</span>
+                    <span className="hidden tile-figure:block">
+                      {text.short}
+                    </span>
+                    {text.change && (
+                      <span className="hidden tile-change:block">
+                        {text.change}
+                      </span>
                     )}
                   </span>
                 </TileFace>
               </TooltipTrigger>
               <TooltipContent>
-                <TileDetail tile={tile} measure={measure} since={since} />
+                <span className="block text-sm font-semibold">
+                  {text.figure}
+                </span>
+                <span className="block">{tile.name}</span>
+                <span className="block">{text.share}</span>
+                {text.changed && <span className="block">{text.changed}</span>}
               </TooltipContent>
             </Tooltip>
           </li>
         )
       })}
     </ul>
-  )
-}
-
-function NotDrawn({
-  count,
-  kind,
-  noun,
-}: {
-  count: number
-  kind: string
-  noun: string
-}) {
-  const isOne = count === 1
-  return (
-    <p className="text-sm text-muted-foreground">
-      {formatCount(count)} {isOne ? kind : `${kind}s`} with no {noun} above zero{' '}
-      {isOne ? 'is' : 'are'} not drawn; the table lists {isOne ? 'it' : 'them'}.
-    </p>
   )
 }
 
@@ -273,12 +225,12 @@ export function DepartmentTreemap({
   before: TableYear
   onMeasure: (measure: SizeMeasure) => void
 }) {
+  const { className, ...box } = useIsWide() ? WIDE : TALL
   const { tiles, notDrawn } = departmentTiles(rows, measure)
-  const years = yearsOf(now)
-  const since = yearsOf(before)[measure]
-  const noun = SIZE_NOUNS[measure]
+  const labels = sizeLabels(now)
+  const since = sizeYears(before)[measure]
   const kind = area ? 'unit' : 'area'
-  const title = `${years[measure]} ${noun} by ${area ? `unit in ${area.name}` : 'college and VP area'}`
+  const title = `${labels[measure]} by ${area ? `unit in ${area.name}` : 'college and VP area'}`
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -287,36 +239,32 @@ export function DepartmentTreemap({
           legend="Size by"
           name="measure"
           value={measure}
-          options={SIZE_MEASURES.map((option) => [
-            option,
-            `${years[option]} ${SIZE_NOUNS[option]}`,
-          ])}
+          options={SIZE_MEASURES.map((option) => [option, labels[option]])}
           onSelect={onMeasure}
         />
       </div>
       {tiles.length === 0 ? (
         <p>
-          No {kind} here has {noun} above zero to draw.
+          No {kind} here has {SIZE_NOUNS[measure]} above zero to draw.
         </p>
       ) : (
         <>
           <Legend since={since} />
           <TooltipProvider>
-            {BOXES.map(({ className, ...box }) => (
-              <TileList
-                key={className}
-                tiles={tiles}
-                box={box}
-                className={className}
-                title={title}
-                area={area}
-                measure={measure}
-                since={since}
-              />
-            ))}
+            <TileList
+              tiles={tiles}
+              box={box}
+              className={className}
+              title={title}
+              area={area}
+              measure={measure}
+              since={since}
+            />
           </TooltipProvider>
           {notDrawn > 0 && (
-            <NotDrawn count={notDrawn} kind={kind} noun={noun} />
+            <p className="text-sm text-muted-foreground">
+              {notDrawnNote(notDrawn, kind, measure)}
+            </p>
           )}
         </>
       )}

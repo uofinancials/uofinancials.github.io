@@ -5,6 +5,10 @@ import { collectDataFiles, openSources } from './sources.ts'
 const pageWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth)
 
+/** The chart of every area by budget, as the page opens. */
+const areasChart = (page: Page) =>
+  page.getByRole('list', { name: 'FY26 budget by college and VP area' })
+
 test('the departments index ranks areas by budget with their changes, and a header sort is held in the link', async ({
   page,
 }) => {
@@ -71,9 +75,7 @@ test('the chart draws every area with a budget above zero, largest first, and it
   page,
 }) => {
   await page.goto('/departments')
-  const chart = page.getByRole('list', {
-    name: 'FY26 budget by college and VP area',
-  })
+  const chart = areasChart(page)
   await expect(chart.getByRole('listitem')).toHaveCount(47)
   // $240,032,405 of the $1,769,586,629 drawn; the budget rose 2.7% and Research's fell 2.8%.
   const largest = chart.getByRole('link').first()
@@ -113,8 +115,7 @@ test('an area’s tile draws its units and narrows the table to them, a unit’s
   page,
 }) => {
   await page.goto('/departments')
-  await page
-    .getByRole('list', { name: 'FY26 budget by college and VP area' })
+  await areasChart(page)
     .getByRole('link', { name: /^Arts & Sciences, College of: / })
     .click()
   await expect(page).toHaveURL(/level=units/)
@@ -146,9 +147,7 @@ test('an area’s tile draws its units and narrows the table to them, a unit’s
   await page.goBack()
   await page.getByRole('link', { name: 'All areas' }).click()
   await expect(page).not.toHaveURL(/area=|level=/)
-  await expect(
-    page.getByRole('list', { name: 'FY26 budget by college and VP area' }),
-  ).toBeVisible()
+  await expect(areasChart(page)).toBeVisible()
   await expect(
     page.getByRole('table', { name: /^Colleges and VP areas/ }),
   ).toBeVisible()
@@ -158,9 +157,7 @@ test('a tile’s exact figure, share, and change show beside it on hover and on 
   page,
 }) => {
   await page.goto('/departments')
-  const chart = page.getByRole('list', {
-    name: 'FY26 budget by college and VP area',
-  })
+  const chart = areasChart(page)
   const tooltip = page.getByRole('tooltip')
   await chart.getByRole('link', { name: /^Athletics: / }).hover()
   await expect(tooltip).toContainText('$211,911,651')
@@ -195,9 +192,7 @@ test('on a phone the chart is drawn in a tall box, and the page does not scroll 
 }) => {
   await page.setViewportSize({ width: 360, height: 800 })
   await page.goto('/departments')
-  const chart = page.getByRole('list', {
-    name: 'FY26 budget by college and VP area',
-  })
+  const chart = areasChart(page)
   await expect(chart).toHaveCount(1)
   await expect(chart.getByRole('listitem')).toHaveCount(47)
   const box = await chart.boundingBox()

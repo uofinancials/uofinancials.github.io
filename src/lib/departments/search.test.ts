@@ -58,6 +58,11 @@ test('the index opens on areas by budget, largest first, and keeps what the link
     resolveDepartmentsView(departmentsSearchSchema.parse({ measure: 'median' }))
       .measure,
   ).toBe('budget')
+  expect(
+    resolveDepartmentsView(
+      departmentsSearchSchema.parse({ level: 'areas', area: 222000 }),
+    ).area,
+  ).toBeNull()
 })
 
 test('the class table census must be one with jobs', () => {

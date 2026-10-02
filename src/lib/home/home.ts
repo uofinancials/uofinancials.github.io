@@ -9,12 +9,12 @@ import { runRateFor } from '../budget/outlook.ts'
 import type { AreaAssignment } from '../census/areas.ts'
 import { isClassifiedTemp, summarize, sumSpendCents } from '../census/totals.ts'
 import { type DepartmentCensus, placementIndexOf } from '../departments/jobs.ts'
-import type { AreaFigure } from '../departments/table.ts'
 import {
   SIZE_MEASURES,
   type SizeMeasure,
   sizeOf,
-} from '../departments/tiles.ts'
+} from '../departments/measures.ts'
+import type { AreaFigure } from '../departments/table.ts'
 import { sortJobs } from '../people/list.ts'
 import { egShares } from '../scenario/eg-share.ts'
 import { SCENARIO_EXAMPLES } from '../scenario/examples.ts'
