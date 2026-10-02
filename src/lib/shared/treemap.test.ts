@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { type Rect, treemapLayout } from './treemap'
+import { type Rect, treemapFractions, treemapLayout } from './treemap'
 
 const PLACES = 6
 const rounded = (rects: Rect[]) =>
@@ -61,5 +61,13 @@ test('in a box of any shape each rectangle’s area is its value’s share, and 
   expect(rounded(portrait.slice(0, 2))).toEqual([
     [0, 0, 5, 3],
     [0, 3, 5, 3],
+  ])
+})
+
+test('fractions give each rectangle as a share of the box’s width and height', () => {
+  // In a 12 by 5 box, 3 and 1 are a column 9 wide and one 3 wide.
+  expect(treemapFractions([3, 1], { width: 12, height: 5 })).toEqual([
+    { x: 0, y: 0, width: 0.75, height: 1 },
+    { x: 0.75, y: 0, width: 0.25, height: 1 },
   ])
 })

@@ -35,6 +35,19 @@ function placeRow(areas: number[], free: Rect, placed: Rect[]): Rect {
   return { ...free, y: free.y + height, height: free.height - height }
 }
 
+/** `treemapLayout` with each rectangle's sides as fractions of the box's, from 0 to 1, so the rectangles keep their shape in a box of the same proportions at any size. */
+export function treemapFractions(
+  values: number[],
+  box: { width: number; height: number },
+): Rect[] {
+  return treemapLayout(values, box).map((rect) => ({
+    x: rect.x / box.width,
+    y: rect.y / box.height,
+    width: rect.width / box.width,
+    height: rect.height / box.height,
+  }))
+}
+
 /** Squarified rectangles for the values, in order, filling the box; each one's area is its value's share of the total. Values must be above zero and sorted largest first. */
 export function treemapLayout(
   values: number[],

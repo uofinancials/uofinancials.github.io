@@ -9,6 +9,22 @@
 @custom-variant head-cell (& thead th);
 /* The header's first cell, in a table whose rows have headers. */
 @custom-variant corner-cell (&:has(th[scope="row"]) thead tr > :first-child);
+/* A treemap tile with room for its name; for its figure under it; and for its change under that. */
+@custom-variant tile-name {
+  @container (min-width: 4.5rem) and (min-height: 1.75rem) {
+    @slot;
+  }
+}
+@custom-variant tile-figure {
+  @container (min-width: 4.5rem) and (min-height: 3.25rem) {
+    @slot;
+  }
+}
+@custom-variant tile-change {
+  @container (min-width: 4.5rem) and (min-height: 4.75rem) {
+    @slot;
+  }
+}
 
 @theme inline {
   --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
@@ -40,6 +56,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart: var(--chart);
+  --color-tile-rose: var(--tile-rose);
+  --color-tile-fell: var(--tile-fell);
+  --color-tile-flat: var(--tile-flat);
 }
 
 :root {
@@ -58,6 +77,9 @@
   --input: oklch(0.87 0.008 85);
   --ring: oklch(0.45 0.12 260);
   --chart: oklch(0.52 0.11 260);
+  --tile-rose: oklch(0.76 0.105 260);
+  --tile-fell: oklch(0.78 0.115 60);
+  --tile-flat: oklch(0.9 0.004 85);
   --row-hover: color-mix(in oklab, var(--muted) 50%, transparent);
   --line-1: oklch(0.45 0.12 260);
   --line-2: oklch(0.62 0.13 55);
@@ -84,6 +106,9 @@
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.75 0.1 260);
     --chart: oklch(0.72 0.1 260);
+    --tile-rose: oklch(0.45 0.11 260);
+    --tile-fell: oklch(0.47 0.1 55);
+    --tile-flat: oklch(0.31 0.006 260);
     --line-1: oklch(0.72 0.11 260);
     --line-2: oklch(0.8 0.11 50);
     --line-3: oklch(0.64 0.13 320);

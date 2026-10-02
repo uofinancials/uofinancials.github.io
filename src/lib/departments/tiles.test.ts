@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { DepartmentRow } from './table'
-import { departmentTiles } from './tiles'
+import { departmentTiles, tileSummary, tileText } from './tiles'
 
 const NO_CHANGES = { budget: null, jobs: null, spend: null, median: null }
 
@@ -69,4 +69,33 @@ test('a tile’s direction is its own measure’s change, flat for none and for 
     ['large', 10, 0.2, null, 'flat'],
     [null, 10, 0.2, null, 'flat'],
   ])
+})
+
+test('a tile prints money to three digits with the exact dollars beside it, and a count as it is', () => {
+  const tile = {
+    code: '222000',
+    name: 'Arts & Sciences, College of',
+    value: 20_265_328_613,
+    share: 0.1145,
+    change: 0.0321,
+    direction: 'rose' as const,
+  }
+  expect(tileText(tile, 'budget')).toEqual({
+    short: '$203M',
+    exact: '$202,653,286',
+    share: '11.5%',
+    change: '+3.2%',
+  })
+  expect(tileText({ ...tile, value: 1_273, change: null }, 'jobs')).toEqual({
+    short: '1,273',
+    exact: '1,273',
+    share: '11.5%',
+    change: null,
+  })
+  expect(tileSummary(tile, 'budget', 'FY25')).toBe(
+    'Arts & Sciences, College of: $202,653,286, 11.5% of the budget drawn, +3.2% from FY25',
+  )
+  expect(
+    tileSummary({ ...tile, value: 1_273, change: null }, 'jobs', 'Fall 2024'),
+  ).toBe('Arts & Sciences, College of: 1,273 jobs, 11.5% of the jobs drawn')
 })

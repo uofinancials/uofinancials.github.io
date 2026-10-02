@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { DepartmentTable } from '@/components/departments/table'
+import { DepartmentTreemap } from '@/components/departments/treemap'
 import { RadioField } from '@/components/fields/radio-field'
 import { SearchField } from '@/components/fields/search-field'
 import { SelectField } from '@/components/fields/select-field'
@@ -18,6 +19,7 @@ import {
   filterRows,
   sortRows,
 } from '@/lib/departments/table'
+import { TREEMAP_METHOD } from '@/lib/departments/tiles'
 import { fyPaySource, fyPayYears } from '@/lib/trends/trends'
 
 const PLACEMENT_NOTE =
@@ -68,9 +70,32 @@ function TableControls({
   )
 }
 
+type TableYear = { year: number; fiscalYear: number }
+
+function PageSources({ now, before }: { now: TableYear; before: TableYear }) {
+  const { data: manifest } = useSuspenseQuery(manifestQuery)
+  return (
+    <Sources
+      sources={[
+        {
+          kind: 'budget-range',
+          from: before.fiscalYear,
+          to: now.fiscalYear,
+          computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE} ${TREEMAP_METHOD}`,
+        },
+        {
+          kind: 'fall-range',
+          from: before.year,
+          to: now.year,
+        },
+        ...fyPaySource(fyPayYears(manifest, [before.year, now.year])),
+      ]}
+    />
+  )
+}
+
 export function DepartmentsPage() {
   const { data } = useSuspenseQuery(departmentsQuery)
-  const { data: manifest } = useSuspenseQuery(manifestQuery)
   const { now, before, rows } = data
   const areas = rows.areas.flatMap(({ code, name }) =>
     code === null ? [] : [{ code, name }],
@@ -78,6 +103,9 @@ export function DepartmentsPage() {
   const view = resolveDepartmentsView(useSearch({ from: '/departments' }))
   const navigate = useNavigate({ from: '/departments' })
   const isUnits = view.level === 'units'
+  const chartArea = isUnits
+    ? (areas.find(({ code }) => code === view.area) ?? null)
+    : null
   const shown = sortRows(
     filterRows(isUnits ? rows.units : rows.areas, {
       q: view.q,
@@ -106,6 +134,18 @@ export function DepartmentsPage() {
           jobs; a code both publish shows both.
         </p>
       </PageHeader>
+      <DepartmentTreemap
+        rows={
+          chartArea
+            ? filterRows(rows.units, { q: '', area: chartArea.code })
+            : rows.areas
+        }
+        area={chartArea}
+        measure={view.measure}
+        now={now}
+        before={before}
+        onMeasure={(measure) => handleChange({ measure })}
+      />
       <TableControls view={view} areas={areas} onChange={handleChange} />
       {shown.length === 0 ? (
         <p>No area, unit, or department matches.</p>
@@ -118,22 +158,7 @@ export function DepartmentsPage() {
           onSort={(sort, dir) => handleChange({ sort, dir })}
         />
       )}
-      <Sources
-        sources={[
-          {
-            kind: 'budget-range',
-            from: before.fiscalYear,
-            to: now.fiscalYear,
-            computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`,
-          },
-          {
-            kind: 'fall-range',
-            from: before.year,
-            to: now.year,
-          },
-          ...fyPaySource(fyPayYears(manifest, [before.year, now.year])),
-        ]}
-      />
+      <PageSources now={now} before={before} />
     </div>
   )
 }
