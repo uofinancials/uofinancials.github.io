@@ -72,7 +72,6 @@ export function tileText(tile: Tile, measure: SizeMeasure, since: string) {
   return {
     /** Three digits for money, e.g. `$240M`; a count as it is. */
     short: isCount ? count : formatRoundedDollars(tile.value),
-    /** `null` where the table leaves the change blank. */
     change,
     figure,
     share,
@@ -81,7 +80,6 @@ export function tileText(tile: Tile, measure: SizeMeasure, since: string) {
   }
 }
 
-/** How many rows the chart leaves out, as a sentence. */
 export function notDrawnNote(
   count: number,
   kind: 'area' | 'unit',

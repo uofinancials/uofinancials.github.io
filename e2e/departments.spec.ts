@@ -5,7 +5,6 @@ import { collectDataFiles, openSources } from './sources.ts'
 const pageWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth)
 
-/** The chart of every area by budget, as the page opens. */
 const areasChart = (page: Page) =>
   page.getByRole('list', { name: 'FY26 budget by college and VP area' })
 
