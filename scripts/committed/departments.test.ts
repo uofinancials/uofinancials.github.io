@@ -6,6 +6,7 @@ import {
   departmentFileSchema,
 } from '../../src/data/department.ts'
 import { manifestSchema } from '../../src/data/manifest.ts'
+import { departmentsSchema } from '../../src/data/summary.ts'
 import {
   foldedBudgetYearSchema,
   foldedFallYearSchema,
@@ -23,10 +24,13 @@ import {
   departmentYears,
   toDepartmentCensuses,
 } from '../../src/lib/departments/jobs.ts'
+import { SIZE_MEASURES } from '../../src/lib/departments/measures.ts'
+import { departmentTiles } from '../../src/lib/departments/tiles.ts'
 import { placementBases } from '../../src/lib/home/home.ts'
 import { totalExpenditureCents } from '../scrape/budget/file.ts'
 import {
   budgetDataPath,
+  DEPARTMENTS_DATA_PATH,
   departmentPath,
   fallDataPath,
   MANIFEST_PATH,
@@ -232,3 +236,22 @@ function pageLatest(code: string) {
   const point = readPage(code).trends.all.total.at(-1)
   return [point?.jobs, point?.fyTemps?.otherSpendCents ?? point?.spendCents]
 }
+
+test.skipIf(!existsSync(DEPARTMENTS_DATA_PATH))(
+  'the committed areas give the tiles the departments chart draws: every area with a figure above zero, the largest first',
+  () => {
+    const { rows } = departmentsSchema.parse(readJson(DEPARTMENTS_DATA_PATH))
+    const drawn = SIZE_MEASURES.map((measure) => {
+      const { tiles, notDrawn } = departmentTiles(rows.areas, measure)
+      const shares = tiles.reduce((sum, { share }) => sum + share, 0)
+      expect(shares, measure).toBeCloseTo(1, 10)
+      return [measure, tiles.length, notDrawn, tiles[0]?.code, tiles[0]?.value]
+    })
+    // FY26 and Fall 2025: Business Affairs' $240,032,405.43 budget, Arts & Sciences' $98,104,916.52 salary spend and 1,273 jobs.
+    expect(drawn).toEqual([
+      ['budget', 47, 2, '430000', 24_003_240_543],
+      ['spend', 43, 6, '222000', 9_810_491_652],
+      ['jobs', 44, 5, '222000', 1_273],
+    ])
+  },
+)

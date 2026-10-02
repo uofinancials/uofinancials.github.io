@@ -104,7 +104,8 @@ flowchart LR
   and router, and mounts the app.
 - `src/index.css` - the theme: color tokens for light and dark schemes, native
   control colors, the type scale, radius, the prose measure, and the focus,
-  link, table scroll edge, table key column, and table header styles.
+  link, table scroll edge, table key column, table header, and treemap tile
+  label styles.
 - `src/app.tsx` - the query and router providers.
 - `src/router.tsx` - the route tree, each route's data loading, each page's code
   loaded on demand, and the default loading, error, and not-found pages.
@@ -125,7 +126,8 @@ flowchart LR
   - `trends` - the Trends report's filters, tabs, sections, and group table, the
     pay changes page's controls and sections, the group mapping, and the jobs
     figure and table the department page shares.
-  - `departments` - the department table and a department's budget and jobs.
+  - `departments` - the department table, the treemap of the areas or of an
+    area's units, and a department's budget and jobs.
   - `people` - the people list's controls, table, and figures.
   - `person` - one person's figures, rates, records, and job history.
   - `budget` - the budget outlook's lines and cases tables.
@@ -143,8 +145,8 @@ flowchart LR
 - `src/lib` - class name merging and the number and wrapping cell styles, and
   one folder per domain:
   - `shared` - number formatting, browser tab titles, table sort order, grouping
-    by key, source citations, filter chips, and the rules charts draw series and
-    axes by.
+    by key, source citations, filter chips, the rules charts draw series and
+    axes by, and the treemap layout.
   - `census` - census totals, area assignment, employee groups, and the salary
     rate distribution.
   - `trends` - trends by group and by area, with classified temporaries measured
@@ -152,8 +154,9 @@ flowchart LR
     continuing jobs' pairs, the file that holds them, and their pay changes, and
     raise groups beside their terms.
   - `departments` - a department's budget and jobs and the file its page reads,
-    the department index, the department table, FY department names resolved to
-    codes, and classified temporaries' FY pay by unit.
+    the department index, the department table, the measures a row is sized by
+    and the treemap's tiles, FY department names resolved to codes, and
+    classified temporaries' FY pay by unit.
   - `people` - the people list, names joined as one person by hand review or by
     name-matching rules, person links and lookup, the name buckets, and a
     person's computed figures and peer medians.
@@ -207,10 +210,11 @@ flowchart LR
 - `e2e/overview.spec.ts` - the home page's headlines, scenario answers, area
   preview, trend and top-paid previews, and narrow layout, and the People page's
   spend by EEO category.
-- `e2e/departments.spec.ts` - the departments table's sorting, levels, and
-  filters, a unit's and an area's pages, the files a department page loads, an
-  older pay code's page, an alias code's redirect, the scenario and pay changes
-  links, and narrow layout.
+- `e2e/departments.spec.ts` - the departments treemap's tiles, measure, drill
+  into an area, tooltip, and skip link, the departments table's sorting, levels,
+  and filters, a unit's and an area's pages, the files a department page loads,
+  an older pay code's page, an alias code's redirect, the scenario and pay
+  changes links, and narrow layout.
 - `e2e/budget.spec.ts` - the budget page's gap by year, scope, cases, sources,
   and narrow layout.
 - `e2e/scenarios.spec.ts` - the scenarios page's examples, rule editing, hiring
@@ -252,10 +256,12 @@ flowchart LR
   staff kind, pay department, college or VP area, or class or rank, with the
   view held in the URL; driven by `src/lib/trends` over the pay changes file,
   the raise terms, and the manifest.
-- `/departments` - a sortable table of the colleges and VP areas in the latest
-  census's budget year, or of their units and pay departments, with budget,
-  jobs, spend, and median and each one's change from the year before, filtered
-  by area and by name or code; driven by the departments file's rows.
+- `/departments` - a treemap of the colleges and VP areas, or of one area's
+  units, sized by budget, salary spend, or jobs and colored by its change from
+  the year before, over a sortable table of the areas in the latest census's
+  budget year, or of their units and pay departments, with budget, jobs, spend,
+  and median and each one's change from the year before, filtered by area and by
+  name or code; driven by the departments file's rows.
 - `/departments/$code` - one code's budget by account group or fund type for
   every budget year, its jobs by group for every Fall census, its jobs by rank
   and position class in one census, for an area its units in the department

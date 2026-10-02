@@ -5,6 +5,7 @@ import { type StaffKind, staffKindSchema } from '../../data/fall.ts'
 import { SORT_DIRECTIONS, type SortDirection } from '../shared/sort.ts'
 import { CENSUS_METRICS, type CensusMetric } from '../trends/search.ts'
 import { BUDGET_BREAKDOWNS, type BudgetBreakdown } from './budget.ts'
+import { SIZE_MEASURES, type SizeMeasure } from './measures.ts'
 import { DEPARTMENT_SORTS, type DepartmentSort } from './table.ts'
 
 const YEAR_END_PERIOD = '14'
@@ -22,6 +23,7 @@ export const departmentsSearchSchema = z.object({
   q: z.string().optional().catch(undefined),
   level: z.enum(DEPARTMENT_LEVELS).optional().catch(undefined),
   area: orgCodeParam.optional().catch(undefined),
+  measure: z.enum(SIZE_MEASURES).optional().catch(undefined),
   ...tableSortFields,
 })
 
@@ -44,15 +46,19 @@ export type DepartmentsView = TableSort & {
   level: DepartmentLevel
   /** The area the units view is narrowed to; `null` for every area. */
   area: string | null
+  /** The figure the chart sizes its tiles by. */
+  measure: SizeMeasure
 }
 
 export function resolveDepartmentsView(
   search: DepartmentsSearch,
 ): DepartmentsView {
+  const level = search.level ?? 'areas'
   return {
     q: search.q ?? '',
-    level: search.level ?? 'areas',
-    area: search.area ?? null,
+    level,
+    area: level === 'units' ? (search.area ?? null) : null,
+    measure: search.measure ?? 'budget',
     ...resolveSort(search),
   }
 }

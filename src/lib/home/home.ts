@@ -9,6 +9,11 @@ import { runRateFor } from '../budget/outlook.ts'
 import type { AreaAssignment } from '../census/areas.ts'
 import { isClassifiedTemp, summarize, sumSpendCents } from '../census/totals.ts'
 import { type DepartmentCensus, placementIndexOf } from '../departments/jobs.ts'
+import {
+  SIZE_MEASURES,
+  type SizeMeasure,
+  sizeOf,
+} from '../departments/measures.ts'
 import type { AreaFigure } from '../departments/table.ts'
 import { sortJobs } from '../people/list.ts'
 import { egShares } from '../scenario/eg-share.ts'
@@ -168,30 +173,20 @@ export function topPaidJobs(
   return sortJobs(records, { sort: 'rate', dir: 'desc', year }).slice(0, count)
 }
 
-export const HOME_MEASURES = ['budget', 'spend', 'jobs'] as const
-export type HomeMeasure = (typeof HOME_MEASURES)[number]
-
 /** The home page's URL search params; a malformed measure falls back to the budget. */
 export const homeSearchSchema = z.object({
-  measure: z.enum(HOME_MEASURES).optional().catch(undefined),
+  measure: z.enum(SIZE_MEASURES).optional().catch(undefined),
 })
-
-const MEASURE_VALUES: Record<HomeMeasure, (area: AreaFigure) => number | null> =
-  {
-    budget: (area) => area.budgetCents,
-    spend: (area) => area.spendCents,
-    jobs: (area) => area.jobs,
-  }
 
 /** The `count` areas with the largest values for the measure, largest first, ties by name; an area without a value is left out. */
 export function areaBars(
   areas: AreaFigure[],
-  measure: HomeMeasure,
+  measure: SizeMeasure,
   count: number,
 ): (AreaFigure & { value: number })[] {
   return areas
     .flatMap((area) => {
-      const value = MEASURE_VALUES[measure](area)
+      const value = sizeOf(area, measure)
       return value === null ? [] : [{ ...area, value }]
     })
     .sort((a, b) => b.value - a.value || compareKeys(a.name, b.name))

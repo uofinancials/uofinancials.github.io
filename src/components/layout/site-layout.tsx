@@ -4,6 +4,7 @@ import {
   SCROLL_ROW_CLASS,
 } from '@/components/layout/nav-link-class'
 import { revealInRow } from '@/components/layout/reveal-in-row'
+import { SkipLink } from '@/components/layout/skip-link'
 import { cn } from '@/lib/utils'
 
 const REPO_URL = 'https://github.com/uofinancials/uofinancials.github.io'
@@ -25,16 +26,12 @@ const NAV_LINKS = [
 export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
-      <a
-        href={`#${MAIN_ID}`}
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-4 focus:z-50 focus:rounded-md focus:border focus:bg-background focus:px-3 focus:py-2 focus:text-sm"
-        onClick={(event) => {
-          event.preventDefault()
-          document.getElementById(MAIN_ID)?.focus()
-        }}
+      <SkipLink
+        targetId={MAIN_ID}
+        className="focus:absolute focus:top-2 focus:left-4 focus:z-50"
       >
         Skip to content
-      </a>
+      </SkipLink>
       <header className="border-b">
         <div className="mx-auto flex w-full max-w-[75rem] flex-wrap items-center gap-x-6 gap-y-1 px-4 pt-2.5 md:px-6 md:pb-2.5">
           <Link to="/" className="font-semibold">

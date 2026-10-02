@@ -1,13 +1,17 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { DepartmentTable } from '@/components/departments/table'
+import { DepartmentTreemap } from '@/components/departments/treemap'
 import { RadioField } from '@/components/fields/radio-field'
 import { SearchField } from '@/components/fields/search-field'
 import { SelectField } from '@/components/fields/select-field'
 import { PageHeader } from '@/components/layout/page-header'
+import { SkipLink } from '@/components/layout/skip-link'
 import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
+import type { Manifest } from '@/data/manifest'
 import { departmentsQuery, manifestQuery } from '@/data/queries'
+import type { TableYear } from '@/data/summary'
 import {
   type DepartmentsSearch,
   type DepartmentsView,
@@ -18,6 +22,7 @@ import {
   filterRows,
   sortRows,
 } from '@/lib/departments/table'
+import { TREEMAP_METHOD } from '@/lib/departments/tiles'
 import { fyPaySource, fyPayYears } from '@/lib/trends/trends'
 
 const PLACEMENT_NOTE =
@@ -27,6 +32,7 @@ const LEVEL_OPTIONS = [
   ['units', 'Units and pay departments'],
 ] as const
 const ALL_AREAS = ''
+const TABLE_ID = 'departments-table'
 
 function TableControls({
   view,
@@ -38,7 +44,11 @@ function TableControls({
   onChange: (patch: DepartmentsSearch) => void
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-4">
+    <div
+      id={TABLE_ID}
+      tabIndex={-1}
+      className="flex flex-wrap items-end gap-4 outline-none"
+    >
       <RadioField
         legend="Show"
         name="level"
@@ -68,6 +78,36 @@ function TableControls({
   )
 }
 
+function PageSources({
+  now,
+  before,
+  manifest,
+}: {
+  now: TableYear
+  before: TableYear
+  manifest: Manifest
+}) {
+  return (
+    <Sources
+      sources={[
+        {
+          kind: 'budget-range',
+          from: before.fiscalYear,
+          to: now.fiscalYear,
+          computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`,
+        },
+        {
+          kind: 'fall-range',
+          from: before.year,
+          to: now.year,
+        },
+        ...fyPaySource(fyPayYears(manifest, [before.year, now.year])),
+      ]}
+      methods={[TREEMAP_METHOD]}
+    />
+  )
+}
+
 export function DepartmentsPage() {
   const { data } = useSuspenseQuery(departmentsQuery)
   const { data: manifest } = useSuspenseQuery(manifestQuery)
@@ -78,11 +118,9 @@ export function DepartmentsPage() {
   const view = resolveDepartmentsView(useSearch({ from: '/departments' }))
   const navigate = useNavigate({ from: '/departments' })
   const isUnits = view.level === 'units'
+  const chartArea = areas.find(({ code }) => code === view.area) ?? null
   const shown = sortRows(
-    filterRows(isUnits ? rows.units : rows.areas, {
-      q: view.q,
-      area: isUnits ? view.area : null,
-    }),
+    filterRows(isUnits ? rows.units : rows.areas, view),
     view.sort,
     view.dir,
   )
@@ -106,6 +144,21 @@ export function DepartmentsPage() {
           jobs; a code both publish shows both.
         </p>
       </PageHeader>
+      <SkipLink targetId={TABLE_ID} className="focus:inline-block">
+        Skip to the table
+      </SkipLink>
+      <DepartmentTreemap
+        rows={
+          chartArea
+            ? filterRows(rows.units, { q: '', area: chartArea.code })
+            : rows.areas
+        }
+        area={chartArea}
+        measure={view.measure}
+        now={now}
+        before={before}
+        onMeasure={(measure) => handleChange({ measure })}
+      />
       <TableControls view={view} areas={areas} onChange={handleChange} />
       {shown.length === 0 ? (
         <p>No area, unit, or department matches.</p>
@@ -118,22 +171,7 @@ export function DepartmentsPage() {
           onSort={(sort, dir) => handleChange({ sort, dir })}
         />
       )}
-      <Sources
-        sources={[
-          {
-            kind: 'budget-range',
-            from: before.fiscalYear,
-            to: now.fiscalYear,
-            computed: `${DEPARTMENT_TABLE_METHOD} ${PLACEMENT_NOTE}`,
-          },
-          {
-            kind: 'fall-range',
-            from: before.year,
-            to: now.year,
-          },
-          ...fyPaySource(fyPayYears(manifest, [before.year, now.year])),
-        ]}
-      />
+      <PageSources now={now} before={before} manifest={manifest} />
     </div>
   )
 }

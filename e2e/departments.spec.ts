@@ -5,6 +5,9 @@ import { collectDataFiles, openSources } from './sources.ts'
 const pageWidth = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth)
 
+const areasChart = (page: Page) =>
+  page.getByRole('list', { name: 'FY26 budget by college and VP area' })
+
 test('the departments index ranks areas by budget with their changes, and a header sort is held in the link', async ({
   page,
 }) => {
@@ -65,6 +68,135 @@ test('the units view narrows by area and by text, and a pay department links to 
   await page.getByRole('link', { name: 'Pay changes' }).click()
   await expect(page).toHaveURL(/\/trends\/pay-changes\?dept=/)
   await expect(main).toContainText('SOMD Music')
+})
+
+test('the chart draws every area with a budget above zero, largest first, and its measure is held in the link', async ({
+  page,
+}) => {
+  await page.goto('/departments')
+  const chart = areasChart(page)
+  await expect(chart.getByRole('listitem')).toHaveCount(47)
+  // $240,032,405 of the $1,769,586,629 drawn; the budget rose 2.7% and Research's fell 2.8%.
+  const largest = chart.getByRole('link').first()
+  await expect(largest).toHaveAccessibleName(
+    'Business Affairs: $240,032,405, 13.6% of the budget drawn, +2.7% from FY25',
+  )
+  await expect(largest).toContainText('$240M')
+  await expect(largest).toHaveClass(/bg-tile-rose/)
+  await expect(
+    chart.getByRole('link', {
+      name: 'Research: $95,396,296, 5.4% of the budget drawn, -2.8% from FY25',
+    }),
+  ).toHaveClass(/bg-tile-fell/)
+  const main = page.getByRole('main')
+  await expect(main).toContainText('Rose from FY25')
+  await expect(main).toContainText(
+    '2 areas with no budget above zero are not drawn; the table lists them.',
+  )
+
+  await page.getByRole('radio', { name: 'Fall 2025 jobs' }).check()
+  await expect(page).toHaveURL(/measure=jobs/)
+  await page.reload()
+  const byJobs = page.getByRole('list', {
+    name: 'Fall 2025 jobs by college and VP area',
+  })
+  // 1,273 of the 6,840 jobs placed in an area.
+  await expect(byJobs.getByRole('link').first()).toHaveAccessibleName(
+    'Arts & Sciences, College of: 1,273 jobs, 18.6% of the jobs drawn, -7.0% from Fall 2024',
+  )
+  await expect(main).toContainText('Rose from Fall 2024')
+  await expect(
+    page.getByRole('columnheader', { name: 'Budget ▼' }),
+  ).toHaveAttribute('aria-sort', 'descending')
+})
+
+test('an area’s tile draws its units and narrows the table to them, a unit’s opens its page, and All areas returns', async ({
+  page,
+}) => {
+  await page.goto('/departments')
+  await areasChart(page)
+    .getByRole('link', { name: /^Arts & Sciences, College of: / })
+    .click()
+  await expect(page).toHaveURL(/level=units/)
+  await expect(page).toHaveURL(/area=.*222000/)
+  const units = page.getByRole('list', {
+    name: 'FY26 budget by unit in Arts & Sciences, College of',
+  })
+  // 77 of the area's 86 units have a budget above zero.
+  await expect(units.getByRole('listitem')).toHaveCount(77)
+  await expect(page.getByRole('main')).toContainText(
+    '9 units with no budget above zero are not drawn',
+  )
+  const table = page.getByRole('table', { name: /^Units and pay departments/ })
+  await expect(table.getByRole('row')).toHaveCount(87)
+
+  await page.getByLabel('Filter by name or code').fill('biology')
+  await expect(table.getByRole('row')).toHaveCount(3)
+  await expect(units.getByRole('listitem')).toHaveCount(77)
+  await page.getByLabel('Filter by name or code').fill('')
+  await expect(table.getByRole('row')).toHaveCount(87)
+
+  // $13,266,027 of the $208,920,683 drawn.
+  await units
+    .getByRole('link', {
+      name: 'CAS Psychology: $13,266,027, 6.3% of the budget drawn, +20.4% from FY25',
+    })
+    .click()
+  await expect(page).toHaveURL(/\/departments\/223520$/)
+  await page.goBack()
+  await page.getByRole('link', { name: 'All areas' }).click()
+  await expect(page).not.toHaveURL(/area=|level=/)
+  await expect(areasChart(page)).toBeVisible()
+  await expect(
+    page.getByRole('table', { name: /^Colleges and VP areas/ }),
+  ).toBeVisible()
+})
+
+test('a tile’s exact figure, share, and change show beside it on hover and on keyboard focus, and a skip link leads past the tiles', async ({
+  page,
+}) => {
+  await page.goto('/departments')
+  const chart = areasChart(page)
+  const tooltip = page.getByRole('tooltip')
+  await chart.getByRole('link', { name: /^Athletics: / }).hover()
+  await expect(tooltip).toContainText('$211,911,651')
+  // $211,911,651 of the $1,769,586,629 drawn.
+  await expect(tooltip).toContainText('12.0% of the budget drawn')
+  await expect(tooltip).toContainText('+18.9% from FY25')
+  await page.getByRole('heading', { level: 1 }).hover()
+  await expect(tooltip).toHaveCount(0)
+
+  const skip = page.getByRole('link', { name: 'Skip to the table' })
+  await skip.focus()
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('radio', { name: 'FY26 budget' })).toBeFocused()
+  await page.keyboard.press('Tab')
+  const largest = chart.getByRole('link').first()
+  await expect(largest).toBeFocused()
+  await expect(tooltip).toContainText('Business Affairs')
+  await expect(tooltip).toContainText('$240,032,405')
+
+  await skip.focus()
+  await expect(skip).toBeVisible()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#departments-table')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(
+    page.getByRole('radio', { name: 'Colleges and VP areas' }),
+  ).toBeFocused()
+})
+
+test('on a phone the chart is drawn in a tall box, and the page does not scroll sideways at 360px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto('/departments')
+  const chart = areasChart(page)
+  await expect(chart).toHaveCount(1)
+  await expect(chart.getByRole('listitem')).toHaveCount(47)
+  const box = await chart.boundingBox()
+  expect(box?.height).toBeGreaterThan(box?.width ?? 0)
+  expect(await pageWidth(page)).toBeLessThanOrEqual(360)
 })
 
 test('the departments index does not scroll sideways at 360px', async ({

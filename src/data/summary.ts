@@ -170,6 +170,8 @@ export type Summary = {
   }
 }
 export type PeerMedians = z.infer<typeof peerMediansSchema>
+/** A census and the budget year that names its areas. */
+export type TableYear = z.infer<typeof tableYearSchema>
 export type CodeTrend = z.infer<typeof codeTrendSchema>
 export type SummaryArea = Summary['trends']['areas'][number]
 export type ScopeTrends = z.infer<typeof scopeTrendsSchema>
