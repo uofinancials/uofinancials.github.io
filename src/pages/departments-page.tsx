@@ -6,6 +6,7 @@ import { RadioField } from '@/components/fields/radio-field'
 import { SearchField } from '@/components/fields/search-field'
 import { SelectField } from '@/components/fields/select-field'
 import { PageHeader } from '@/components/layout/page-header'
+import { SkipLink } from '@/components/layout/skip-link'
 import { Sources } from '@/components/layout/sources'
 import { fiscalYearLabel } from '@/data/budget'
 import { departmentsQuery, manifestQuery } from '@/data/queries'
@@ -29,6 +30,7 @@ const LEVEL_OPTIONS = [
   ['units', 'Units and pay departments'],
 ] as const
 const ALL_AREAS = ''
+const TABLE_ID = 'departments-table'
 
 function TableControls({
   view,
@@ -134,6 +136,9 @@ export function DepartmentsPage() {
           jobs; a code both publish shows both.
         </p>
       </PageHeader>
+      <SkipLink targetId={TABLE_ID} className="focus:inline-block">
+        Skip to the table
+      </SkipLink>
       <DepartmentTreemap
         rows={
           chartArea
@@ -146,18 +151,20 @@ export function DepartmentsPage() {
         before={before}
         onMeasure={(measure) => handleChange({ measure })}
       />
-      <TableControls view={view} areas={areas} onChange={handleChange} />
-      {shown.length === 0 ? (
-        <p>No area, unit, or department matches.</p>
-      ) : (
-        <DepartmentTable
-          caption={`${isUnits ? 'Units and pay departments' : 'Colleges and VP areas'}: ${fiscal} budget and Fall ${now.year} jobs`}
-          rows={shown}
-          showArea={isUnits}
-          view={view}
-          onSort={(sort, dir) => handleChange({ sort, dir })}
-        />
-      )}
+      <div id={TABLE_ID} tabIndex={-1} className="space-y-6 outline-none">
+        <TableControls view={view} areas={areas} onChange={handleChange} />
+        {shown.length === 0 ? (
+          <p>No area, unit, or department matches.</p>
+        ) : (
+          <DepartmentTable
+            caption={`${isUnits ? 'Units and pay departments' : 'Colleges and VP areas'}: ${fiscal} budget and Fall ${now.year} jobs`}
+            rows={shown}
+            showArea={isUnits}
+            view={view}
+            onSort={(sort, dir) => handleChange({ sort, dir })}
+          />
+        )}
+      </div>
       <PageSources now={now} before={before} />
     </div>
   )

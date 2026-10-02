@@ -154,6 +154,42 @@ test('an area’s tile draws its units and narrows the table to them, a unit’s
   ).toBeVisible()
 })
 
+test('a tile’s exact figure, share, and change show beside it on hover and on keyboard focus, and a skip link leads past the tiles', async ({
+  page,
+}) => {
+  await page.goto('/departments')
+  const chart = page.getByRole('list', {
+    name: 'FY26 budget by college and VP area',
+  })
+  const tooltip = page.getByRole('tooltip')
+  await chart.getByRole('link', { name: /^Athletics: / }).hover()
+  await expect(tooltip).toContainText('$211,911,651')
+  // $211,911,651 of the $1,769,586,629 drawn.
+  await expect(tooltip).toContainText('12.0% of the budget drawn')
+  await expect(tooltip).toContainText('+18.9% from FY25')
+  await page.getByRole('heading', { level: 1 }).hover()
+  await expect(tooltip).toHaveCount(0)
+
+  const skip = page.getByRole('link', { name: 'Skip to the table' })
+  await skip.focus()
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('radio', { name: 'FY26 budget' })).toBeFocused()
+  await page.keyboard.press('Tab')
+  const largest = chart.getByRole('link').first()
+  await expect(largest).toBeFocused()
+  await expect(tooltip).toContainText('Business Affairs')
+  await expect(tooltip).toContainText('$240,032,405')
+
+  await skip.focus()
+  await expect(skip).toBeVisible()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#departments-table')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(
+    page.getByRole('radio', { name: 'Colleges and VP areas' }),
+  ).toBeFocused()
+})
+
 test('on a phone the chart is drawn in a tall box, and the page does not scroll sideways at 360px', async ({
   page,
 }) => {

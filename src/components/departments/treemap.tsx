@@ -1,6 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { RadioField } from '@/components/fields/radio-field'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { fiscalYearLabel } from '@/data/budget'
 import type { DepartmentRow } from '@/lib/departments/table'
 import {
@@ -39,7 +45,7 @@ function yearsOf({ year, fiscalYear }: TableYear): Record<SizeMeasure, string> {
 }
 
 const TILE_CLASS =
-  'block size-full rounded-sm text-xs leading-tight text-foreground no-underline focus-visible:relative focus-visible:z-10'
+  'block size-full rounded-sm text-xs leading-tight text-foreground no-underline hover:outline-2 hover:-outline-offset-2 hover:outline-foreground/50 focus-visible:relative focus-visible:z-10'
 
 /** A tile's face: an area's leads to its units, a unit's to its page, and one with no code leads nowhere. */
 function TileFace({
@@ -47,17 +53,19 @@ function TileFace({
   area,
   label,
   children,
+  ...trigger
 }: {
   tile: Tile
   area: Area | null
   label: string
   children: ReactNode
 }) {
+  const face = { 'aria-label': label, ...trigger }
   const className = cn(TILE_CLASS, FILLS[tile.direction])
   const { code } = tile
   if (code === null) {
     return (
-      <span role="img" aria-label={label} className={className}>
+      <span role="img" {...face} className={className}>
         {children}
       </span>
     )
@@ -67,7 +75,7 @@ function TileFace({
       <Link
         to="/departments/$code"
         params={{ code }}
-        aria-label={label}
+        {...face}
         className={className}
       >
         {children}
@@ -80,11 +88,41 @@ function TileFace({
       to="/departments"
       search={(previous) => ({ ...previous, level: 'units', area: code })}
       resetScroll={false}
-      aria-label={label}
+      {...face}
       className={className}
     >
       {children}
     </Link>
+  )
+}
+
+/** A tile's figures in full, the exact figure first. */
+function TileDetail({
+  tile,
+  measure,
+  since,
+}: {
+  tile: Tile
+  measure: SizeMeasure
+  since: string
+}) {
+  const { exact, share, change } = tileText(tile, measure)
+  const noun = SIZE_NOUNS[measure]
+  return (
+    <>
+      <span className="block text-sm font-semibold">
+        {measure === 'jobs' ? `${exact} jobs` : exact}
+      </span>
+      <span className="block">{tile.name}</span>
+      <span className="block">
+        {share} of the {noun} drawn
+      </span>
+      {change && (
+        <span className="block">
+          {change} from {since}
+        </span>
+      )}
+    </>
   )
 }
 
@@ -148,21 +186,28 @@ function TileList({
               height: widthOf(rect.height),
             }}
           >
-            <TileFace
-              tile={tile}
-              area={area}
-              label={tileSummary(tile, measure, since)}
-            >
-              <span className="hidden flex-col p-1.5 tile-name:flex">
-                <span className="truncate font-medium tile-change:line-clamp-2 tile-change:whitespace-normal">
-                  {tile.name}
-                </span>
-                <span className="hidden tile-figure:block">{short}</span>
-                {change && (
-                  <span className="hidden tile-change:block">{change}</span>
-                )}
-              </span>
-            </TileFace>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <TileFace
+                  tile={tile}
+                  area={area}
+                  label={tileSummary(tile, measure, since)}
+                >
+                  <span className="hidden flex-col p-1.5 tile-name:flex">
+                    <span className="truncate font-medium tile-change:line-clamp-2 tile-change:whitespace-normal">
+                      {tile.name}
+                    </span>
+                    <span className="hidden tile-figure:block">{short}</span>
+                    {change && (
+                      <span className="hidden tile-change:block">{change}</span>
+                    )}
+                  </span>
+                </TileFace>
+              </TooltipTrigger>
+              <TooltipContent>
+                <TileDetail tile={tile} measure={measure} since={since} />
+              </TooltipContent>
+            </Tooltip>
           </li>
         )
       })}
@@ -256,18 +301,20 @@ export function DepartmentTreemap({
       ) : (
         <>
           <Legend since={since} />
-          {BOXES.map(({ className, ...box }) => (
-            <TileList
-              key={className}
-              tiles={tiles}
-              box={box}
-              className={className}
-              title={title}
-              area={area}
-              measure={measure}
-              since={since}
-            />
-          ))}
+          <TooltipProvider>
+            {BOXES.map(({ className, ...box }) => (
+              <TileList
+                key={className}
+                tiles={tiles}
+                box={box}
+                className={className}
+                title={title}
+                area={area}
+                measure={measure}
+                since={since}
+              />
+            ))}
+          </TooltipProvider>
           {notDrawn > 0 && (
             <NotDrawn count={notDrawn} kind={kind} noun={noun} />
           )}
